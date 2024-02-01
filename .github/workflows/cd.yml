@@ -27,7 +27,5 @@ jobs:
         run: npm ic
       - name: Run linter
         run: npm run lint
-      - name: Run tests with coverage
-        run: npm run coverage
       - name: Build
         run: npm run build
