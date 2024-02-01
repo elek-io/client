@@ -8,6 +8,11 @@
   "bugs": {
     "url": "https://github.com/elek-io/client/issues"
   },
+  "author": {
+    "name": "elek.io",
+    "email": "info@elek.io",
+    "url": "https://elek.io"
+  },
   "license": "todo",
   "main": ".vite/build/main.js",
   "scripts": {
