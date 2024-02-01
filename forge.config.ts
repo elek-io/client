@@ -10,9 +10,8 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
-      title: 'client',
-      setupExe: 'client',
-      exe: 'client',
+      title: 'elek.io Client',
+      setupExe: 'elek.io Client',
     }),
     new MakerDMG({}),
     new MakerRpm({
