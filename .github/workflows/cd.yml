@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: npm ic
+        run: npm i
       - name: Run linter
         run: npm run lint
       - name: Build
