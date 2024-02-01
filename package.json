@@ -1,0 +1,39 @@
+{
+  "name": "@elek-io/client",
+  "productName": "elek.io Client",
+  "version": "0.1.0",
+  "description": "The elek.io Client is a desktop application for Windows, macOS and Linux that allows you to manage content.",
+  "homepage": "https://elek.io",
+  "repository": "https://github.com/elek-io/client",
+  "bugs": {
+    "url": "https://github.com/elek-io/client/issues"
+  },
+  "license": "todo",
+  "main": ".vite/build/main.js",
+  "scripts": {
+    "lint": "eslint --ext .ts,.tsx .",
+    "dev": "electron-forge start",
+    "package": "electron-forge package",
+    "build": "electron-forge make",
+    "publish": "electron-forge publish"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.2.0",
+    "@electron-forge/maker-deb": "^7.2.0",
+    "@electron-forge/maker-dmg": "^7.2.0",
+    "@electron-forge/maker-rpm": "^7.2.0",
+    "@electron-forge/maker-squirrel": "^7.2.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.2.0",
+    "@electron-forge/plugin-vite": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "electron": "28.2.1",
+    "eslint": "^8.0.1",
+    "eslint-plugin-import": "^2.25.0",
+    "ts-node": "^10.0.0",
+    "typescript": "~4.5.4"
+  }
+}
