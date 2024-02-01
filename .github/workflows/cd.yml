@@ -27,8 +27,6 @@ jobs:
         run: yarn install
       - name: Run linter
         run: yarn run lint
-      - name: Build
-        run: yarn run build
       - name: Create pull request or publish to GitHub
         uses: changesets/action@v1
         with:
