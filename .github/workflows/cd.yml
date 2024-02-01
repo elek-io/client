@@ -34,4 +34,6 @@ jobs:
           commit: Release new version
           publish: yarn run release
         env:
+          # See https://github.com/changesets/action/issues/147
+          HOME: ${{ github.workspace }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
