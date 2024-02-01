@@ -12,7 +12,7 @@ const config: ForgeConfig = {
     new MakerSquirrel({
       title: 'elek.io Client',
       setupExe: 'elek.io Client',
-      name: 'elek.io Client',
+      name: 'client',
     }),
     new MakerDMG({}),
     new MakerRpm({
