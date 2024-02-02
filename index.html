@@ -7,6 +7,11 @@
   <body>
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
+    <button
+      onclick="window.ipc.core.user.get().then((result) => console.log('Result:', result)).catch((err) => console.log('Error:', err))"
+    >
+      Test IPC
+    </button>
     <script type="module" src="/src/renderer/index.ts"></script>
   </body>
 </html>
