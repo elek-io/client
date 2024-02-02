@@ -65,8 +65,8 @@ class Main {
     // await this.registerIpcMain(core);
 
     // const user = await core.user.get();
-    let mainWindow: BrowserWindow;
-    mainWindow = this.createWindow('/');
+    // let mainWindow: BrowserWindow;
+    this.createWindow('/');
 
     // if (user) {
     //   mainWindow = await this.createWindow('/projects');
