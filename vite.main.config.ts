@@ -7,4 +7,7 @@ export default defineConfig({
     browserField: false,
     mainFields: ['module', 'jsnext:main', 'jsnext'],
   },
+  build: {
+    sourcemap: true, // Needed to debug
+  },
 });
