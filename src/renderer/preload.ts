@@ -48,9 +48,8 @@ export interface ContextBridgeApi {
 const exposedApi: ContextBridgeApi = {
   electron: {
     dialog: {
-      // @ts-ignore -> Why?
-      showOpenDialog: (...args) =>
-        ipcRenderer.invoke('electron:dialog:showOpenDialog', args),
+      showOpenDialog: (options: Electron.OpenDialogOptions) =>
+        ipcRenderer.invoke('electron:dialog:showOpenDialog', options),
     },
   },
   core: {

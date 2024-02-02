@@ -162,13 +162,13 @@ class Main {
     ipcMain.handle('electron:dialog:showOpenDialog', async (event, args) => {
       return await dialog.showOpenDialog(args[0], args[1]);
     });
-    ipcMain.handle('core:user:get', async (event, args) => {
+    ipcMain.handle('core:user:get', async () => {
       return await core.user.get();
     });
     ipcMain.handle('core:user:set', async (event, args) => {
       return await core.user.set(args[0]);
     });
-    ipcMain.handle('core:projects:count', async (event, args) => {
+    ipcMain.handle('core:projects:count', async () => {
       return await core.projects.count();
     });
     ipcMain.handle('core:projects:create', async (event, args) => {
