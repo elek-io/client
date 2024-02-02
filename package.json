@@ -14,7 +14,7 @@
     "url": "https://elek.io"
   },
   "license": "todo",
-  "main": ".vite/build/main.js",
+  "main": ".vite/build/index.js",
   "scripts": {
     "lint": "eslint --ext .ts,.tsx .",
     "dev": "electron-forge start",
