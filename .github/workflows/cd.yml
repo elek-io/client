@@ -37,3 +37,11 @@ jobs:
           # See https://github.com/changesets/action/issues/147
           HOME: ${{ github.workspace }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Uncomment if necessary
+      # For example to inspect the build applications
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact_${{ matrix.platform }}
+          path: out/make
+          if-no-files-found: error
