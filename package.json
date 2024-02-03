@@ -19,8 +19,8 @@
     "lint": "eslint --ext .ts,.tsx .",
     "dev": "electron-forge start",
     "package": "electron-forge package",
-    "build": "electron-forge make",
-    "release": "electron-forge publish"
+    "build": "cross-env NODE_ENV=production electron-forge make",
+    "release": "cross-env NODE_ENV=production electron-forge publish"
   },
   "dependencies": {
     "@elek-io/core": "^0.1.0",
@@ -39,6 +39,7 @@
     "@electron-forge/publisher-github": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
+    "cross-env": "^7.0.3",
     "electron": "^28.2.1",
     "electron-devtools-installer": "^3.2.0",
     "eslint": "^8.0.1",
