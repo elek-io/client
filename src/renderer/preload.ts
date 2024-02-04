@@ -1,8 +1,12 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 import type Core from '@elek-io/core';
+import * as Sentry from '@sentry/electron/renderer';
 import { contextBridge, ipcRenderer, type Dialog } from 'electron';
 
+Sentry.init({
+  dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
+});
 export interface ContextBridgeApi {
   electron: {
     dialog: {

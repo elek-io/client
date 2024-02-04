@@ -1,4 +1,5 @@
 import ElekIoCore from '@elek-io/core';
+import * as Sentry from '@sentry/electron/main';
 import {
   app,
   BrowserWindow,
@@ -12,6 +13,10 @@ import installExtension, {
   REACT_DEVELOPER_TOOLS,
 } from 'electron-devtools-installer';
 import Path from 'path';
+
+Sentry.init({
+  dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
+});
 
 class Main {
   constructor() {

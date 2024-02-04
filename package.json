@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@elek-io/core": "^0.1.0",
+    "@sentry/electron": "^4.17.0",
     "dugite": "^2.5.2",
     "electron-squirrel-startup": "^1.0.0"
   },

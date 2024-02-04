@@ -25,7 +25,11 @@
  *  });
  * ```
  */
+import * as Sentry from '@sentry/electron/renderer';
 
+Sentry.init({
+  dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
+});
 console.log(
   '👋 This message is being logged by "renderer.ts", included via Vite'
 );
