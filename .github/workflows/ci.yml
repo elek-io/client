@@ -9,7 +9,10 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        # @see https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+        # macos-12 = intel
+        # macos-14 = M1 (arm)
+        platform: [ubuntu-22.04, macos-12, macos-14, windows-2022]
         node-version: [18]
     runs-on: ${{ matrix.platform }}
     steps:
