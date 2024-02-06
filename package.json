@@ -23,7 +23,7 @@
     "release": "electron-forge publish"
   },
   "dependencies": {
-    "@elek-io/core": "^0.1.0",
+    "@elek-io/core": "^0.1.1",
     "@sentry/electron": "^4.17.0",
     "@sentry/vite-plugin": "^2.13.0",
     "dugite": "^2.5.2",
