@@ -6,6 +6,7 @@ import {
   BrowserWindowConstructorOptions,
   dialog,
   ipcMain,
+  net,
   protocol,
   screen,
 } from 'electron';
@@ -50,18 +51,13 @@ class Main {
 
   private onReady() {
     // Register a protocol that is able to load files from local FS
-    protocol.registerFileProtocol('local-resource', (request, callback) => {
-      const url = request.url.replace(/^local-resource:\/\//, '');
-      // Decode URL to prevent errors when loading filenames with UTF-8 chars or chars like "#"
-      const decodedUrl = decodeURI(url); // Needed in case URL contains spaces
-      try {
-        return callback(decodedUrl);
-      } catch (error) {
-        console.error(
-          'ERROR: registerLocalResourceProtocol: Could not get file path:',
-          error
-        );
-      }
+    protocol.handle('elek-io-local-file', (request) => {
+      const filePath = request.url.replace(
+        /^elek-io-local-file:\/\//,
+        'file://'
+      );
+
+      return net.fetch(filePath);
     });
 
     // Check in Core if either local or cloud user is set
@@ -88,7 +84,7 @@ class Main {
    * Figures out where and how to display the window
    *
    * @todo only do this on first start. After that, the user will have adjusted it to his liking.
-   * The size, monitor and maybe position should be saved locally in the users  and then applied on each start.
+   * The size, monitor and maybe position should be saved locally in the users configuration and then applied on each start.
    * If the setup changes (display not available anymore or different resolution), default back to this.
    */
   private getWindowSize() {
@@ -135,11 +131,13 @@ class Main {
     const window = new BrowserWindow(options);
 
     if (app.isPackaged) {
-      // Uncomment for debugging in production
+      // Uncomment to debug a production build
       // window.webContents.openDevTools();
       // installExtension(REACT_DEVELOPER_TOOLS)
-      //   .then((name) => console.log(`Added Extension:  ${name}`))
-      //   .catch((err) => console.log('An error occurred: ', err));
+      //   .then((name) => console.log(`Added Chrome extension:  ${name}`))
+      //   .catch((err) =>
+      //     console.log('An error occurred adding Chrome extension: ', err)
+      //   );
 
       // Client is in production
       // Load the static index.html directly
