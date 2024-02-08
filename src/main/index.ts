@@ -68,7 +68,9 @@ class Main {
     // If no, show the user the /user/create page
     // If yes use this to init core and show /projects
 
-    const core = new ElekIoCore();
+    const core = new ElekIoCore({
+      environment: app.isPackaged ? 'production' : 'development',
+    });
     this.registerIpcMain(core);
 
     // const user = await core.user.get();
@@ -86,7 +88,7 @@ class Main {
    * Figures out where and how to display the window
    *
    * @todo only do this on first start. After that, the user will have adjusted it to his liking.
-   * The size, monitor and maybe position should be saved locally and then applied on each start.
+   * The size, monitor and maybe position should be saved locally in the users  and then applied on each start.
    * If the setup changes (display not available anymore or different resolution), default back to this.
    */
   private getWindowSize() {
