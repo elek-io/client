@@ -10,9 +10,6 @@ import {
   protocol,
   screen,
 } from 'electron';
-import installExtension, {
-  REACT_DEVELOPER_TOOLS,
-} from 'electron-devtools-installer';
 import Path from 'path';
 
 Sentry.init({
@@ -132,7 +129,7 @@ class Main {
 
     if (app.isPackaged) {
       // Uncomment to debug a production build
-      // window.webContents.openDevTools();
+      window.webContents.openDevTools();
       // installExtension(REACT_DEVELOPER_TOOLS)
       //   .then((name) => console.log(`Added Chrome extension:  ${name}`))
       //   .catch((err) =>
@@ -147,11 +144,11 @@ class Main {
     } else {
       // Client is in development
       window.webContents.openDevTools();
-      installExtension(REACT_DEVELOPER_TOOLS)
-        .then((name) => console.log(`Added Chrome extension:  ${name}`))
-        .catch((err) =>
-          console.log('An error occurred adding Chrome extension: ', err)
-        );
+      // installExtension(REACT_DEVELOPER_TOOLS)
+      //   .then((name) => console.log(`Added Chrome extension:  ${name}`))
+      //   .catch((err) =>
+      //     console.log('An error occurred adding Chrome extension: ', err)
+      //   );
 
       console.log(
         'Loading frontend in development by URL:',

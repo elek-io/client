@@ -26,6 +26,7 @@
  * ```
  */
 import * as Sentry from '@sentry/electron/renderer';
+import './react/app';
 
 Sentry.init({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
