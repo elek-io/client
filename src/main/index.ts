@@ -18,6 +18,17 @@ Sentry.init({
 
 class Main {
   constructor() {
+    // Overwrite dugites resolved path to the embedded git directory
+    // @see https://github.com/desktop/dugite/blob/0f5a4f11300fbfa8d2dd272b8ee9b771e5b34cd4/lib/git-environment.ts#L25
+    // This seems to be necessary, since it resolves to `elek.io Client.app/Contents/Resources/app/git` instead of dugites git inside node_modules `elek.io Client.app/Contents/Resources/app/node_modules/dugite/git`
+    process.env.LOCAL_GIT_DIRECTORY = Path.resolve(
+      __dirname,
+      '../../',
+      'node_modules',
+      'dugite',
+      'git'
+    );
+
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
     if (require('electron-squirrel-startup')) {
       app.quit();

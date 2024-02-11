@@ -7,6 +7,7 @@ export default defineConfig({
     // Some libs that can run in both Web and Node.js, such as `axios`, we need to tell Vite to build them in Node.js.
     browserField: false,
     mainFields: ['module', 'jsnext:main', 'jsnext'],
+    conditions: ['node'], // To get the resolution behavior of Node.js. Otherwise we get "getRandomValues() not supported" while creating UUIDs @see https://github.com/uuidjs/uuid/issues/544#issuecomment-740394448
   },
 
   build: {

@@ -3,13 +3,3 @@
 // whether you're running in development or production).
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
-
-// This file should augment the properties of the `Window` with the type of the
-// `ContextBridgeApi` from `Electron.contextBridge` declared in `./preload.ts`.
-import type { ContextBridgeApi } from './renderer/preload';
-
-declare global {
-  interface Window {
-    ipc: ContextBridgeApi;
-  }
-}

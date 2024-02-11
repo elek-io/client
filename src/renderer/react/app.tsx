@@ -5,9 +5,16 @@ import {
 } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
+import { type ContextBridgeApi } from '../preload';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
+
+declare global {
+  interface Window {
+    ipc: ContextBridgeApi;
+  }
+}
 
 // Create a new router instance
 const hashHistory = createHashHistory(); // Use hash based routing since in production electron just loads the index.html via the file protocol
