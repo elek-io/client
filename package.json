@@ -25,6 +25,7 @@
   "dependencies": {
     "@elek-io/core": "^0.1.1",
     "@sentry/electron": "^4.17.0",
+    "@sentry/react": "7.92.0",
     "@sentry/vite-plugin": "^2.13.0",
     "@tanstack/react-router": "^1.15.23",
     "@tanstack/router-devtools": "^1.15.23",
