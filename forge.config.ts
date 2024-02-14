@@ -1,7 +1,8 @@
-import { MakerDeb } from '@electron-forge/maker-deb';
-import { MakerDMG } from '@electron-forge/maker-dmg';
-import { MakerRpm } from '@electron-forge/maker-rpm';
+// import { MakerDeb } from '@electron-forge/maker-deb';
+// import { MakerDMG } from '@electron-forge/maker-dmg';
+// import { MakerRpm } from '@electron-forge/maker-rpm';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
+import { MakerZIP } from '@electron-forge/maker-zip';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 
@@ -14,19 +15,20 @@ const config: ForgeConfig = {
       setupExe: 'elek.io Client',
       name: 'client',
     }),
-    new MakerDMG({}),
-    new MakerRpm({
-      options: {
-        productName: 'elek.io Client',
-        bin: 'elek.io Client',
-      },
-    }),
-    new MakerDeb({
-      options: {
-        productName: 'elek.io Client',
-        bin: 'elek.io Client',
-      },
-    }),
+    new MakerZIP(),
+    // new MakerDMG(),
+    // new MakerRpm({
+    //   options: {
+    //     productName: 'elek.io Client',
+    //     bin: 'elek.io Client',
+    //   },
+    // }),
+    // new MakerDeb({
+    //   options: {
+    //     productName: 'elek.io Client',
+    //     bin: 'elek.io Client',
+    //   },
+    // }),
   ],
   publishers: [
     {

@@ -11,6 +11,7 @@ import {
   screen,
 } from 'electron';
 import Path from 'path';
+import { updateElectronApp } from 'update-electron-app';
 
 Sentry.init({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
@@ -39,6 +40,10 @@ class Main {
     app.on('ready', this.onReady.bind(this));
     app.on('activate', this.onActivate.bind(this));
     app.on('window-all-closed', this.onWindowAllClosed.bind(this));
+
+    // Enable auto-updates
+    // @see https://github.com/electron/update-electron-app
+    updateElectronApp();
   }
 
   private onWindowAllClosed() {
