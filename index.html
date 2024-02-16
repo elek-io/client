@@ -7,6 +7,11 @@
   <body>
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
+    <p>
+      Navigation to a <a href="https://elek.io/safe-origin">safe origin</a> is
+      allowed but should fail to an
+      <a href="https://google.com">unsafe origin</a>
+    </p>
     <button
       onclick="window.ipc.core.user.get().then((result) => console.log('Result:', result)).catch((err) => console.log('Error:', err))"
     >

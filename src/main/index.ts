@@ -12,6 +12,7 @@ import {
 } from 'electron';
 import Path from 'path';
 import { updateElectronApp } from 'update-electron-app';
+import { SecurityError } from '../util';
 
 Sentry.init({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
@@ -137,12 +138,30 @@ class Main {
     };
     options = Object.assign({}, defaults, options);
 
-    // Overwrite webPreferences
+    // Overwrite webPreferences to always load the correct preload script
+    // and explicitly enable security features - although Electron > v28 should set these by default
     options.webPreferences = {
       preload: Path.join(__dirname, 'preload.js'),
+      disableBlinkFeatures: 'Auxclick', // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
+      nodeIntegration: false,
+      contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
+      sandbox: true, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
 
     const window = new BrowserWindow(options);
+
+    // Prevent navigation to untrusted origins
+    // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
+    window.webContents.on('will-navigate', (event, urlToLoad) => {
+      ['https://elek.io'].map((trustedOrigin) => {
+        if (urlToLoad.startsWith(trustedOrigin) === false) {
+          event.preventDefault();
+          throw new SecurityError(
+            `Prevented navigation to untrusted origin "${urlToLoad}" from "${window.webContents.getURL()}"`
+          );
+        }
+      });
+    });
 
     if (app.isPackaged) {
       // Uncomment to debug a production build
