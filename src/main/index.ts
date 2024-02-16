@@ -153,14 +153,15 @@ class Main {
     // Prevent navigation to untrusted origins
     // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
     window.webContents.on('will-navigate', (event, urlToLoad) => {
-      ['https://elek.io'].map((trustedOrigin) => {
-        if (urlToLoad.startsWith(trustedOrigin) === false) {
-          event.preventDefault();
-          throw new SecurityError(
-            `Prevented navigation to untrusted origin "${urlToLoad}" from "${window.webContents.getURL()}"`
-          );
-        }
-      });
+      const trustedOrigins = ['https://elek.io'];
+      const parsedUrl = new URL(urlToLoad);
+
+      if (trustedOrigins.includes(parsedUrl.origin) === false) {
+        event.preventDefault();
+        throw new SecurityError(
+          `Prevented navigation to untrusted origin "${urlToLoad}" from "${window.webContents.getURL()}"`
+        );
+      }
     });
 
     if (app.isPackaged) {
