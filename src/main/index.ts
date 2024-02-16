@@ -9,6 +9,7 @@ import {
   net,
   protocol,
   screen,
+  shell,
 } from 'electron';
 import Path from 'path';
 import { updateElectronApp } from 'update-electron-app';
@@ -20,7 +21,18 @@ Sentry.init({
 });
 
 class Main {
+  private allowedOriginsToLoadInternal: string[] = [];
+  private allowedOriginsToLoadExternal: string[] = [
+    'https://elek.io',
+    'https://api.elek.io',
+  ];
+
   constructor() {
+    // Allow the vite dev server to do HMR in development
+    if (app.isPackaged === false) {
+      this.allowedOriginsToLoadInternal.push(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    }
+
     // Overwrite dugites resolved path to the embedded git directory
     // @see https://github.com/desktop/dugite/blob/0f5a4f11300fbfa8d2dd272b8ee9b771e5b34cd4/lib/git-environment.ts#L25
     // This seems to be necessary, since it resolves to `elek.io Client.app/Contents/Resources/app/git` instead of dugites git inside node_modules `elek.io Client.app/Contents/Resources/app/node_modules/dugite/git`
@@ -41,10 +53,43 @@ class Main {
     app.on('ready', this.onReady.bind(this));
     app.on('activate', this.onActivate.bind(this));
     app.on('window-all-closed', this.onWindowAllClosed.bind(this));
+    app.on('web-contents-created', this.onWebContentsCreated.bind(this));
 
     // Enable auto-updates
     // @see https://github.com/electron/update-electron-app
     updateElectronApp();
+  }
+
+  private onWebContentsCreated(
+    event: {
+      preventDefault: () => void;
+      readonly defaultPrevented: boolean;
+    },
+    contents: Electron.WebContents
+  ) {
+    // Disable the creation of new windows e.g. by using target="_blank"
+    // Instead, let the operating system handle this event's url if it's in the whitelist
+    // and open external links inside the default browser
+    // @see https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
+    // @todo in the future we can also allow mailto: URL's etc.
+    contents.setWindowOpenHandler(({ url }) => {
+      const parsedUrl = new URL(url);
+
+      if (
+        this.allowedOriginsToLoadExternal.includes(parsedUrl.origin) === false
+      ) {
+        Sentry.captureException(
+          new SecurityError(
+            `Prevented navigation to untrusted, external origin "${parsedUrl}" from "${contents.getURL()}"`
+          )
+        );
+        return { action: 'deny' };
+      }
+
+      setImmediate(() => {
+        shell.openExternal(url);
+      });
+    });
   }
 
   private onWindowAllClosed() {
@@ -150,16 +195,19 @@ class Main {
 
     const window = new BrowserWindow(options);
 
-    // Prevent navigation to untrusted origins
+    // Prevent loading untrusted origins internally / inside elek.io Client
     // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
     window.webContents.on('will-navigate', (event, urlToLoad) => {
-      const trustedOrigins = ['https://elek.io'];
       const parsedUrl = new URL(urlToLoad);
 
-      if (trustedOrigins.includes(parsedUrl.origin) === false) {
+      if (
+        this.allowedOriginsToLoadInternal.includes(parsedUrl.origin) === false
+      ) {
         event.preventDefault();
-        throw new SecurityError(
-          `Prevented navigation to untrusted origin "${urlToLoad}" from "${window.webContents.getURL()}"`
+        Sentry.captureException(
+          new SecurityError(
+            `Prevented navigation to untrusted, internal origin "${urlToLoad}" from "${window.webContents.getURL()}"`
+          )
         );
       }
     });

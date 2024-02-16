@@ -8,9 +8,16 @@
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
     <p>
-      Navigation to a <a href="https://elek.io/safe-origin">safe origin</a> is
-      allowed but should fail to an
-      <a href="https://google.com">unsafe origin</a>
+      Internal navigation to any
+      <a href="https://google.com">origin</a> is currently not allowed.
+    </p>
+    <p>
+      Navigation to an URL with the intent to
+      <a href="https://google.com" target="_blank">open a new window</a> should
+      open given URL in the OS's default browser (external) instead -
+      <a href="https://elek.io" target="_blank"
+        >if the origin is on the whitelist</a
+      >.
     </p>
     <button
       onclick="window.ipc.core.user.get().then((result) => console.log('Result:', result)).catch((err) => console.log('Error:', err))"
