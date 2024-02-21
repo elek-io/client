@@ -192,6 +192,7 @@ class Main {
       contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
       sandbox: true, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
+    options.icon = 'icons/icon.png';
 
     const window = new BrowserWindow(options);
 

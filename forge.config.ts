@@ -7,13 +7,17 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 
 const config: ForgeConfig = {
-  packagerConfig: {},
+  packagerConfig: {
+    icon: 'icons/icon',
+  },
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
       title: 'elek.io Client',
       setupExe: 'elek.io Client',
       name: 'client',
+      // The ICO file to use as the icon for the generated Setup.exe
+      setupIcon: 'icons/icon.ico',
     }),
     new MakerZIP(),
     // new MakerDMG(),
