@@ -5,11 +5,14 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Testing on ${{ matrix.platform }} with Node.js ${{ matrix.node-version }}
     timeout-minutes: 15
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        # @see https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+        # macos-12 = intel
+        # macos-14 = M1 (arm)
+        platform: [ubuntu-22.04, macos-12, macos-14, windows-2022]
         node-version: [18]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -22,8 +25,22 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: npm ic
+        run: yarn install
       - name: Run linter
-        run: npm run lint
+        run: yarn run lint
+      - name: Identify misconfigurations and security anti-patterns
+        uses: doyensec/electronegativity-action@v2
+      - name: Upload report
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: ../electronegativity_results
       - name: Build
-        run: npm run build
+        run: yarn run build
+      # Uncomment if necessary
+      # For example to inspect the build applications
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact_${{ matrix.platform }}
+          path: out/make
+          if-no-files-found: error

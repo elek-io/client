@@ -14,7 +14,7 @@
     "url": "https://elek.io"
   },
   "license": "todo",
-  "main": ".vite/build/main.js",
+  "main": ".vite/build/index.js",
   "scripts": {
     "lint": "eslint --ext .ts,.tsx .",
     "dev": "electron-forge start",
@@ -23,7 +23,17 @@
     "release": "electron-forge publish"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "@elek-io/core": "^0.1.1",
+    "@sentry/electron": "^4.17.0",
+    "@sentry/react": "7.92.0",
+    "@sentry/vite-plugin": "^2.13.0",
+    "@tanstack/react-router": "^1.15.23",
+    "@tanstack/router-devtools": "^1.15.23",
+    "dugite": "^2.5.2",
+    "electron-squirrel-startup": "^1.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "update-electron-app": "^3.0.0"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
@@ -32,12 +42,17 @@
     "@electron-forge/maker-dmg": "^7.2.0",
     "@electron-forge/maker-rpm": "^7.2.0",
     "@electron-forge/maker-squirrel": "^7.2.0",
+    "@electron-forge/maker-zip": "^7.2.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.2.0",
     "@electron-forge/plugin-vite": "^7.2.0",
     "@electron-forge/publisher-github": "^7.2.0",
+    "@tanstack/router-vite-plugin": "^1.15.22",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "electron": "^28.2.1",
+    "electron-devtools-installer": "^3.2.0",
     "eslint": "^8.0.1",
     "eslint-plugin-import": "^2.25.0",
     "ts-node": "^10.0.0",

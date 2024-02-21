@@ -4,9 +4,35 @@
     <meta charset="UTF-8" />
     <title>Hello World!</title>
   </head>
-  <body>
+  <body style="margin: 0; padding: 0">
+    <div
+      style="
+        display: flex;
+        background-color: grey;
+        -webkit-app-region: drag;
+        height: 28px;
+      "
+    ></div>
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
-    <script type="module" src="/src/renderer.ts"></script>
+    <p>
+      Internal navigation to any
+      <a href="https://google.com">origin</a> is currently not allowed.
+    </p>
+    <p>
+      Navigation to an URL with the intent to
+      <a href="https://google.com" target="_blank">open a new window</a> should
+      open given URL in the OS's default browser (external) instead -
+      <a href="https://elek.io" target="_blank"
+        >if the origin is on the whitelist</a
+      >.
+    </p>
+    <button
+      onclick="window.ipc.core.user.get().then((result) => console.log('Result:', result)).catch((err) => console.log('Error:', err))"
+    >
+      Test IPC
+    </button>
+    <div id="app"></div>
+    <script type="module" src="/src/renderer/index.ts"></script>
   </body>
 </html>
