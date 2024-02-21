@@ -193,6 +193,9 @@ class Main {
       sandbox: true, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
     options.icon = 'icons/icon.png';
+    options.frame = false;
+    options.titleBarStyle = 'hidden';
+    options.titleBarOverlay = true;
 
     const window = new BrowserWindow(options);
 
