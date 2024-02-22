@@ -11,18 +11,13 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as HasUserGuardImport } from './routes/_hasUserGuard'
 import { Route as IndexImport } from './routes/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
 import { Route as UserSetImport } from './routes/user/set'
+import { Route as ProjectsCreateImport } from './routes/projects/create'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
 
 // Create/Update Routes
-
-const HasUserGuardRoute = HasUserGuardImport.update({
-  id: '/_hasUserGuard',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexRoute = IndexImport.update({
   path: '/',
@@ -39,6 +34,11 @@ const UserSetRoute = UserSetImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const ProjectsCreateRoute = ProjectsCreateImport.update({
+  path: '/projects/create',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const ProjectsProjectIdIndexRoute = ProjectsProjectIdIndexImport.update({
   path: '/projects/$projectId/',
   getParentRoute: () => rootRoute,
@@ -52,8 +52,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/_hasUserGuard': {
-      preLoaderRoute: typeof HasUserGuardImport
+    '/projects/create': {
+      preLoaderRoute: typeof ProjectsCreateImport
       parentRoute: typeof rootRoute
     }
     '/user/set': {
@@ -75,7 +75,7 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
-  HasUserGuardRoute,
+  ProjectsCreateRoute,
   UserSetRoute,
   ProjectsIndexRoute,
   ProjectsProjectIdIndexRoute,

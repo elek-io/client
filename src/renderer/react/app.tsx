@@ -6,6 +6,7 @@ import {
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { type ContextBridgeApi } from '../preload';
+import './index.css';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -37,7 +38,6 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      Current URL: "{window.location.href}"
       <RouterProvider router={router} />
     </StrictMode>
   );
