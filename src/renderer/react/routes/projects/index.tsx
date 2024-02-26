@@ -4,17 +4,12 @@ import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/')({
-  loader: async ({ context }) => {
-    const projects = await context.core.projects.list();
-    return { projects };
-  },
   component: ListProjectsPage,
 });
 
 function ListProjectsPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const data = Route.useLoaderData();
 
   function Description(): ReactElement {
     return (
@@ -56,7 +51,7 @@ function ListProjectsPage() {
         role="list"
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
       >
-        {data.projects.list.map((project) => (
+        {context.projects.list.map((project) => (
           <Link
             key={project.id}
             to="/projects/$projectId"

@@ -1,3 +1,5 @@
+import '@fontsource-variable/montserrat';
+import '@fontsource/roboto';
 import {
   RouterProvider,
   createHashHistory,
