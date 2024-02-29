@@ -37,36 +37,37 @@ function ProjectCollectionsLayout() {
               <PlusIcon className="mr-4 h-4 w-4" aria-hidden="true"></PlusIcon>
               Create Collection
             </Link>
-            <strong className="px-3 text-sm">Collections</strong>
-            {context.currentCollections.list.map((collection) => (
-              <Link
-                to={'/projects/$projectId/collections/$collectionId'}
-                params={{
-                  projectId: context.currentProject.id,
-                  collectionId: collection.id,
-                }}
-                className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
-                activeProps={{
-                  className: 'bg-zinc-800 text-zinc-200 border-zinc-700',
-                }}
-                inactiveProps={{ className: 'text-zinc-400' }}
-              >
-                <CubeTransparentIcon
-                  className="mr-4 h-4 w-4"
-                  aria-hidden="true"
-                ></CubeTransparentIcon>
-                {context.translate(
-                  'collection.name.singular',
-                  collection.name.singular
-                )}
-              </Link>
-            ))}
-            {context.currentCollections.total === 0 && (
-              <p>No Collections created yet!</p>
-            )}
+            <div className="pt-2">
+              <strong className="px-3 text-sm">Collections</strong>
+              {context.currentCollections.list.map((collection) => (
+                <Link
+                  to={'/projects/$projectId/collections/$collectionId'}
+                  params={{
+                    projectId: context.currentProject.id,
+                    collectionId: collection.id,
+                  }}
+                  className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
+                  activeProps={{
+                    className: 'bg-zinc-800 text-zinc-200 border-zinc-700',
+                  }}
+                  inactiveProps={{ className: 'text-zinc-400' }}
+                >
+                  <CubeTransparentIcon
+                    className="mr-4 h-4 w-4"
+                    aria-hidden="true"
+                  ></CubeTransparentIcon>
+                  {context.translate(
+                    'collection.name.plural',
+                    collection.name.plural
+                  )}
+                </Link>
+              ))}
+              {context.currentCollections.total === 0 && (
+                <p className="px-3 text-sm">No Collections found</p>
+              )}
+            </div>
           </div>
         </nav>
-        {JSON.stringify(context.currentCollections)}
       </aside>
       <div className="flex flex-1 flex-col overflow-y-auto">
         <Outlet></Outlet>
