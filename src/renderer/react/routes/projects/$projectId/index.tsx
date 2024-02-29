@@ -1,4 +1,5 @@
 import { SearchResult } from '@elek-io/shared';
+import { NotificationIntent } from '@elek-io/ui';
 import {
   FolderOpenIcon,
   HomeIcon,
@@ -6,6 +7,7 @@ import {
 } from '@heroicons/react/20/solid';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { ChangeEvent, useState } from 'react';
+import { useStore } from '../../../store';
 
 export const Route = createFileRoute('/projects/$projectId/')({
   beforeLoad: async ({ context, params }) => {
@@ -19,6 +21,7 @@ export const Route = createFileRoute('/projects/$projectId/')({
 });
 
 function ProjectDashboardPage() {
+  const addNotification = useStore((state) => state.addNotification);
   const context = Route.useRouteContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<SearchResult[]>();
@@ -37,11 +40,11 @@ function ProjectDashboardPage() {
       });
     } catch (error) {
       console.error(error);
-      // addNotification({
-      //   intent: NotificationIntent.DANGER,
-      //   title: 'Search failed',
-      //   description: 'There was an error searching for the provided query.',
-      // });
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Search failed',
+        description: 'There was an error searching for the provided query.',
+      });
     }
   }
 

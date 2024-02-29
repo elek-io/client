@@ -1,11 +1,4 @@
-import { Project } from '@elek-io/shared';
-import {
-  Avatar,
-  Button,
-  Dropdown,
-  DropdownItemGroup,
-  NotificationProps,
-} from '@elek-io/ui';
+import { Avatar, Button, Dropdown, DropdownItemGroup } from '@elek-io/ui';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -23,7 +16,6 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
-import { useState } from 'react';
 import { ContextBridgeApi } from '../../preload';
 
 interface RouterContext {
@@ -64,8 +56,6 @@ function RootRoute() {
         full: state.location.pathname,
       };
     });
-  const [notifications, setNotifications] = useState<NotificationProps[]>([]);
-  const [currentProject, setCurrentProject] = useState<Project>();
   const dropdownItemGroupsExample: DropdownItemGroup[] = [
     {
       items: [
@@ -82,10 +72,6 @@ function RootRoute() {
       ],
     },
   ];
-
-  function addNotification(notification: NotificationProps) {
-    setNotifications([...notifications, notification]);
-  }
 
   return (
     <>

@@ -1,15 +1,17 @@
 import { Project } from '@elek-io/shared';
-import { Button, FormInput, Page } from '@elek-io/ui';
+import { Button, FormInput, NotificationIntent, Page } from '@elek-io/ui';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { useStore } from '../../store';
 
 export const Route = createFileRoute('/projects/create')({
   component: CreateProjectPage,
 });
 
 function CreateProjectPage() {
+  const addNotification = useStore((state) => state.addNotification);
   const router = useRouter();
   const context = Route.useRouteContext();
   const data = Route.useLoaderData();
@@ -57,11 +59,11 @@ function CreateProjectPage() {
       const newProject = await context.core.projects.create({
         ...project,
       });
-      // props.addNotification({
-      //   intent: NotificationIntent.SUCCESS,
-      //   title: 'Successfully created Project',
-      //   description: `The Project "${project.name}" was successfully created.`,
-      // });
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully created Project',
+        description: `The Project "${project.name}" was successfully created.`,
+      });
       router.navigate({
         to: '/projects/$projectId',
         params: { projectId: newProject.id },
@@ -69,11 +71,11 @@ function CreateProjectPage() {
     } catch (error) {
       setCreatingProject(false);
       console.error(error);
-      // props.addNotification({
-      //   intent: NotificationIntent.DANGER,
-      //   title: 'Failed to create Project',
-      //   description: 'There was an error creating the Project on disk.',
-      // });
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to create Project',
+        description: 'There was an error creating the Project on disk.',
+      });
     }
   };
 
