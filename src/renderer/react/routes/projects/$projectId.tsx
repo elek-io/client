@@ -1,6 +1,7 @@
 import { SearchResult } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import {
+  Cog6ToothIcon,
   FolderOpenIcon,
   HomeIcon,
   MagnifyingGlassIcon,
@@ -25,6 +26,18 @@ function ProjectLayout() {
   const context = Route.useRouteContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<SearchResult[]>();
+  const projectNavigation = [
+    {
+      name: 'Dashboard',
+      to: '/projects/$projectId/dashboard',
+      icon: HomeIcon,
+    },
+    {
+      name: 'Settings',
+      to: '/projects/$projectId/settings',
+      icon: Cog6ToothIcon,
+    },
+  ];
 
   async function onSearch(event: ChangeEvent<HTMLInputElement>) {
     setSearchQuery(event.target.value);
@@ -97,34 +110,24 @@ function ProjectLayout() {
           </form>
           <nav className="flex-1" aria-label="Sidebar">
             <div className="space-y-1 px-2">
-              <strong className="px-3 text-sm font-medium">Nav group</strong>
-              <Link
-                className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
-                activeProps={{
-                  className: 'bg-zinc-800 text-zinc-200 border-zinc-700',
-                }}
-                inactiveProps={{ className: 'text-zinc-400' }}
-              >
-                <HomeIcon
-                  className="mr-4 h-6 w-6"
-                  aria-hidden="true"
-                ></HomeIcon>
-                Nav item (active)
-              </Link>
-              <Link className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200">
-                <HomeIcon
-                  className="mr-4 h-6 w-6"
-                  aria-hidden="true"
-                ></HomeIcon>
-                Nav item
-              </Link>
-              <Link className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200">
-                <HomeIcon
-                  className="mr-4 h-6 w-6"
-                  aria-hidden="true"
-                ></HomeIcon>
-                Nav item
-              </Link>
+              {projectNavigation.map((navigation) => (
+                <Link
+                  to={navigation.to}
+                  className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
+                  activeProps={{
+                    className: 'bg-zinc-800 text-zinc-200 border-zinc-700',
+                  }}
+                  inactiveProps={{ className: 'text-zinc-400' }}
+                >
+                  <navigation.icon
+                    className="mr-4 h-6 w-6"
+                    aria-hidden="true"
+                  ></navigation.icon>
+                  {navigation.name}
+                </Link>
+              ))}
+              <strong className="px-3 text-sm font-medium">Collections</strong>
+              {/* {context.currentProject.} */}
             </div>
           </nav>
         </div>

@@ -6,9 +6,4 @@ export const Route = createFileRoute('/')({
       to: '/projects',
     });
   },
-  component: Index,
 });
-
-function Index() {
-  return <></>;
-}

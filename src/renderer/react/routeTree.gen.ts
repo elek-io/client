@@ -17,6 +17,8 @@ import { Route as UserSetImport } from './routes/user/set'
 import { Route as ProjectsCreateImport } from './routes/projects/create'
 import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
+import { Route as ProjectsProjectIdSettingsImport } from './routes/projects/$projectId/settings'
+import { Route as ProjectsProjectIdDashboardImport } from './routes/projects/$projectId/dashboard'
 
 // Create/Update Routes
 
@@ -50,6 +52,18 @@ const ProjectsProjectIdIndexRoute = ProjectsProjectIdIndexImport.update({
   getParentRoute: () => ProjectsProjectIdRoute,
 } as any)
 
+const ProjectsProjectIdSettingsRoute = ProjectsProjectIdSettingsImport.update({
+  path: '/settings',
+  getParentRoute: () => ProjectsProjectIdRoute,
+} as any)
+
+const ProjectsProjectIdDashboardRoute = ProjectsProjectIdDashboardImport.update(
+  {
+    path: '/dashboard',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any,
+)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -74,6 +88,14 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexImport
       parentRoute: typeof rootRoute
     }
+    '/projects/$projectId/dashboard': {
+      preLoaderRoute: typeof ProjectsProjectIdDashboardImport
+      parentRoute: typeof ProjectsProjectIdImport
+    }
+    '/projects/$projectId/settings': {
+      preLoaderRoute: typeof ProjectsProjectIdSettingsImport
+      parentRoute: typeof ProjectsProjectIdImport
+    }
     '/projects/$projectId/': {
       preLoaderRoute: typeof ProjectsProjectIdIndexImport
       parentRoute: typeof ProjectsProjectIdImport
@@ -85,7 +107,11 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
-  ProjectsProjectIdRoute.addChildren([ProjectsProjectIdIndexRoute]),
+  ProjectsProjectIdRoute.addChildren([
+    ProjectsProjectIdDashboardRoute,
+    ProjectsProjectIdSettingsRoute,
+    ProjectsProjectIdIndexRoute,
+  ]),
   ProjectsCreateRoute,
   UserSetRoute,
   ProjectsIndexRoute,

@@ -54,7 +54,7 @@ function ListProjectsPage() {
         {context.projects.list.map((project) => (
           <Link
             key={project.id}
-            to="/projects/$projectId"
+            to="/projects/$projectId/dashboard"
             params={{ projectId: project.id }}
           >
             <li className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white shadow">

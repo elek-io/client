@@ -1,13 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useStore } from '../../../store';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/projects/$projectId/')({
-  component: ProjectDashboardPage,
+  beforeLoad: async () => {
+    throw redirect({
+      to: '/projects/$projectId/dashboard',
+    });
+  },
 });
-
-function ProjectDashboardPage() {
-  const addNotification = useStore((state) => state.addNotification);
-  const context = Route.useRouteContext();
-
-  return <div>Dashboard for Project "{context.currentProject.name}"</div>;
-}

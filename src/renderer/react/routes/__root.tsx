@@ -45,8 +45,8 @@ function RootRoute() {
   const context = Route.useRouteContext();
   const state = useRouterState();
   const breadcrumbs = state.location.pathname
-    .substring(1) // remove first slash (home)
     .split('/')
+    .filter((value) => value) // Filter out empty values for beginning or ending slashes
     .map((part, index, array) => {
       const path = array.slice(0, index + 1).join('/');
 
