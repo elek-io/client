@@ -19,6 +19,7 @@ import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
 import { Route as ProjectsProjectIdSettingsImport } from './routes/projects/$projectId/settings'
 import { Route as ProjectsProjectIdDashboardImport } from './routes/projects/$projectId/dashboard'
+import { Route as ProjectsProjectIdAssetsIndexImport } from './routes/projects/$projectId/assets/index'
 
 // Create/Update Routes
 
@@ -64,6 +65,12 @@ const ProjectsProjectIdDashboardRoute = ProjectsProjectIdDashboardImport.update(
   } as any,
 )
 
+const ProjectsProjectIdAssetsIndexRoute =
+  ProjectsProjectIdAssetsIndexImport.update({
+    path: '/assets/',
+    getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -100,6 +107,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdIndexImport
       parentRoute: typeof ProjectsProjectIdImport
     }
+    '/projects/$projectId/assets/': {
+      preLoaderRoute: typeof ProjectsProjectIdAssetsIndexImport
+      parentRoute: typeof ProjectsProjectIdImport
+    }
   }
 }
 
@@ -111,6 +122,7 @@ export const routeTree = rootRoute.addChildren([
     ProjectsProjectIdDashboardRoute,
     ProjectsProjectIdSettingsRoute,
     ProjectsProjectIdIndexRoute,
+    ProjectsProjectIdAssetsIndexRoute,
   ]),
   ProjectsCreateRoute,
   UserSetRoute,

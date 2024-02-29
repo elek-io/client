@@ -9,6 +9,7 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import { ipc } from './ipc';
+import { useStore } from './store';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
@@ -18,7 +19,7 @@ const hashHistory = createHashHistory(); // Use hash based routing since in prod
 const router = createRouter({
   routeTree,
   history: hashHistory,
-  context: { core: ipc.core },
+  context: { electron: ipc.electron, core: ipc.core, store: useStore },
 });
 
 // Register the router instance for type safety

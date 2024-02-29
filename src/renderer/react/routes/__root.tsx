@@ -16,10 +16,14 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { StoreApi, UseBoundStore } from 'zustand';
 import { ContextBridgeApi } from '../../preload';
+import { StoreState } from '../store';
 
 interface RouterContext {
+  electron: ContextBridgeApi['electron'];
   core: ContextBridgeApi['core'];
+  store: UseBoundStore<StoreApi<StoreState>>;
 }
 
 // Use the routerContext to create your root route

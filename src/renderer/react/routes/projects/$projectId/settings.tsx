@@ -10,16 +10,15 @@ import { CheckIcon, TrashIcon } from '@heroicons/react/20/solid';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useStore } from '../../../store';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectSettingsPage,
 });
 
 function ProjectSettingsPage() {
-  const addNotification = useStore((state) => state.addNotification);
   const router = useRouter();
   const context = Route.useRouteContext();
+  const addNotification = context.store((state) => state.addNotification);
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const {
     register,

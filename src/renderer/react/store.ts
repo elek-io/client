@@ -3,7 +3,7 @@ import type {} from '@redux-devtools/extension'; // required for devtools typing
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-interface StoreState {
+export interface StoreState {
   notifications: NotificationProps[];
   addNotification: (notification: NotificationProps) => void;
 }

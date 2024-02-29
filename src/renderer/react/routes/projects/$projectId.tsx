@@ -5,10 +5,10 @@ import {
   FolderOpenIcon,
   HomeIcon,
   MagnifyingGlassIcon,
+  PhotoIcon,
 } from '@heroicons/react/20/solid';
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
 import { ChangeEvent, useState } from 'react';
-import { useStore } from '../../store';
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
@@ -22,8 +22,8 @@ export const Route = createFileRoute('/projects/$projectId')({
 });
 
 function ProjectLayout() {
-  const addNotification = useStore((state) => state.addNotification);
   const context = Route.useRouteContext();
+  const addNotification = context.store((state) => state.addNotification);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<SearchResult[]>();
   const projectNavigation = [
@@ -31,6 +31,11 @@ function ProjectLayout() {
       name: 'Dashboard',
       to: '/projects/$projectId/dashboard',
       icon: HomeIcon,
+    },
+    {
+      name: 'Assets',
+      to: '/projects/$projectId/assets',
+      icon: PhotoIcon,
     },
     {
       name: 'Settings',
