@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { Outlet, createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId'
@@ -8,10 +8,16 @@ export const Route = createFileRoute(
       projectId: params.projectId,
       id: params.collectionId,
     });
+    const currentEntries = await context.core.entries.list({
+      projectId: params.projectId,
+      collectionId: params.collectionId,
+    });
 
-    return { currentCollection };
+    return { currentCollection, currentEntries };
   },
-  component: () => (
-    <div>Hello /projects/$projectId/collections/$collectionId!</div>
-  ),
+  component: ProjectCollectionLayout,
 });
+
+function ProjectCollectionLayout() {
+  return <Outlet></Outlet>;
+}

@@ -20,12 +20,14 @@ import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projec
 import { Route as ProjectsProjectIdSettingsImport } from './routes/projects/$projectId/settings'
 import { Route as ProjectsProjectIdDashboardImport } from './routes/projects/$projectId/dashboard'
 import { Route as ProjectsProjectIdCollectionsImport } from './routes/projects/$projectId/collections'
+import { Route as ProjectsProjectIdCollectionsIndexImport } from './routes/projects/$projectId/collections/index'
 import { Route as ProjectsProjectIdAssetsIndexImport } from './routes/projects/$projectId/assets/index'
 import { Route as ProjectsProjectIdCollectionsCreateImport } from './routes/projects/$projectId/collections/create'
 import { Route as ProjectsProjectIdCollectionsCollectionIdImport } from './routes/projects/$projectId/collections/$collectionId'
 import { Route as ProjectsProjectIdCollectionsCollectionIdIndexImport } from './routes/projects/$projectId/collections/$collectionId/index'
+import { Route as ProjectsProjectIdCollectionsCollectionIdUpdateImport } from './routes/projects/$projectId/collections/$collectionId/update'
 import { Route as ProjectsProjectIdCollectionsCollectionIdCreateImport } from './routes/projects/$projectId/collections/$collectionId/create'
-import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport } from './routes/projects/$projectId/collections/$collectionId/$entryId/index'
+import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdEntryLanguageIndexImport } from './routes/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage/index'
 
 // Create/Update Routes
 
@@ -77,6 +79,12 @@ const ProjectsProjectIdCollectionsRoute =
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 
+const ProjectsProjectIdCollectionsIndexRoute =
+  ProjectsProjectIdCollectionsIndexImport.update({
+    path: '/',
+    getParentRoute: () => ProjectsProjectIdCollectionsRoute,
+  } as any)
+
 const ProjectsProjectIdAssetsIndexRoute =
   ProjectsProjectIdAssetsIndexImport.update({
     path: '/assets/',
@@ -101,17 +109,25 @@ const ProjectsProjectIdCollectionsCollectionIdIndexRoute =
     getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
   } as any)
 
+const ProjectsProjectIdCollectionsCollectionIdUpdateRoute =
+  ProjectsProjectIdCollectionsCollectionIdUpdateImport.update({
+    path: '/update',
+    getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
+  } as any)
+
 const ProjectsProjectIdCollectionsCollectionIdCreateRoute =
   ProjectsProjectIdCollectionsCollectionIdCreateImport.update({
     path: '/create',
     getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
   } as any)
 
-const ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute =
-  ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport.update({
-    path: '/$entryId/',
-    getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
-  } as any)
+const ProjectsProjectIdCollectionsCollectionIdEntryIdEntryLanguageIndexRoute =
+  ProjectsProjectIdCollectionsCollectionIdEntryIdEntryLanguageIndexImport.update(
+    {
+      path: '/$entryId/$entryLanguage/',
+      getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
+    } as any,
+  )
 
 // Populate the FileRoutesByPath interface
 
@@ -165,16 +181,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdAssetsIndexImport
       parentRoute: typeof ProjectsProjectIdImport
     }
+    '/projects/$projectId/collections/': {
+      preLoaderRoute: typeof ProjectsProjectIdCollectionsIndexImport
+      parentRoute: typeof ProjectsProjectIdCollectionsImport
+    }
     '/projects/$projectId/collections/$collectionId/create': {
       preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdCreateImport
+      parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
+    }
+    '/projects/$projectId/collections/$collectionId/update': {
+      preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdUpdateImport
       parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
     }
     '/projects/$projectId/collections/$collectionId/': {
       preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdIndexImport
       parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
     }
-    '/projects/$projectId/collections/$collectionId/$entryId/': {
-      preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport
+    '/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage/': {
+      preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdEntryLanguageIndexImport
       parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
     }
   }
@@ -188,10 +212,12 @@ export const routeTree = rootRoute.addChildren([
     ProjectsProjectIdCollectionsRoute.addChildren([
       ProjectsProjectIdCollectionsCollectionIdRoute.addChildren([
         ProjectsProjectIdCollectionsCollectionIdCreateRoute,
+        ProjectsProjectIdCollectionsCollectionIdUpdateRoute,
         ProjectsProjectIdCollectionsCollectionIdIndexRoute,
-        ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
+        ProjectsProjectIdCollectionsCollectionIdEntryIdEntryLanguageIndexRoute,
       ]),
       ProjectsProjectIdCollectionsCreateRoute,
+      ProjectsProjectIdCollectionsIndexRoute,
     ]),
     ProjectsProjectIdDashboardRoute,
     ProjectsProjectIdSettingsRoute,

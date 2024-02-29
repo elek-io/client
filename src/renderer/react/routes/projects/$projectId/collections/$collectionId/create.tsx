@@ -36,11 +36,12 @@ function ProjectCollectionEntryCreate() {
         valueReferences: newEntry.valueReferences,
       });
       router.navigate({
-        to: '/projects/$projectId/collections/$collectionId/$entryId',
+        to: '/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage',
         params: {
           projectId: context.currentProject.id,
           collectionId: context.currentCollection.id,
           entryId: entry.id,
+          entryLanguage: entry.language,
         },
       });
     } catch (error) {

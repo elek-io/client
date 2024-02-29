@@ -26,7 +26,6 @@ function ProjectCollectionsLayout() {
       <aside className="w-60 flex flex-col flex-shrink-0 bg-zinc-900 border-r border-zinc-800">
         <nav className="flex-1" aria-label="Sidebar">
           <div className="p-2">
-            <strong className="px-3 text-sm">Collections</strong>
             <Link
               to={'/projects/$projectId/collections/create'}
               className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
@@ -38,6 +37,7 @@ function ProjectCollectionsLayout() {
               <PlusIcon className="mr-4 h-4 w-4" aria-hidden="true"></PlusIcon>
               Create Collection
             </Link>
+            <strong className="px-3 text-sm">Collections</strong>
             {context.currentCollections.list.map((collection) => (
               <Link
                 to={'/projects/$projectId/collections/$collectionId'}
@@ -61,6 +61,9 @@ function ProjectCollectionsLayout() {
                 )}
               </Link>
             ))}
+            {context.currentCollections.total === 0 && (
+              <p>No Collections created yet!</p>
+            )}
           </div>
         </nav>
         {JSON.stringify(context.currentCollections)}
