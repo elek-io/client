@@ -2,13 +2,12 @@ import { Asset } from '@elek-io/shared';
 import {
   AssetTeaser,
   Button,
-  EmptyState,
   NotificationIntent,
   Page,
   formatBytes,
   formatTimestamp,
 } from '@elek-io/ui';
-import { PhotoIcon, TrashIcon } from '@heroicons/react/20/solid';
+import { PhotoIcon, PlusIcon, TrashIcon } from '@heroicons/react/20/solid';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement, useState } from 'react';
 
@@ -64,13 +63,13 @@ function ProjectAssetsPage() {
   function Actions(): ReactElement {
     return (
       <>
-        {/* <Button
+        <Button
           intent="primary"
-          prependIcon={CogIcon}
-          onClick={() => router.push(router.asPath + '/update')}
+          prependIcon={PlusIcon}
+          onClick={onAddAssetClicked}
         >
-          Configure
-        </Button> */}
+          Add Assets
+        </Button>
       </>
     );
   }
@@ -178,30 +177,12 @@ function ProjectAssetsPage() {
       actions={<Actions></Actions>}
       layout="overlap"
     >
-      <div className="flex">
+      <div className="flex" onDrop={onAssetsDropped}>
         <div>
           <ul
             role="list"
             className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-5 xl:gap-x-8"
           >
-            <li>
-              <EmptyState
-                icon={PhotoIcon}
-                title="Add Asset"
-                description="Click to add or drag and drop files like images, videos and documents"
-                onClick={onAddAssetClicked}
-                // @ts-ignore
-                onDrop={onAssetsDropped}
-              ></EmptyState>
-              {/* <FormInput
-            name="name"
-            type="text"
-            label="Just a test"
-            placeholder="Test me"
-            onChange={handleChange}
-            value={formData.name}
-          ></FormInput> */}
-            </li>
             {context.currentAssets.list.map((asset) => (
               <li key={asset.id} className="relative">
                 <AssetTeaser
