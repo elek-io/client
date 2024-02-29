@@ -90,7 +90,7 @@ function RootRoute() {
           </h1>
         </div>
         <div id="navigation-bar" className="flex border-b border-zinc-800">
-          <div className="p-2 w-72 flex flex-shrink-0 justify-end border-r border-zinc-800">
+          <div className="p-2 w-60 flex flex-shrink-0 justify-end border-r border-zinc-800">
             <Button
               intent="icon"
               prependIcon={ArrowLeftIcon}

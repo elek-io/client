@@ -68,7 +68,7 @@ function ProjectLayout() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <aside className="w-72 flex flex-col flex-shrink-0 bg-zinc-900 border-r border-zinc-800">
+      <aside className="w-60 flex flex-col flex-shrink-0 bg-zinc-900 border-r border-zinc-800">
         <div className="flex flex-shrink-0 flex-col shadow-inner p-4">
           <div className="flex items-center">
             <div className="">
@@ -125,14 +125,12 @@ function ProjectLayout() {
                   inactiveProps={{ className: 'text-zinc-400' }}
                 >
                   <navigation.icon
-                    className="mr-4 h-6 w-6"
+                    className="mr-4 h-4 w-4"
                     aria-hidden="true"
                   ></navigation.icon>
                   {navigation.name}
                 </Link>
               ))}
-              <strong className="px-3 text-sm font-medium">Collections</strong>
-              {/* {context.currentProject.} */}
             </div>
           </nav>
         </div>
