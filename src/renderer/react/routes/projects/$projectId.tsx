@@ -1,7 +1,8 @@
-import { SearchResult } from '@elek-io/shared';
+import { SearchResult, TranslatableString } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import {
   Cog6ToothIcon,
+  CubeTransparentIcon,
   FolderOpenIcon,
   HomeIcon,
   MagnifyingGlassIcon,
@@ -16,7 +17,34 @@ export const Route = createFileRoute('/projects/$projectId')({
       id: params.projectId,
     });
 
-    return { currentProject };
+    /**
+     * Returns given TranslatableString in the language of the current user
+     *
+     * If the current users translation is not available,
+     * it shows it in the default language of the project.
+     * If this is not available either, show the 'en' value.
+     * If this is also not available, show the key instead along with a note,
+     * that a translation should be added.
+     */
+    function translate(key: string, record: TranslatableString): string {
+      const toCurrentUserLocale = record[context.currentUser.locale.id];
+      if (toCurrentUserLocale) {
+        return toCurrentUserLocale;
+      }
+      const toCurrentProjectsDefaultLocale =
+        currentProject.settings.locale.default.id &&
+        record[currentProject.settings.locale.default.id];
+      if (toCurrentProjectsDefaultLocale) {
+        return toCurrentProjectsDefaultLocale;
+      }
+      const toEnglish = record['en'];
+      if (toEnglish) {
+        return toEnglish;
+      }
+      return `Missing translation for key "${key}"`;
+    }
+
+    return { currentProject, translate };
   },
   component: ProjectLayout,
 });
@@ -36,6 +64,11 @@ function ProjectLayout() {
       name: 'Assets',
       to: '/projects/$projectId/assets',
       icon: PhotoIcon,
+    },
+    {
+      name: 'Collections',
+      to: '/projects/$projectId/collections',
+      icon: CubeTransparentIcon,
     },
     {
       name: 'Settings',
@@ -135,9 +168,9 @@ function ProjectLayout() {
           </nav>
         </div>
       </aside>
-      <main className="flex flex-1 flex-col overflow-y-auto shadow-inner">
+      <div className="flex flex-1 flex-col overflow-y-auto shadow-inner">
         <Outlet></Outlet>
-      </main>
+      </div>
     </div>
   );
 }
