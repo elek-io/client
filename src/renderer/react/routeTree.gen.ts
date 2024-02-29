@@ -15,6 +15,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
 import { Route as UserSetImport } from './routes/user/set'
 import { Route as ProjectsCreateImport } from './routes/projects/create'
+import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
 
 // Create/Update Routes
@@ -39,9 +40,14 @@ const ProjectsCreateRoute = ProjectsCreateImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProjectsProjectIdIndexRoute = ProjectsProjectIdIndexImport.update({
-  path: '/projects/$projectId/',
+const ProjectsProjectIdRoute = ProjectsProjectIdImport.update({
+  path: '/projects/$projectId',
   getParentRoute: () => rootRoute,
+} as any)
+
+const ProjectsProjectIdIndexRoute = ProjectsProjectIdIndexImport.update({
+  path: '/',
+  getParentRoute: () => ProjectsProjectIdRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -50,6 +56,10 @@ declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/projects/$projectId': {
+      preLoaderRoute: typeof ProjectsProjectIdImport
       parentRoute: typeof rootRoute
     }
     '/projects/create': {
@@ -66,7 +76,7 @@ declare module '@tanstack/react-router' {
     }
     '/projects/$projectId/': {
       preLoaderRoute: typeof ProjectsProjectIdIndexImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof ProjectsProjectIdImport
     }
   }
 }
@@ -75,10 +85,10 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren([
   IndexRoute,
+  ProjectsProjectIdRoute.addChildren([ProjectsProjectIdIndexRoute]),
   ProjectsCreateRoute,
   UserSetRoute,
   ProjectsIndexRoute,
-  ProjectsProjectIdIndexRoute,
 ])
 
 /* prettier-ignore-end */
