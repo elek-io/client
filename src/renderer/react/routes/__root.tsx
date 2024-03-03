@@ -1,12 +1,10 @@
-import { Avatar, Button, Dropdown, DropdownItemGroup } from '@elek-io/ui';
+import { DropdownItemGroup } from '@elek-io/ui';
 import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ChevronDownIcon,
   DocumentDuplicateIcon,
   HomeIcon,
   PencilSquareIcon,
 } from '@heroicons/react/20/solid';
+import { ArrowLeftIcon, ArrowRightIcon } from '@radix-ui/react-icons';
 import {
   Link,
   Outlet,
@@ -18,6 +16,7 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { ContextBridgeApi } from '../../preload';
+import { Button } from '../components/ui/button';
 import { StoreState } from '../store';
 
 interface RouterContext {
@@ -91,63 +90,70 @@ function RootRoute() {
         </div>
         <div id="navigation-bar" className="flex border-b border-zinc-800">
           <div className="p-2 w-60 flex flex-shrink-0 justify-end border-r border-zinc-800">
-            <Button
-              intent="icon"
-              prependIcon={ArrowLeftIcon}
-              onClick={() => router.history.back()}
-            ></Button>
-            <Button
-              intent="icon"
-              prependIcon={ArrowRightIcon}
-              onClick={() => router.history.forward()}
-            ></Button>
+            Sidebar toggle
           </div>
           <div className="p-2 flex-auto flex justify-between items-center">
-            <nav className="flex" aria-label="Breadcrumb">
-              <ol
-                role="list"
-                className="flex space-x-2 rounded-md bg-zinc-800 border border-zinc-700 px-4"
+            <div className="flex">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => router.history.back()}
               >
-                <li className="flex">
-                  <div className="flex items-center">
-                    <Link to="/" className="text-zinc-200 no-underline">
-                      <HomeIcon className="w-4" />
-                      <span className="sr-only">Home</span>
-                    </Link>
-                  </div>
-                </li>
-                {breadcrumbs.map((crumb) => (
+                <ArrowLeftIcon className="h-4 w-4"></ArrowLeftIcon>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => router.history.forward()}
+              >
+                <ArrowRightIcon className="h-4 w-4"></ArrowRightIcon>
+              </Button>
+              <nav className="flex" aria-label="Breadcrumb">
+                <ol
+                  role="list"
+                  className="flex space-x-2 rounded-md bg-zinc-800 border border-zinc-700 px-4"
+                >
                   <li className="flex">
                     <div className="flex items-center">
-                      <svg
-                        className="h-full w-4 flex-shrink-0 text-zinc-700"
-                        viewBox="0 0 24 44"
-                        preserveAspectRatio="none"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
-                      </svg>
-                      <Link
-                        className="ml-2 text-sm text-zinc-200 no-underline font-medium truncate"
-                        to={crumb.path}
-                      >
-                        {crumb.part}
+                      <Link to="/" className="text-zinc-200 no-underline">
+                        <HomeIcon className="w-4" />
+                        <span className="sr-only">Home</span>
                       </Link>
                     </div>
                   </li>
-                ))}
-              </ol>
-            </nav>
+                  {breadcrumbs.map((crumb) => (
+                    <li className="flex">
+                      <div className="flex items-center">
+                        <svg
+                          className="h-full w-4 flex-shrink-0 text-zinc-700"
+                          viewBox="0 0 24 44"
+                          preserveAspectRatio="none"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
+                        </svg>
+                        <Link
+                          className="ml-2 text-sm text-zinc-200 no-underline font-medium truncate"
+                          to={crumb.path}
+                        >
+                          {crumb.part}
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            </div>
             <div>
-              <Dropdown itemGroups={dropdownItemGroupsExample}>
+              {/* <Dropdown itemGroups={dropdownItemGroupsExample}>
                 <Button intent="avatar" appendIcon={ChevronDownIcon}>
                   <Avatar name={context.currentUser.name}></Avatar>
                   <span className="ml-2 hidden lg:block">
                     {context.currentUser.name}
                   </span>
                 </Button>
-              </Dropdown>
+              </Dropdown> */}
             </div>
           </div>
         </div>
