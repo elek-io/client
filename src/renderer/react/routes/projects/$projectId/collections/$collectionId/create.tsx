@@ -56,9 +56,6 @@ function ProjectCollectionEntryCreate() {
   };
 
   function Title(): string {
-    if (!context.currentCollection) {
-      return '';
-    }
     return `Create a new ${context.translate(
       'currentCollection.name',
       context.currentCollection.name.singular
@@ -87,7 +84,11 @@ function ProjectCollectionEntryCreate() {
           prependIcon={CheckIcon}
           onClick={handleSubmit(onCreate)}
         >
-          Create Item
+          Create{' '}
+          {context.translate(
+            'currentCollection.name.singular',
+            context.currentCollection.name.singular
+          )}
         </Button>
       </>
     );

@@ -16,8 +16,8 @@ function ProjectCollectionEntries() {
 
   function Title(): string {
     return context.translate(
-      'currentCollection.name',
-      context.currentCollection.name.singular
+      'currentCollection.name.plural',
+      context.currentCollection.name.plural
     );
   }
 

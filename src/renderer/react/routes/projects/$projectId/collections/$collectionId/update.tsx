@@ -32,6 +32,13 @@ function ProjectCollectionUpdate() {
     formState: { errors, isDirty },
   } = useForm<Collection>({ defaultValues: context.currentCollection });
 
+  function Title(): string {
+    return `Configure ${context.translate(
+      'currentCollection.name.plural',
+      context.currentCollection.name.plural
+    )}`;
+  }
+
   function Description(): ReactElement {
     return (
       <>
@@ -126,9 +133,7 @@ function ProjectCollectionUpdate() {
 
   return (
     <Page
-      title={`Configure Collection (${watch(
-        `name.singular.${context.currentUser.locale.id}`
-      )})`}
+      title={Title()}
       actions={<Actions></Actions>}
       description={<Description></Description>}
       layout="overlap-card-no-space"
