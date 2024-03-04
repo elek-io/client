@@ -10,6 +10,12 @@ import {
 } from '@radix-ui/react-icons';
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
 import { ChangeEvent, useState } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../../components/ui/tooltip';
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
@@ -160,24 +166,41 @@ function ProjectLayout() {
           )}
           <nav className="flex-1" aria-label="Sidebar">
             <div className="space-y-1 px-2">
-              {projectNavigation.map((navigation) => (
-                <Link
-                  to={navigation.to}
-                  className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
-                  activeProps={{
-                    className: 'bg-zinc-800 text-zinc-200 border-zinc-700',
-                  }}
-                  inactiveProps={{ className: 'text-zinc-400' }}
-                >
-                  <navigation.icon
-                    className="h-6 w-6"
-                    aria-hidden="true"
-                  ></navigation.icon>
-                  {!isProjectSidebarNarrow && (
-                    <span className="ml-4">{navigation.name}</span>
-                  )}
-                </Link>
-              ))}
+              {projectNavigation.map((navigation) => {
+                const link = (
+                  <Link
+                    to={navigation.to}
+                    className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
+                    activeProps={{
+                      className: 'bg-zinc-800 text-zinc-200 border-zinc-700',
+                    }}
+                    inactiveProps={{ className: 'text-zinc-400' }}
+                  >
+                    <navigation.icon
+                      className="h-6 w-6"
+                      aria-hidden="true"
+                    ></navigation.icon>
+                    {!isProjectSidebarNarrow && (
+                      <span className="ml-4">{navigation.name}</span>
+                    )}
+                  </Link>
+                );
+
+                if (isProjectSidebarNarrow) {
+                  return (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>{link}</TooltipTrigger>
+                        <TooltipContent side="right" align="center">
+                          <p>{navigation.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                }
+
+                return link;
+              })}
             </div>
           </nav>
         </div>
