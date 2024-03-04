@@ -6,6 +6,8 @@ import { devtools } from 'zustand/middleware';
 export interface StoreState {
   notifications: NotificationProps[];
   addNotification: (notification: NotificationProps) => void;
+  isProjectSidebarNarrow: boolean;
+  setIsProjectSidebarNarrow: (isNarrow: boolean) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -15,6 +17,12 @@ export const useStore = create<StoreState>()(
       console.log('New notification:', notification);
       set((state) => ({
         notifications: [...state.notifications, notification],
+      }));
+    },
+    isProjectSidebarNarrow: false,
+    setIsProjectSidebarNarrow: (isNarrow) => {
+      set((state) => ({
+        isProjectSidebarNarrow: isNarrow,
       }));
     },
   }))

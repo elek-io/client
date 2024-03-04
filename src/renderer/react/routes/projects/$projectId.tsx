@@ -1,13 +1,13 @@
 import { SearchResult, TranslatableString } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import {
-  Cog6ToothIcon,
-  CubeTransparentIcon,
-  FolderOpenIcon,
-  HomeIcon,
+  BackpackIcon,
+  DashboardIcon,
+  GearIcon,
+  ImageIcon,
+  LayersIcon,
   MagnifyingGlassIcon,
-  PhotoIcon,
-} from '@heroicons/react/20/solid';
+} from '@radix-ui/react-icons';
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
 import { ChangeEvent, useState } from 'react';
 
@@ -52,28 +52,31 @@ export const Route = createFileRoute('/projects/$projectId')({
 function ProjectLayout() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
+  const isProjectSidebarNarrow = context.store(
+    (state) => state.isProjectSidebarNarrow
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<SearchResult[]>();
   const projectNavigation = [
     {
       name: 'Dashboard',
       to: '/projects/$projectId/dashboard',
-      icon: HomeIcon,
+      icon: DashboardIcon,
     },
     {
       name: 'Assets',
       to: '/projects/$projectId/assets',
-      icon: PhotoIcon,
+      icon: ImageIcon,
     },
     {
       name: 'Collections',
       to: '/projects/$projectId/collections',
-      icon: CubeTransparentIcon,
+      icon: LayersIcon,
     },
     {
       name: 'Settings',
       to: '/projects/$projectId/settings',
-      icon: Cog6ToothIcon,
+      icon: GearIcon,
     },
   ];
 
@@ -101,51 +104,60 @@ function ProjectLayout() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <aside className="w-60 flex flex-col flex-shrink-0 bg-zinc-900 border-r border-zinc-800">
-        <div className="flex flex-shrink-0 flex-col shadow-inner p-4">
-          <div className="flex items-center">
-            <div className="">
-              <FolderOpenIcon className="w-8 h-8" />
+      <aside
+        className={`flex flex-col flex-shrink-0 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 ${
+          isProjectSidebarNarrow === true ? 'w-18' : 'w-60'
+        }`}
+      >
+        {!isProjectSidebarNarrow && (
+          <div className="flex flex-shrink-0 flex-col p-4">
+            <div className="flex items-center">
+              <div className="">
+                <BackpackIcon className="w-8 h-8" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium group-hover:text-gray-900">
+                  {context.currentProject.name}
+                </p>
+                <p className="text-xs font-medium text-zinc-400 group-hover:text-gray-700">
+                  Version {context.currentProject.version}
+                </p>
+              </div>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium group-hover:text-gray-900">
-                {context.currentProject.name}
-              </p>
-              <p className="text-xs font-medium text-zinc-400 group-hover:text-gray-700">
-                Version {context.currentProject.version}
-              </p>
+            <div className="ml-11">
+              <a href="/projects">
+                <Link to={'/projects'} className="text-xs">
+                  Change Project
+                </Link>
+              </a>
             </div>
           </div>
-          <div className="ml-11">
-            <a href="/projects">
-              <Link to={'/projects'} className="text-xs">
-                Change Project
-              </Link>
-            </a>
-          </div>
-        </div>
+        )}
+
         <div className="flex flex-1 flex-col overflow-y-auto py-4">
-          <form className="flex" action="#" method="GET">
-            <label htmlFor="search-field" className="sr-only">
-              Search all files
-            </label>
-            <div className="relative w-full text-gray-400 focus-within:text-gray-600">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center">
-                <MagnifyingGlassIcon
-                  className="h-5 w-5 flex-shrink-0"
-                  aria-hidden="true"
+          {!isProjectSidebarNarrow && (
+            <form className="flex" action="#" method="GET">
+              <label htmlFor="search-field" className="sr-only">
+                Search all files
+              </label>
+              <div className="relative w-full text-gray-400 focus-within:text-gray-600">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center">
+                  <MagnifyingGlassIcon
+                    className="h-5 w-5 flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                </div>
+                <input
+                  name="search"
+                  className="h-full w-full border-transparent py-2 pl-8 pr-3 text-base text-gray-900 placeholder-gray-500 focus:border-transparent focus:placeholder-gray-400 focus:outline-none focus:ring-0"
+                  placeholder="Search"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => onSearch(event)}
                 />
               </div>
-              <input
-                name="search"
-                className="h-full w-full border-transparent py-2 pl-8 pr-3 text-base text-gray-900 placeholder-gray-500 focus:border-transparent focus:placeholder-gray-400 focus:outline-none focus:ring-0"
-                placeholder="Search"
-                type="search"
-                value={searchQuery}
-                onChange={(event) => onSearch(event)}
-              />
-            </div>
-          </form>
+            </form>
+          )}
           <nav className="flex-1" aria-label="Sidebar">
             <div className="space-y-1 px-2">
               {projectNavigation.map((navigation) => (
@@ -158,10 +170,12 @@ function ProjectLayout() {
                   inactiveProps={{ className: 'text-zinc-400' }}
                 >
                   <navigation.icon
-                    className="mr-4 h-4 w-4"
+                    className="h-6 w-6"
                     aria-hidden="true"
                   ></navigation.icon>
-                  {navigation.name}
+                  {!isProjectSidebarNarrow && (
+                    <span className="ml-4">{navigation.name}</span>
+                  )}
                 </Link>
               ))}
             </div>
