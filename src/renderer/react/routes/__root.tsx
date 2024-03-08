@@ -160,7 +160,7 @@ function RootRoute() {
               <nav className="flex ml-2" aria-label="Breadcrumb">
                 <ol
                   role="list"
-                  className="flex rounded-md dark:bg-zinc-950 border dark:border-zinc-800"
+                  className="flex rounded-md dark:bg-zinc-950 border dark:border-zinc-800 px-4"
                 >
                   <li className="flex">
                     <div className="flex items-center">
@@ -175,7 +175,7 @@ function RootRoute() {
                       <div className="flex items-center">
                         <span className="ml-2">/</span>
                         <Link
-                          className="ml-2 text-sm text-zinc-200 no-underline font-medium truncate"
+                          className="ml-2 text-sm text-zinc-200 no-underline hover:underline font-medium truncate"
                           to={crumb.path}
                         >
                           {crumb.part}
