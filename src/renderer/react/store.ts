@@ -5,10 +5,12 @@ import { devtools } from 'zustand/middleware';
 import { toast } from './components/ui/toast';
 
 export interface StoreState {
-  notifications: {}[];
+  notifications: NotificationProps[];
   addNotification: (notification: NotificationProps) => void;
   isProjectSidebarNarrow: boolean;
   setIsProjectSidebarNarrow: (isNarrow: boolean) => void;
+  isProjectSearchDialogOpen: boolean;
+  setProjectSearchDialogOpen: (isOpen: boolean) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -46,6 +48,12 @@ export const useStore = create<StoreState>()(
     setIsProjectSidebarNarrow: (isNarrow) => {
       set((state) => ({
         isProjectSidebarNarrow: isNarrow,
+      }));
+    },
+    isProjectSearchDialogOpen: false,
+    setProjectSearchDialogOpen: (isOpen) => {
+      set((state) => ({
+        isProjectSearchDialogOpen: isOpen,
       }));
     },
   }))

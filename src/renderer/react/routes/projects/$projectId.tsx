@@ -8,8 +8,23 @@ import {
   LayersIcon,
   MagnifyingGlassIcon,
 } from '@radix-ui/react-icons';
-import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
-import { ChangeEvent, useState } from 'react';
+import {
+  Link,
+  Outlet,
+  createFileRoute,
+  useRouter,
+} from '@tanstack/react-router';
+import { useState } from 'react';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '../../components/ui/command';
 import {
   Tooltip,
   TooltipContent,
@@ -56,13 +71,20 @@ export const Route = createFileRoute('/projects/$projectId')({
 });
 
 function ProjectLayout() {
+  const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
   const isProjectSidebarNarrow = context.store(
     (state) => state.isProjectSidebarNarrow
   );
+  const [isProjectSearchDialogOpen, setProjectSearchDialogOpen] = context.store(
+    (state) => [
+      state.isProjectSearchDialogOpen,
+      state.setProjectSearchDialogOpen,
+    ]
+  );
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResult, setSearchResult] = useState<SearchResult[]>();
+  const [searchResult, setSearchResult] = useState<SearchResult[]>([]);
   const projectNavigation = [
     {
       name: 'Dashboard',
@@ -86,8 +108,8 @@ function ProjectLayout() {
     },
   ];
 
-  async function onSearch(event: ChangeEvent<HTMLInputElement>) {
-    setSearchQuery(event.target.value);
+  async function onSearch(value: string) {
+    setSearchQuery(value);
     try {
       const searchResult = await context.core.projects.search(
         context.currentProject.id,
@@ -141,31 +163,21 @@ function ProjectLayout() {
         )}
 
         <div className="flex flex-1 flex-col overflow-y-auto py-4">
-          {!isProjectSidebarNarrow && (
-            <form className="flex" action="#" method="GET">
-              <label htmlFor="search-field" className="sr-only">
-                Search all files
-              </label>
-              <div className="relative w-full text-gray-400 focus-within:text-gray-600">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center">
-                  <MagnifyingGlassIcon
-                    className="h-5 w-5 flex-shrink-0"
-                    aria-hidden="true"
-                  />
-                </div>
-                <input
-                  name="search"
-                  className="h-full w-full border-transparent py-2 pl-8 pr-3 text-base text-gray-900 placeholder-gray-500 focus:border-transparent focus:placeholder-gray-400 focus:outline-none focus:ring-0"
-                  placeholder="Search"
-                  type="search"
-                  value={searchQuery}
-                  onChange={(event) => onSearch(event)}
-                />
-              </div>
-            </form>
-          )}
           <nav className="flex-1" aria-label="Sidebar">
             <div className="space-y-1 px-2">
+              <Button
+                onClick={() => setProjectSearchDialogOpen(true)}
+                variant="outline"
+                className="flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
+              >
+                <MagnifyingGlassIcon
+                  className="h-6 w-6"
+                  aria-hidden="true"
+                ></MagnifyingGlassIcon>
+                {!isProjectSidebarNarrow && (
+                  <span className="ml-4">Search</span>
+                )}
+              </Button>
               {projectNavigation.map((navigation) => {
                 const link = (
                   <Link
@@ -208,6 +220,57 @@ function ProjectLayout() {
       <div className="flex flex-1 flex-col overflow-y-auto shadow-inner">
         <Outlet></Outlet>
       </div>
+      <CommandDialog
+        open={isProjectSearchDialogOpen}
+        onOpenChange={setProjectSearchDialogOpen}
+      >
+        <CommandInput
+          placeholder="Type a command or search..."
+          value={searchQuery}
+          onValueChange={(value) => onSearch(value)}
+        />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+
+          <CommandGroup heading="Assets">
+            {searchResult
+              .filter((result) => result.type === 'asset')
+              .map((result) => {
+                return (
+                  <CommandItem
+                    onClick={() =>
+                      router.navigate({ to: '/projects/$projectId/assets' })
+                    }
+                    key={result.id}
+                  >
+                    <Badge className="mr-2">{result.language}</Badge>
+                    {result.name}
+                  </CommandItem>
+                );
+              })}
+          </CommandGroup>
+
+          <CommandGroup heading="Collections">
+            {searchResult
+              .filter((result) => result.type === 'collection')
+              .map((result) => {
+                return (
+                  <CommandItem
+                    onClick={() =>
+                      router.navigate({
+                        to: '/projects/$projectId/collections',
+                      })
+                    }
+                    key={result.id}
+                  >
+                    <Badge className="mr-2">{result.language}</Badge>
+                    {result.name}
+                  </CommandItem>
+                );
+              })}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 }
