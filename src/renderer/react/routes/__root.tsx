@@ -42,6 +42,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import { Toaster } from '../components/ui/toast';
 import { StoreState } from '../store';
 
 interface RouterContext {
@@ -276,6 +277,7 @@ function RootRoute() {
         </div>
       </header>
       <Outlet></Outlet>
+      <Toaster />
       <TanStackRouterDevtools />
     </>
   );
