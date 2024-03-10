@@ -1,15 +1,18 @@
-import { Asset } from '@elek-io/shared';
-import {
-  AssetTeaser,
-  Button,
-  NotificationIntent,
-  Page,
-  formatBytes,
-  formatTimestamp,
-} from '@elek-io/ui';
-import { PhotoIcon, PlusIcon, TrashIcon } from '@heroicons/react/20/solid';
+import { AssetDisplay } from '@/renderer/react/components/ui/asset-display';
+import { Asset, supportedExtensionSchema } from '@elek-io/shared';
+import { NotificationIntent, formatBytes, formatTimestamp } from '@elek-io/ui';
+import { FilePlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement, useState } from 'react';
+import { AssetTeaser } from '../../../../components/ui/asset-teaser';
+import { Button } from '../../../../components/ui/button';
+import { Page } from '../../../../components/ui/page';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../../../../components/ui/tooltip';
 
 export const Route = createFileRoute('/projects/$projectId/assets/')({
   beforeLoad: async ({ context, params }) => {
@@ -39,15 +42,18 @@ function ProjectAssetsPage() {
   const information = [
     {
       key: 'Created',
-      value: `${createdTime.absolute} (${createdTime.relative})`,
+      value: createdTime.relative,
+      tooltip: createdTime.absolute,
     },
     {
       key: 'Updated',
-      value: `${updatedTime.absolute} (${updatedTime.relative})`,
+      value: updatedTime.relative,
+      tooltip: updatedTime.absolute,
     },
     {
       key: 'Type',
-      value: `${selectedAsset?.mimeType} (${selectedAsset?.extension})`,
+      value: selectedAsset?.extension.toUpperCase(),
+      tooltip: selectedAsset?.mimeType,
     },
   ];
 
@@ -63,11 +69,8 @@ function ProjectAssetsPage() {
   function Actions(): ReactElement {
     return (
       <>
-        <Button
-          intent="primary"
-          prependIcon={PlusIcon}
-          onClick={onAddAssetClicked}
-        >
+        <Button variant="default" onClick={() => onAddAssetClicked()}>
+          <FilePlusIcon className="mr-2"></FilePlusIcon>
           Add Assets
         </Button>
       </>
@@ -80,9 +83,12 @@ function ProjectAssetsPage() {
         title: 'Select Assets to add',
         buttonLabel: 'Add to Assets',
         properties: ['openFile', 'multiSelections'],
-        // filters: [
-        //   { name: 'Supported files', extensions: [...supportedExtensions] },
-        // ],
+        filters: [
+          {
+            name: 'Supported files',
+            extensions: [...supportedExtensionSchema.options],
+          },
+        ],
       });
       console.log('Selected files from dialog: ', result);
       if (result.canceled === true) {
@@ -179,42 +185,30 @@ function ProjectAssetsPage() {
     >
       <div className="flex" onDrop={onAssetsDropped}>
         <div>
-          <ul
-            role="list"
-            className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-5 xl:gap-x-8"
-          >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5 xl:gap-6">
             {context.currentAssets.list.map((asset) => (
-              <li key={asset.id} className="relative">
-                <AssetTeaser
-                  {...asset}
-                  onClick={() => setSelectedAsset(asset)}
-                ></AssetTeaser>
-              </li>
+              <AssetTeaser
+                key={asset.id}
+                {...asset}
+                onClick={() => setSelectedAsset(asset)}
+              ></AssetTeaser>
             ))}
-          </ul>
-        </div>
-        <div className="w-72 flex-shrink-0">
-          <div className="aspect-w-10 aspect-h-7 block w-full overflow-hidden">
-            {selectedAsset ? (
-              <img
-                src={selectedAsset.absolutePath}
-                alt={selectedAsset.description}
-                className="object-contain border border-zinc-700"
-              />
-            ) : (
-              <PhotoIcon></PhotoIcon>
-            )}
           </div>
-          <div className="mt-4 text-sm flex flex-col items-start justify-between bg-zinc-900 border border-zinc-700 rounded-md p-4">
-            {selectedAsset ? (
-              <>
+        </div>
+        <div className="w-72 flex-shrink-0 ml-8">
+          {selectedAsset && (
+            <>
+              <div className="aspect-4/3 flex items-center justify-center">
+                <AssetDisplay {...selectedAsset} preview={true}></AssetDisplay>
+              </div>
+              <div className="mt-4 text-sm flex flex-col items-start justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-4">
                 <div>
                   <h2 className="text-lg">{selectedAsset.name}</h2>
                   <p>{formatBytes(selectedAsset.size)}</p>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 w-full">
                   <h3>Information</h3>
-                  <dl className="mt-2 divide-y divide-gray-200 border-t border-b border-gray-200">
+                  <dl className="mt-2 divide-y divide-zinc-200 dark:divide-zinc-800 border-t border-b border-zinc-200 dark:border-zinc-800">
                     {information.map((info) => {
                       return (
                         <div
@@ -222,7 +216,16 @@ function ProjectAssetsPage() {
                           className="flex justify-between py-3"
                         >
                           <dt className="">{info.key}</dt>
-                          <dd className="whitespace-nowrap">{info.value}</dd>
+                          <dd className="whitespace-nowrap">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>{info.value}</TooltipTrigger>
+                                <TooltipContent side="top" align="center">
+                                  <p>{info.tooltip}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </dd>
                         </div>
                       );
                     })}
@@ -237,21 +240,15 @@ function ProjectAssetsPage() {
                   </div>
                 </div>
                 <div className="flex space-x-3">
-                  <Button intent="secondary">Download</Button>
-                  <Button
-                    intent="danger"
-                    prependIcon={TrashIcon}
-                    fullWidth={true}
-                    onClick={() => onAssetDelete()}
-                  >
+                  <Button variant="secondary">Download</Button>
+                  <Button variant="destructive" onClick={() => onAssetDelete()}>
+                    <TrashIcon className="w-4 h-4 mr-2"></TrashIcon>
                     Delete
                   </Button>
                 </div>
-              </>
-            ) : (
-              'Placeholder'
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </Page>

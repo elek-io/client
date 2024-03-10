@@ -21,6 +21,9 @@ module.exports = {
       colors: {
         brand: colors.cyan,
       },
+      aspectRatio: {
+        '4/3': '4 / 3',
+      },
       keyframes: {
         'accordion-down': {
           from: { height: '0' },
