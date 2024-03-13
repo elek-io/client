@@ -1,16 +1,18 @@
-import { Button, formatTimestamp } from '@elek-io/ui';
-import { ChevronDownIcon, CogIcon, PlusIcon } from '@heroicons/react/20/solid';
+import { formatTimestamp } from '@elek-io/ui';
+import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Plus, Settings } from 'lucide-react';
 import { ReactElement } from 'react';
+import { Button } from '../../../../../components/ui/button';
 import { Page } from '../../../../../components/ui/page';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/'
 )({
-  component: ProjectCollectionEntries,
+  component: ProjectCollectionIndexPage,
 });
 
-function ProjectCollectionEntries() {
+function ProjectCollectionIndexPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
@@ -23,15 +25,20 @@ function ProjectCollectionEntries() {
   }
 
   function Description(): ReactElement {
-    return <>{context.currentCollection?.description['en']}</>;
+    return (
+      <>
+        {context.translate(
+          'currentCollection.description',
+          context.currentCollection.description
+        )}
+      </>
+    );
   }
 
   function Actions(): ReactElement {
     return (
       <>
         <Button
-          intent="primary"
-          prependIcon={PlusIcon}
           onClick={() =>
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/create',
@@ -42,6 +49,7 @@ function ProjectCollectionEntries() {
             })
           }
         >
+          <Plus className="w-4 h-4 mr-2"></Plus>
           {`Create new ${context.translate(
             'currentCollection.name.singular',
             context.currentCollection.name.singular
@@ -49,8 +57,7 @@ function ProjectCollectionEntries() {
         </Button>
 
         <Button
-          intent="secondary"
-          prependIcon={CogIcon}
+          variant="secondary"
           onClick={() =>
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/update',
@@ -61,7 +68,8 @@ function ProjectCollectionEntries() {
             })
           }
         >
-          {`Configure`}
+          <Settings className="w-4 h-4 mr-2"></Settings>
+          Configure
         </Button>
       </>
     );
