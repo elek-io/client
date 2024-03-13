@@ -1,6 +1,6 @@
-import { Page } from '@elek-io/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { ReactElement } from 'react';
+import { Page } from '../../../components/ui/page';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,
@@ -36,12 +36,14 @@ function ProjectDashboardPage() {
     >
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
         <div className="grid grid-cols-1 gap-4 lg:col-span-2">
-          <div className="rounded-lg bg-white shadow p-4">
+          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow p-4">
             Current Project: {JSON.stringify(context.currentProject)}
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4">
-          <div className="rounded-lg bg-white shadow p-4">Test</div>
+          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow p-4">
+            Test
+          </div>
         </div>
       </div>
     </Page>
