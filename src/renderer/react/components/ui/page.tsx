@@ -14,11 +14,11 @@ export interface PageProps extends VariantProps<typeof styles> {
 export function Page(props: PageProps) {
   return (
     <main className="relative flex-1 overflow-y-auto">
-      <div className="relative overflow-hidden bg-brand-900 pb-32">
+      <div className="relative overflow-hidden bg-brand-900 text-zinc-200 pb-32">
         <div className="relative container mx-auto">
           <div className="md:flex md:items-center px-4 sm:px-6 lg:px-8 py-10">
             <div className="md:flex-auto">
-              <h2 className="mt-2 text-3xl">{props.title}</h2>
+              <h2 className="text-3xl">{props.title}</h2>
               {props.description && (
                 <p className="mt-2 text-sm">{props.description}</p>
               )}
