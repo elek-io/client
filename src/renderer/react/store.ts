@@ -28,16 +28,17 @@ export const useStore = create<StoreState>()(
           toast.success(notification.title, {
             description: notification.description,
           });
+          break;
         case NotificationIntent.WARNING:
           toast.warning(notification.title, {
             description: notification.description,
           });
+          break;
         case NotificationIntent.DANGER:
           toast.error(notification.title, {
             description: notification.description,
             important: true,
           });
-        default:
           break;
       }
       set((state) => ({
