@@ -36,9 +36,11 @@ export function Page(props: PageProps) {
             {props.layout === 'overlap' ? (
               <>{props.children}</>
             ) : props.layout === 'overlap-card-no-space' ? (
-              <div className="rounded-lg bg-white shadow">{props.children}</div>
+              <div className="rounded-lg bg-white dark:bg-zinc-900 shadow">
+                {props.children}
+              </div>
             ) : (
-              <div className="rounded-lg bg-white shadow p-4">
+              <div className="rounded-lg bg-white dark:bg-zinc-900 shadow p-4">
                 {props.children}
               </div>
             )}
