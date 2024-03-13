@@ -1,7 +1,8 @@
-import { Button, Page, formatTimestamp } from '@elek-io/ui';
+import { Button, formatTimestamp } from '@elek-io/ui';
 import { ChevronDownIcon, CogIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement } from 'react';
+import { Page } from '../../../../../components/ui/page';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/'
