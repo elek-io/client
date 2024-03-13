@@ -5,6 +5,7 @@ import {
   createFileRoute,
   useRouter,
 } from '@tanstack/react-router';
+import { Sidebar } from '../../../components/ui/sidebar';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   beforeLoad: async ({ context, params }) => {
@@ -23,7 +24,7 @@ function ProjectCollectionsLayout() {
 
   return (
     <div className="flex h-full">
-      <aside className="w-60 flex flex-col flex-shrink-0 bg-zinc-900 border-r border-zinc-800">
+      <Sidebar>
         <nav className="flex-1" aria-label="Sidebar">
           <div className="p-2">
             <Link
@@ -68,7 +69,7 @@ function ProjectCollectionsLayout() {
             </div>
           </div>
         </nav>
-      </aside>
+      </Sidebar>
       <div className="flex flex-1 flex-col overflow-y-auto">
         <Outlet></Outlet>
       </div>

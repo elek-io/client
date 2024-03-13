@@ -1,4 +1,3 @@
-import { cn } from '@/util';
 import { SearchResult, TranslatableString } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import {
@@ -26,6 +25,7 @@ import {
   CommandItem,
   CommandList,
 } from '../../components/ui/command';
+import { Sidebar } from '../../components/ui/sidebar';
 import {
   Tooltip,
   TooltipContent,
@@ -133,12 +133,7 @@ function ProjectLayout() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <aside
-        className={cn(
-          'flex flex-col flex-shrink-0 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800',
-          isProjectSidebarNarrow ? 'w-18' : 'w-60'
-        )}
-      >
+      <Sidebar isNarrow={isProjectSidebarNarrow}>
         {!isProjectSidebarNarrow && (
           <div className="flex flex-shrink-0 flex-col p-4">
             <div className="flex items-center">
@@ -218,7 +213,7 @@ function ProjectLayout() {
             </div>
           </nav>
         </div>
-      </aside>
+      </Sidebar>
       <div className="flex flex-1 flex-col overflow-y-auto shadow-inner">
         <Outlet></Outlet>
       </div>
