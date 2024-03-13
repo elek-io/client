@@ -1,15 +1,9 @@
-import { DropdownItemGroup } from '@elek-io/ui';
-import {
-  DocumentDuplicateIcon,
-  PencilSquareIcon,
-} from '@heroicons/react/20/solid';
+import { cn } from '@/util';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CaretDownIcon,
-  HomeIcon,
   PinLeftIcon,
-  PinRightIcon,
 } from '@radix-ui/react-icons';
 import {
   Link,
@@ -25,6 +19,13 @@ import { StoreApi, UseBoundStore } from 'zustand';
 import { ContextBridgeApi } from '../../preload';
 import { useTheme } from '../components/theme-provider';
 import { Avatar } from '../components/ui/avatar';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '../components/ui/breadcrumb';
 import { Button } from '../components/ui/button';
 import {
   DropdownMenu,
@@ -89,22 +90,6 @@ function RootRoute() {
         full: state.location.pathname,
       };
     });
-  const dropdownItemGroupsExample: DropdownItemGroup[] = [
-    {
-      items: [
-        {
-          name: 'Edit',
-          href: '#edit',
-          icon: PencilSquareIcon,
-        },
-        {
-          name: 'Duplicate',
-          href: '#duplicate',
-          icon: DocumentDuplicateIcon,
-        },
-      ],
-    },
-  ];
 
   return (
     <>
@@ -123,24 +108,18 @@ function RootRoute() {
           className="flex border-b border-zinc-200 dark:border-zinc-800"
         >
           <div className="p-2 w-60 flex flex-shrink-0 border-r border-zinc-200 dark:border-zinc-800">
-            {isProjectSidebarNarrow && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsProjectSidebarNarrow(false)}
-              >
-                <PinRightIcon className="h-4 w-4"></PinRightIcon>
-              </Button>
-            )}
-            {!isProjectSidebarNarrow && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsProjectSidebarNarrow(true)}
-              >
-                <PinLeftIcon className="h-4 w-4"></PinLeftIcon>
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsProjectSidebarNarrow(!isProjectSidebarNarrow)}
+            >
+              <PinLeftIcon
+                className={cn(
+                  'h-4 w-4 transition',
+                  isProjectSidebarNarrow && 'rotate-180'
+                )}
+              ></PinLeftIcon>
+            </Button>
           </div>
           <div className="p-2 flex-auto flex justify-between items-center">
             <div className="flex">
@@ -158,34 +137,26 @@ function RootRoute() {
               >
                 <ArrowRightIcon className="h-4 w-4"></ArrowRightIcon>
               </Button>
-              <nav className="flex ml-2" aria-label="Breadcrumb">
-                <ol
-                  role="list"
-                  className="flex rounded-md dark:bg-zinc-950 border dark:border-zinc-800 px-4"
-                >
-                  <li className="flex">
-                    <div className="flex items-center">
-                      <Link to="/" className="text-zinc-200 no-underline">
-                        <HomeIcon className="w-4" />
-                        <span className="sr-only">Home</span>
-                      </Link>
-                    </div>
-                  </li>
-                  {breadcrumbs.map((crumb) => (
-                    <li className="flex">
-                      <div className="flex items-center">
-                        <span className="ml-2">/</span>
-                        <Link
-                          className="ml-2 text-sm text-zinc-200 no-underline hover:underline font-medium truncate"
-                          to={crumb.path}
-                        >
-                          {crumb.part}
-                        </Link>
-                      </div>
-                    </li>
+
+              <Breadcrumb className="flex ml-2">
+                <BreadcrumbList>
+                  {breadcrumbs.map((crumb, index, array) => (
+                    <>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link
+                            to={crumb.path}
+                            className="text-zinc-800 dark:text-zinc-200 no-underline hover:underline"
+                          >
+                            {crumb.part}
+                          </Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      {array.length !== index + 1 && <BreadcrumbSeparator />}
+                    </>
                   ))}
-                </ol>
-              </nav>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
             <div className="flex">
               <DropdownMenu>
