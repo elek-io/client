@@ -12,8 +12,8 @@ export interface AssetTeaserProps extends VariantProps<typeof styles>, Asset {
 
 export function AssetTeaser(props: AssetTeaserProps) {
   return (
-    <div
-      className="flex flex-col h-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-2"
+    <a
+      className="cursor-pointer no-underline transition-colors bg-white dark:bg-zinc-900 hover:bg-zinc-300 hover:dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 rounded-md p-2"
       onClick={props.onClick}
     >
       <div>
@@ -23,6 +23,6 @@ export function AssetTeaser(props: AssetTeaserProps) {
         <p className="mt-2 truncate text-sm">{props.name}</p>
         <p className="text-sm">{formatBytes(props.size)}</p>
       </div>
-    </div>
+    </a>
   );
 }

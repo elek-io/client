@@ -4,6 +4,17 @@ import { NotificationIntent, formatBytes, formatTimestamp } from '@elek-io/ui';
 import { FilePlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement, useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../../../../components/ui/alert-dialog';
 import { AssetTeaser } from '../../../../components/ui/asset-teaser';
 import { Button } from '../../../../components/ui/button';
 import { Page } from '../../../../components/ui/page';
@@ -241,10 +252,32 @@ function ProjectAssetsPage() {
                 </div>
                 <div className="flex space-x-3">
                   <Button variant="secondary">Download</Button>
-                  <Button variant="destructive" onClick={() => onAssetDelete()}>
-                    <TrashIcon className="w-4 h-4 mr-2"></TrashIcon>
-                    Delete
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        <TrashIcon className="w-4 h-4 mr-2"></TrashIcon>
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          You are about to delete this Asset
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete your account and remove your data from our
+                          servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={onAssetDelete}>
+                          Continue
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </>

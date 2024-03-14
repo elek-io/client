@@ -1,22 +1,24 @@
 import { SearchResult, TranslatableString } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import {
-  BackpackIcon,
-  DashboardIcon,
-  GearIcon,
-  ImageIcon,
-  LayersIcon,
-  MagnifyingGlassIcon,
-} from '@radix-ui/react-icons';
-import {
   Link,
   Outlet,
+  ToPathOption,
   createFileRoute,
   useRouter,
 } from '@tanstack/react-router';
+import {
+  FolderGit2,
+  FolderOutput,
+  Image,
+  Layers,
+  LayoutDashboard,
+  LucideIcon,
+  Search,
+  Settings,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -25,7 +27,10 @@ import {
   CommandItem,
   CommandList,
 } from '../../components/ui/command';
+import { ScrollArea } from '../../components/ui/scroll-area';
 import { Sidebar } from '../../components/ui/sidebar';
+import { SidebarNavigation } from '../../components/ui/sidebar-navigation';
+import { SidebarNavigationItem } from '../../components/ui/sidebar-navigation-item';
 import {
   Tooltip,
   TooltipContent,
@@ -86,26 +91,30 @@ function ProjectLayout() {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<SearchResult[]>([]);
-  const projectNavigation = [
+  const projectNavigation: {
+    name: string;
+    to: ToPathOption;
+    icon: LucideIcon;
+  }[] = [
     {
       name: 'Dashboard',
       to: '/projects/$projectId/dashboard',
-      icon: DashboardIcon,
+      icon: LayoutDashboard,
     },
     {
       name: 'Assets',
       to: '/projects/$projectId/assets',
-      icon: ImageIcon,
+      icon: Image,
     },
     {
       name: 'Collections',
       to: '/projects/$projectId/collections',
-      icon: LayersIcon,
+      icon: Layers,
     },
     {
       name: 'Settings',
       to: '/projects/$projectId/settings',
-      icon: GearIcon,
+      icon: Settings,
     },
   ];
 
@@ -138,7 +147,7 @@ function ProjectLayout() {
           <div className="flex flex-shrink-0 flex-col p-4">
             <div className="flex items-center">
               <div className="">
-                <BackpackIcon className="w-8 h-8" />
+                <FolderGit2 className="w-8 h-8" />
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium group-hover:text-gray-900">
@@ -159,64 +168,65 @@ function ProjectLayout() {
           </div>
         )}
 
-        <div className="flex flex-1 flex-col overflow-y-auto py-4">
-          <nav className="flex-1" aria-label="Sidebar">
-            <div className="space-y-1 px-2">
-              <Button
-                onClick={() => setProjectSearchDialogOpen(true)}
-                variant="outline"
-                className="flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
+        <ScrollArea>
+          <SidebarNavigation>
+            {isProjectSidebarNarrow && (
+              <SidebarNavigationItem
+                onClick={() => router.navigate({ to: '/projects' })}
               >
-                <MagnifyingGlassIcon
+                <FolderOutput
                   className="h-6 w-6"
                   aria-hidden="true"
-                ></MagnifyingGlassIcon>
+                ></FolderOutput>
                 {!isProjectSidebarNarrow && (
-                  <span className="ml-4">Search</span>
+                  <span className="ml-4">Change Project</span>
                 )}
-              </Button>
-              {projectNavigation.map((navigation) => {
-                const link = (
-                  <Link
-                    to={navigation.to}
-                    className="group flex items-center px-2 py-2 text-sm no-underline border border-transparent rounded-md hover:bg-zinc-800 hover:text-zinc-200"
-                    activeProps={{
-                      className: 'bg-zinc-800 text-zinc-200 border-zinc-700',
-                    }}
-                    inactiveProps={{ className: 'text-zinc-400' }}
-                  >
-                    <navigation.icon
-                      className="h-6 w-6"
-                      aria-hidden="true"
-                    ></navigation.icon>
-                    {!isProjectSidebarNarrow && (
-                      <span className="ml-4">{navigation.name}</span>
-                    )}
-                  </Link>
+              </SidebarNavigationItem>
+            )}
+
+            <SidebarNavigationItem
+              onClick={() => setProjectSearchDialogOpen(true)}
+            >
+              <Search className="h-6 w-6" aria-hidden="true"></Search>
+              {!isProjectSidebarNarrow && <span className="ml-4">Search</span>}
+            </SidebarNavigationItem>
+
+            {projectNavigation.map((navigation) => {
+              const item = (
+                <SidebarNavigationItem to={navigation.to}>
+                  <navigation.icon
+                    className="h-6 w-6"
+                    aria-hidden="true"
+                  ></navigation.icon>
+                  {!isProjectSidebarNarrow && (
+                    <span className="ml-4">{navigation.name}</span>
+                  )}
+                </SidebarNavigationItem>
+              );
+
+              if (isProjectSidebarNarrow) {
+                return (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>{item}</TooltipTrigger>
+                      <TooltipContent side="right" align="center">
+                        <p>{navigation.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 );
+              }
 
-                if (isProjectSidebarNarrow) {
-                  return (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>{link}</TooltipTrigger>
-                        <TooltipContent side="right" align="center">
-                          <p>{navigation.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  );
-                }
-
-                return link;
-              })}
-            </div>
-          </nav>
-        </div>
+              return item;
+            })}
+          </SidebarNavigation>
+        </ScrollArea>
       </Sidebar>
-      <div className="flex flex-1 flex-col overflow-y-auto shadow-inner">
+
+      <div className="flex flex-1 flex-col">
         <Outlet></Outlet>
       </div>
+
       <CommandDialog
         open={isProjectSearchDialogOpen}
         onOpenChange={setProjectSearchDialogOpen}
