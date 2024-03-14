@@ -171,7 +171,7 @@ function RootRoute() {
                     <CaretDownIcon className="ml-2 h-4 w-4"></CaretDownIcon>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="w-56 mt-4 mr-2">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
