@@ -14,7 +14,6 @@ import {
   FormToggle,
   Modal,
   NotificationIntent,
-  Page,
   PageSection,
 } from '@elek-io/ui';
 import { CheckIcon, PlusIcon } from '@heroicons/react/20/solid';
@@ -22,6 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+import { Page } from '../../../../components/ui/page';
 
 export const Route = createFileRoute('/projects/$projectId/collections/create')(
   {
