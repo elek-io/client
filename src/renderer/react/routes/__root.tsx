@@ -1,11 +1,5 @@
 import { cn } from '@/util';
 import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CaretDownIcon,
-  PinLeftIcon,
-} from '@radix-ui/react-icons';
-import {
   Link,
   Outlet,
   createRootRouteWithContext,
@@ -14,7 +8,15 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
-import { Moon, Sun } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowLeftToLine,
+  ArrowRight,
+  ChevronDown,
+  Moon,
+  Sun,
+} from 'lucide-react';
+import { Fragment } from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { ContextBridgeApi } from '../../preload';
 import { useTheme } from '../components/theme-provider';
@@ -113,12 +115,12 @@ function RootRoute() {
               size="icon"
               onClick={() => setIsProjectSidebarNarrow(!isProjectSidebarNarrow)}
             >
-              <PinLeftIcon
+              <ArrowLeftToLine
                 className={cn(
                   'h-4 w-4 transition',
                   isProjectSidebarNarrow && 'rotate-180'
                 )}
-              ></PinLeftIcon>
+              ></ArrowLeftToLine>
             </Button>
           </div>
           <div className="p-2 flex-auto flex justify-between items-center">
@@ -128,20 +130,20 @@ function RootRoute() {
                 size="icon"
                 onClick={() => router.history.back()}
               >
-                <ArrowLeftIcon className="h-4 w-4"></ArrowLeftIcon>
+                <ArrowLeft className="h-4 w-4"></ArrowLeft>
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => router.history.forward()}
               >
-                <ArrowRightIcon className="h-4 w-4"></ArrowRightIcon>
+                <ArrowRight className="h-4 w-4"></ArrowRight>
               </Button>
 
               <Breadcrumb className="flex ml-2">
                 <BreadcrumbList>
                   {breadcrumbs.map((crumb, index, array) => (
-                    <>
+                    <Fragment key={crumb.path}>
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
                           <Link
@@ -153,7 +155,7 @@ function RootRoute() {
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                       {array.length !== index + 1 && <BreadcrumbSeparator />}
-                    </>
+                    </Fragment>
                   ))}
                 </BreadcrumbList>
               </Breadcrumb>
@@ -168,7 +170,7 @@ function RootRoute() {
                       src="https://github.com/shadcn.png"
                     ></Avatar>
                     {context.currentUser.name}
-                    <CaretDownIcon className="ml-2 h-4 w-4"></CaretDownIcon>
+                    <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 mt-4 mr-2">

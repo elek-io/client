@@ -1,7 +1,8 @@
-import { Button, Page } from '@elek-io/ui';
-import { PlusIcon } from '@heroicons/react/20/solid';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
+import { Plus } from 'lucide-react';
 import { ReactElement } from 'react';
+import { Button } from '../../components/ui/button';
+import { Page } from '../../components/ui/page';
 
 export const Route = createFileRoute('/projects/')({
   component: ListProjectsPage,
@@ -28,11 +29,8 @@ function ListProjectsPage() {
   function Actions(): ReactElement {
     return (
       <>
-        <Button
-          intent="primary"
-          prependIcon={PlusIcon}
-          onClick={() => router.navigate({ to: '/projects/create' })}
-        >
+        <Button onClick={() => router.navigate({ to: '/projects/create' })}>
+          <Plus className="w-4 h-4 mr-2"></Plus>
           Create Project
         </Button>
       </>
@@ -41,7 +39,6 @@ function ListProjectsPage() {
 
   return (
     <Page
-      breadcrumbs={[]}
       title="Projects"
       description={<Description></Description>}
       actions={<Actions></Actions>}
