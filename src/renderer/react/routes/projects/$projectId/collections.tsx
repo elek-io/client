@@ -33,6 +33,7 @@ function ProjectCollectionsLayout() {
             <strong className="mt-2 px-3 text-sm">Collections</strong>
             {context.currentCollections.list.map((collection) => (
               <SidebarNavigationItem
+                key={collection.id}
                 to="/projects/$projectId/collections/$collectionId"
                 params={{
                   projectId: context.currentProject.id,

@@ -222,7 +222,11 @@ function ProjectCollectionCreate() {
                     </SelectTrigger>
                     <SelectContent>
                       {supportedIconSchema.options.map((option) => {
-                        return <SelectItem value={option}>{option}</SelectItem>;
+                        return (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        );
                       })}
                     </SelectContent>
                   </Select>
@@ -340,7 +344,7 @@ function ProjectCollectionCreate() {
                 open={isAddValueDefinitionModalOpen}
                 onOpenChange={setIsAddValueDefinitionModalOpen}
               >
-                <DialogTrigger>
+                <DialogTrigger asChild>
                   <Button
                     onClick={(event) => {
                       event.preventDefault();
@@ -548,6 +552,7 @@ function ProjectCollectionCreate() {
                 (fieldDefinition, fieldDefinitionIndex) => {
                   return (
                     <div
+                      key={fieldDefinition.id}
                       className={`col-span-12 sm:col-span-${fieldDefinition.inputWidth}`}
                     >
                       <div className="border rounded-md border-gray-300 py-2 px-3 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">

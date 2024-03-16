@@ -159,11 +159,9 @@ function ProjectLayout() {
               </div>
             </div>
             <div className="ml-11">
-              <a href="/projects">
-                <Link to={'/projects'} className="text-xs">
-                  Change Project
-                </Link>
-              </a>
+              <Link to={'/projects'} className="text-xs">
+                Change Project
+              </Link>
             </div>
           </div>
         )}
@@ -193,7 +191,7 @@ function ProjectLayout() {
 
             {projectNavigation.map((navigation) => {
               const item = (
-                <SidebarNavigationItem to={navigation.to}>
+                <SidebarNavigationItem key={navigation.to} to={navigation.to}>
                   <navigation.icon
                     className="h-6 w-6"
                     aria-hidden="true"

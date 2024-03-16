@@ -1,8 +1,7 @@
-import { AssetDisplay } from '@/renderer/react/components/ui/asset-display';
 import { Asset, supportedExtensionSchema } from '@elek-io/shared';
 import { NotificationIntent, formatBytes, formatTimestamp } from '@elek-io/ui';
-import { FilePlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { ImagePlus, Trash } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import {
   AlertDialog,
@@ -15,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../../../../components/ui/alert-dialog';
+import { AssetDisplay } from '../../../../components/ui/asset-display';
 import { AssetTeaser } from '../../../../components/ui/asset-teaser';
 import { Button } from '../../../../components/ui/button';
 import { Page } from '../../../../components/ui/page';
@@ -81,7 +81,7 @@ function ProjectAssetsPage() {
     return (
       <>
         <Button variant="default" onClick={() => onAddAssetClicked()}>
-          <FilePlusIcon className="mr-2"></FilePlusIcon>
+          <ImagePlus className="w-4 h-4 mr-2"></ImagePlus>
           Add Assets
         </Button>
       </>
@@ -214,7 +214,7 @@ function ProjectAssetsPage() {
               </div>
               <div className="mt-4 text-sm flex flex-col items-start justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md p-4">
                 <div>
-                  <h2 className="text-lg">{selectedAsset.name}</h2>
+                  <h2 className="text-lg break-all">{selectedAsset.name}</h2>
                   <p>{formatBytes(selectedAsset.size)}</p>
                 </div>
                 <div className="mt-4 w-full">
@@ -255,7 +255,7 @@ function ProjectAssetsPage() {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive">
-                        <TrashIcon className="w-4 h-4 mr-2"></TrashIcon>
+                        <Trash className="w-4 h-4 mr-2"></Trash>
                         Delete
                       </Button>
                     </AlertDialogTrigger>
