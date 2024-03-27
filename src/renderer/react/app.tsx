@@ -1,3 +1,5 @@
+import '@fontsource-variable/montserrat';
+import '@fontsource/roboto';
 import {
   RouterProvider,
   createHashHistory,
@@ -5,23 +7,20 @@ import {
 } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-import { type ContextBridgeApi } from '../preload';
+import './index.css';
+import { ipc } from './ipc';
+import { useStore } from './store';
 
 // Import the generated route tree
+import { ThemeProvider } from './components/theme-provider';
 import { routeTree } from './routeTree.gen';
-
-declare global {
-  interface Window {
-    ipc: ContextBridgeApi;
-  }
-}
 
 // Create a new router instance
 const hashHistory = createHashHistory(); // Use hash based routing since in production electron just loads the index.html via the file protocol
 const router = createRouter({
   routeTree,
   history: hashHistory,
-  context: { core: window.ipc.core },
+  context: { electron: ipc.electron, core: ipc.core, store: useStore },
 });
 
 // Register the router instance for type safety
@@ -37,8 +36,9 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      Current URL: "{window.location.href}"
-      <RouterProvider router={router} />
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </StrictMode>
   );
 }

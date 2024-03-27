@@ -251,7 +251,7 @@ class Main {
 
   private registerIpcMain(core: ElekIoCore) {
     ipcMain.handle('electron:dialog:showOpenDialog', async (event, args) => {
-      return await dialog.showOpenDialog(args[0], args[1]);
+      return await dialog.showOpenDialog(undefined, args);
     });
     ipcMain.handle('core:user:get', async () => {
       return await core.user.get();
