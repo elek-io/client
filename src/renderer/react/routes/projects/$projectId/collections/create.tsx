@@ -205,55 +205,56 @@ function ProjectCollectionCreate() {
       layout="overlap-card-no-space"
     >
       <Form {...createCollectionForm}>
-        <form
-          onSubmit={createCollectionForm.handleSubmit(onCreate)}
-          className="space-y-8"
-        >
-          <FormField
-            control={createCollectionForm.control}
-            name={`icon`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Icon</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} {...field}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select an icon" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {supportedIconSchema.options.map((option) => {
-                        return (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-              </FormItem>
-            )}
-          />
+        <form onSubmit={createCollectionForm.handleSubmit(onCreate)}>
+          <div className="space-y-4 p-8">
+            <div className="grid grid-cols-12 gap-4">
+              <FormField
+                control={createCollectionForm.control}
+                name={`icon`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-3">
+                    <FormLabel>Icon</FormLabel>
+                    <FormControl>
+                      <Select onValueChange={field.onChange} {...field}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an icon" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {supportedIconSchema.options.map((option) => {
+                            return (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={createCollectionForm.control}
-            name={`name.plural.${defaultProjectLocaleId}`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Blogposts" {...field} />
-                </FormControl>
-                <FormDescription>
-                  The name of your new collection. Choose a short name in plural
-                  that explains the content of the collection - e.g.
-                  "Blogposts".
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={createCollectionForm.control}
+                name={`name.plural.${defaultProjectLocaleId}`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-9">
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Blogposts" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The name of your new collection. Choose a short name in
+                      plural that explains the content of the collection - e.g.
+                      "Blogposts".
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
+            {/* 
           <FormField
             control={createCollectionForm.control}
             name={`slug.plural`}
@@ -308,27 +309,28 @@ function ProjectCollectionCreate() {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
 
-          <FormField
-            control={createCollectionForm.control}
-            name={`description.${defaultProjectLocaleId}`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="This Collection contains individual posts that are displayed inside our blog."
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  A description of what this new Collection is used for.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={createCollectionForm.control}
+              name={`description.${defaultProjectLocaleId}`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="This Collection contains individual posts that are displayed inside our blog."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    A description of what this new Collection is used for.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <PageSection
             title="Define this Collections Values"
