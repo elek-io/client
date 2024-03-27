@@ -8,10 +8,10 @@ export interface PageProps extends React.HTMLAttributes<HTMLElement> {
   actions?: ReactElement;
   layout?: 'overlap' | 'overlap-card' | 'overlap-card-no-space';
   children: ReactNode;
-  onDragOver: React.DragEventHandler<HTMLElement>;
-  onDragLeave: React.DragEventHandler<HTMLElement>;
-  onDragEnter: React.DragEventHandler<HTMLElement>;
-  onDrop: React.DragEventHandler<HTMLElement>;
+  onDragOver?: React.DragEventHandler<HTMLElement>;
+  onDragLeave?: React.DragEventHandler<HTMLElement>;
+  onDragEnter?: React.DragEventHandler<HTMLElement>;
+  onDrop?: React.DragEventHandler<HTMLElement>;
 }
 
 export const Page = React.forwardRef<HTMLElement, PageProps>(
