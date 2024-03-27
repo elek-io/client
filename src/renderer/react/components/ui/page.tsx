@@ -1,21 +1,30 @@
-import { cva, type VariantProps } from 'class-variance-authority';
-import { type ReactElement, type ReactNode } from 'react';
+import { cn } from '@/util';
+import React, { type ReactElement, type ReactNode } from 'react';
 import { ScrollArea } from './scroll-area';
 
-const styles = cva('');
-
-export interface PageProps extends VariantProps<typeof styles> {
+export interface PageProps extends React.HTMLAttributes<HTMLElement> {
   title: string;
   description?: ReactElement;
   actions?: ReactElement;
   layout?: 'overlap' | 'overlap-card' | 'overlap-card-no-space';
   children: ReactNode;
+  onDragOver: React.DragEventHandler<HTMLElement>;
+  onDragLeave: React.DragEventHandler<HTMLElement>;
+  onDragEnter: React.DragEventHandler<HTMLElement>;
+  onDrop: React.DragEventHandler<HTMLElement>;
 }
 
-export function Page(props: PageProps) {
-  return (
+export const Page = React.forwardRef<HTMLElement, PageProps>(
+  ({ className, ...props }, ref) => (
     <ScrollArea>
-      <main className="relative flex-1">
+      <main
+        ref={ref}
+        className={cn('relative flex-1', className)}
+        onDragOver={props.onDragOver}
+        onDragLeave={props.onDragLeave}
+        onDragEnter={props.onDragEnter}
+        onDrop={props.onDrop}
+      >
         <div className="relative bg-brand-900 text-zinc-200 pb-32">
           <div className="relative container mx-auto">
             <div className="md:flex md:items-center px-4 sm:px-6 lg:px-8 py-10">
@@ -51,5 +60,6 @@ export function Page(props: PageProps) {
         </div>
       </main>
     </ScrollArea>
-  );
-}
+  )
+);
+Page.displayName = 'Page';

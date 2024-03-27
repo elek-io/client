@@ -47,6 +47,7 @@ function ProjectAssetsPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset>();
   const createdTime = formatTimestamp(selectedAsset?.created, 'en');
   const updatedTime = formatTimestamp(selectedAsset?.updated, 'en');
@@ -168,11 +169,29 @@ function ProjectAssetsPage() {
     console.log('Asset create results: ', results);
   }
 
+  function onDragOver(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function onDragEnter(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDraggingOver(true);
+  }
+
+  function onDragLeave(event: React.DragEvent<HTMLElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDraggingOver(false);
+  }
+
   /**
    * @todo This creates one commit for all instead on one per uploaded file, how is this possible?
    */
-  async function onAssetsDropped(event: DragEvent) {
+  async function onAssetsDropped(event: React.DragEvent<HTMLElement>) {
     event.preventDefault();
+    event.stopPropagation();
 
     console.log('Dropped: ', event);
 
@@ -193,10 +212,16 @@ function ProjectAssetsPage() {
       description={<Description></Description>}
       actions={<Actions></Actions>}
       layout="overlap"
+      className={isDraggingOver ? 'ring-4 ring-inset border-brand-600' : ''}
+      onDragOver={onDragOver}
+      onDrop={onAssetsDropped}
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
     >
-      <div className="flex" onDrop={onAssetsDropped}>
+      <div className="flex">
         <div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5 xl:gap-6">
+            {isDraggingOver ? 'dragging' : 'not dragging'}
             {context.currentAssets.list.map((asset) => (
               <AssetTeaser
                 key={asset.id}
