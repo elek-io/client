@@ -140,3 +140,22 @@ export function formatBytes(bytes: number) {
 export function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
+
+/**
+ * Dynamic class names for field widths
+ * @see https://tailwindcss.com/docs/content-configuration#dynamic-class-names
+ */
+export function fieldWidth(width: string) {
+  switch (width) {
+    case '3':
+      return 'sm:col-span-3';
+    case '4':
+      return 'sm:col-span-4';
+    case '6':
+      return 'sm:col-span-6';
+    case '12':
+      return 'sm:col-span-12';
+    default:
+      break;
+  }
+}

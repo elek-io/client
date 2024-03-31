@@ -331,6 +331,18 @@ class Main {
     ipcMain.handle('core:entries:delete', async (event, args) => {
       return await core.entries.delete(args[0]);
     });
+    ipcMain.handle('core:values:create', async (event, args) => {
+      return await core.values.create(args[0]);
+    });
+    ipcMain.handle('core:values:read', async (event, args) => {
+      return await core.values.read(args[0]);
+    });
+    ipcMain.handle('core:values:update', async (event, args) => {
+      return await core.values.update(args[0]);
+    });
+    ipcMain.handle('core:values:delete', async (event, args) => {
+      return await core.values.delete(args[0]);
+    });
     // this.handleIpcMain<Parameters<AssetService['list']>>('core:assets:list', async (event, args) => {
     //   return await core.assets.list(args.projectId);
     // })

@@ -1,3 +1,4 @@
+import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
   ValueDefinition,
@@ -555,7 +556,9 @@ function ProjectCollectionCreate() {
                   return (
                     <div
                       key={fieldDefinition.id}
-                      className={`col-span-12 sm:col-span-${fieldDefinition.inputWidth}`}
+                      className={`col-span-12 ${fieldWidth(
+                        fieldDefinition.inputWidth
+                      )}`}
                     >
                       <div className="border rounded-md border-gray-300 py-2 px-3 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
                         <h3 className="font-medium text-gray-700">

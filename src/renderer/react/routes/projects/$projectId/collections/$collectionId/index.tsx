@@ -101,17 +101,22 @@ function ProjectCollectionIndexPage() {
       <table className="min-w-full divide-y divide-gray-300">
         <thead>
           <tr>
-            <th
-              scope="col"
-              className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-            >
-              <a href="#" className="group inline-flex">
-                Item
-                <span className="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                  <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
-                </span>
-              </a>
-            </th>
+            {context.currentCollection.valueDefinitions.map((definition) => {
+              return (
+                <th
+                  key={definition.id}
+                  scope="col"
+                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                >
+                  <a href="#" className="group inline-flex">
+                    {context.translate('definition.name', definition.name)}
+                    <span className="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                      <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                  </a>
+                </th>
+              );
+            })}
             <th
               scope="col"
               className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
@@ -137,8 +142,8 @@ function ProjectCollectionIndexPage() {
           </tr>
         </thead>
         <tbody className="-mx-4 divide-y divide-gray-200">
-          {context.currentEntries?.list.length !== 0 ? (
-            context.currentEntries?.list.map((entry, entryIndex) => {
+          {context.currentEntries.list.length !== 0 ? (
+            context.currentEntries.list.map((entry, entryIndex) => {
               const createdTime = formatTimestamp(
                 entry.created,
                 context.currentUser.locale.id
@@ -158,9 +163,19 @@ function ProjectCollectionIndexPage() {
                   }
                   onClick={() => onEntryClicked(entry.id, entry.language)}
                 >
-                  <td className="whitespace-nowrap px-3 py-4 text-sm sm:pl-0 text-gray-500">
-                    {JSON.stringify(entry.valueReferences)}
-                  </td>
+                  {entry.valueReferences.map((reference) => {
+                    // @todo core should probably also return resolved values directly
+                    // const value = context.core.values.read({
+                    //   projectId: context.currentProject.id,
+                    //   ...reference.references
+                    // });
+
+                    return (
+                      <td className="whitespace-nowrap px-3 py-4 text-sm sm:pl-0 text-gray-500">
+                        {reference.references.id}
+                      </td>
+                    );
+                  })}
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-500">
                     {createdTime.relative}
                   </td>

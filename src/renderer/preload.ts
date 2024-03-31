@@ -46,6 +46,13 @@ export interface ContextBridgeApi {
       update: Core['entries']['update'];
       delete: Core['entries']['delete'];
     };
+    values: {
+      list: Core['values']['list'];
+      create: Core['values']['create'];
+      read: Core['values']['read'];
+      update: Core['values']['update'];
+      delete: Core['values']['delete'];
+    };
   };
 }
 
@@ -93,6 +100,13 @@ const exposedApi: ContextBridgeApi = {
       read: (...args) => ipcRenderer.invoke('core:entries:read', args),
       update: (...args) => ipcRenderer.invoke('core:entries:update', args),
       delete: (...args) => ipcRenderer.invoke('core:entries:delete', args),
+    },
+    values: {
+      list: (...args) => ipcRenderer.invoke('core:values:list', args),
+      create: (...args) => ipcRenderer.invoke('core:values:create', args),
+      read: (...args) => ipcRenderer.invoke('core:values:read', args),
+      update: (...args) => ipcRenderer.invoke('core:values:update', args),
+      delete: (...args) => ipcRenderer.invoke('core:values:delete', args),
     },
   },
 };

@@ -1,7 +1,9 @@
+import { fieldWidth } from '@/util';
 import {
   CreateEntryProps,
+  CreateValueProps,
   ValueDefinition,
-  createEntrySchema,
+  createValueSchema,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +11,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement } from 'react';
 import { ControllerRenderProps, SubmitHandler, useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { Button } from '../../../../../components/ui/button';
 import {
   Form,
@@ -34,29 +37,73 @@ function ProjectCollectionEntryCreate() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
 
-  const createEntryForm = useForm<CreateEntryProps>({
+  const createValuesForm = useForm<{ values: CreateValueProps[] }>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
       console.log('formData', data);
       console.log(
         'validation result',
-        await zodResolver(createEntrySchema)(data, context, options)
+        await zodResolver(z.object({ values: z.array(createValueSchema) }))(
+          data,
+          context,
+          options
+        )
       );
-      return zodResolver(createEntrySchema)(data, context, options);
+      return zodResolver(z.object({ values: z.array(createValueSchema) }))(
+        data,
+        context,
+        options
+      );
     },
     defaultValues: {
-      projectId: context.currentProject.id,
-      collectionId: context.currentCollection.id,
-      language: context.currentProject.settings.locale.default.id,
-      valueReferences: [],
+      values: context.currentCollection.valueDefinitions.map((definition) => {
+        return {
+          projectId: context.currentProject.id,
+          language: context.currentProject.settings.locale.default.id,
+          valueType: definition.valueType,
+          content: '',
+        };
+      }),
     },
   });
 
-  const onCreate: SubmitHandler<CreateEntryProps> = async (
-    createEntryProps
+  const onCreateValues: SubmitHandler<{ values: CreateValueProps[] }> = async (
+    props
   ) => {
     try {
-      const entry = await context.core.entries.create(createEntryProps);
+      const valuesToCreate = props.values.map((valueProps) => {
+        return context.core.values.create(valueProps);
+      });
+      const values = await Promise.all(valuesToCreate);
+
+      console.log('boo');
+
+      await createEntry({
+        projectId: context.currentProject.id,
+        collectionId: context.currentCollection.id,
+        language: context.currentProject.settings.locale.default.id,
+        valueReferences: values.map((value, index) => {
+          return {
+            // @todo Check if this is reliable: this mapping of created values to their definitions relies on the order of given values to be exaclty in the ordner of it's definition
+            definitionId: context.currentCollection.valueDefinitions[index].id,
+            references: { id: value.id, language: value.language },
+          };
+        }),
+      });
+    } catch (error) {
+      console.error(error);
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to create new Values for this Entry',
+        description:
+          'There was an error creating the new Values for this Entry.',
+      });
+    }
+  };
+
+  const createEntry = async (props: CreateEntryProps) => {
+    try {
+      const entry = await context.core.entries.create(props);
       addNotification({
         intent: NotificationIntent.SUCCESS,
         title: 'Created new Entry for this Collection',
@@ -90,9 +137,6 @@ function ProjectCollectionEntryCreate() {
   }
 
   function Description(): ReactElement {
-    if (!context.currentCollection) {
-      return <></>;
-    }
     return (
       <>
         {context.translate(
@@ -106,7 +150,7 @@ function ProjectCollectionEntryCreate() {
   function Actions(): ReactElement {
     return (
       <>
-        <Button onClick={createEntryForm.handleSubmit(onCreate)}>
+        <Button onClick={createValuesForm.handleSubmit(onCreateValues)}>
           <Check className="h-4 w-4 mr-2"></Check>
           Create{' '}
           {context.translate(
@@ -118,9 +162,12 @@ function ProjectCollectionEntryCreate() {
     );
   }
 
-  function EntryInput(
+  function ValueInput(
     definition: ValueDefinition,
-    field: ControllerRenderProps<CreateEntryProps>
+    field: ControllerRenderProps<
+      { values: CreateValueProps[] },
+      `values.${number}.content`
+    >
   ): ReactElement {
     switch (definition.inputType) {
       case 'text':
@@ -141,61 +188,50 @@ function ProjectCollectionEntryCreate() {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
-      <Form {...createEntryForm}>
-        <form onSubmit={createEntryForm.handleSubmit(onCreate)}>
-          {/* <FormSelect
-          name="language"
-          label="Language"
-          control={control}
-          options={[
-            {
-              name: 'English',
-              value: 'en',
-            },
-            {
-              name: 'Deutsch',
-              value: 'de',
-            },
-          ]}
-          description="The language of this item"
-          errors={errors}
-        ></FormSelect> */}
-
+      <Form {...createValuesForm}>
+        <form>
+          {JSON.stringify(createValuesForm.watch())}
           {
             // The Collections Field definitions are displayed here, so the user can either create a new field based on the definition or choose an existing one that matches the criterea
           }
           <div className="grid grid-cols-12 gap-x-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
-            {context.currentCollection &&
-              context.currentCollection.valueDefinitions.map((definition) => {
+            {context.currentCollection.valueDefinitions.map(
+              (definition, index) => {
                 return (
-                  <FormField
-                    control={createEntryForm.control}
-                    name={`something`}
-                    render={({ field }) => (
-                      <FormItem
-                        className={`col-span-12 sm:col-span-${definition.inputWidth}`}
-                      >
-                        <FormLabel>
-                          {context.translate(
-                            'definition.name',
-                            definition.name
-                          )}
-                        </FormLabel>
-                        <FormControl>
-                          {EntryInput(definition, field)}
-                        </FormControl>
-                        <FormDescription>
-                          {context.translate(
-                            'definition.description',
-                            definition.description
-                          )}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <>
+                    {/* {JSON.stringify(definition)} */}
+                    <FormField
+                      control={createValuesForm.control}
+                      name={`values.${index}.content`}
+                      render={({ field }) => (
+                        <FormItem
+                          className={`col-span-12 ${fieldWidth(
+                            definition.inputWidth
+                          )}`}
+                        >
+                          <FormLabel>
+                            {context.translate(
+                              'definition.name',
+                              definition.name
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            {ValueInput(definition, field)}
+                          </FormControl>
+                          <FormDescription>
+                            {context.translate(
+                              'definition.description',
+                              definition.description
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
                 );
-              })}
+              }
+            )}
           </div>
 
           {/* <h2>Definitions</h2>
