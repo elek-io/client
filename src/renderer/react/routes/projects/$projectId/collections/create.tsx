@@ -1,11 +1,22 @@
+import { TextValueDefinitionForm } from '@/renderer/react/components/forms/text-value-definition-form';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/renderer/react/components/ui/sheet';
 import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
   ValueDefinition,
+  ValueTypeSchema,
   createCollectionSchema,
   supportedIconSchema,
   uuid,
   valueDefinitionSchema,
+  z,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,15 +25,6 @@ import { Check, Plus } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { Button } from '../../../../components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../../../../components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -42,7 +44,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../../components/ui/select';
-import { Switch } from '../../../../components/ui/switch';
 import { Textarea } from '../../../../components/ui/textarea';
 
 export const Route = createFileRoute('/projects/$projectId/collections/create')(
@@ -57,8 +58,12 @@ function ProjectCollectionCreate() {
   const addNotification = context.store((state) => state.addNotification);
   const [isAddValueDefinitionModalOpen, setIsAddValueDefinitionModalOpen] =
     useState(false);
+  const [selectedValueType, setSelectedValueType] = useState<
+    z.infer<typeof ValueTypeSchema>
+  >(ValueTypeSchema.Enum.string);
   const defaultProjectLocaleId =
     context.currentProject.settings.locale.default.id;
+
   /**
    * Provides empty defaults for all supported languages.
    * Needed for controlled form fields
@@ -344,11 +349,11 @@ function ProjectCollectionCreate() {
               dates being inserted. Additionally this shows a datepicker UI to
               help users selecting a date."
             actions={
-              <Dialog
+              <Sheet
                 open={isAddValueDefinitionModalOpen}
                 onOpenChange={setIsAddValueDefinitionModalOpen}
               >
-                <DialogTrigger asChild>
+                <SheetTrigger asChild>
                   <Button
                     onClick={(event) => {
                       event.preventDefault();
@@ -358,15 +363,15 @@ function ProjectCollectionCreate() {
                     <Plus className="w-4 h-4 mr-2"></Plus>
                     Add Value definition
                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add a new Value definition</DialogTitle>
-                    <DialogDescription>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Add a new Value definition</SheetTitle>
+                    <SheetDescription>
                       Choose what type the new Value of this Collection is going
                       to be.
-                    </DialogDescription>
-                  </DialogHeader>
+                    </SheetDescription>
+                  </SheetHeader>
 
                   <div>
                     <p>
@@ -400,147 +405,16 @@ function ProjectCollectionCreate() {
                         </FormItem>
                       )}
                     />
-                    <div className="grid grid-cols-12 gap-6">
-                      <div className="col-span-8">
-                        <FormField
-                          control={valueDefinitionForm.control}
-                          name={`name.${defaultProjectLocaleId}`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Title" {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
 
-                        <FormField
-                          control={valueDefinitionForm.control}
-                          name={`description.${defaultProjectLocaleId}`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Description</FormLabel>
-                              <FormControl>
-                                <Textarea {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                Describe what to input into this field. This
-                                text will be displayed under the field to guide
-                                users
-                              </FormDescription>
-                            </FormItem>
-                          )}
-                        />
-
-                        <hr className="p-2" />
-
-                        <FormField
-                          control={valueDefinitionForm.control}
-                          name={`isRequired`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Required</FormLabel>
-                              <FormControl>
-                                <Switch
-                                  {...field}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Required fields need to be filled before a
-                                CollectionItem can be created or updated
-                              </FormDescription>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={valueDefinitionForm.control}
-                          name={`isUnique`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Unique</FormLabel>
-                              <FormControl>
-                                <Switch
-                                  {...field}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                You won't be able to create an Entry if there is
-                                an existing Entry with identical content
-                              </FormDescription>
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={valueDefinitionForm.control}
-                          name={`inputWidth`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Field width</FormLabel>
-                              <FormControl>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  {...field}
-                                >
-                                  <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Select an icon" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="3">3/12</SelectItem>
-                                    <SelectItem value="4">4/12</SelectItem>
-                                    <SelectItem value="6">6/12</SelectItem>
-                                    <SelectItem value="12">12/12</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="col-span-4">
-                        <div className="sticky top-6">
-                          <FormField
-                            control={valueDefinitionForm.control}
-                            // @ts-ignore: This is just the example input
-                            name={`example`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>
-                                  {valueDefinitionForm.watch(
-                                    `name.${defaultProjectLocaleId}`
-                                  ) || 'Example'}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input placeholder="blogpost" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  {valueDefinitionForm.watch(
-                                    `description.${defaultProjectLocaleId}`
-                                  )}
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    {selectedValueType === 'string' && (
+                      <TextValueDefinitionForm
+                        language="en"
+                        onHandleSubmit={onAddValueDefinition}
+                      ></TextValueDefinitionForm>
+                    )}
                   </div>
-
-                  <DialogFooter>
-                    <Button
-                      onClick={valueDefinitionForm.handleSubmit(
-                        onAddValueDefinition
-                      )}
-                    >
-                      Add Field definition
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                </SheetContent>
+              </Sheet>
             }
           >
             <div className="grid grid-cols-12 gap-6 mt-6">
