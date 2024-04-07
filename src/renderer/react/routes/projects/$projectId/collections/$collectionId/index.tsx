@@ -1,10 +1,24 @@
-import { formatTimestamp } from '@elek-io/ui';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { formatTimestamp } from '@/util';
+import { Entry } from '@elek-io/shared';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import { Plus, Settings } from 'lucide-react';
 import { ReactElement } from 'react';
 import { Button } from '../../../../../components/ui/button';
 import { Page } from '../../../../../components/ui/page';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../../../../components/ui/table';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/'
@@ -16,6 +30,11 @@ function ProjectCollectionIndexPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
+  const table = useReactTable({
+    data: data(),
+    columns: columns(),
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   function Title(): string {
     return context.translate(
@@ -75,7 +94,57 @@ function ProjectCollectionIndexPage() {
     );
   }
 
-  function onEntryClicked(id: string, language: string) {
+  function columns() {
+    const columns: ColumnDef<Entry>[] =
+      context.currentCollection.valueDefinitions.map((definition) => {
+        return {
+          accessorKey: definition.id,
+          header: context.translate('definition.name', definition.name),
+        };
+      });
+
+    columns.push(
+      {
+        accessorKey: 'created',
+        header: 'Created',
+      },
+      {
+        accessorKey: 'updated',
+        header: 'Updated',
+      }
+      // {
+      //   id: 'actions',
+      //   header: 'Actions',
+      //   cell: ({ row }) => {
+      //     return <Button>Test</Button>;
+      //   },
+      // }
+    );
+
+    return columns;
+  }
+
+  function data() {
+    const rows = context.currentEntries.list.map((entry) => {
+      const row: { [x: string]: string } = {
+        id: entry.id,
+        language: entry.language,
+        created: formatTimestamp(entry.created, context.currentUser.locale.id)
+          .relative,
+        updated: formatTimestamp(entry.updated, context.currentUser.locale.id)
+          .relative,
+      };
+
+      entry.values.map((value) => {
+        row[value.definitionId] = value.content;
+      });
+      return row;
+    });
+
+    return rows;
+  }
+
+  function onRowClicked(id: string, language: string) {
     router.navigate({
       to: '/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage',
       params: {
@@ -93,113 +162,52 @@ function ProjectCollectionIndexPage() {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
-      {/* <p>Collection: {JSON.stringify(context.currentCollection, undefined, 2)}</p>
-      <p>
-        Collection Items:{' '}
-        {JSON.stringify(context.currentCollectionItems, undefined, 2)}
-      </p> */}
-      <table className="min-w-full divide-y divide-gray-300">
-        <thead>
-          <tr>
-            {context.currentCollection.valueDefinitions.map((definition) => {
-              return (
-                <th
-                  key={definition.id}
-                  scope="col"
-                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                >
-                  <a href="#" className="group inline-flex">
-                    {context.translate('definition.name', definition.name)}
-                    <span className="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                      <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                  </a>
-                </th>
-              );
-            })}
-            <th
-              scope="col"
-              className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
-            >
-              <a href="#" className="group inline-flex">
-                Created
-                <span className="ml-2 flex-none rounded bg-gray-200 text-gray-900 group-hover:bg-gray-300">
-                  <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
-                </span>
-              </a>
-            </th>
-            <th
-              scope="col"
-              className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 sm:pr-0"
-            >
-              <a href="#" className="group inline-flex">
-                Updated
-                <span className="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                  <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
-                </span>
-              </a>
-            </th>
-          </tr>
-        </thead>
-        <tbody className="-mx-4 divide-y divide-gray-200">
-          {context.currentEntries.list.length !== 0 ? (
-            context.currentEntries.list.map((entry, entryIndex) => {
-              const createdTime = formatTimestamp(
-                entry.created,
-                context.currentUser.locale.id
-              );
-              const updatedTime = formatTimestamp(
-                entry.updated,
-                context.currentUser.locale.id
-              );
-
-              return (
-                <tr
-                  key={entry.id}
-                  className={
-                    entryIndex % 2 === 0
-                      ? 'hover:bg-brand-50 hover:cursor-pointer'
-                      : 'bg-gray-50 hover:bg-brand-50 hover:cursor-pointer'
-                  }
-                  onClick={() => onEntryClicked(entry.id, entry.language)}
-                >
-                  {entry.valueReferences.map((reference) => {
-                    // @todo core should probably also return resolved values directly
-                    // const value = context.core.values.read({
-                    //   projectId: context.currentProject.id,
-                    //   ...reference.references
-                    // });
-
-                    return (
-                      <td className="whitespace-nowrap px-3 py-4 text-sm sm:pl-0 text-gray-500">
-                        {reference.references.id}
-                      </td>
-                    );
-                  })}
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-500">
-                    {createdTime.relative}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-right sm:pr-0 text-gray-500">
-                    {updatedTime.relative}
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td
-                colSpan={3}
-                className="whitespace-nowrap px-3 py-4 text-sm text-center text-gray-500"
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && 'selected'}
+                onClick={() =>
+                  onRowClicked(row.original.id, row.original.language)
+                }
+                className="hover:cursor-pointer"
               >
-                {`No ${context.translate(
-                  'currentCollection.name.plural',
-                  context.currentCollection.name.plural
-                )} found`}
-              </td>
-            </tr>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No results.
+              </TableCell>
+            </TableRow>
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </Page>
   );
 }

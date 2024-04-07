@@ -1,9 +1,8 @@
 import { fieldWidth } from '@/util';
 import {
   CreateEntryProps,
-  CreateValueProps,
   ValueDefinition,
-  createValueSchema,
+  createEntrySchema,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +10,6 @@ import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement } from 'react';
 import { ControllerRenderProps, SubmitHandler, useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { Button } from '../../../../../components/ui/button';
 import {
   Form,
@@ -37,73 +35,36 @@ function ProjectCollectionEntryCreate() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
 
-  const createValuesForm = useForm<{ values: CreateValueProps[] }>({
+  const createEntryForm = useForm<CreateEntryProps>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
-      console.log('formData', data);
+      console.log('create Entry form formData', data);
       console.log(
-        'validation result',
-        await zodResolver(z.object({ values: z.array(createValueSchema) }))(
-          data,
-          context,
-          options
-        )
+        'create Entry form validation result',
+        await zodResolver(createEntrySchema)(data, context, options)
       );
-      return zodResolver(z.object({ values: z.array(createValueSchema) }))(
-        data,
-        context,
-        options
-      );
+      return zodResolver(createEntrySchema)(data, context, options);
     },
     defaultValues: {
+      projectId: context.currentProject.id,
+      collectionId: context.currentCollection.id,
+      language: context.currentProject.settings.locale.default.id,
       values: context.currentCollection.valueDefinitions.map((definition) => {
         return {
-          projectId: context.currentProject.id,
-          language: context.currentProject.settings.locale.default.id,
+          objectType: 'value',
+          definitionId: definition.id,
           valueType: definition.valueType,
-          content: '',
+          content: null,
         };
       }),
     },
   });
 
-  const onCreateValues: SubmitHandler<{ values: CreateValueProps[] }> = async (
-    props
-  ) => {
+  const onCreateEntry: SubmitHandler<CreateEntryProps> = async (data) => {
+    console.log('Creating Entry:', data);
+
     try {
-      const valuesToCreate = props.values.map((valueProps) => {
-        return context.core.values.create(valueProps);
-      });
-      const values = await Promise.all(valuesToCreate);
-
-      console.log('boo');
-
-      await createEntry({
-        projectId: context.currentProject.id,
-        collectionId: context.currentCollection.id,
-        language: context.currentProject.settings.locale.default.id,
-        valueReferences: values.map((value, index) => {
-          return {
-            // @todo Check if this is reliable: this mapping of created values to their definitions relies on the order of given values to be exaclty in the ordner of it's definition
-            definitionId: context.currentCollection.valueDefinitions[index].id,
-            references: { id: value.id, language: value.language },
-          };
-        }),
-      });
-    } catch (error) {
-      console.error(error);
-      addNotification({
-        intent: NotificationIntent.DANGER,
-        title: 'Failed to create new Values for this Entry',
-        description:
-          'There was an error creating the new Values for this Entry.',
-      });
-    }
-  };
-
-  const createEntry = async (props: CreateEntryProps) => {
-    try {
-      const entry = await context.core.entries.create(props);
+      const entry = await context.core.entries.create(data);
       addNotification({
         intent: NotificationIntent.SUCCESS,
         title: 'Created new Entry for this Collection',
@@ -129,6 +90,111 @@ function ProjectCollectionEntryCreate() {
     }
   };
 
+  // const createValuesForm = useForm<{ values: CreateSharedValueProps[] }>({
+  //   resolver: async (data, context, options) => {
+  //     // you can debug your validation schema here
+  //     console.log('formData', data);
+  //     console.log(
+  //       'validation result',
+  //       await zodResolver(
+  //         z.object({ values: z.array(createSharedValueSchema) })
+  //       )(data, context, options)
+  //     );
+  //     return zodResolver(
+  //       z.object({ values: z.array(createSharedValueSchema) })
+  //     )(data, context, options);
+  //   },
+  //   defaultValues: {
+  //     values: context.currentCollection.valueDefinitions.map((definition) => {
+  //       const baseDefaultDefinition: CreateEntryProps['values'][number] = {
+  //         projectId: context.currentProject.id,
+  //         language: context.currentProject.settings.locale.default.id,
+  //         valueType: definition.valueType,
+  //         content: null as any,
+  //       };
+
+  //       switch (definition.valueType) {
+  //         case ValueTypeSchema.Enum.reference:
+  //           break;
+  //         case ValueTypeSchema.Enum.boolean:
+  //           baseDefaultDefinition.content = definition.defaultValue || false;
+  //           break;
+  //         case ValueTypeSchema.Enum.number:
+  //           baseDefaultDefinition.content = definition.defaultValue || 0;
+  //           break;
+  //         case ValueTypeSchema.Enum.string:
+  //           baseDefaultDefinition.content = definition.defaultValue || '';
+  //           break;
+  //         default:
+  //           break;
+  //       }
+  //       return baseDefaultDefinition;
+  //     }),
+  //   },
+  // });
+
+  // const onCreateValues: SubmitHandler<{
+  //   values: CreateSharedValueProps[];
+  // }> = async (props) => {
+  //   try {
+  //     const valuesToCreate = props.values.map((valueProps) => {
+  //       return context.core.sharedValues.create(valueProps);
+  //     });
+  //     const values = await Promise.all(valuesToCreate);
+
+  //     console.log('boo');
+
+  //     await createEntry({
+  //       projectId: context.currentProject.id,
+  //       collectionId: context.currentCollection.id,
+  //       language: context.currentProject.settings.locale.default.id,
+  //       values: values.map((value, index) => {
+  //         return {
+  //           // @todo Check if this is reliable: this mapping of created values to their definitions relies on the order of given values to be exaclty in the ordner of it's definition
+  //           definitionId: context.currentCollection.valueDefinitions[index].id,
+  //           references: { id: value.id, language: value.language },
+  //         };
+  //       }),
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     addNotification({
+  //       intent: NotificationIntent.DANGER,
+  //       title: 'Failed to create new Values for this Entry',
+  //       description:
+  //         'There was an error creating the new Values for this Entry.',
+  //     });
+  //   }
+  // };
+
+  // const createEntry = async (props: CreateEntryProps) => {
+  //   try {
+  //     const entry = await context.core.entries.create(props);
+  //     addNotification({
+  //       intent: NotificationIntent.SUCCESS,
+  //       title: 'Created new Entry for this Collection',
+  //       description: '',
+  //     });
+  //     router.navigate({
+  //       to: '/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage',
+  //       params: {
+  //         projectId: context.currentProject.id,
+  //         collectionId: context.currentCollection.id,
+  //         entryId: entry.id,
+  //         entryLanguage: entry.language,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     addNotification({
+  //       intent: NotificationIntent.DANGER,
+  //       title: 'Failed to create new Entry for this Collection',
+  //       description:
+  //         'There was an error creating the new Entry for this Collection.',
+  //     });
+  //   }
+  // };
+
   function Title(): string {
     return `Create a new ${context.translate(
       'currentCollection.name',
@@ -150,7 +216,7 @@ function ProjectCollectionEntryCreate() {
   function Actions(): ReactElement {
     return (
       <>
-        <Button onClick={createValuesForm.handleSubmit(onCreateValues)}>
+        <Button onClick={createEntryForm.handleSubmit(onCreateEntry)}>
           <Check className="h-4 w-4 mr-2"></Check>
           Create{' '}
           {context.translate(
@@ -164,10 +230,7 @@ function ProjectCollectionEntryCreate() {
 
   function ValueInput(
     definition: ValueDefinition,
-    field: ControllerRenderProps<
-      { values: CreateValueProps[] },
-      `values.${number}.content`
-    >
+    field: ControllerRenderProps<CreateEntryProps, `values.${number}.content`>
   ): ReactElement {
     switch (definition.inputType) {
       case 'text':
@@ -188,9 +251,9 @@ function ProjectCollectionEntryCreate() {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
-      <Form {...createValuesForm}>
+      <Form {...createEntryForm}>
         <form>
-          {JSON.stringify(createValuesForm.watch())}
+          {JSON.stringify(createEntryForm.watch())}
           {
             // The Collections Field definitions are displayed here, so the user can either create a new field based on the definition or choose an existing one that matches the criterea
           }
@@ -201,7 +264,7 @@ function ProjectCollectionEntryCreate() {
                   <>
                     {/* {JSON.stringify(definition)} */}
                     <FormField
-                      control={createValuesForm.control}
+                      control={createEntryForm.control}
                       name={`values.${index}.content`}
                       render={({ field }) => (
                         <FormItem

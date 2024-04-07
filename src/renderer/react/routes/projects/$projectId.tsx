@@ -68,7 +68,7 @@ export const Route = createFileRoute('/projects/$projectId')({
       if (toEnglish) {
         return toEnglish;
       }
-      return `Missing translation for key "${key}"`;
+      return `(Missing translation for key "${key}")`;
     }
 
     return { currentProject, translate };

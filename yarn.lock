@@ -902,12 +902,12 @@
     fs-extra "^11.1.1"
     minimist "^1.2.8"
 
-"@elek-io/core@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.1.1.tgz#ba75adbcd15b661cc712f82fa266e50db8543aac"
-  integrity sha512-0ePKDucMv2hjpdq/GrUbgWRFH9m5W5nYAgPAn/8dZC0nuEolu+yjb8NT5s1CtnzQUMLnPb7WUsxFTRHu7QEelg==
+"@elek-io/core@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.2.0.tgz#99f967cc936904928007f3e4fddeb5df1dac37e9"
+  integrity sha512-zj9w7rANn5Llmdov4hzl3u9Dpxsz85+P/qa+VgV17p4InTvJ0IgKiAR9eP38Z4APnjnDULCiCmxlWQKJIiRltA==
   dependencies:
-    "@elek-io/shared" "0.2.0"
+    "@elek-io/shared" "0.4.5"
     file-type "^19.0.0"
     fs-extra "^11.2.0"
     is-svg "^5.0.0"
@@ -915,7 +915,16 @@
     p-queue "^8.0.1"
     semver "^7.5.4"
 
-"@elek-io/shared@0.2.0", "@elek-io/shared@^0.2.0":
+"@elek-io/shared@0.4.5":
+  version "0.4.5"
+  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.4.5.tgz#f3aec572026340aaeaa1f56bf85022e0111d4b1d"
+  integrity sha512-GhHWob9E/JmwHVIGtb2+yWBMtIB3Xrmr0My5PlZ2c4+gz1d3dwWtEHBgSiulxFisTqEgD3EPy4fZxu5k+HWt3Q==
+  dependencies:
+    slugify "^1.6.6"
+    uuid "^9.0.1"
+    zod "^3.22.4"
+
+"@elek-io/shared@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.2.0.tgz#d0d2d52b2dbcdec905b494458c4665fa09ae79e4"
   integrity sha512-AxAgLG0O9sRwDjJ8Zae6EDSmMP8hqQf9ejbb++oMNlVopzvwJsMeNJtHp1uQMG4liabPNX5RdpBQyEcQvaqKuA==
@@ -2079,6 +2088,13 @@
     "@tanstack/store" "0.1.3"
     use-sync-external-store "^1.2.0"
 
+"@tanstack/react-table@^8.15.3":
+  version "8.15.3"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-table/-/react-table-8.15.3.tgz#9933222642d5d5bdaea5a78cf6c5d42aa86a1c22"
+  integrity sha512-aocQ4WpWiAh7R+yxNp+DGQYXeVACh5lv2kk96DjYgFiHDCB0cOFoYMT/pM6eDOzeMXR9AvPoLeumTgq8/0qX+w==
+  dependencies:
+    "@tanstack/table-core" "8.15.3"
+
 "@tanstack/react-virtual@^3.0.0-beta.60":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.1.2.tgz#eb62b73cc82e34860604cd3d682a17db590f3c45"
@@ -2113,6 +2129,11 @@
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/@tanstack/store/-/store-0.1.3.tgz#b8410435dac0a0f6d3fe77d49509f296905d4c73"
   integrity sha512-GnolmC8Fr4mvsHE1fGQmR3Nm0eBO3KnZjDU0a+P3TeQNM/dDscFGxtA7p31NplQNW3KwBw4t1RVFmz0VeKLxcw==
+
+"@tanstack/table-core@8.15.3":
+  version "8.15.3"
+  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.15.3.tgz#1a11cef82a458e90694bedfb40dcff610e69460e"
+  integrity sha512-wOgV0HfEvuMOv8RlqdR9MdNNqq0uyvQtP39QOvGlggHvIObOE4exS+D5LGO8LZ3LUXxId2IlUKcHDHaGujWhUg==
 
 "@tanstack/virtual-core@3.1.2":
   version "3.1.2"

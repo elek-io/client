@@ -1,4 +1,4 @@
-import { Asset, supportedExtensionSchema } from '@elek-io/shared';
+import { Asset, supportedAssetExtensionSchema } from '@elek-io/shared';
 import { NotificationIntent, formatBytes, formatTimestamp } from '@elek-io/ui';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ImagePlus, Trash } from 'lucide-react';
@@ -98,7 +98,7 @@ function ProjectAssetsPage() {
         filters: [
           {
             name: 'Supported files',
-            extensions: [...supportedExtensionSchema.options],
+            extensions: [...supportedAssetExtensionSchema.options],
           },
         ],
       });
