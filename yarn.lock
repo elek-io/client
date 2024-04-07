@@ -924,6 +924,15 @@
     uuid "^9.0.1"
     zod "^3.22.4"
 
+"@elek-io/shared@0.4.6":
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.4.6.tgz#ede6e60f1421d13f7ce41156df012b27fb919a3e"
+  integrity sha512-5/bhFim1FRDcxZpBpf+1FHyEv9Wk73R14pErcG1YVJtWW3SRUAD/xu5JUq0iL4kYLA7Z52y6PNXajxXcHitRZA==
+  dependencies:
+    slugify "^1.6.6"
+    uuid "^9.0.1"
+    zod "^3.22.4"
+
 "@elek-io/shared@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.2.0.tgz#d0d2d52b2dbcdec905b494458c4665fa09ae79e4"
