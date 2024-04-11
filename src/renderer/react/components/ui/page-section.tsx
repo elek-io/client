@@ -12,13 +12,13 @@ export interface PageSectionProps extends VariantProps<typeof styles> {
 
 export function PageSection(props: PageSectionProps) {
   return (
-    <section className="px-4 py-6 sm:p-6 lg:pb-8 border-t border-gray-200">
+    <section className="px-4 py-6 sm:p-6 lg:pb-8 border-t border-zinc-200 dark:border-zinc-800">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h2 className="text-base font-semibold leading-6 text-gray-900">
-            {props.title}
-          </h2>
-          <p className="mt-2 text-sm text-gray-700">{props.description}</p>
+          <h2 className="text-base font-semibold leading-6">{props.title}</h2>
+          <p className="mt-2 text-[0.8rem] text-zinc-500 dark:text-zinc-400">
+            {props.description}
+          </p>
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           {props.actions && props.actions}
