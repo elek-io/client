@@ -5,8 +5,10 @@ import {
 import { ScrollArea } from '@/renderer/react/components/ui/scroll-area';
 import {
   Sheet,
+  SheetBody,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -14,16 +16,14 @@ import {
 import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
+  SupportedLanguage,
   TextValueDefinition,
   ValueDefinition,
-  ValueTypeSchema,
   createCollectionSchema,
   supportedIconSchema,
-  supportedLanguageSchema,
   textValueDefinitionSchema,
   uuid,
   valueDefinitionSchema,
-  z,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -65,45 +65,14 @@ function ProjectCollectionCreate() {
   const addNotification = context.store((state) => state.addNotification);
   const [isAddValueDefinitionModalOpen, setIsAddValueDefinitionModalOpen] =
     useState(false);
-  const [selectedValueType, setSelectedValueType] = useState<
-    z.infer<typeof ValueTypeSchema>
-  >(ValueTypeSchema.Enum.string);
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(
+    context.currentUser.locale.id
+  );
   const defaultProjectLocaleId =
     context.currentProject.settings.locale.default.id;
 
-  /**
-   * Provides empty defaults for all supported languages.
-   * Needed for controlled form fields
-   */
-  const supportedProjectLocaleDefaults =
-    context.currentProject.settings.locale.supported
-      .map((locale) => {
-        return {
-          [locale.id]: '',
-        };
-      })
-      .reduce((prev, curr) => {
-        return {
-          ...prev,
-          ...curr,
-        };
-      });
-
   // console.log('Project', context.currentProject.settings.locale);
   // console.log('supportedProjectLocaleDefaults', supportedProjectLocaleDefaults);
-
-  const supportedLanguageDefaults = supportedLanguageSchema.options
-    .map((locale) => {
-      return {
-        [locale]: '',
-      };
-    })
-    .reduce((prev, curr) => {
-      return {
-        ...prev,
-        ...curr,
-      };
-    });
 
   const textValueDefinitionFormState = useForm<TextValueDefinition>({
     resolver: async (data, context, options) => {
@@ -116,8 +85,12 @@ function ProjectCollectionCreate() {
     },
     defaultValues: {
       id: uuid(),
-      name: supportedLanguageDefaults,
-      description: supportedLanguageDefaults,
+      name: {
+        [selectedLanguage]: '',
+      },
+      description: {
+        [selectedLanguage]: '',
+      },
       valueType: 'string',
       inputType: 'text',
       inputWidth: '12',
@@ -168,10 +141,16 @@ function ProjectCollectionCreate() {
       projectId: context.currentProject.id,
       icon: 'home',
       name: {
-        singular: supportedProjectLocaleDefaults,
-        plural: supportedProjectLocaleDefaults,
+        singular: {
+          [selectedLanguage]: '',
+        },
+        plural: {
+          [selectedLanguage]: '',
+        },
       },
-      description: supportedProjectLocaleDefaults,
+      description: {
+        [selectedLanguage]: '',
+      },
       slug: {
         singular: '',
         plural: '',
@@ -411,7 +390,7 @@ function ProjectCollectionCreate() {
                 </SheetTrigger>
                 <SheetContent
                   overlayChildren={
-                    selectedValueType === 'string' && (
+                    valueDefinitionForm.watch('inputType') === 'text' && (
                       <TextValueDefinitionFormExample
                         state={textValueDefinitionFormState}
                         currentLanguage="en"
@@ -427,47 +406,62 @@ function ProjectCollectionCreate() {
                     </SheetDescription>
                   </SheetHeader>
 
-                  <ScrollArea>
-                    <>
-                      <FormField
-                        control={valueDefinitionForm.control}
-                        name={`valueType`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Type</FormLabel>
-                            <FormControl>
-                              <Select onValueChange={field.onChange} {...field}>
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Select an icon" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="string">String</SelectItem>
-                                  <SelectItem value="number">Number</SelectItem>
-                                  <SelectItem value="boolean">
-                                    Boolean
-                                  </SelectItem>
-                                  <SelectItem value="asset">Asset</SelectItem>
-                                  <SelectItem value="list">List</SelectItem>
-                                  <SelectItem value="reference">
-                                    Reference
-                                  </SelectItem>
-                                  <SelectItem value="slug">Slug</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                  <SheetBody>
+                    <ScrollArea>
+                      <div className="px-6">
+                        <FormField
+                          control={valueDefinitionForm.control}
+                          name={`inputType`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Type</FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  {...field}
+                                >
+                                  <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select an icon" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="text">Text</SelectItem>
+                                    <SelectItem value="textarea">
+                                      Textarea
+                                    </SelectItem>
+                                    <SelectItem value="number">
+                                      Number
+                                    </SelectItem>
+                                    <SelectItem value="range">Range</SelectItem>
+                                    <SelectItem value="toggle">
+                                      Toggle
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
 
-                      {selectedValueType === 'string' && (
-                        <TextValueDefinitionForm
-                          state={textValueDefinitionFormState}
-                          currentLanguage="en"
-                          onHandleSubmit={onAddValueDefinition}
-                        ></TextValueDefinitionForm>
+                        {valueDefinitionForm.watch('inputType') === 'text' && (
+                          <TextValueDefinitionForm
+                            state={textValueDefinitionFormState}
+                            currentLanguage="en"
+                          ></TextValueDefinitionForm>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </SheetBody>
+
+                  <SheetFooter>
+                    <Button
+                      className="w-full"
+                      onClick={textValueDefinitionFormState.handleSubmit(
+                        onAddValueDefinition
                       )}
-                    </>
-                  </ScrollArea>
+                    >
+                      Add definition
+                    </Button>
+                  </SheetFooter>
                 </SheetContent>
               </Sheet>
             }

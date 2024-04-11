@@ -1,7 +1,6 @@
 import { SupportedLanguage, TextValueDefinition } from '@elek-io/shared';
 import * as React from 'react';
-import { SubmitHandler, UseFormReturn } from 'react-hook-form';
-import { Button } from '../ui/button';
+import { UseFormReturn } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -11,13 +10,6 @@ import {
   FormLabel,
 } from '../ui/form';
 import { Input } from '../ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 
@@ -25,7 +17,6 @@ export interface TextValueDefinitionFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
   state: UseFormReturn<TextValueDefinition>;
   currentLanguage: SupportedLanguage;
-  onHandleSubmit: SubmitHandler<TextValueDefinition>;
 }
 
 const TextValueDefinitionForm = React.forwardRef<
@@ -34,7 +25,7 @@ const TextValueDefinitionForm = React.forwardRef<
 >(({ className, state, ...props }, ref) => {
   return (
     <Form {...state}>
-      <form onSubmit={state.handleSubmit(props.onHandleSubmit)}>
+      <form className="space-y-6">
         <FormField
           control={state.control}
           name={`name.${props.currentLanguage}`}
@@ -65,24 +56,24 @@ const TextValueDefinitionForm = React.forwardRef<
           )}
         />
 
-        <hr className="p-2" />
-
         <FormField
           control={state.control}
           name={`isRequired`}
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Required</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+              <div>
+                <FormLabel>Required</FormLabel>
+                <FormDescription>
+                  Required fields need to be filled before a CollectionItem can
+                  be created or updated
+                </FormDescription>
+              </div>
               <FormControl>
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormDescription>
-                Required fields need to be filled before a CollectionItem can be
-                created or updated
-              </FormDescription>
             </FormItem>
           )}
         />
@@ -91,23 +82,46 @@ const TextValueDefinitionForm = React.forwardRef<
           control={state.control}
           name={`isUnique`}
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Unique</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+              <div>
+                <FormLabel>Unique</FormLabel>
+                <FormDescription>
+                  You won't be able to create an Entry if there is an existing
+                  Entry with identical content
+                </FormDescription>
+              </div>
               <FormControl>
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormDescription>
-                You won't be able to create an Entry if there is an existing
-                Entry with identical content
-              </FormDescription>
             </FormItem>
           )}
         />
 
         <FormField
+          control={state.control}
+          name={`isDisabled`}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+              <div>
+                <FormLabel>Disabled</FormLabel>
+                <FormDescription>
+                  You won't be able to change the Value if this is active
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {/* <FormField
           control={state.control}
           name={`inputWidth`}
           render={({ field }) => (
@@ -128,11 +142,7 @@ const TextValueDefinitionForm = React.forwardRef<
               </FormControl>
             </FormItem>
           )}
-        />
-
-        <Button onClick={state.handleSubmit(props.onHandleSubmit)}>
-          Add Field definition
-        </Button>
+        /> */}
       </form>
     </Form>
   );
@@ -156,11 +166,15 @@ const TextValueDefinitionFormExample = React.forwardRef<
       name={`example`}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
-            {state.watch(`name.${props.currentLanguage}`) || 'Example'}
-          </FormLabel>
+          <FormLabel>{state.watch(`name.${props.currentLanguage}`)}</FormLabel>
           <FormControl>
-            <Input {...field} value="" className="bg-white dark:bg-zinc-900" />
+            <Input
+              {...field}
+              required={state.watch('isRequired')}
+              disabled={state.watch('isDisabled')}
+              value=""
+              className="bg-white dark:bg-zinc-900"
+            />
           </FormControl>
           <FormDescription>
             {state.watch(`description.${props.currentLanguage}`)}
