@@ -1,12 +1,13 @@
 import {
   SupportedLanguage,
   TextValueDefinition,
+  supportedLanguageSchema,
   textValueDefinitionSchema,
   uuid,
 } from '@elek-io/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as React from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, UseFormReturn, useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
   Form,
@@ -27,170 +28,154 @@ import {
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 
+const supportedLanguageDefaults = supportedLanguageSchema.options
+  .map((locale) => {
+    return {
+      [locale]: '',
+    };
+  })
+  .reduce((prev, curr) => {
+    return {
+      ...prev,
+      ...curr,
+    };
+  });
+
+const textValueDefinitionFormState = useForm<TextValueDefinition>({
+  resolver: async (data, context, options) => {
+    // you can debug your validation schema here
+    console.log(
+      'TextValueDefinition validation result',
+      await zodResolver(textValueDefinitionSchema)(data, context, options)
+    );
+    return zodResolver(textValueDefinitionSchema)(data, context, options);
+  },
+  defaultValues: {
+    id: uuid(),
+    name: supportedLanguageDefaults,
+    description: supportedLanguageDefaults,
+    valueType: 'string',
+    inputType: 'text',
+    inputWidth: '12',
+    defaultValue: '',
+    min: 0,
+    max: 250,
+    isRequired: true,
+    isUnique: false,
+    isDisabled: false,
+  },
+});
+
 export interface TextValueDefinitionFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  language: SupportedLanguage;
+  state: UseFormReturn<TextValueDefinition>;
+  currentLanguage: SupportedLanguage;
   onHandleSubmit: SubmitHandler<TextValueDefinition>;
 }
 
 const TextValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
   TextValueDefinitionFormProps
->(({ className, ...props }, ref) => {
-  const formHook = useForm<TextValueDefinition>({
-    resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log(
-        'TextValueDefinition validation result',
-        await zodResolver(textValueDefinitionSchema)(data, context, options)
-      );
-      return zodResolver(textValueDefinitionSchema)(data, context, options);
-    },
-    defaultValues: {
-      id: uuid(),
-      name: {
-        [props.language]: '',
-      },
-      description: {
-        [props.language]: '',
-      },
-      valueType: 'string',
-      inputType: 'text',
-      inputWidth: '12',
-      defaultValue: '',
-      min: 0,
-      max: 250,
-      isRequired: true,
-      isUnique: false,
-      isDisabled: false,
-    },
-  });
-
+>(({ className, state, ...props }, ref) => {
   return (
-    <Form {...formHook}>
-      <form onSubmit={formHook.handleSubmit(props.onHandleSubmit)}>
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-8">
-            <FormField
-              control={formHook.control}
-              name={`name.${props.language}`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+    <Form {...state}>
+      <form onSubmit={state.handleSubmit(props.onHandleSubmit)}>
+        <FormField
+          control={state.control}
+          name={`name.${props.currentLanguage}`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={formHook.control}
-              name={`description.${props.language}`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Describe what to input into this field. This text will be
-                    displayed under the field to guide users
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={state.control}
+          name={`description.${props.currentLanguage}`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea {...field} />
+              </FormControl>
+              <FormDescription>
+                Describe what to input into this field. This text will be
+                displayed under the field to guide users
+              </FormDescription>
+            </FormItem>
+          )}
+        />
 
-            <hr className="p-2" />
+        <hr className="p-2" />
 
-            <FormField
-              control={formHook.control}
-              name={`isRequired`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Required</FormLabel>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Required fields need to be filled before a CollectionItem
-                    can be created or updated
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={state.control}
+          name={`isRequired`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Required</FormLabel>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormDescription>
+                Required fields need to be filled before a CollectionItem can be
+                created or updated
+              </FormDescription>
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={formHook.control}
-              name={`isUnique`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Unique</FormLabel>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    You won't be able to create an Entry if there is an existing
-                    Entry with identical content
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={state.control}
+          name={`isUnique`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Unique</FormLabel>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormDescription>
+                You won't be able to create an Entry if there is an existing
+                Entry with identical content
+              </FormDescription>
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={formHook.control}
-              name={`inputWidth`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Field width</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} {...field}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select an icon" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="3">3/12</SelectItem>
-                        <SelectItem value="4">4/12</SelectItem>
-                        <SelectItem value="6">6/12</SelectItem>
-                        <SelectItem value="12">12/12</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="col-span-4">
-            <div className="sticky top-6">
-              <FormField
-                control={formHook.control}
-                // @ts-ignore: This is just the example input
-                name={`example`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {formHook.watch(`name.${props.language}`) || 'Example'}
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} value="" />
-                    </FormControl>
-                    <FormDescription>
-                      {formHook.watch(`description.${props.language}`)}
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-        </div>
+        <FormField
+          control={state.control}
+          name={`inputWidth`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Field width</FormLabel>
+              <FormControl>
+                <Select onValueChange={field.onChange} {...field}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select an icon" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3/12</SelectItem>
+                    <SelectItem value="4">4/12</SelectItem>
+                    <SelectItem value="6">6/12</SelectItem>
+                    <SelectItem value="12">12/12</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
-        <Button onClick={formHook.handleSubmit(props.onHandleSubmit)}>
+        <Button onClick={state.handleSubmit(props.onHandleSubmit)}>
           Add Field definition
         </Button>
       </form>
@@ -199,4 +184,41 @@ const TextValueDefinitionForm = React.forwardRef<
 });
 TextValueDefinitionForm.displayName = 'TextValueDefinitionForm';
 
-export { TextValueDefinitionForm };
+export interface TextValueDefinitionFormExampleProps
+  extends React.HTMLAttributes<HTMLFormElement> {
+  state: UseFormReturn<TextValueDefinition>;
+  currentLanguage: SupportedLanguage;
+}
+
+const TextValueDefinitionFormExample = React.forwardRef<
+  HTMLFormElement,
+  TextValueDefinitionFormExampleProps
+>(({ className, state, ...props }, ref) => {
+  return (
+    <FormField
+      control={state.control}
+      // @ts-ignore: This is just the example input
+      name={`example`}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            {state.watch(`name.${props.currentLanguage}`) || 'Example'}
+          </FormLabel>
+          <FormControl>
+            <Input {...field} value="" className="bg-white dark:bg-zinc-900" />
+          </FormControl>
+          <FormDescription>
+            {state.watch(`description.${props.currentLanguage}`)}
+          </FormDescription>
+        </FormItem>
+      )}
+    />
+  );
+});
+TextValueDefinitionFormExample.displayName = 'TextValueDefinitionFormExample';
+
+export {
+  TextValueDefinitionForm,
+  TextValueDefinitionFormExample,
+  textValueDefinitionFormState,
+};
