@@ -129,6 +129,11 @@ function RootRoute() {
                   isProjectSidebarNarrow && 'rotate-180'
                 )}
               ></ArrowLeftToLine>
+              <span className="sr-only">
+                {isProjectSidebarNarrow
+                  ? '__root.buttonSetSidebarToWide'
+                  : '__root.buttonSetSidebarToNarrow'}
+              </span>
             </Button>
           </div>
           <div className="p-2 flex-auto flex justify-between items-center">
@@ -139,6 +144,7 @@ function RootRoute() {
                 onClick={() => router.history.back()}
               >
                 <ArrowLeft className="h-4 w-4"></ArrowLeft>
+                <span className="sr-only">{'__root.buttonNavigateBack'}</span>
               </Button>
               <Button
                 variant="ghost"
@@ -146,6 +152,9 @@ function RootRoute() {
                 onClick={() => router.history.forward()}
               >
                 <ArrowRight className="h-4 w-4"></ArrowRight>
+                <span className="sr-only">
+                  {'__root.buttonNavigateForward'}
+                </span>
               </Button>
 
               <Breadcrumb className="flex ml-2">

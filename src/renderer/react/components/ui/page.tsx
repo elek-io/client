@@ -25,7 +25,7 @@ export const Page = React.forwardRef<HTMLElement, PageProps>(
         onDragEnter={props.onDragEnter}
         onDrop={props.onDrop}
       >
-        <div className="relative bg-brand-900 text-zinc-200 pb-32">
+        <div className="relative bg-brand-50 dark:bg-brand-950 text-zinc-900 dark:text-white pb-32">
           <div className="relative container mx-auto">
             <div className="md:flex md:items-center px-4 sm:px-6 lg:px-8 py-10">
               <div className="md:flex-auto">
@@ -47,11 +47,11 @@ export const Page = React.forwardRef<HTMLElement, PageProps>(
               {props.layout === 'overlap' ? (
                 <>{props.children}</>
               ) : props.layout === 'overlap-card-no-space' ? (
-                <div className="rounded-lg bg-white dark:bg-zinc-900 shadow">
+                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow">
                   {props.children}
                 </div>
               ) : (
-                <div className="rounded-lg bg-white dark:bg-zinc-900 shadow p-4">
+                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow p-4">
                   {props.children}
                 </div>
               )}
