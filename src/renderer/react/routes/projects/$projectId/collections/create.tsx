@@ -1,4 +1,8 @@
-import { TextValueDefinitionForm } from '@/renderer/react/components/forms/text-value-definition-form';
+import {
+  TextValueDefinitionForm,
+  TextValueDefinitionFormExample,
+  textValueDefinitionFormState,
+} from '@/renderer/react/components/forms/text-value-definition-form';
 import {
   Sheet,
   SheetContent,
@@ -364,7 +368,16 @@ function ProjectCollectionCreate() {
                     Add Value definition
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
+                <SheetContent
+                  overlayChildren={
+                    selectedValueType === 'string' && (
+                      <TextValueDefinitionFormExample
+                        state={textValueDefinitionFormState}
+                        currentLanguage="en"
+                      ></TextValueDefinitionFormExample>
+                    )
+                  }
+                >
                   <SheetHeader>
                     <SheetTitle>Add a new Value definition</SheetTitle>
                     <SheetDescription>
@@ -408,7 +421,8 @@ function ProjectCollectionCreate() {
 
                     {selectedValueType === 'string' && (
                       <TextValueDefinitionForm
-                        language="en"
+                        state={textValueDefinitionFormState}
+                        currentLanguage="en"
                         onHandleSubmit={onAddValueDefinition}
                       ></TextValueDefinitionForm>
                     )}
