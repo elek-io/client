@@ -69,7 +69,7 @@ function ProjectCollectionIndexPage() {
           }
         >
           <Plus className="w-4 h-4 mr-2"></Plus>
-          {`Create new ${context.translate(
+          {`Create ${context.translate(
             'currentCollection.name.singular',
             context.currentCollection.name.singular
           )}`}

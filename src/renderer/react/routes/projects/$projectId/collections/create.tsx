@@ -238,7 +238,44 @@ function ProjectCollectionCreate() {
       <Form {...createCollectionForm}>
         <form onSubmit={createCollectionForm.handleSubmit(onCreate)}>
           <div className="space-y-4 p-8">
-            <div className="grid grid-cols-12 gap-4">
+            <div className="grid grid-cols-12 gap-6">
+              <FormField
+                control={createCollectionForm.control}
+                name={`name.plural.${defaultProjectLocaleId}`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-6">
+                    <FormLabel>Name (Plural)</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The name of your new collection. Choose a short name in
+                      plural that explains the content of the collection - e.g.
+                      "Blogposts".
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={createCollectionForm.control}
+                name={`name.singular.${defaultProjectLocaleId}`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-6">
+                    <FormLabel>Name (Singluar)</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The name of each Entry inside your new Collection. Choose
+                      a short name in singluar - e.g. "Blogpost".
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={createCollectionForm.control}
                 name={`icon`}
@@ -248,7 +285,7 @@ function ProjectCollectionCreate() {
                     <FormControl>
                       <Select onValueChange={field.onChange} {...field}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select an icon" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {supportedIconSchema.options.map((option) => {
@@ -267,17 +304,15 @@ function ProjectCollectionCreate() {
 
               <FormField
                 control={createCollectionForm.control}
-                name={`name.plural.${defaultProjectLocaleId}`}
+                name={`description.${defaultProjectLocaleId}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-9">
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input placeholder="Blogposts" {...field} />
+                      <Textarea {...field} />
                     </FormControl>
                     <FormDescription>
-                      The name of your new collection. Choose a short name in
-                      plural that explains the content of the collection - e.g.
-                      "Blogposts".
+                      A description of what this new Collection is used for.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -285,82 +320,43 @@ function ProjectCollectionCreate() {
               />
             </div>
 
-            {/* 
-          <FormField
-            control={createCollectionForm.control}
-            name={`slug.plural`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Collection-Slug</FormLabel>
-                <FormControl>
-                  <Input placeholder="blogposts" {...field} />
-                </FormControl>
-                <FormDescription>
-                  A lowercase version without any special characters of the
-                  Collection name. It's used to identify this Collection and
-                  needs to be unique.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={createCollectionForm.control}
-            name={`name.singular.${defaultProjectLocaleId}`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name of each Entry</FormLabel>
-                <FormControl>
-                  <Input placeholder="Blogpost" {...field} />
-                </FormControl>
-                <FormDescription>
-                  The name of each Entry inside your new Collection. Choose a
-                  short name in singluar - e.g. "Blogpost".
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={createCollectionForm.control}
-            name={`slug.singular`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Entry-Slug</FormLabel>
-                <FormControl>
-                  <Input placeholder="blogpost" {...field} />
-                </FormControl>
-                <FormDescription>
-                  A lowercase version without any special characters of the
-                  Entry's name. It's used to identify this Collection's Entries
-                  and needs to be unique.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-
-            <FormField
+            {/* <FormField
               control={createCollectionForm.control}
-              name={`description.${defaultProjectLocaleId}`}
+              name={`slug.plural`}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Collection-Slug</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="This Collection contains individual posts that are displayed inside our blog."
-                      {...field}
-                    />
+                    <Input placeholder="blogposts" {...field} />
                   </FormControl>
                   <FormDescription>
-                    A description of what this new Collection is used for.
+                    A lowercase version without any special characters of the
+                    Collection name. It's used to identify this Collection and
+                    needs to be unique.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
+
+            {/* <FormField
+              control={createCollectionForm.control}
+              name={`slug.singular`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Entry-Slug</FormLabel>
+                  <FormControl>
+                    <Input placeholder="blogpost" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    A lowercase version without any special characters of the
+                    Entry's name. It's used to identify this Collection's
+                    Entries and needs to be unique.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
           </div>
 
           <PageSection
@@ -494,11 +490,11 @@ function ProjectCollectionCreate() {
                 }
               )}
             </div>
-            <p>
+            {/* <p>
               Dynamic Field generation. See
               https://react-hook-form.com/api/usefieldarray/
             </p>
-            {JSON.stringify(createCollectionForm.watch())}
+            {JSON.stringify(createCollectionForm.watch())} */}
           </PageSection>
         </form>
       </Form>
