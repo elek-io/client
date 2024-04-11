@@ -1,8 +1,8 @@
 import {
   TextValueDefinitionForm,
   TextValueDefinitionFormExample,
-  textValueDefinitionFormState,
 } from '@/renderer/react/components/forms/text-value-definition-form';
+import { ScrollArea } from '@/renderer/react/components/ui/scroll-area';
 import {
   Sheet,
   SheetContent,
@@ -14,10 +14,13 @@ import {
 import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
+  TextValueDefinition,
   ValueDefinition,
   ValueTypeSchema,
   createCollectionSchema,
   supportedIconSchema,
+  supportedLanguageSchema,
+  textValueDefinitionSchema,
   uuid,
   valueDefinitionSchema,
   z,
@@ -88,6 +91,44 @@ function ProjectCollectionCreate() {
 
   // console.log('Project', context.currentProject.settings.locale);
   // console.log('supportedProjectLocaleDefaults', supportedProjectLocaleDefaults);
+
+  const supportedLanguageDefaults = supportedLanguageSchema.options
+    .map((locale) => {
+      return {
+        [locale]: '',
+      };
+    })
+    .reduce((prev, curr) => {
+      return {
+        ...prev,
+        ...curr,
+      };
+    });
+
+  const textValueDefinitionFormState = useForm<TextValueDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'TextValueDefinition validation result',
+        await zodResolver(textValueDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(textValueDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      id: uuid(),
+      name: supportedLanguageDefaults,
+      description: supportedLanguageDefaults,
+      valueType: 'string',
+      inputType: 'text',
+      inputWidth: '12',
+      defaultValue: '',
+      min: 0,
+      max: 250,
+      isRequired: true,
+      isUnique: false,
+      isDisabled: false,
+    },
+  });
 
   const valueDefinitionForm = useForm<ValueDefinition>({
     resolver: async (data, context, options) => {
@@ -386,47 +427,47 @@ function ProjectCollectionCreate() {
                     </SheetDescription>
                   </SheetHeader>
 
-                  <div>
-                    <p>
-                      ToDo: Field type should be a grid with visual
-                      representation of the different types available
-                    </p>
-                    <FormField
-                      control={valueDefinitionForm.control}
-                      name={`valueType`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Type</FormLabel>
-                          <FormControl>
-                            <Select onValueChange={field.onChange} {...field}>
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Select an icon" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="string">String</SelectItem>
-                                <SelectItem value="number">Number</SelectItem>
-                                <SelectItem value="boolean">Boolean</SelectItem>
-                                <SelectItem value="asset">Asset</SelectItem>
-                                <SelectItem value="list">List</SelectItem>
-                                <SelectItem value="reference">
-                                  Reference
-                                </SelectItem>
-                                <SelectItem value="slug">Slug</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                  <ScrollArea>
+                    <>
+                      <FormField
+                        control={valueDefinitionForm.control}
+                        name={`valueType`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Type</FormLabel>
+                            <FormControl>
+                              <Select onValueChange={field.onChange} {...field}>
+                                <SelectTrigger className="w-[180px]">
+                                  <SelectValue placeholder="Select an icon" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="string">String</SelectItem>
+                                  <SelectItem value="number">Number</SelectItem>
+                                  <SelectItem value="boolean">
+                                    Boolean
+                                  </SelectItem>
+                                  <SelectItem value="asset">Asset</SelectItem>
+                                  <SelectItem value="list">List</SelectItem>
+                                  <SelectItem value="reference">
+                                    Reference
+                                  </SelectItem>
+                                  <SelectItem value="slug">Slug</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
 
-                    {selectedValueType === 'string' && (
-                      <TextValueDefinitionForm
-                        state={textValueDefinitionFormState}
-                        currentLanguage="en"
-                        onHandleSubmit={onAddValueDefinition}
-                      ></TextValueDefinitionForm>
-                    )}
-                  </div>
+                      {selectedValueType === 'string' && (
+                        <TextValueDefinitionForm
+                          state={textValueDefinitionFormState}
+                          currentLanguage="en"
+                          onHandleSubmit={onAddValueDefinition}
+                        ></TextValueDefinitionForm>
+                      )}
+                    </>
+                  </ScrollArea>
                 </SheetContent>
               </Sheet>
             }

@@ -1,13 +1,6 @@
-import {
-  SupportedLanguage,
-  TextValueDefinition,
-  supportedLanguageSchema,
-  textValueDefinitionSchema,
-  uuid,
-} from '@elek-io/shared';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { SupportedLanguage, TextValueDefinition } from '@elek-io/shared';
 import * as React from 'react';
-import { SubmitHandler, UseFormReturn, useForm } from 'react-hook-form';
+import { SubmitHandler, UseFormReturn } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
   Form,
@@ -27,44 +20,6 @@ import {
 } from '../ui/select';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
-
-const supportedLanguageDefaults = supportedLanguageSchema.options
-  .map((locale) => {
-    return {
-      [locale]: '',
-    };
-  })
-  .reduce((prev, curr) => {
-    return {
-      ...prev,
-      ...curr,
-    };
-  });
-
-const textValueDefinitionFormState = useForm<TextValueDefinition>({
-  resolver: async (data, context, options) => {
-    // you can debug your validation schema here
-    console.log(
-      'TextValueDefinition validation result',
-      await zodResolver(textValueDefinitionSchema)(data, context, options)
-    );
-    return zodResolver(textValueDefinitionSchema)(data, context, options);
-  },
-  defaultValues: {
-    id: uuid(),
-    name: supportedLanguageDefaults,
-    description: supportedLanguageDefaults,
-    valueType: 'string',
-    inputType: 'text',
-    inputWidth: '12',
-    defaultValue: '',
-    min: 0,
-    max: 250,
-    isRequired: true,
-    isUnique: false,
-    isDisabled: false,
-  },
-});
 
 export interface TextValueDefinitionFormProps
   extends React.HTMLAttributes<HTMLFormElement> {
@@ -217,8 +172,4 @@ const TextValueDefinitionFormExample = React.forwardRef<
 });
 TextValueDefinitionFormExample.displayName = 'TextValueDefinitionFormExample';
 
-export {
-  TextValueDefinitionForm,
-  TextValueDefinitionFormExample,
-  textValueDefinitionFormState,
-};
+export { TextValueDefinitionForm, TextValueDefinitionFormExample };
