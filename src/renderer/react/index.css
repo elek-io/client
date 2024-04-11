@@ -44,3 +44,9 @@
 .window-draggable-area a {
   -webkit-app-region: no-drag;
 }
+/*
+  Overwrite class used for elemtents overlaying the draggable area like the Sheet component
+*/
+.window-not-draggable-area {
+  -webkit-app-region: no-drag;
+}
