@@ -86,6 +86,14 @@ function RootRoute() {
     .map((part, index, array) => {
       const path = array.slice(0, index + 1).join('/');
 
+      const projectMatch = context.projects.list.find((project) => {
+        return project.id === part;
+      });
+
+      if (projectMatch) {
+        part = projectMatch.name;
+      }
+
       return {
         part,
         path,
