@@ -25,7 +25,7 @@ export const Page = React.forwardRef<HTMLElement, PageProps>(
         onDragEnter={props.onDragEnter}
         onDrop={props.onDrop}
       >
-        <div className="relative bg-brand-50 dark:bg-brand-950 text-zinc-900 dark:text-white pb-32">
+        <div className="relative bg-brand-950 text-white pb-32">
           <div className="relative container mx-auto">
             <div className="md:flex md:items-center px-4 sm:px-6 lg:px-8 py-10">
               <div className="md:flex-auto">
