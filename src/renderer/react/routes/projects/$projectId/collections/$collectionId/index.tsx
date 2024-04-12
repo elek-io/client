@@ -1,5 +1,6 @@
 import { formatTimestamp } from '@/util';
 import { Entry } from '@elek-io/shared';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import {
   ColumnDef,
@@ -39,16 +40,45 @@ function ProjectCollectionIndexPage() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
   const [pagination, setPagination] = useState({
-    pageIndex: 0, //initial page index
-    pageSize: 15, //default page size
+    pageIndex: 0, // initial page index
+    pageSize: 1, // default page size
+  });
+  const dataQuery = useQuery({
+    queryKey: ['data', pagination],
+    queryFn: () =>
+      context.core.entries.list({
+        projectId: context.currentProject.id,
+        collectionId: context.currentCollection.id,
+        limit: pagination.pageSize,
+        offset:
+          pagination.pageIndex === 0
+            ? 0
+            : pagination.pageSize * pagination.pageIndex,
+      }),
+    placeholderData: keepPreviousData, // don't have 0 rows flash while changing pages/loading next page
   });
   const table = useReactTable({
-    data: data(),
+    data:
+      dataQuery.data?.list.map((entry) => {
+        const row: { [x: string]: unknown } = {
+          id: entry.id,
+          language: entry.language,
+          created: formatTimestamp(entry.created, context.currentUser.locale.id)
+            .relative,
+          updated: formatTimestamp(entry.updated, context.currentUser.locale.id)
+            .relative,
+        };
+
+        entry.values.map((value) => {
+          row[value.definitionId] = value.content;
+        });
+        return row;
+      }) ?? [],
     columns: columns(),
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    rowCount: context.currentEntries.total,
-    onPaginationChange: setPagination, //update the pagination state when internal APIs mutate the pagination state
+    rowCount: dataQuery.data?.total,
+    onPaginationChange: setPagination, // update the pagination state when internal APIs mutate the pagination state
     state: {
       pagination,
     },
@@ -142,26 +172,6 @@ function ProjectCollectionIndexPage() {
     return columns;
   }
 
-  function data() {
-    const rows = context.currentEntries.list.map((entry) => {
-      const row: { [x: string]: unknown } = {
-        id: entry.id,
-        language: entry.language,
-        created: formatTimestamp(entry.created, context.currentUser.locale.id)
-          .relative,
-        updated: formatTimestamp(entry.updated, context.currentUser.locale.id)
-          .relative,
-      };
-
-      entry.values.map((value) => {
-        row[value.definitionId] = value.content;
-      });
-      return row;
-    });
-
-    return rows;
-  }
-
   function onRowClicked(id: string, language: string) {
     router.navigate({
       to: '/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage',
@@ -233,13 +243,21 @@ function ProjectCollectionIndexPage() {
 
       <div className="flex justify-end items-center p-6">
         <div className="flex-1 text-sm text-zinc-400">
-          Showing {table.getFilteredRowModel().rows.length} out of{' '}
-          {table.getRowCount()} total{' '}
+          Showing{' '}
+          {table
+            .getFilteredRowModel()
+            .rows.length.toLocaleString(context.currentUser.locale.id)}{' '}
+          of {table.getRowCount().toLocaleString(context.currentUser.locale.id)}{' '}
+          total{' '}
           {context.translate(
             'currentCollection.name.plural',
             context.currentCollection.name.plural
           )}{' '}
-          ({table.getFilteredSelectedRowModel().rows.length} are selected)
+          (
+          {table
+            .getFilteredSelectedRowModel()
+            .rows.length.toLocaleString(context.currentUser.locale.id)}{' '}
+          selected)
         </div>
         <Pagination>
           <PaginationContent>
@@ -253,7 +271,10 @@ function ProjectCollectionIndexPage() {
             {Array.from({ length: table.getPageCount() }).map(
               (value, index) => (
                 <PaginationItem key={index + 1}>
-                  <PaginationLink isActive={pagination.pageIndex === index}>
+                  <PaginationLink
+                    onClick={() => table.setPageIndex(index)}
+                    isActive={pagination.pageIndex === index}
+                  >
                     {index + 1}
                   </PaginationLink>
                 </PaginationItem>
