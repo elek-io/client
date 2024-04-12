@@ -8,12 +8,14 @@ export const Route = createFileRoute(
       projectId: params.projectId,
       id: params.collectionId,
     });
-    const currentEntries = await context.core.entries.list({
-      projectId: params.projectId,
-      collectionId: params.collectionId,
-    });
 
-    return { currentCollection, currentEntries };
+    // Probably not needed, since the index.tsx does this query directly while paginating
+    // const currentEntries = await context.core.entries.list({
+    //   projectId: params.projectId,
+    //   collectionId: params.collectionId,
+    // });
+
+    return { currentCollection };
   },
   component: ProjectCollectionLayout,
 });
