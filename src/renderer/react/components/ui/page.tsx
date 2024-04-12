@@ -51,7 +51,7 @@ export const Page = React.forwardRef<HTMLElement, PageProps>(
                   {props.children}
                 </div>
               ) : (
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow p-4">
+                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow p-6">
                   {props.children}
                 </div>
               )}
