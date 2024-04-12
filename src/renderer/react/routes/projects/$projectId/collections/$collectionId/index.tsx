@@ -44,7 +44,7 @@ function ProjectCollectionIndexPage() {
     pageSize: 15, // default page size
   });
   const dataQuery = useQuery({
-    queryKey: ['data', pagination],
+    queryKey: ['entries', context.currentCollection.id, pagination],
     queryFn: () =>
       context.core.entries.list({
         projectId: context.currentProject.id,
