@@ -8,9 +8,17 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { Plus, Settings } from 'lucide-react';
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import { Button } from '../../../../../components/ui/button';
 import { Page } from '../../../../../components/ui/page';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '../../../../../components/ui/pagination';
 import {
   Table,
   TableBody,
@@ -30,10 +38,20 @@ function ProjectCollectionIndexPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0, //initial page index
+    pageSize: 15, //default page size
+  });
   const table = useReactTable({
     data: data(),
     columns: columns(),
     getCoreRowModel: getCoreRowModel(),
+    manualPagination: true,
+    rowCount: context.currentEntries.total,
+    onPaginationChange: setPagination, //update the pagination state when internal APIs mutate the pagination state
+    state: {
+      pagination,
+    },
   });
 
   function Title(): string {
@@ -161,6 +179,7 @@ function ProjectCollectionIndexPage() {
       title={Title()}
       description={<Description></Description>}
       actions={<Actions></Actions>}
+      layout="overlap-card-no-space"
     >
       <Table>
         <TableHeader>
@@ -211,6 +230,48 @@ function ProjectCollectionIndexPage() {
           )}
         </TableBody>
       </Table>
+
+      <div className="flex justify-end items-center p-6">
+        <div className="flex-1 text-sm text-zinc-400">
+          Showing {table.getFilteredRowModel().rows.length} out of{' '}
+          {table.getRowCount()} total{' '}
+          {context.translate(
+            'currentCollection.name.plural',
+            context.currentCollection.name.plural
+          )}{' '}
+          ({table.getFilteredSelectedRowModel().rows.length} are selected)
+        </div>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: table.getPageCount() }).map(
+              (value, index) => (
+                <PaginationItem key={index + 1}>
+                  <PaginationLink isActive={pagination.pageIndex === index}>
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            )}
+
+            {/* <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem> */}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </Page>
   );
 }
