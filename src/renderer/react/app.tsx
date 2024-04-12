@@ -1,5 +1,6 @@
 import '@fontsource-variable/montserrat';
 import '@fontsource/roboto';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   RouterProvider,
   createHashHistory,
@@ -30,6 +31,9 @@ declare module '@tanstack/react-router' {
   }
 }
 
+// Initialize TanStack Query
+const queryClient = new QueryClient();
+
 // Render the app
 const rootElement = document.getElementById('app')!;
 if (!rootElement.innerHTML) {
@@ -37,7 +41,9 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>
   );
