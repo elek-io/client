@@ -126,7 +126,7 @@ function ProjectCollectionIndexPage() {
 
   function data() {
     const rows = context.currentEntries.list.map((entry) => {
-      const row: { [x: string]: string } = {
+      const row: { [x: string]: unknown } = {
         id: entry.id,
         language: entry.language,
         created: formatTimestamp(entry.created, context.currentUser.locale.id)
