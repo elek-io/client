@@ -41,7 +41,7 @@ function ProjectCollectionIndexPage() {
   const addNotification = context.store((state) => state.addNotification);
   const [pagination, setPagination] = useState({
     pageIndex: 0, // initial page index
-    pageSize: 1, // default page size
+    pageSize: 15, // default page size
   });
   const dataQuery = useQuery({
     queryKey: ['data', pagination],
