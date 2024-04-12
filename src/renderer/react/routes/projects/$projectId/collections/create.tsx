@@ -23,7 +23,6 @@ import {
   NumberValueDefinition,
   SupportedLanguage,
   TextValueDefinition,
-  ValueDefinition,
   ValueDefinitionBaseSchema,
   ValueInputTypeSchema,
   createCollectionSchema,
@@ -81,19 +80,20 @@ function ProjectCollectionCreate() {
   const defaultProjectLocaleId =
     context.currentProject.settings.locale.default.id;
 
-  const valueDefinitionBaseDefaults: z.infer<typeof ValueDefinitionBaseSchema> =
-    {
-      id: uuid(),
-      name: {
-        [selectedLanguage]: '',
-      },
-      description: {
-        [selectedLanguage]: '',
-      },
-      isRequired: false,
-      isDisabled: false,
-      inputWidth: '12',
-    };
+  const valueDefinitionBaseDefaults: Omit<
+    z.infer<typeof ValueDefinitionBaseSchema>,
+    'id'
+  > = {
+    name: {
+      [selectedLanguage]: '',
+    },
+    description: {
+      [selectedLanguage]: '',
+    },
+    isRequired: false,
+    isDisabled: false,
+    inputWidth: '12',
+  };
 
   const textValueDefinitionFormState = useForm<TextValueDefinition>({
     resolver: async (data, context, options) => {
@@ -106,6 +106,7 @@ function ProjectCollectionCreate() {
     },
     defaultValues: {
       ...valueDefinitionBaseDefaults,
+      id: uuid(),
       valueType: 'string',
       inputType: 'text',
       defaultValue: '',
@@ -126,6 +127,7 @@ function ProjectCollectionCreate() {
     },
     defaultValues: {
       ...valueDefinitionBaseDefaults,
+      id: uuid(),
       valueType: 'number',
       inputType: 'number',
       defaultValue: 0,
@@ -230,11 +232,21 @@ function ProjectCollectionCreate() {
     switch (selectedInputType) {
       case 'text':
         return await textValueDefinitionFormState.handleSubmit(
-          onAddValueDefinition
+          (textDefinition) => {
+            valueDefinitions.append(textDefinition);
+            setIsAddValueDefinitionSheetOpen(false);
+            textValueDefinitionFormState.reset();
+            textValueDefinitionFormState.setValue('id', uuid());
+          }
         )();
       case 'number':
         return await numberValueDefinitionFormState.handleSubmit(
-          onAddValueDefinition
+          (numberDefinition) => {
+            valueDefinitions.append(numberDefinition);
+            setIsAddValueDefinitionSheetOpen(false);
+            numberValueDefinitionFormState.reset();
+            numberValueDefinitionFormState.setValue('id', uuid());
+          }
         )();
       default:
         throw new Error(
@@ -242,15 +254,6 @@ function ProjectCollectionCreate() {
         );
     }
   }
-
-  const onAddValueDefinition: SubmitHandler<ValueDefinition> = (definition) => {
-    console.log('Adding Value definition: ', definition);
-    valueDefinitions.append(definition);
-    setIsAddValueDefinitionSheetOpen(false);
-    console.log('New Collection props: ', createCollectionForm.getValues());
-    // @todo resetting the new Field form values is not working right now
-    // newFieldDefinition.reset(defaultFieldDefinition);
-  };
 
   return (
     <Page
