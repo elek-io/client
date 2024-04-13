@@ -4,13 +4,21 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import {
   ColumnDef,
+  VisibilityState,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { Plus, Settings } from 'lucide-react';
+import { ChevronDown, Plus, Settings } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { Button } from '../../../../../components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '../../../../../components/ui/dropdown-menu';
+import { Input } from '../../../../../components/ui/input';
 import { Page } from '../../../../../components/ui/page';
 import {
   Pagination,
@@ -43,12 +51,15 @@ function ProjectCollectionIndexPage() {
     pageIndex: 0, // initial page index
     pageSize: 15, // default page size
   });
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [filter, setFilter] = useState('');
   const dataQuery = useQuery({
-    queryKey: ['entries', context.currentCollection.id, pagination],
+    queryKey: ['entries', context.currentCollection.id, pagination, filter],
     queryFn: () =>
       context.core.entries.list({
         projectId: context.currentProject.id,
         collectionId: context.currentCollection.id,
+        filter: filter,
         limit: pagination.pageSize,
         offset:
           pagination.pageIndex === 0
@@ -79,8 +90,13 @@ function ProjectCollectionIndexPage() {
     manualPagination: true,
     rowCount: dataQuery.data?.total,
     onPaginationChange: setPagination, // update the pagination state when internal APIs mutate the pagination state
+    onColumnVisibilityChange: setColumnVisibility,
+    // getFilteredRowModel: getFilteredRowModel(),
     state: {
       pagination,
+      columnVisibility,
+      // globalFilter: columnFilter,
+      // columnFilters: columnFilter,
     },
   });
 
@@ -191,6 +207,45 @@ function ProjectCollectionIndexPage() {
       actions={<Actions></Actions>}
       layout="overlap-card-no-space"
     >
+      <div className="flex justify-end items-center p-6">
+        <Input
+          placeholder={`Filter ${context.translate(
+            'currentCollection.name.plural',
+            context.currentCollection.name.plural
+          )}...`}
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          className="max-w-sm"
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto">
+              Visible Values
+              <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {/* @todo this is working but of the wrong type */}
+                    {column.columnDef.header}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
