@@ -264,7 +264,7 @@ function ProjectCollectionCreate() {
     >
       <Form {...createCollectionForm}>
         <form onSubmit={createCollectionForm.handleSubmit(onCreate)}>
-          <div className="space-y-4 p-8">
+          <div className="p-6 space-y-4">
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={createCollectionForm.control}
