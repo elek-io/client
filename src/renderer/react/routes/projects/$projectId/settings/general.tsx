@@ -134,11 +134,7 @@ function ProjectSettingsPage() {
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
-                    <FormDescription>
-                      The name of your new collection. Choose a short name in
-                      plural that explains the content of the collection - e.g.
-                      "Blogposts".
-                    </FormDescription>
+                    <FormDescription></FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -153,11 +149,7 @@ function ProjectSettingsPage() {
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>
-                    <FormDescription>
-                      The name of your new collection. Choose a short name in
-                      plural that explains the content of the collection - e.g.
-                      "Blogposts".
-                    </FormDescription>
+                    <FormDescription></FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -174,11 +166,13 @@ function ProjectSettingsPage() {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm font-medium leading-6">
-                  Delete this Project
+                  Delete this Project from your current device
                 </p>
                 <p className="text-sm text-gray-500">
-                  Once you delete a Project, there is no going back. Please be
-                  certain.
+                  The action does not delete this Project from other devices -
+                  just from the device you are currently using. But if this is
+                  the only device your Project is stored at, you will remove it
+                  permanently - there is no going back. Please be certain.
                 </p>
               </div>
               <div>
@@ -194,7 +188,7 @@ function ProjectSettingsPage() {
                       <DialogTitle>Are you absolutely sure?</DialogTitle>
                       <DialogDescription>
                         This action cannot be undone if your Project is not
-                        replicated somewhere else than this computer.
+                        replicated somewhere else than this device.
                       </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
