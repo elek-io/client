@@ -136,7 +136,6 @@ function ProjectCollectionUpdate() {
       title={Title()}
       actions={<Actions></Actions>}
       description={<Description></Description>}
-      layout="overlap-card-no-space"
     >
       {/* {JSON.stringify(watch())}
       <hr /> */}

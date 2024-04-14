@@ -205,7 +205,6 @@ function ProjectCollectionIndexPage() {
       title={Title()}
       description={<Description></Description>}
       actions={<Actions></Actions>}
-      layout="overlap-card-no-space"
     >
       <div className="flex justify-end items-center p-6">
         <Input

@@ -211,7 +211,7 @@ function ProjectAssetsPage() {
       title="Assets"
       description={<Description></Description>}
       actions={<Actions></Actions>}
-      layout="overlap"
+      layout="bare"
       className={isDraggingOver ? 'ring-4 ring-inset border-brand-600' : ''}
       onDragOver={onDragOver}
       onDrop={onAssetsDropped}

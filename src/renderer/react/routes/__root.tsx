@@ -112,6 +112,9 @@ function RootRoute() {
         case 'update':
           part = 'Update';
           break;
+        case 'general':
+          part = 'General';
+          break;
         default:
           break;
       }

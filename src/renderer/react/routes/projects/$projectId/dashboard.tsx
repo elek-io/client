@@ -30,7 +30,7 @@ function ProjectDashboardPage() {
   return (
     <Page
       title="Dashboard"
-      layout="overlap"
+      layout="bare"
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >

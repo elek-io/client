@@ -49,7 +49,7 @@ function ListProjectsPage() {
       title="Projects"
       description={<Description></Description>}
       actions={<Actions></Actions>}
-      layout="overlap"
+      layout="bare"
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {context.projects.list.map((project) => {

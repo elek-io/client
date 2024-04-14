@@ -6,7 +6,7 @@ export interface PageProps extends React.HTMLAttributes<HTMLElement> {
   title: string;
   description?: ReactElement;
   actions?: ReactElement;
-  layout?: 'overlap' | 'overlap-card' | 'overlap-card-no-space';
+  layout?: 'bare';
   children: ReactNode;
   onDragOver?: React.DragEventHandler<HTMLElement>;
   onDragLeave?: React.DragEventHandler<HTMLElement>;
@@ -44,14 +44,10 @@ export const Page = React.forwardRef<HTMLElement, PageProps>(
         <div className="relative">
           <div className="relative container mx-auto -mt-32">
             <div className="p-4 sm:p-6 lg:p-8 !pt-0">
-              {props.layout === 'overlap' ? (
+              {props.layout === 'bare' ? (
                 <>{props.children}</>
-              ) : props.layout === 'overlap-card-no-space' ? (
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow">
-                  {props.children}
-                </div>
               ) : (
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow p-6">
+                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow">
                   {props.children}
                 </div>
               )}

@@ -260,7 +260,6 @@ function ProjectCollectionCreate() {
       title={`Create a new Collection`}
       description={<Description></Description>}
       actions={<Actions></Actions>}
-      layout="overlap-card-no-space"
     >
       <Form {...createCollectionForm}>
         <form onSubmit={createCollectionForm.handleSubmit(onCreate)}>
