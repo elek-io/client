@@ -1,5 +1,15 @@
 import { Button } from '@/renderer/react/components/ui/button';
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/renderer/react/components/ui/dialog';
+import {
   Form,
   FormControl,
   FormDescription,
@@ -172,13 +182,37 @@ function ProjectSettingsPage() {
                 </p>
               </div>
               <div>
-                <Button
-                  variant="destructive"
-                  onClick={projectForm.handleSubmit(onDelete)}
-                >
-                  <Trash className="w-4 h-4 mr-2"></Trash>
-                  Delete Project
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive">
+                      <Trash className="w-4 h-4 mr-2"></Trash>
+                      Delete Project
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Are you absolutely sure?</DialogTitle>
+                      <DialogDescription>
+                        This action cannot be undone if your Project is not
+                        replicated somewhere else than this computer.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="secondary">
+                          No, I've changed my mind
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        variant="destructive"
+                        onClick={projectForm.handleSubmit(onDelete)}
+                      >
+                        <Trash className="w-4 h-4 mr-2"></Trash>
+                        Yes, delete this Project
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </PageSection>
