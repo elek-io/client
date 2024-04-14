@@ -88,8 +88,36 @@ function RootRoute() {
     .filter((value) => value) // Filter out empty values for beginning or ending slashes
     .map((part, index, array) => {
       const path = array.slice(0, index + 1).join('/');
-      const match = breadcrumbLookupMap.get(part);
 
+      // @todo add translation for static breadcrumb parts
+      switch (part) {
+        case 'projects':
+          part = 'Projects';
+          break;
+        case 'dashboard':
+          part = 'Dashboard';
+          break;
+        case 'assets':
+          part = 'Assets';
+          break;
+        case 'collections':
+          part = 'Collections';
+          break;
+        case 'settings':
+          part = 'Settings';
+          break;
+        case 'create':
+          part = 'Create';
+          break;
+        case 'update':
+          part = 'Update';
+          break;
+        default:
+          break;
+      }
+
+      // Use names instead of IDs to display
+      const match = breadcrumbLookupMap.get(part);
       if (match) {
         part = match;
       }
