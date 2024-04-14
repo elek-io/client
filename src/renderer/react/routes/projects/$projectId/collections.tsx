@@ -6,13 +6,6 @@ import { SidebarNavigation } from '../../../components/ui/sidebar-navigation';
 import { SidebarNavigationItem } from '../../../components/ui/sidebar-navigation-item';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
-  beforeLoad: async ({ context, params }) => {
-    const currentCollections = await context.core.collections.list({
-      projectId: params.projectId,
-    });
-
-    return { currentCollections };
-  },
   component: ProjectCollectionsLayout,
 });
 
@@ -31,7 +24,7 @@ function ProjectCollectionsLayout() {
             </SidebarNavigationItem>
 
             <strong className="mt-2 px-3 text-sm">Collections</strong>
-            {context.currentCollections.list.map((collection) => (
+            {context.collections.list.map((collection) => (
               <SidebarNavigationItem
                 key={collection.id}
                 to="/projects/$projectId/collections/$collectionId"
@@ -49,7 +42,7 @@ function ProjectCollectionsLayout() {
                 </span>
               </SidebarNavigationItem>
             ))}
-            {context.currentCollections.total === 0 && (
+            {context.collections.total === 0 && (
               <p className="px-3 text-sm">No Collections found</p>
             )}
           </SidebarNavigation>

@@ -17,7 +17,7 @@ import {
   Search,
   Settings,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '../../components/ui/badge';
 import {
   CommandDialog,
@@ -40,10 +40,6 @@ import {
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
-    const currentProject = await context.core.projects.read({
-      id: params.projectId,
-    });
-
     /**
      * Returns given TranslatableString in the language of the current user
      *
@@ -71,7 +67,16 @@ export const Route = createFileRoute('/projects/$projectId')({
       return `(Missing translation for key "${key}")`;
     }
 
-    return { currentProject, translate };
+    const currentProject = await context.core.projects.read({
+      id: params.projectId,
+    });
+
+    const collections = await context.core.collections.list({
+      projectId: params.projectId,
+      limit: 0,
+    });
+
+    return { currentProject, collections, translate };
   },
   component: ProjectLayout,
 });
@@ -117,6 +122,25 @@ function ProjectLayout() {
       icon: Settings,
     },
   ];
+
+  useEffect(() => {
+    context.store.setState((prev) => ({
+      breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
+        context.currentProject.id,
+        context.currentProject.name
+      ),
+    }));
+  }, [context.currentProject]);
+  useEffect(() => {
+    context.collections.list.map((collection) => {
+      context.store.setState((prev) => ({
+        breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
+          collection.id,
+          context.translate('collection.name.plural', collection.name.plural)
+        ),
+      }));
+    });
+  }, [context.collections]);
 
   async function onSearch(value: string) {
     setSearchQuery(value);

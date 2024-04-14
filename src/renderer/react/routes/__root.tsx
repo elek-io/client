@@ -80,18 +80,18 @@ function RootRoute() {
     (state) => [state.isProjectSidebarNarrow, state.setIsProjectSidebarNarrow]
   );
   const { theme, setTheme } = useTheme();
+  const breadcrumbLookupMap = context.store(
+    (state) => state.breadcrumbLookupMap
+  );
   const breadcrumbs = state.location.pathname
     .split('/')
     .filter((value) => value) // Filter out empty values for beginning or ending slashes
     .map((part, index, array) => {
       const path = array.slice(0, index + 1).join('/');
+      const match = breadcrumbLookupMap.get(part);
 
-      const projectMatch = context.projects.list.find((project) => {
-        return project.id === part;
-      });
-
-      if (projectMatch) {
-        part = projectMatch.name;
+      if (match) {
+        part = match;
       }
 
       return {

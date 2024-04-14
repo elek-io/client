@@ -11,6 +11,7 @@ export interface StoreState {
   setIsProjectSidebarNarrow: (isNarrow: boolean) => void;
   isProjectSearchDialogOpen: boolean;
   setProjectSearchDialogOpen: (isOpen: boolean) => void;
+  breadcrumbLookupMap: Map<string, string>;
 }
 
 export const useStore = create<StoreState>()(
@@ -57,5 +58,6 @@ export const useStore = create<StoreState>()(
         isProjectSearchDialogOpen: isOpen,
       }));
     },
+    breadcrumbLookupMap: new Map(),
   }))
 );
