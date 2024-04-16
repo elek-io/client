@@ -22,7 +22,11 @@ import { Input } from '@/renderer/react/components/ui/input';
 import { Page } from '@/renderer/react/components/ui/page';
 import { PageSection } from '@/renderer/react/components/ui/page-section';
 import { Textarea } from '@/renderer/react/components/ui/textarea';
-import { Project, projectSchema } from '@elek-io/shared';
+import {
+  DeleteProjectProps,
+  UpdateProjectProps,
+  updateProjectSchema,
+} from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
@@ -39,14 +43,14 @@ function ProjectSettingsPage() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
-  const projectForm = useForm<Project>({
+  const projectForm = useForm<UpdateProjectProps>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
       console.log(
         'ProjectForm validation result',
-        await zodResolver(projectSchema)(data, context, options)
+        await zodResolver(updateProjectSchema)(data, context, options)
       );
-      return zodResolver(projectSchema)(data, context, options);
+      return zodResolver(updateProjectSchema)(data, context, options);
     },
     defaultValues: context.currentProject,
   });
@@ -74,7 +78,7 @@ function ProjectSettingsPage() {
     );
   }
 
-  const onUpdate: SubmitHandler<Project> = async (project) => {
+  const onUpdate: SubmitHandler<UpdateProjectProps> = async (project) => {
     try {
       setIsUpdatingProject(true);
       await context.core.projects.update(project);
@@ -96,7 +100,7 @@ function ProjectSettingsPage() {
     }
   };
 
-  const onDelete: SubmitHandler<Project> = async (project) => {
+  const onDelete: SubmitHandler<DeleteProjectProps> = async (project) => {
     try {
       await context.core.projects.delete({ id: project.id });
       addNotification({

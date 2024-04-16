@@ -70,6 +70,7 @@ function ProjectCollectionCreate() {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
+  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
   const [isAddValueDefinitionSheetOpen, setIsAddValueDefinitionSheetOpen] =
     useState(false);
   const [selectedInputType, setSelectedInputType] =
@@ -191,7 +192,10 @@ function ProjectCollectionCreate() {
   function Actions(): ReactElement {
     return (
       <>
-        <Button onClick={createCollectionForm.handleSubmit(onCreate)}>
+        <Button
+          isLoading={isCreatingCollection}
+          onClick={createCollectionForm.handleSubmit(onCreate)}
+        >
           <Check className="w-4 h-4 mr-2"></Check>
           Create Collection
         </Button>
@@ -202,10 +206,12 @@ function ProjectCollectionCreate() {
   const onCreate: SubmitHandler<CreateCollectionProps> = async (
     createCollectionProps
   ) => {
+    setIsCreatingCollection(true);
     try {
       const collection = await context.core.collections.create(
         createCollectionProps
       );
+      setIsCreatingCollection(false);
       addNotification({
         intent: NotificationIntent.SUCCESS,
         title: 'Created new collection',
@@ -219,6 +225,7 @@ function ProjectCollectionCreate() {
         },
       });
     } catch (error) {
+      setIsCreatingCollection(false);
       console.error(error);
       addNotification({
         intent: NotificationIntent.DANGER,

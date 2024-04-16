@@ -1,15 +1,26 @@
-import { Collection, supportedIconSchema } from '@elek-io/shared';
+import { Button } from '@/renderer/react/components/ui/button';
 import {
-  Button,
-  FormInput,
-  FormSelect,
-  FormTextarea,
-  NotificationIntent,
-  Page,
-  formatTimestamp,
-} from '@elek-io/ui';
-import { CheckIcon, TrashIcon } from '@heroicons/react/20/solid';
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/renderer/react/components/ui/dialog';
+import { Form } from '@/renderer/react/components/ui/form';
+import { Page } from '@/renderer/react/components/ui/page';
+import { formatTimestamp } from '@/util';
+import {
+  DeleteCollectionProps,
+  UpdateCollectionProps,
+  updateCollectionSchema,
+} from '@elek-io/shared';
+import { NotificationIntent } from '@elek-io/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check, Trash } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
@@ -24,13 +35,18 @@ function ProjectCollectionUpdate() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
   const [isUpdatingCollection, setIsUpdatingCollection] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    watch,
-    control,
-    formState: { errors, isDirty },
-  } = useForm<Collection>({ defaultValues: context.currentCollection });
+  const updateCollectionForm = useForm<UpdateCollectionProps>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log('formData', data);
+      console.log(
+        'validation result',
+        await zodResolver(updateCollectionSchema)(data, context, options)
+      );
+      return zodResolver(updateCollectionSchema)(data, context, options);
+    },
+    defaultValues: context.currentCollection,
+  });
 
   function Title(): string {
     return `Configure ${context.translate(
@@ -64,29 +80,24 @@ function ProjectCollectionUpdate() {
     return (
       <>
         <Button
-          intent="primary"
-          prependIcon={CheckIcon}
-          state={
-            isUpdatingCollection
-              ? 'loading'
-              : isDirty === false
-              ? 'disabled'
-              : undefined
-          }
-          onClick={handleSubmit(onUpdate)}
+          isLoading={isUpdatingCollection}
+          onClick={updateCollectionForm.handleSubmit(onUpdate)}
         >
+          <Check className="w-4 h-4 mr-2"></Check>
           Save changes
         </Button>
       </>
     );
   }
 
-  const onUpdate: SubmitHandler<Collection> = async (collection) => {
+  const onUpdate: SubmitHandler<UpdateCollectionProps> = async (collection) => {
+    setIsUpdatingCollection(true);
     try {
       await context.core.collections.update({
         ...collection,
         projectId: context.currentProject.id,
       });
+      setIsUpdatingCollection(false);
       router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
@@ -95,6 +106,7 @@ function ProjectCollectionUpdate() {
         },
       });
     } catch (error) {
+      setIsUpdatingCollection(false);
       console.error(error);
       addNotification({
         intent: NotificationIntent.DANGER,
@@ -104,7 +116,7 @@ function ProjectCollectionUpdate() {
     }
   };
 
-  const onDelete: SubmitHandler<Collection> = async (collection) => {
+  const onDelete: SubmitHandler<DeleteCollectionProps> = async (collection) => {
     try {
       await context.core.collections.delete({
         projectId: context.currentProject.id,
@@ -137,78 +149,47 @@ function ProjectCollectionUpdate() {
       actions={<Actions></Actions>}
       description={<Description></Description>}
     >
-      {/* {JSON.stringify(watch())}
-      <hr /> */}
-      <form className="divide-y divide-gray-200 lg:col-span-9">
-        <section className="px-4 py-6 sm:p-6 lg:pb-8 flex-grow space-y-4">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 sm:col-span-3">
-              <FormSelect
-                name={`icon`}
-                options={supportedIconSchema.options.map((option) => {
-                  return {
-                    name: option,
-                    value: option,
-                    disabled: false,
-                  };
-                })}
-                label="Icon"
-                description="The icon of this Collection"
-                control={control}
-                errors={errors}
-              ></FormSelect>
-            </div>
-            <div className="col-span-12 sm:col-span-9">
-              <FormInput
-                name={`name.singular.${context.currentUser.locale.id}`}
-                type="text"
-                label="Name"
-                placeholder="Blogposts"
-                description="Give your new Collection a name"
-                register={register}
-                errors={errors}
-                required
-              ></FormInput>
-            </div>
-          </div>
-          <div>
-            <FormTextarea
-              name={`description.${context.currentUser.locale.id}`}
-              rows={3}
-              label="Description"
-              placeholder="Posts that are displayed inside the blog"
-              description="Give your new Collection a description"
-              register={register}
-              errors={errors}
-            ></FormTextarea>
-          </div>
-        </section>
-        <section className="px-4 py-6 sm:p-6 lg:pb-8">
-          <h2 className="text-lg font-medium leading-6 text-gray-900 mb-6">
-            Danger Zone
-          </h2>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm font-medium leading-6 text-gray-900">
-                Delete this Project
-              </p>
-              <p className="text-sm text-gray-500">
-                Once you delete a Project, there is no going back. Please be
-                certain.
-              </p>
-            </div>
-            <div>
-              <Button
-                intent="danger"
-                prependIcon={TrashIcon}
-                onClick={handleSubmit(onDelete)}
-              >
+      <Form {...updateCollectionForm}>
+        <form onSubmit={updateCollectionForm.handleSubmit(onUpdate)}>
+          <h1>Update Collection here</h1>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash className="w-4 h-4 mr-2"></Trash>
                 Delete Collection
               </Button>
-            </div>
-          </div>
-        </section>
-      </form>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone if your Project is not replicated
+                  somewhere else than this device.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    No, I've changed my mind
+                  </Button>
+                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={() =>
+                    onDelete({
+                      projectId: context.currentProject.id,
+                      id: context.currentCollection.id,
+                    })
+                  }
+                >
+                  <Trash className="w-4 h-4 mr-2"></Trash>
+                  Yes, delete this Collection
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </form>
+      </Form>
     </Page>
   );
 }

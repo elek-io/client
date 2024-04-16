@@ -8,7 +8,7 @@ import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import { ControllerRenderProps, SubmitHandler, useForm } from 'react-hook-form';
 import { Button } from '../../../../../components/ui/button';
 import {
@@ -33,6 +33,7 @@ export const Route = createFileRoute(
 function ProjectCollectionEntryCreate() {
   const router = useRouter();
   const context = Route.useRouteContext();
+  const [isCreatingEntry, setIsCreatingEntry] = useState(false);
   const addNotification = context.store((state) => state.addNotification);
 
   const createEntryForm = useForm<CreateEntryProps>({
@@ -61,10 +62,11 @@ function ProjectCollectionEntryCreate() {
   });
 
   const onCreateEntry: SubmitHandler<CreateEntryProps> = async (data) => {
-    console.log('Creating Entry:', data);
+    setIsCreatingEntry(true);
 
     try {
       const entry = await context.core.entries.create(data);
+      setIsCreatingEntry(false);
       addNotification({
         intent: NotificationIntent.SUCCESS,
         title: 'Created new Entry for this Collection',
@@ -80,6 +82,7 @@ function ProjectCollectionEntryCreate() {
         },
       });
     } catch (error) {
+      setIsCreatingEntry(false);
       console.error(error);
       addNotification({
         intent: NotificationIntent.DANGER,
@@ -216,7 +219,10 @@ function ProjectCollectionEntryCreate() {
   function Actions(): ReactElement {
     return (
       <>
-        <Button onClick={createEntryForm.handleSubmit(onCreateEntry)}>
+        <Button
+          isLoading={isCreatingEntry}
+          onClick={createEntryForm.handleSubmit(onCreateEntry)}
+        >
           <Check className="h-4 w-4 mr-2"></Check>
           Create{' '}
           {context.translate(
