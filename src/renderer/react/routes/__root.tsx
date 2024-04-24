@@ -115,6 +115,9 @@ function RootRoute() {
         case 'general':
           part = 'General';
           break;
+        case 'en':
+          part = 'English'; // @todo mapping between locale ID and localized name
+          break;
         default:
           break;
       }
