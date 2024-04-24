@@ -49,7 +49,7 @@ function ProjectCollectionIndexPage() {
   const addNotification = context.store((state) => state.addNotification);
   const [pagination, setPagination] = useState({
     pageIndex: 0, // initial page index
-    pageSize: 15, // default page size
+    pageSize: 10, // default page size
   });
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [filter, setFilter] = useState('');
