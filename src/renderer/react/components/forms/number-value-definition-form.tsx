@@ -1,6 +1,7 @@
+import { cn } from '@/util';
 import { NumberValueDefinition, SupportedLanguage } from '@elek-io/shared';
 import * as React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { FieldPath, UseFormReturn } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -8,6 +9,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
@@ -35,6 +37,7 @@ const NumberValueDefinitionForm = React.forwardRef<
               <FormControl>
                 <Input {...field} />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -50,11 +53,76 @@ const NumberValueDefinitionForm = React.forwardRef<
               </FormControl>
               <FormDescription>
                 Describe what to input into this field. This text will be
-                displayed under the field to guide users
+                displayed under the field to guide users.
               </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />
+
+        <FormField
+          control={state.control}
+          name={`defaultValue`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Default value</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  {...state.register('defaultValue', { valueAsNumber: true })}
+                  type="number"
+                />
+              </FormControl>
+              <FormDescription>
+                The initial value for the field.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex flex-row items-center justify-between space-x-2">
+          <FormField
+            control={state.control}
+            name={`min`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Minimum</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    {...state.register('min', { valueAsNumber: true })}
+                    type="number"
+                  />
+                </FormControl>
+                <FormDescription>
+                  The minimum Value the user is able to enter.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={state.control}
+            name={`max`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maximum</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    {...state.register('max', { valueAsNumber: true })}
+                    type="number"
+                  />
+                </FormControl>
+                <FormDescription>
+                  The maximum Value the user is able to enter.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={state.control}
@@ -65,7 +133,30 @@ const NumberValueDefinitionForm = React.forwardRef<
                 <FormLabel>Required</FormLabel>
                 <FormDescription>
                   Required fields need to be filled before a CollectionItem can
-                  be created or updated
+                  be created or updated.
+                </FormDescription>
+                <FormMessage />
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={state.control}
+          name={`isUnique`}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+              <div>
+                <FormLabel>Unique</FormLabel>
+                <FormDescription>
+                  You won't be able to create an Entry if there is an existing
+                  Entry with identical content.
                 </FormDescription>
               </div>
               <FormControl>
@@ -78,28 +169,6 @@ const NumberValueDefinitionForm = React.forwardRef<
           )}
         />
 
-        {/* <FormField
-          control={state.control}
-          name={`isUnique`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
-              <div>
-                <FormLabel>Unique</FormLabel>
-                <FormDescription>
-                  You won't be able to create an Entry if there is an existing
-                  Entry with identical content
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        /> */}
-
         <FormField
           control={state.control}
           name={`isDisabled`}
@@ -108,8 +177,9 @@ const NumberValueDefinitionForm = React.forwardRef<
               <div>
                 <FormLabel>Disabled</FormLabel>
                 <FormDescription>
-                  You won't be able to change the Value if this is active
+                  You won't be able to change the Value if this is active.
                 </FormDescription>
+                <FormMessage />
               </div>
               <FormControl>
                 <Switch
@@ -149,43 +219,63 @@ const NumberValueDefinitionForm = React.forwardRef<
 });
 NumberValueDefinitionForm.displayName = 'NumberValueDefinitionForm';
 
-export interface NumberValueDefinitionFormExampleProps
+export interface NumberValueDefinitionFormFieldProps
   extends React.HTMLAttributes<HTMLFormElement> {
   state: UseFormReturn<NumberValueDefinition>;
+  name: FieldPath<NumberValueDefinition>;
   currentLanguage: SupportedLanguage;
 }
 
-const NumberValueDefinitionFormExample = React.forwardRef<
+const NumberValueDefinitionFormField = React.forwardRef<
   HTMLFormElement,
-  NumberValueDefinitionFormExampleProps
->(({ className, state, ...props }, ref) => {
+  NumberValueDefinitionFormFieldProps
+>(({ className, name, state, ...props }, ref) => {
   return (
     <FormField
-      control={state.control}
-      // @ts-ignore: This is just the example input
-      name={`example`}
+      control={state?.control}
+      name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{state.watch(`name.${props.currentLanguage}`)}</FormLabel>
+          <FormLabel>{state?.watch(`name.${props.currentLanguage}`)}</FormLabel>
           <FormControl>
             <Input
               {...field}
+              className={className}
               type="number"
-              required={state.watch('isRequired')}
-              disabled={state.watch('isDisabled')}
-              value=""
-              className="bg-white dark:bg-zinc-900"
+              required={state?.watch('isRequired')}
+              disabled={state?.watch('isDisabled')}
+              value={field.value}
             />
           </FormControl>
           <FormDescription>
-            {state.watch(`description.${props.currentLanguage}`)}
+            {state?.watch(`description.${props.currentLanguage}`)}
           </FormDescription>
+          <FormMessage />
         </FormItem>
       )}
     />
   );
 });
-NumberValueDefinitionFormExample.displayName =
-  'NumberValueDefinitionFormExample';
+NumberValueDefinitionFormField.displayName = 'NumberValueDefinitionFormField';
 
-export { NumberValueDefinitionForm, NumberValueDefinitionFormExample };
+const NumberValueDefinitionFormFieldExample = React.forwardRef<
+  HTMLFormElement,
+  Partial<Omit<NumberValueDefinitionFormFieldProps, 'name'>>
+>(({ className, ...props }, ref) => {
+  return (
+    <NumberValueDefinitionFormField
+      {...props}
+      // @ts-ignore It's just an example
+      name={'example'}
+      className={cn('bg-white dark:bg-zinc-900', className)}
+    />
+  );
+});
+NumberValueDefinitionFormFieldExample.displayName =
+  'NumberValueDefinitionFormFieldExample';
+
+export {
+  NumberValueDefinitionForm,
+  NumberValueDefinitionFormField,
+  NumberValueDefinitionFormFieldExample,
+};
