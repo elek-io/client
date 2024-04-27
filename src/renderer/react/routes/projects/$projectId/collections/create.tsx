@@ -1,11 +1,12 @@
 import {
   NumberValueDefinitionForm,
-  NumberValueDefinitionFormExample,
+  NumberValueDefinitionFormFieldExample,
 } from '@/renderer/react/components/forms/number-value-definition-form';
 import {
   TextValueDefinitionForm,
   TextValueDefinitionFormExample,
 } from '@/renderer/react/components/forms/text-value-definition-form';
+import { ValueInputFromDefinition } from '@/renderer/react/components/forms/value-input-from-definition';
 import { ScrollArea } from '@/renderer/react/components/ui/scroll-area';
 import {
   Sheet,
@@ -131,9 +132,9 @@ function ProjectCollectionCreate() {
       id: uuid(),
       valueType: 'number',
       inputType: 'number',
-      defaultValue: 0,
-      min: 0,
-      max: 250,
+      defaultValue: undefined,
+      min: undefined,
+      max: undefined,
       isUnique: false,
     },
   });
@@ -418,6 +419,12 @@ function ProjectCollectionCreate() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent
+                  // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
+                  //
+                  // onInteractOutside={(event) => {
+                  //   console.log(event);
+                  //   event.preventDefault();
+                  // }}
                   overlayChildren={
                     (selectedInputType === 'text' && (
                       <TextValueDefinitionFormExample
@@ -426,10 +433,10 @@ function ProjectCollectionCreate() {
                       ></TextValueDefinitionFormExample>
                     )) ||
                     (selectedInputType === 'number' && (
-                      <NumberValueDefinitionFormExample
+                      <NumberValueDefinitionFormFieldExample
                         state={numberValueDefinitionFormState}
                         currentLanguage="en"
-                      ></NumberValueDefinitionFormExample>
+                      ></NumberValueDefinitionFormFieldExample>
                     ))
                   }
                 >
@@ -443,24 +450,32 @@ function ProjectCollectionCreate() {
 
                   <SheetBody>
                     <ScrollArea>
-                      <div className="px-6">
-                        <Select
-                          value={selectedInputType}
-                          onValueChange={(
-                            value: z.infer<typeof ValueInputTypeSchema>
-                          ) => setSelectedInputType(value)}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select an icon" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ValueInputTypeSchema.options.map((option) => {
-                              return (
-                                <SelectItem value={option}>{option}</SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                      <div className="px-6 py-1 space-y-6">
+                        <FormItem>
+                          <FormLabel>Input type</FormLabel>
+                          <Select
+                            value={selectedInputType}
+                            onValueChange={(
+                              value: z.infer<typeof ValueInputTypeSchema>
+                            ) => setSelectedInputType(value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ValueInputTypeSchema.options.map((option) => {
+                                return (
+                                  <SelectItem value={option}>
+                                    {option}
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            The type of input for the Value.
+                          </FormDescription>
+                        </FormItem>
 
                         {selectedInputType === 'text' && (
                           <TextValueDefinitionForm
@@ -491,38 +506,48 @@ function ProjectCollectionCreate() {
             }
           >
             <div className="grid grid-cols-12 gap-6 mt-6">
-              {valueDefinitions.fields.map(
-                (fieldDefinition, fieldDefinitionIndex) => {
-                  return (
-                    <div
-                      key={fieldDefinition.id}
-                      className={`col-span-12 ${fieldWidth(
-                        fieldDefinition.inputWidth
-                      )}`}
-                    >
-                      <div className="border rounded-md border-gray-300 py-2 px-3 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
-                        <h3 className="font-medium text-gray-700">
-                          {fieldDefinition.name[context.currentUser.locale.id]}{' '}
-                          ({fieldDefinition.inputType})
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {
-                            fieldDefinition.description[
-                              context.currentUser.locale.id
-                            ]
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  );
-                }
-              )}
+              {valueDefinitions.fields.map((definition, definitionIndex) => {
+                return (
+                  <FormField
+                    key={definition.id}
+                    name={`valueDefinitions.${definitionIndex}.content`}
+                    render={({ field }) => (
+                      <FormItem
+                        className={`col-span-12 ${fieldWidth(
+                          definition.inputWidth
+                        )}`}
+                      >
+                        <FormLabel>
+                          {context.translate(
+                            'definition.name',
+                            definition.name
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          {ValueInputFromDefinition<CreateCollectionProps>(
+                            definition,
+                            createCollectionForm,
+                            field
+                          )}
+                        </FormControl>
+                        <FormDescription>
+                          {context.translate(
+                            'definition.description',
+                            definition.description
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                );
+              })}
             </div>
-            <p>
+            {/* <p>
               Dynamic Field generation. See
               https://react-hook-form.com/api/usefieldarray/
             </p>
-            {JSON.stringify(createCollectionForm.watch())}
+            {JSON.stringify(createCollectionForm.watch())} */}
           </PageSection>
         </form>
       </Form>
