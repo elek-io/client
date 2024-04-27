@@ -1,15 +1,12 @@
+import { ValueInputFromDefinition } from '@/renderer/react/components/forms/value-input-from-definition';
 import { fieldWidth } from '@/util';
-import {
-  CreateEntryProps,
-  ValueDefinition,
-  createEntrySchema,
-} from '@elek-io/shared';
+import { CreateEntryProps, createEntrySchema } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
-import { ControllerRenderProps, SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { Button } from '../../../../../components/ui/button';
 import {
   Form,
@@ -20,23 +17,21 @@ import {
   FormLabel,
   FormMessage,
 } from '../../../../../components/ui/form';
-import { Input } from '../../../../../components/ui/input';
 import { Page } from '../../../../../components/ui/page';
-import { Textarea } from '../../../../../components/ui/textarea';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/create'
 )({
-  component: ProjectCollectionEntryCreate,
+  component: ProjectCollectionEntryCreatePage,
 });
 
-function ProjectCollectionEntryCreate() {
+function ProjectCollectionEntryCreatePage() {
   const router = useRouter();
   const context = Route.useRouteContext();
   const [isCreatingEntry, setIsCreatingEntry] = useState(false);
   const addNotification = context.store((state) => state.addNotification);
 
-  const createEntryForm = useForm<CreateEntryProps>({
+  const createEntryFormState = useForm<CreateEntryProps>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
       console.log('create Entry form formData', data);
@@ -44,6 +39,8 @@ function ProjectCollectionEntryCreate() {
         'create Entry form validation result',
         await zodResolver(createEntrySchema)(data, context, options)
       );
+
+      // @todo Add full client side zod validation when creating an Entry - including it's Values (@see https://github.com/elek-io/client/issues/7)
       return zodResolver(createEntrySchema)(data, context, options);
     },
     defaultValues: {
@@ -51,12 +48,31 @@ function ProjectCollectionEntryCreate() {
       collectionId: context.currentCollection.id,
       language: context.currentProject.settings.locale.default.id,
       values: context.currentCollection.valueDefinitions.map((definition) => {
-        return {
-          objectType: 'value',
-          definitionId: definition.id,
-          valueType: definition.valueType,
-          content: null,
-        };
+        switch (definition.valueType) {
+          case 'boolean':
+          case 'number':
+          case 'string':
+            return {
+              objectType: 'value',
+              definitionId: definition.id,
+              valueType: definition.valueType,
+              content: definition.defaultValue || undefined,
+            };
+
+          case 'reference':
+            return {
+              objectType: 'value',
+              definitionId: definition.id,
+              valueType: definition.valueType,
+              content: undefined,
+            };
+
+          default:
+            throw new Error(
+              // @ts-ignore Property 'valueType' does not exist on type 'never' as long as we always implement all possible valueTypes
+              `Unsupported valueType "${definition.valueType}" while setting form state defaults for creating the Entry`
+            );
+        }
       }),
     },
   });
@@ -221,7 +237,7 @@ function ProjectCollectionEntryCreate() {
       <>
         <Button
           isLoading={isCreatingEntry}
-          onClick={createEntryForm.handleSubmit(onCreateEntry)}
+          onClick={createEntryFormState.handleSubmit(onCreateEntry)}
         >
           <Check className="h-4 w-4 mr-2"></Check>
           Create{' '}
@@ -234,70 +250,55 @@ function ProjectCollectionEntryCreate() {
     );
   }
 
-  function ValueInput(
-    definition: ValueDefinition,
-    field: ControllerRenderProps<CreateEntryProps, `values.${number}.content`>
-  ): ReactElement {
-    switch (definition.inputType) {
-      case 'text':
-        return <Input {...field} />;
-      case 'textarea':
-        return <Textarea {...field} />;
-      default:
-        console.error(
-          `Unsupported Entry definition inputType "${definition.inputType}"`
-        );
-        break;
-    }
-  }
-
   return (
     <Page
       title={Title()}
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
-      <Form {...createEntryForm}>
+      <Form {...createEntryFormState}>
         <form>
-          {JSON.stringify(createEntryForm.watch())}
+          {JSON.stringify(createEntryFormState.watch())}
           {
             // The Collections Field definitions are displayed here, so the user can either create a new field based on the definition or choose an existing one that matches the criterea
           }
-          <div className="grid grid-cols-12 gap-x-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
+          <div className="p-6 grid grid-cols-12 gap-x-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
             {context.currentCollection.valueDefinitions.map(
               (definition, index) => {
                 return (
-                  <>
-                    {/* {JSON.stringify(definition)} */}
-                    <FormField
-                      control={createEntryForm.control}
-                      name={`values.${index}.content`}
-                      render={({ field }) => (
-                        <FormItem
-                          className={`col-span-12 ${fieldWidth(
-                            definition.inputWidth
-                          )}`}
-                        >
-                          <FormLabel>
-                            {context.translate(
-                              'definition.name',
-                              definition.name
-                            )}
-                          </FormLabel>
-                          <FormControl>
-                            {ValueInput(definition, field)}
-                          </FormControl>
-                          <FormDescription>
-                            {context.translate(
-                              'definition.description',
-                              definition.description
-                            )}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
+                  <FormField
+                    key={definition.id}
+                    control={createEntryFormState.control}
+                    name={`values.${index}.content`}
+                    render={({ field }) => (
+                      <FormItem
+                        className={`col-span-12 ${fieldWidth(
+                          definition.inputWidth
+                        )}`}
+                      >
+                        <FormLabel>
+                          {context.translate(
+                            'definition.name',
+                            definition.name
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          {ValueInputFromDefinition<CreateEntryProps>(
+                            definition,
+                            createEntryFormState,
+                            field
+                          )}
+                        </FormControl>
+                        <FormDescription>
+                          {context.translate(
+                            'definition.description',
+                            definition.description
+                          )}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 );
               }
             )}
