@@ -1,4 +1,13 @@
 import { Button } from '@/renderer/react/components/ui/button';
+import { Chip } from '@/renderer/react/components/ui/chip';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/renderer/react/components/ui/command';
 import {
   Dialog,
   DialogClose,
@@ -21,16 +30,31 @@ import {
 import { Input } from '@/renderer/react/components/ui/input';
 import { Page } from '@/renderer/react/components/ui/page';
 import { PageSection } from '@/renderer/react/components/ui/page-section';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/renderer/react/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/renderer/react/components/ui/select';
 import { Textarea } from '@/renderer/react/components/ui/textarea';
 import {
   DeleteProjectProps,
+  SupportedLanguage,
   UpdateProjectProps,
+  supportedLanguageSchema,
   updateProjectSchema,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Cross2Icon } from '@radix-ui/react-icons';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check, Trash } from 'lucide-react';
+import { Check, Plus, Trash } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
@@ -43,6 +67,10 @@ function ProjectSettingsPage() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
+  const [
+    isDeleteDefaultLanguageDialogOpen,
+    setIsDeleteDefaultLanguageDialogOpen,
+  ] = useState(false);
   const projectForm = useForm<UpdateProjectProps>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
@@ -53,6 +81,12 @@ function ProjectSettingsPage() {
       return zodResolver(updateProjectSchema)(data, context, options);
     },
     defaultValues: context.currentProject,
+  });
+  const supportedLanguages = supportedLanguageSchema.options.map((option) => {
+    return {
+      value: option,
+      label: option,
+    };
   });
 
   function Description(): ReactElement {
@@ -126,7 +160,7 @@ function ProjectSettingsPage() {
       actions={<Actions></Actions>}
     >
       <Form {...projectForm}>
-        <form onSubmit={projectForm.handleSubmit(onUpdate)}>
+        <form>
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-12 gap-6">
               <FormField
@@ -162,9 +196,197 @@ function ProjectSettingsPage() {
           </div>
 
           <PageSection
-            title="Locale"
+            title="Language"
             description="Settings related to the supported languages of this Project"
-          ></PageSection>
+          >
+            {/* {JSON.stringify(projectForm.watch('settings.language'))} */}
+            <div className="grid grid-cols-12 gap-6">
+              <FormField
+                control={projectForm.control}
+                name={'settings.language.supported'}
+                render={({ field }) => (
+                  <FormItem className="col-span-6">
+                    <FormLabel>Supported</FormLabel>
+                    <FormControl>
+                      <>
+                        <ul className="flex flex-wrap">
+                          {field.value.map((language, index) => {
+                            return (
+                              <li key={language} className="m-1">
+                                <Chip>
+                                  {language}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="ml-4 rounded-full"
+                                    onClick={(event) => {
+                                      if (
+                                        language ===
+                                        projectForm.getValues(
+                                          'settings.language.default'
+                                        )
+                                      ) {
+                                        setIsDeleteDefaultLanguageDialogOpen(
+                                          true
+                                        );
+                                      } else {
+                                        field.value.splice(index, 1);
+                                        projectForm.setValue(
+                                          'settings.language.supported',
+                                          [
+                                            ...projectForm
+                                              .getValues(
+                                                'settings.language.supported'
+                                              )
+                                              .filter(
+                                                (value) => value !== language
+                                              ),
+                                          ],
+                                          {
+                                            shouldValidate: true,
+                                            shouldDirty: true,
+                                          }
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    <Cross2Icon className="h-4 w-4" />
+                                  </Button>
+                                </Chip>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button role="combobox">
+                              <Plus className="w-4 h-4 mr-2"></Plus>
+                              Add language
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[200px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search language..." />
+                              <CommandEmpty>No framework found.</CommandEmpty>
+                              <CommandGroup>
+                                <CommandList>
+                                  {supportedLanguages
+                                    .filter(
+                                      (language) =>
+                                        projectForm
+                                          .getValues(
+                                            'settings.language.supported'
+                                          )
+                                          .includes(language.value) === false
+                                    )
+                                    .map((language) => (
+                                      <CommandItem
+                                        key={language.value}
+                                        value={language.value}
+                                        onSelect={(
+                                          currentValue: SupportedLanguage
+                                        ) => {
+                                          projectForm.setValue(
+                                            'settings.language.supported',
+                                            [
+                                              ...projectForm.getValues(
+                                                'settings.language.supported'
+                                              ),
+                                              currentValue,
+                                            ],
+                                            {
+                                              shouldValidate: true,
+                                              shouldDirty: true,
+                                            }
+                                          );
+                                        }}
+                                      >
+                                        {language.label}
+                                      </CommandItem>
+                                    ))}
+                                </CommandList>
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </>
+                    </FormControl>
+                    <FormDescription>
+                      Select which languages this Projects content can be
+                      translated into
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={projectForm.control}
+                name={'settings.language.default'}
+                render={({ field }) => (
+                  <FormItem className="col-span-6">
+                    <FormLabel>Default</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {supportedLanguages
+                            .filter(
+                              (language) =>
+                                projectForm
+                                  .getValues('settings.language.supported')
+                                  .includes(language.value) === true
+                            )
+                            .map((option) => {
+                              return (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              );
+                            })}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormDescription>
+                      The default language of this Project. Needs to be one of
+                      the supported languages.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <Dialog
+              open={isDeleteDefaultLanguageDialogOpen}
+              onOpenChange={setIsDeleteDefaultLanguageDialogOpen}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Deleting the default language</DialogTitle>
+                  <DialogDescription>
+                    The default language can't be deleted. Please select another
+                    language as the default and then delete this language.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="secondary">
+                      Ok
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </PageSection>
 
           <PageSection title="Danger Zone">
             <div className="flex justify-between items-center">
