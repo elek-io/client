@@ -3,6 +3,16 @@ import {
   NumberValueDefinitionFormFieldExample,
 } from '@/renderer/react/components/forms/number-value-definition-form';
 import { ValueInputFromDefinition } from '@/renderer/react/components/forms/util';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/renderer/react/components/ui/dialog';
 import { ScrollArea } from '@/renderer/react/components/ui/scroll-area';
 import {
   Sheet,
@@ -69,19 +79,23 @@ function ProjectCollectionCreate() {
     useState(false);
   const [selectedInputType, setSelectedInputType] =
     useState<ValueInputType>('text');
-  // const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(
-  //   context.currentUser.language
-  // );
   const defaultProjectLanguage =
     context.currentProject.settings.language.default;
+  const currentProjectTranslatableStringDefault =
+    context.currentProject.settings.language.supported
+      .map((language) => {
+        return { [language]: '' };
+      })
+      .reduce((prev, curr) => {
+        return {
+          ...prev,
+          ...curr,
+        };
+      });
 
   const valueDefinitionBaseDefaults: Omit<ValueDefinitionBase, 'id'> = {
-    name: {
-      [defaultProjectLanguage]: '',
-    },
-    description: {
-      [defaultProjectLanguage]: '',
-    },
+    name: currentProjectTranslatableStringDefault,
+    description: currentProjectTranslatableStringDefault,
     isRequired: false,
     isDisabled: false,
     inputWidth: '12',
@@ -143,16 +157,10 @@ function ProjectCollectionCreate() {
       projectId: context.currentProject.id,
       icon: 'home',
       name: {
-        singular: {
-          [defaultProjectLanguage]: '',
-        },
-        plural: {
-          [defaultProjectLanguage]: '',
-        },
+        singular: currentProjectTranslatableStringDefault,
+        plural: currentProjectTranslatableStringDefault,
       },
-      description: {
-        [defaultProjectLanguage]: '',
-      },
+      description: currentProjectTranslatableStringDefault,
       slug: {
         singular: '',
         plural: '',
@@ -259,6 +267,8 @@ function ProjectCollectionCreate() {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
+      {JSON.stringify(context.currentProject.settings)}
+      {JSON.stringify(createCollectionForm.watch())}
       {/* <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <SelectTrigger>
           <SelectValue />
@@ -310,7 +320,49 @@ function ProjectCollectionCreate() {
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel>Name (Plural)</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Input {...field} />
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Name (Plural)</DialogTitle>
+                            <DialogDescription>
+                              The name of your new collection. Choose a short
+                              name in plural that explains the content of the
+                              collection - e.g. "Blogposts".
+                            </DialogDescription>
+                          </DialogHeader>
+
+                          {context.currentProject.settings.language.supported.map(
+                            (language) => {
+                              return (
+                                <FormField
+                                  control={createCollectionForm.control}
+                                  name={`name.plural.${language}`}
+                                  render={({ field }) => (
+                                    <FormItem className="col-span-12 sm:col-span-5">
+                                      <FormLabel>{language}</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              );
+                            }
+                          )}
+
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Done
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </FormControl>
                     <FormDescription>
                       The name of your new collection. Choose a short name in
