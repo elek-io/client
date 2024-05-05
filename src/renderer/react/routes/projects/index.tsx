@@ -55,11 +55,11 @@ function ListProjectsPage() {
         {context.projects.list.map((project) => {
           const created = formatTimestamp(
             project.created,
-            context.currentUser.locale.id
+            context.currentUser.language
           );
           const updated = formatTimestamp(
             project.updated,
-            context.currentUser.locale.id
+            context.currentUser.language
           );
 
           return (

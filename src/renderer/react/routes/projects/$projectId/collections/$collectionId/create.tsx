@@ -46,7 +46,7 @@ function ProjectCollectionEntryCreatePage() {
     defaultValues: {
       projectId: context.currentProject.id,
       collectionId: context.currentCollection.id,
-      language: context.currentProject.settings.locale.default.id,
+      language: context.currentProject.settings.language.default,
       values: context.currentCollection.valueDefinitions.map((definition) => {
         switch (definition.valueType) {
           case 'boolean':
