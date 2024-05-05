@@ -902,12 +902,12 @@
     fs-extra "^11.1.1"
     minimist "^1.2.8"
 
-"@elek-io/core@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.2.0.tgz#99f967cc936904928007f3e4fddeb5df1dac37e9"
-  integrity sha512-zj9w7rANn5Llmdov4hzl3u9Dpxsz85+P/qa+VgV17p4InTvJ0IgKiAR9eP38Z4APnjnDULCiCmxlWQKJIiRltA==
+"@elek-io/core@0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.2.1.tgz#bd140653fc6743514a6010d09a84d05611aead7b"
+  integrity sha512-guBbNqRWO99n84whN1gG9/xBgDefJPPGa8c0vcBcnG36tdYT64ClkGH0mc/cAoXqMNVpRM7dTuWKqCX0roTQbg==
   dependencies:
-    "@elek-io/shared" "0.4.5"
+    "@elek-io/shared" "0.4.7"
     file-type "^19.0.0"
     fs-extra "^11.2.0"
     is-svg "^5.0.0"
@@ -915,19 +915,10 @@
     p-queue "^8.0.1"
     semver "^7.5.4"
 
-"@elek-io/shared@0.4.5":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.4.5.tgz#f3aec572026340aaeaa1f56bf85022e0111d4b1d"
-  integrity sha512-GhHWob9E/JmwHVIGtb2+yWBMtIB3Xrmr0My5PlZ2c4+gz1d3dwWtEHBgSiulxFisTqEgD3EPy4fZxu5k+HWt3Q==
-  dependencies:
-    slugify "^1.6.6"
-    uuid "^9.0.1"
-    zod "^3.22.4"
-
-"@elek-io/shared@0.4.6":
-  version "0.4.6"
-  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.4.6.tgz#ede6e60f1421d13f7ce41156df012b27fb919a3e"
-  integrity sha512-5/bhFim1FRDcxZpBpf+1FHyEv9Wk73R14pErcG1YVJtWW3SRUAD/xu5JUq0iL4kYLA7Z52y6PNXajxXcHitRZA==
+"@elek-io/shared@0.4.7":
+  version "0.4.7"
+  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.4.7.tgz#7f16a355c03a43d049c17d846257b1518c516b55"
+  integrity sha512-UP6sizE2T322NL46Fx+w6E100ylxHrdHLHslq+b/Ywi7/tftIwCtXSWUDB8p3Amh/76rK9Ttww43Kwa/FGBKsg==
   dependencies:
     slugify "^1.6.6"
     uuid "^9.0.1"
@@ -1624,6 +1615,28 @@
     "@radix-ui/react-roving-focus" "1.0.4"
     "@radix-ui/react-slot" "1.0.2"
     "@radix-ui/react-use-callback-ref" "1.0.1"
+    aria-hidden "^1.1.1"
+    react-remove-scroll "2.5.5"
+
+"@radix-ui/react-popover@^1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-popover/-/react-popover-1.0.7.tgz#23eb7e3327330cb75ec7b4092d685398c1654e3c"
+  integrity sha512-shtvVnlsxT6faMnK/a7n0wptwBD23xc1Z5mdrtKLwVEfsEMXodS0r5s0/g5P0hX//EKYZS2sxUjqfzlg52ZSnQ==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    "@radix-ui/primitive" "1.0.1"
+    "@radix-ui/react-compose-refs" "1.0.1"
+    "@radix-ui/react-context" "1.0.1"
+    "@radix-ui/react-dismissable-layer" "1.0.5"
+    "@radix-ui/react-focus-guards" "1.0.1"
+    "@radix-ui/react-focus-scope" "1.0.4"
+    "@radix-ui/react-id" "1.0.1"
+    "@radix-ui/react-popper" "1.1.3"
+    "@radix-ui/react-portal" "1.0.4"
+    "@radix-ui/react-presence" "1.0.1"
+    "@radix-ui/react-primitive" "1.0.3"
+    "@radix-ui/react-slot" "1.0.2"
+    "@radix-ui/react-use-controllable-state" "1.0.1"
     aria-hidden "^1.1.1"
     react-remove-scroll "2.5.5"
 
