@@ -74,9 +74,9 @@ function ProjectCollectionIndexPage() {
         const row: { [x: string]: unknown } = {
           id: entry.id,
           language: entry.language,
-          created: formatTimestamp(entry.created, context.currentUser.locale.id)
+          created: formatTimestamp(entry.created, context.currentUser.language)
             .relative,
-          updated: formatTimestamp(entry.updated, context.currentUser.locale.id)
+          updated: formatTimestamp(entry.updated, context.currentUser.language)
             .relative,
         };
 
@@ -300,8 +300,8 @@ function ProjectCollectionIndexPage() {
           Showing{' '}
           {table
             .getFilteredRowModel()
-            .rows.length.toLocaleString(context.currentUser.locale.id)}{' '}
-          of {table.getRowCount().toLocaleString(context.currentUser.locale.id)}{' '}
+            .rows.length.toLocaleString(context.currentUser.language)}{' '}
+          of {table.getRowCount().toLocaleString(context.currentUser.language)}{' '}
           total{' '}
           {context.translate(
             'currentCollection.name.plural',
@@ -310,7 +310,7 @@ function ProjectCollectionIndexPage() {
           (
           {table
             .getFilteredSelectedRowModel()
-            .rows.length.toLocaleString(context.currentUser.locale.id)}{' '}
+            .rows.length.toLocaleString(context.currentUser.language)}{' '}
           selected)
         </div>
         <Pagination>

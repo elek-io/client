@@ -2,11 +2,7 @@ import {
   NumberValueDefinitionForm,
   NumberValueDefinitionFormFieldExample,
 } from '@/renderer/react/components/forms/number-value-definition-form';
-import {
-  TextValueDefinitionForm,
-  TextValueDefinitionFormExample,
-} from '@/renderer/react/components/forms/text-value-definition-form';
-import { ValueInputFromDefinition } from '@/renderer/react/components/forms/value-input-from-definition';
+import { ValueInputFromDefinition } from '@/renderer/react/components/forms/util';
 import { ScrollArea } from '@/renderer/react/components/ui/scroll-area';
 import {
   Sheet,
@@ -22,16 +18,13 @@ import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
   NumberValueDefinition,
-  SupportedLanguage,
-  TextValueDefinition,
-  ValueDefinitionBaseSchema,
+  ValueDefinitionBase,
+  ValueInputType,
   ValueInputTypeSchema,
   createCollectionSchema,
   numberValueDefinitionSchema,
   supportedIconSchema,
-  textValueDefinitionSchema,
   uuid,
-  z,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -75,48 +68,45 @@ function ProjectCollectionCreate() {
   const [isAddValueDefinitionSheetOpen, setIsAddValueDefinitionSheetOpen] =
     useState(false);
   const [selectedInputType, setSelectedInputType] =
-    useState<z.infer<typeof ValueInputTypeSchema>>('text');
-  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(
-    context.currentUser.locale.id
-  );
-  const defaultProjectLocaleId =
-    context.currentProject.settings.locale.default.id;
+    useState<ValueInputType>('text');
+  // const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(
+  //   context.currentUser.language
+  // );
+  const defaultProjectLanguage =
+    context.currentProject.settings.language.default;
 
-  const valueDefinitionBaseDefaults: Omit<
-    z.infer<typeof ValueDefinitionBaseSchema>,
-    'id'
-  > = {
+  const valueDefinitionBaseDefaults: Omit<ValueDefinitionBase, 'id'> = {
     name: {
-      [selectedLanguage]: '',
+      [defaultProjectLanguage]: '',
     },
     description: {
-      [selectedLanguage]: '',
+      [defaultProjectLanguage]: '',
     },
     isRequired: false,
     isDisabled: false,
     inputWidth: '12',
   };
 
-  const textValueDefinitionFormState = useForm<TextValueDefinition>({
-    resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log(
-        'TextValueDefinition validation result',
-        await zodResolver(textValueDefinitionSchema)(data, context, options)
-      );
-      return zodResolver(textValueDefinitionSchema)(data, context, options);
-    },
-    defaultValues: {
-      ...valueDefinitionBaseDefaults,
-      id: uuid(),
-      valueType: 'string',
-      inputType: 'text',
-      defaultValue: '',
-      min: 0,
-      max: 250,
-      isUnique: false,
-    },
-  });
+  // const textValueDefinitionFormState = useForm<TextValueDefinition>({
+  //   resolver: async (data, context, options) => {
+  //     // you can debug your validation schema here
+  //     console.log(
+  //       'TextValueDefinition validation result',
+  //       await zodResolver(textValueDefinitionSchema)(data, context, options)
+  //     );
+  //     return zodResolver(textValueDefinitionSchema)(data, context, options);
+  //   },
+  //   defaultValues: {
+  //     ...valueDefinitionBaseDefaults,
+  //     id: uuid(),
+  //     valueType: 'string',
+  //     inputType: 'text',
+  //     defaultValue: '',
+  //     min: 0,
+  //     max: 250,
+  //     isUnique: false,
+  //   },
+  // });
 
   const numberValueDefinitionFormState = useForm<NumberValueDefinition>({
     resolver: async (data, context, options) => {
@@ -154,14 +144,14 @@ function ProjectCollectionCreate() {
       icon: 'home',
       name: {
         singular: {
-          [selectedLanguage]: '',
+          [defaultProjectLanguage]: '',
         },
         plural: {
-          [selectedLanguage]: '',
+          [defaultProjectLanguage]: '',
         },
       },
       description: {
-        [selectedLanguage]: '',
+        [defaultProjectLanguage]: '',
       },
       slug: {
         singular: '',
@@ -238,15 +228,15 @@ function ProjectCollectionCreate() {
 
   async function validateValueDefinition() {
     switch (selectedInputType) {
-      case 'text':
-        return await textValueDefinitionFormState.handleSubmit(
-          (textDefinition) => {
-            valueDefinitions.append(textDefinition);
-            setIsAddValueDefinitionSheetOpen(false);
-            textValueDefinitionFormState.reset();
-            textValueDefinitionFormState.setValue('id', uuid());
-          }
-        )();
+      // case 'text':
+      //   return await textValueDefinitionFormState.handleSubmit(
+      //     (textDefinition) => {
+      //       valueDefinitions.append(textDefinition);
+      //       setIsAddValueDefinitionSheetOpen(false);
+      //       textValueDefinitionFormState.reset();
+      //       textValueDefinitionFormState.setValue('id', uuid());
+      //     }
+      //   )();
       case 'number':
         return await numberValueDefinitionFormState.handleSubmit(
           (numberDefinition) => {
@@ -269,6 +259,20 @@ function ProjectCollectionCreate() {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
+      {/* <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {supportedLanguageSchema.options.map((option) => {
+            return (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </Select> */}
       <Form {...createCollectionForm}>
         <form onSubmit={createCollectionForm.handleSubmit(onCreate)}>
           <div className="p-6 space-y-4">
@@ -301,7 +305,7 @@ function ProjectCollectionCreate() {
 
               <FormField
                 control={createCollectionForm.control}
-                name={`name.plural.${defaultProjectLocaleId}`}
+                name={`name.plural.${defaultProjectLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel>Name (Plural)</FormLabel>
@@ -320,7 +324,7 @@ function ProjectCollectionCreate() {
 
               <FormField
                 control={createCollectionForm.control}
-                name={`name.singular.${defaultProjectLocaleId}`}
+                name={`name.singular.${defaultProjectLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel>Name (Singluar)</FormLabel>
@@ -338,7 +342,7 @@ function ProjectCollectionCreate() {
 
               <FormField
                 control={createCollectionForm.control}
-                name={`description.${defaultProjectLocaleId}`}
+                name={`description.${defaultProjectLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-12">
                     <FormLabel>Description</FormLabel>
@@ -426,18 +430,12 @@ function ProjectCollectionCreate() {
                   //   event.preventDefault();
                   // }}
                   overlayChildren={
-                    (selectedInputType === 'text' && (
-                      <TextValueDefinitionFormExample
-                        state={textValueDefinitionFormState}
-                        currentLanguage="en"
-                      ></TextValueDefinitionFormExample>
-                    )) ||
-                    (selectedInputType === 'number' && (
+                    selectedInputType === 'number' && (
                       <NumberValueDefinitionFormFieldExample
                         state={numberValueDefinitionFormState}
                         currentLanguage="en"
                       ></NumberValueDefinitionFormFieldExample>
-                    ))
+                    )
                   }
                 >
                   <SheetHeader>
@@ -455,9 +453,9 @@ function ProjectCollectionCreate() {
                           <FormLabel>Input type</FormLabel>
                           <Select
                             value={selectedInputType}
-                            onValueChange={(
-                              value: z.infer<typeof ValueInputTypeSchema>
-                            ) => setSelectedInputType(value)}
+                            onValueChange={(value: ValueInputType) =>
+                              setSelectedInputType(value)
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue />
@@ -477,12 +475,6 @@ function ProjectCollectionCreate() {
                           </FormDescription>
                         </FormItem>
 
-                        {selectedInputType === 'text' && (
-                          <TextValueDefinitionForm
-                            state={textValueDefinitionFormState}
-                            currentLanguage="en"
-                          ></TextValueDefinitionForm>
-                        )}
                         {selectedInputType === 'number' && (
                           <NumberValueDefinitionForm
                             state={numberValueDefinitionFormState}

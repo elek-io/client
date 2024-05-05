@@ -50,15 +50,15 @@ export const Route = createFileRoute('/projects/$projectId')({
      * that a translation should be added.
      */
     function translate(key: string, record: TranslatableString): string {
-      const toCurrentUserLocale = record[context.currentUser.locale.id];
-      if (toCurrentUserLocale) {
-        return toCurrentUserLocale;
+      const toCurrentUserLanguage = record[context.currentUser.language];
+      if (toCurrentUserLanguage) {
+        return toCurrentUserLanguage;
       }
-      const toCurrentProjectsDefaultLocale =
-        currentProject.settings.locale.default.id &&
-        record[currentProject.settings.locale.default.id];
-      if (toCurrentProjectsDefaultLocale) {
-        return toCurrentProjectsDefaultLocale;
+      const toCurrentProjectsDefaultLanguage =
+        currentProject.settings.language.default &&
+        record[currentProject.settings.language.default];
+      if (toCurrentProjectsDefaultLanguage) {
+        return toCurrentProjectsDefaultLanguage;
       }
       const toEnglish = record['en'];
       if (toEnglish) {

@@ -1,4 +1,4 @@
-import { ValueInputFromDefinition } from '@/renderer/react/components/forms/value-input-from-definition';
+import { ValueInputFromDefinition } from '@/renderer/react/components/forms/util';
 import { fieldWidth } from '@/util';
 import { CreateEntryProps, createEntrySchema } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
