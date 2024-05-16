@@ -500,7 +500,7 @@ function ProjectCollectionCreate() {
 
                   <SheetBody>
                     <ScrollArea>
-                      <div className="px-6 py-1 space-y-6">
+                      <div className="p-6 space-y-6">
                         <FormItem>
                           <FormLabel>Input type</FormLabel>
                           <Select

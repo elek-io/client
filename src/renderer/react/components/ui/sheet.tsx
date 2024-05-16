@@ -90,7 +90,7 @@ const SheetHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col p-6 space-y-2 text-center sm:text-left',
+      'flex flex-col p-6 space-y-2 text-center sm:text-left border-b border-zinc-200 dark:border-zinc-800',
       className
     )}
     {...props}
@@ -102,7 +102,10 @@ const SheetBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col flex-auto', className)} {...props} />
+  <div
+    className={cn('min-h-0 flex flex-col flex-auto shadow-inner', className)}
+    {...props}
+  />
 );
 SheetBody.displayName = 'SheetBody';
 
@@ -112,7 +115,7 @@ const SheetFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col-reverse p-6 sm:flex-row sm:justify-end sm:space-x-2',
+      'flex flex-col-reverse p-6 sm:flex-row sm:justify-end sm:space-x-2 border-t border-zinc-200 dark:border-zinc-800',
       className
     )}
     {...props}
