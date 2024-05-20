@@ -168,7 +168,7 @@ function ProjectSettingsPage() {
                 name={'name'}
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel>Project name</FormLabel>
+                    <FormLabel isRequired={true}>Project name</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -183,7 +183,9 @@ function ProjectSettingsPage() {
                 name={'description'}
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel>Project description</FormLabel>
+                    <FormLabel isRequired={false}>
+                      Project description
+                    </FormLabel>
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>
@@ -197,7 +199,7 @@ function ProjectSettingsPage() {
 
           <PageSection
             title="Language"
-            description="Settings related to the supported languages of this Project"
+            description="Settings related to the languages used in this Project"
           >
             {/* {JSON.stringify(projectForm.watch('settings.language'))} */}
             <div className="grid grid-cols-12 gap-6">
@@ -206,13 +208,13 @@ function ProjectSettingsPage() {
                 name={'settings.language.supported'}
                 render={({ field }) => (
                   <FormItem className="col-span-6">
-                    <FormLabel>Supported</FormLabel>
+                    <FormLabel isRequired={true}>Supported</FormLabel>
                     <FormControl>
                       <>
                         <ul className="flex flex-wrap">
                           {field.value.map((language, index) => {
                             return (
-                              <li key={language} className="m-1">
+                              <li key={language} className="mr-2 mb-2">
                                 <Chip>
                                   {language}
                                   <Button
@@ -312,7 +314,7 @@ function ProjectSettingsPage() {
                       </>
                     </FormControl>
                     <FormDescription>
-                      Select which languages this Projects content can be
+                      Select which languages this Projects content has to be
                       translated into
                     </FormDescription>
                     <FormMessage />
@@ -325,7 +327,7 @@ function ProjectSettingsPage() {
                 name={'settings.language.default'}
                 render={({ field }) => (
                   <FormItem className="col-span-6">
-                    <FormLabel>Default</FormLabel>
+                    <FormLabel isRequired={true}>Default</FormLabel>
                     <FormControl>
                       <Select
                         value={field.value}
