@@ -96,7 +96,7 @@ function ProjectCollectionCreate() {
   const valueDefinitionBaseDefaults: Omit<ValueDefinitionBase, 'id'> = {
     name: currentProjectTranslatableStringDefault,
     description: currentProjectTranslatableStringDefault,
-    isRequired: false,
+    isRequired: true,
     isDisabled: false,
     inputWidth: '12',
   };
@@ -292,7 +292,7 @@ function ProjectCollectionCreate() {
                 name={`icon`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-2">
-                    <FormLabel>Icon</FormLabel>
+                    <FormLabel isRequired={true}>Icon</FormLabel>
                     <FormControl>
                       <Select onValueChange={field.onChange} {...field}>
                         <SelectTrigger>
@@ -318,7 +318,7 @@ function ProjectCollectionCreate() {
                 name={`name.plural.${defaultProjectLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel>Name (Plural)</FormLabel>
+                    <FormLabel isRequired={true}>Name (Plural)</FormLabel>
                     <FormControl>
                       <Dialog>
                         <DialogTrigger asChild>
@@ -342,7 +342,9 @@ function ProjectCollectionCreate() {
                                   name={`name.plural.${language}`}
                                   render={({ field }) => (
                                     <FormItem className="col-span-12 sm:col-span-5">
-                                      <FormLabel>{language}</FormLabel>
+                                      <FormLabel isRequired={true}>
+                                        {language}
+                                      </FormLabel>
                                       <FormControl>
                                         <Input {...field} />
                                       </FormControl>
@@ -379,9 +381,52 @@ function ProjectCollectionCreate() {
                 name={`name.singular.${defaultProjectLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel>Name (Singluar)</FormLabel>
+                    <FormLabel isRequired={true}>Name (Singluar)</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Input {...field} />
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Name (Singular)</DialogTitle>
+                            <DialogDescription>
+                              The name of each Entry inside your new Collection.
+                              Choose a short name in singluar - e.g. "Blogpost".
+                            </DialogDescription>
+                          </DialogHeader>
+
+                          {context.currentProject.settings.language.supported.map(
+                            (language) => {
+                              return (
+                                <FormField
+                                  control={createCollectionForm.control}
+                                  name={`name.singular.${language}`}
+                                  render={({ field }) => (
+                                    <FormItem className="col-span-12 sm:col-span-5">
+                                      <FormLabel isRequired={true}>
+                                        {language}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              );
+                            }
+                          )}
+
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Done
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </FormControl>
                     <FormDescription>
                       The name of each Entry inside your new Collection. Choose
@@ -397,9 +442,52 @@ function ProjectCollectionCreate() {
                 name={`description.${defaultProjectLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-12">
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel isRequired={true}>Description</FormLabel>
                     <FormControl>
-                      <Textarea {...field} />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Textarea {...field} />
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Description</DialogTitle>
+                            <DialogDescription>
+                              A description of what this new Collection is used
+                              for.
+                            </DialogDescription>
+                          </DialogHeader>
+
+                          {context.currentProject.settings.language.supported.map(
+                            (language) => {
+                              return (
+                                <FormField
+                                  control={createCollectionForm.control}
+                                  name={`description.${language}`}
+                                  render={({ field }) => (
+                                    <FormItem className="col-span-12 sm:col-span-5">
+                                      <FormLabel isRequired={true}>
+                                        {language}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Textarea {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              );
+                            }
+                          )}
+
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Done
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </FormControl>
                     <FormDescription>
                       A description of what this new Collection is used for.
@@ -485,52 +573,57 @@ function ProjectCollectionCreate() {
                     selectedInputType === 'number' && (
                       <NumberValueDefinitionFormFieldExample
                         state={numberValueDefinitionFormState}
-                        currentLanguage="en"
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
                       ></NumberValueDefinitionFormFieldExample>
                     )
                   }
                 >
                   <SheetHeader>
-                    <SheetTitle>Add a new Value definition</SheetTitle>
+                    <SheetTitle>Add a Field to this Collection</SheetTitle>
                     <SheetDescription>
-                      Choose what type the new Value of this Collection is going
-                      to be.
+                      Adding Fields to your Collection will enable users to
+                      enter data that follows the boundries you've set.
                     </SheetDescription>
+                    <FormItem>
+                      <FormLabel isRequired={true}>Input type</FormLabel>
+                      <Select
+                        value={selectedInputType}
+                        onValueChange={(value: ValueInputType) =>
+                          setSelectedInputType(value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ValueInputTypeSchema.options.map((option) => {
+                            return (
+                              <SelectItem value={option}>{option}</SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        The type of input the user is able to enter for this
+                        Field.
+                      </FormDescription>
+                    </FormItem>
                   </SheetHeader>
 
                   <SheetBody>
                     <ScrollArea>
                       <div className="p-6 space-y-6">
-                        <FormItem>
-                          <FormLabel>Input type</FormLabel>
-                          <Select
-                            value={selectedInputType}
-                            onValueChange={(value: ValueInputType) =>
-                              setSelectedInputType(value)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ValueInputTypeSchema.options.map((option) => {
-                                return (
-                                  <SelectItem value={option}>
-                                    {option}
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            The type of input for the Value.
-                          </FormDescription>
-                        </FormItem>
-
                         {selectedInputType === 'number' && (
                           <NumberValueDefinitionForm
                             state={numberValueDefinitionFormState}
-                            currentLanguage="en"
+                            currentLanguage={
+                              context.currentProject.settings.language.default
+                            }
+                            supportedLanguages={
+                              context.currentProject.settings.language.supported
+                            }
                           ></NumberValueDefinitionForm>
                         )}
                       </div>
@@ -561,7 +654,7 @@ function ProjectCollectionCreate() {
                           definition.inputWidth
                         )}`}
                       >
-                        <FormLabel>
+                        <FormLabel isRequired={definition.isRequired}>
                           {context.translate(
                             'definition.name',
                             definition.name
