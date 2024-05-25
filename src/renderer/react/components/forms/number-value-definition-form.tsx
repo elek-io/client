@@ -12,27 +12,26 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
-import { Switch } from '../ui/switch';
-import { DefaultValueDefinitionForm } from './default-value-definition-form';
+import {
+  DefaultValueDefinitionForm,
+  DefaultValueDefinitionFormProps,
+} from './default-value-definition-form';
+import { IsUniqueFormField } from './is-unique-form-field';
 import { setValueAsNumber } from './util';
 
 export interface NumberValueDefinitionFormProps
-  extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<NumberValueDefinition>;
-  supportedLanguages: SupportedLanguage[];
-  currentLanguage: SupportedLanguage;
-}
+  extends DefaultValueDefinitionFormProps<NumberValueDefinition> {}
 
 const NumberValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
   NumberValueDefinitionFormProps
->((props, ref) => {
+>(({ className, state, ...props }, ref) => {
   return (
-    <Form {...props.state}>
+    <Form {...state}>
       <form className="space-y-6">
-        <DefaultValueDefinitionForm {...props}>
+        <DefaultValueDefinitionForm state={state} {...props}>
           <FormField
-            control={props.state.control}
+            control={state.control}
             name={`defaultValue`}
             render={({ field }) => (
               <FormItem>
@@ -40,7 +39,7 @@ const NumberValueDefinitionForm = React.forwardRef<
                 <FormControl>
                   <Input
                     {...field}
-                    {...props.state.register('defaultValue', {
+                    {...state.register('defaultValue', {
                       setValueAs: setValueAsNumber,
                     })}
                     type="number"
@@ -56,7 +55,7 @@ const NumberValueDefinitionForm = React.forwardRef<
 
           <div className="flex flex-row items-center justify-between space-x-2">
             <FormField
-              control={props.state.control}
+              control={state.control}
               name={`min`}
               render={({ field }) => (
                 <FormItem>
@@ -64,7 +63,7 @@ const NumberValueDefinitionForm = React.forwardRef<
                   <FormControl>
                     <Input
                       {...field}
-                      {...props.state.register('min', {
+                      {...state.register('min', {
                         setValueAs: setValueAsNumber,
                       })}
                       type="number"
@@ -78,7 +77,7 @@ const NumberValueDefinitionForm = React.forwardRef<
               )}
             />
             <FormField
-              control={props.state.control}
+              control={state.control}
               name={`max`}
               render={({ field }) => (
                 <FormItem>
@@ -86,7 +85,7 @@ const NumberValueDefinitionForm = React.forwardRef<
                   <FormControl>
                     <Input
                       {...field}
-                      {...props.state.register('max', {
+                      {...state.register('max', {
                         setValueAs: setValueAsNumber,
                       })}
                       type="number"
@@ -102,27 +101,7 @@ const NumberValueDefinitionForm = React.forwardRef<
           </div>
         </DefaultValueDefinitionForm>
 
-        <FormField
-          control={props.state.control}
-          name={`isUnique`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
-              <div>
-                <FormLabel isRequired={true}>Unique</FormLabel>
-                <FormDescription>
-                  You won't be able to create an Entry if there is an existing
-                  Entry with identical content.
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        <IsUniqueFormField state={state} {...props} />
       </form>
     </Form>
   );
