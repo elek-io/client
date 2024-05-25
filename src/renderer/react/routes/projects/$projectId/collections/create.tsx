@@ -340,6 +340,7 @@ function ProjectCollectionCreate() {
                             (language) => {
                               return (
                                 <FormField
+                                  key={language}
                                   control={createCollectionForm.control}
                                   name={`name.plural.${language}`}
                                   render={({ field }) => (
@@ -404,6 +405,7 @@ function ProjectCollectionCreate() {
                             (language) => {
                               return (
                                 <FormField
+                                  key={language}
                                   control={createCollectionForm.control}
                                   name={`name.singular.${language}`}
                                   render={({ field }) => (
@@ -465,6 +467,7 @@ function ProjectCollectionCreate() {
                             (language) => {
                               return (
                                 <FormField
+                                  key={language}
                                   control={createCollectionForm.control}
                                   name={`description.${language}`}
                                   render={({ field }) => (
