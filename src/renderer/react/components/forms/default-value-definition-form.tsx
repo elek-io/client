@@ -1,4 +1,4 @@
-import { NumberValueDefinition, SupportedLanguage } from '@elek-io/shared';
+import { SupportedLanguage } from '@elek-io/shared';
 import { Button } from '@elek-io/ui';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
@@ -24,16 +24,16 @@ import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 
-export interface DefaultValueDefinitionFormProps
+export interface DefaultValueDefinitionFormProps<T>
   extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<NumberValueDefinition>;
+  state: UseFormReturn<T>;
   supportedLanguages: SupportedLanguage[];
   currentLanguage: SupportedLanguage;
 }
 
 const DefaultValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
-  DefaultValueDefinitionFormProps
+  DefaultValueDefinitionFormProps<any>
 >(
   (
     { className, state, currentLanguage, supportedLanguages, ...props },
@@ -212,6 +212,6 @@ const DefaultValueDefinitionForm = React.forwardRef<
     );
   }
 );
-DefaultValueDefinitionForm.displayName = 'NumberValueDefinitionForm';
+DefaultValueDefinitionForm.displayName = 'DefaultValueDefinitionForm';
 
 export { DefaultValueDefinitionForm };
