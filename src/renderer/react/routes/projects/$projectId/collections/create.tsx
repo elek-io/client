@@ -2,6 +2,10 @@ import {
   NumberValueDefinitionForm,
   NumberValueDefinitionFormFieldExample,
 } from '@/renderer/react/components/forms/number-value-definition-form';
+import {
+  TextValueDefinitionForm,
+  TextValueDefinitionFormExample,
+} from '@/renderer/react/components/forms/text-value-definition-form';
 import { ValueInputFromDefinition } from '@/renderer/react/components/forms/util';
 import {
   Dialog,
@@ -28,12 +32,14 @@ import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
   NumberValueDefinition,
+  TextValueDefinition,
   ValueDefinitionBase,
   ValueInputType,
   ValueInputTypeSchema,
   createCollectionSchema,
   numberValueDefinitionSchema,
   supportedIconSchema,
+  textValueDefinitionSchema,
   uuid,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
@@ -101,26 +107,26 @@ function ProjectCollectionCreate() {
     inputWidth: '12',
   };
 
-  // const textValueDefinitionFormState = useForm<TextValueDefinition>({
-  //   resolver: async (data, context, options) => {
-  //     // you can debug your validation schema here
-  //     console.log(
-  //       'TextValueDefinition validation result',
-  //       await zodResolver(textValueDefinitionSchema)(data, context, options)
-  //     );
-  //     return zodResolver(textValueDefinitionSchema)(data, context, options);
-  //   },
-  //   defaultValues: {
-  //     ...valueDefinitionBaseDefaults,
-  //     id: uuid(),
-  //     valueType: 'string',
-  //     inputType: 'text',
-  //     defaultValue: '',
-  //     min: 0,
-  //     max: 250,
-  //     isUnique: false,
-  //   },
-  // });
+  const textValueDefinitionFormState = useForm<TextValueDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'TextValueDefinition validation result',
+        await zodResolver(textValueDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(textValueDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...valueDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'string',
+      inputType: 'text',
+      defaultValue: undefined,
+      min: undefined,
+      max: 250,
+      isUnique: false,
+    },
+  });
 
   const numberValueDefinitionFormState = useForm<NumberValueDefinition>({
     resolver: async (data, context, options) => {
@@ -236,15 +242,15 @@ function ProjectCollectionCreate() {
 
   async function validateValueDefinition() {
     switch (selectedInputType) {
-      // case 'text':
-      //   return await textValueDefinitionFormState.handleSubmit(
-      //     (textDefinition) => {
-      //       valueDefinitions.append(textDefinition);
-      //       setIsAddValueDefinitionSheetOpen(false);
-      //       textValueDefinitionFormState.reset();
-      //       textValueDefinitionFormState.setValue('id', uuid());
-      //     }
-      //   )();
+      case 'text':
+        return await textValueDefinitionFormState.handleSubmit(
+          (textDefinition) => {
+            valueDefinitions.append(textDefinition);
+            setIsAddValueDefinitionSheetOpen(false);
+            textValueDefinitionFormState.reset();
+            textValueDefinitionFormState.setValue('id', uuid());
+          }
+        )();
       case 'number':
         return await numberValueDefinitionFormState.handleSubmit(
           (numberDefinition) => {
@@ -577,14 +583,22 @@ function ProjectCollectionCreate() {
                   //   event.preventDefault();
                   // }}
                   overlayChildren={
-                    selectedInputType === 'number' && (
+                    (selectedInputType === 'number' && (
                       <NumberValueDefinitionFormFieldExample
                         state={numberValueDefinitionFormState}
                         currentLanguage={
                           context.currentProject.settings.language.default
                         }
-                      ></NumberValueDefinitionFormFieldExample>
-                    )
+                      />
+                    )) ||
+                    (selectedInputType === 'text' && (
+                      <TextValueDefinitionFormExample
+                        state={textValueDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
+                    ))
                   }
                 >
                   <SheetHeader>
@@ -624,7 +638,7 @@ function ProjectCollectionCreate() {
                   <SheetBody>
                     <ScrollArea>
                       <div className="p-6 space-y-6">
-                        {selectedInputType === 'number' && (
+                        {(selectedInputType === 'number' && (
                           <NumberValueDefinitionForm
                             state={numberValueDefinitionFormState}
                             currentLanguage={
@@ -634,7 +648,19 @@ function ProjectCollectionCreate() {
                               context.currentProject.settings.language.supported
                             }
                           ></NumberValueDefinitionForm>
-                        )}
+                        )) ||
+                          (selectedInputType === 'text' && (
+                            <TextValueDefinitionForm
+                              state={textValueDefinitionFormState}
+                              currentLanguage={
+                                context.currentProject.settings.language.default
+                              }
+                              supportedLanguages={
+                                context.currentProject.settings.language
+                                  .supported
+                              }
+                            />
+                          ))}
                       </div>
                     </ScrollArea>
                   </SheetBody>
