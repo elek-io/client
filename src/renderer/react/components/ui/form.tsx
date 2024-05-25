@@ -91,7 +91,7 @@ export interface FormLabelProps
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   FormLabelProps
->(({ className, ...props }, ref) => {
+>(({ className, isRequired, ...props }, ref) => {
   const { error, formItemId } = useFormField();
 
   return (
@@ -102,7 +102,7 @@ const FormLabel = React.forwardRef<
       {...props}
     >
       {props.children}
-      {props.isRequired === false && (
+      {isRequired === false && (
         <span className="text-[0.8rem] text-zinc-500 dark:text-zinc-400">
           {' '}
           - optional
