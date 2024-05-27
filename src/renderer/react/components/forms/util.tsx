@@ -17,8 +17,8 @@ export function ValueInputFromDefinition<T>(
         <Input
           {...field}
           type="text"
-          min={definition.min}
-          max={definition.max}
+          minLength={definition.min}
+          maxLength={definition.max}
           required={definition.isRequired}
           disabled={definition.isDisabled}
         />
