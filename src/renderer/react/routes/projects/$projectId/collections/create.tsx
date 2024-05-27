@@ -7,6 +7,10 @@ import {
   TextValueDefinitionFormExample,
 } from '@/renderer/react/components/forms/text-value-definition-form';
 import {
+  TextareaValueDefinitionForm,
+  TextareaValueDefinitionFormExample,
+} from '@/renderer/react/components/forms/textarea-value-definition-form';
+import {
   ToggleValueDefinitionForm,
   ToggleValueDefinitionFormExample,
 } from '@/renderer/react/components/forms/toggle-value-definition-form';
@@ -37,6 +41,7 @@ import {
   CreateCollectionProps,
   NumberValueDefinition,
   TextValueDefinition,
+  TextareaValueDefinition,
   ToggleValueDefinition,
   ValueDefinitionBase,
   ValueInputType,
@@ -45,6 +50,7 @@ import {
   numberValueDefinitionSchema,
   supportedIconSchema,
   textValueDefinitionSchema,
+  textareaValueDefinitionSchema,
   toggleValueDefinitionSchema,
   uuid,
 } from '@elek-io/shared';
@@ -134,6 +140,27 @@ function ProjectCollectionCreate() {
     },
   });
 
+  const textareaValueDefinitionFormState = useForm<TextareaValueDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'TextareaValueDefinition validation result',
+        await zodResolver(textareaValueDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(textareaValueDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...valueDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'string',
+      inputType: 'textarea',
+      defaultValue: undefined,
+      min: undefined,
+      max: undefined,
+      isUnique: false,
+    },
+  });
+
   const numberValueDefinitionFormState = useForm<NumberValueDefinition>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
@@ -159,7 +186,7 @@ function ProjectCollectionCreate() {
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
       console.log(
-        'NumberValueDefinition validation result',
+        'ToggleValueDefinition validation result',
         await zodResolver(toggleValueDefinitionSchema)(data, context, options)
       );
       return zodResolver(toggleValueDefinitionSchema)(data, context, options);
@@ -275,6 +302,15 @@ function ProjectCollectionCreate() {
             textValueDefinitionFormState.setValue('id', uuid());
           }
         )();
+      case 'textarea':
+        return await textareaValueDefinitionFormState.handleSubmit(
+          (textareaDefinition) => {
+            valueDefinitions.append(textareaDefinition);
+            setIsAddValueDefinitionSheetOpen(false);
+            textareaValueDefinitionFormState.reset();
+            textareaValueDefinitionFormState.setValue('id', uuid());
+          }
+        )();
       case 'number':
         return await numberValueDefinitionFormState.handleSubmit(
           (numberDefinition) => {
@@ -286,8 +322,8 @@ function ProjectCollectionCreate() {
         )();
       case 'toggle':
         return await toggleValueDefinitionFormState.handleSubmit(
-          (numberDefinition) => {
-            valueDefinitions.append(numberDefinition);
+          (toggleDefinition) => {
+            valueDefinitions.append(toggleDefinition);
             setIsAddValueDefinitionSheetOpen(false);
             toggleValueDefinitionFormState.reset();
             toggleValueDefinitionFormState.setValue('id', uuid());
@@ -632,6 +668,14 @@ function ProjectCollectionCreate() {
                         }
                       />
                     )) ||
+                    (selectedInputType === 'textarea' && (
+                      <TextareaValueDefinitionFormExample
+                        state={textareaValueDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
+                    )) ||
                     (selectedInputType === 'toggle' && (
                       <ToggleValueDefinitionFormExample
                         state={toggleValueDefinitionFormState}
@@ -693,6 +737,18 @@ function ProjectCollectionCreate() {
                           (selectedInputType === 'text' && (
                             <TextValueDefinitionForm
                               state={textValueDefinitionFormState}
+                              currentLanguage={
+                                context.currentProject.settings.language.default
+                              }
+                              supportedLanguages={
+                                context.currentProject.settings.language
+                                  .supported
+                              }
+                            />
+                          )) ||
+                          (selectedInputType === 'textarea' && (
+                            <TextareaValueDefinitionForm
+                              state={textareaValueDefinitionFormState}
                               currentLanguage={
                                 context.currentProject.settings.language.default
                               }

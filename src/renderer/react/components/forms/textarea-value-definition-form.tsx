@@ -1,5 +1,5 @@
 import { cn } from '@/util';
-import { SupportedLanguage, TextValueDefinition } from '@elek-io/shared';
+import { SupportedLanguage, TextareaValueDefinition } from '@elek-io/shared';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import {
@@ -12,18 +12,19 @@ import {
   FormMessage,
 } from '../ui/form';
 import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
 import {
   DefaultValueDefinitionForm,
   DefaultValueDefinitionFormProps,
 } from './default-value-definition-form';
 import { IsUniqueFormField } from './is-unique-form-field';
 
-export interface TextValueDefinitionFormProps
-  extends DefaultValueDefinitionFormProps<TextValueDefinition> {}
+export interface TextareaValueDefinitionFormProps
+  extends DefaultValueDefinitionFormProps<TextareaValueDefinition> {}
 
-const TextValueDefinitionForm = React.forwardRef<
+const TextareaValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
-  TextValueDefinitionFormProps
+  TextareaValueDefinitionFormProps
 >(({ className, state, ...props }, ref) => {
   return (
     <Form {...state}>
@@ -36,7 +37,7 @@ const TextValueDefinitionForm = React.forwardRef<
               <FormItem>
                 <FormLabel isRequired={false}>Default value</FormLabel>
                 <FormControl>
-                  <Input {...field} type="text" />
+                  <Textarea {...field} />
                 </FormControl>
                 <FormDescription>
                   The initial value for the field.
@@ -87,17 +88,17 @@ const TextValueDefinitionForm = React.forwardRef<
     </Form>
   );
 });
-TextValueDefinitionForm.displayName = 'TextValueDefinitionForm';
+TextareaValueDefinitionForm.displayName = 'TextareaValueDefinitionForm';
 
-export interface TextValueDefinitionFormExampleProps
+export interface TextareaValueDefinitionFormExampleProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<TextValueDefinition>;
+  state: UseFormReturn<TextareaValueDefinition>;
   currentLanguage: SupportedLanguage;
 }
 
-const TextValueDefinitionFormExample = React.forwardRef<
+const TextareaValueDefinitionFormExample = React.forwardRef<
   HTMLFormElement,
-  TextValueDefinitionFormExampleProps
+  TextareaValueDefinitionFormExampleProps
 >(({ className, state, currentLanguage, ...props }, ref) => {
   return (
     <FormField
@@ -110,11 +111,10 @@ const TextValueDefinitionFormExample = React.forwardRef<
             {state.watch(`name.${currentLanguage}`)}
           </FormLabel>
           <FormControl>
-            <Input
+            <Textarea
               className={cn('bg-white dark:bg-zinc-900', className)}
-              type="text"
-              min={state.watch('min')}
-              max={state.watch('max')}
+              minLength={state.watch('min')}
+              maxLength={state.watch('max')}
               defaultValue={state.watch('defaultValue')}
               required={state.watch('isRequired')}
               disabled={state.watch('isDisabled')}
@@ -129,6 +129,7 @@ const TextValueDefinitionFormExample = React.forwardRef<
     />
   );
 });
-TextValueDefinitionFormExample.displayName = 'TextValueDefinitionFormExample';
+TextareaValueDefinitionFormExample.displayName =
+  'TextareaValueDefinitionFormExample';
 
-export { TextValueDefinitionForm, TextValueDefinitionFormExample };
+export { TextareaValueDefinitionForm, TextareaValueDefinitionFormExample };
