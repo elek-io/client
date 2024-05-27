@@ -6,6 +6,10 @@ import {
   TextValueDefinitionForm,
   TextValueDefinitionFormExample,
 } from '@/renderer/react/components/forms/text-value-definition-form';
+import {
+  ToggleValueDefinitionForm,
+  ToggleValueDefinitionFormExample,
+} from '@/renderer/react/components/forms/toggle-value-definition-form';
 import { ValueInputFromDefinition } from '@/renderer/react/components/forms/util';
 import {
   Dialog,
@@ -33,6 +37,7 @@ import {
   CreateCollectionProps,
   NumberValueDefinition,
   TextValueDefinition,
+  ToggleValueDefinition,
   ValueDefinitionBase,
   ValueInputType,
   ValueInputTypeSchema,
@@ -40,6 +45,7 @@ import {
   numberValueDefinitionSchema,
   supportedIconSchema,
   textValueDefinitionSchema,
+  toggleValueDefinitionSchema,
   uuid,
 } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
@@ -146,6 +152,24 @@ function ProjectCollectionCreate() {
       min: undefined,
       max: undefined,
       isUnique: false,
+    },
+  });
+
+  const toggleValueDefinitionFormState = useForm<ToggleValueDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'NumberValueDefinition validation result',
+        await zodResolver(toggleValueDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(toggleValueDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...valueDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'boolean',
+      inputType: 'toggle',
+      defaultValue: false,
     },
   });
 
@@ -258,6 +282,15 @@ function ProjectCollectionCreate() {
             setIsAddValueDefinitionSheetOpen(false);
             numberValueDefinitionFormState.reset();
             numberValueDefinitionFormState.setValue('id', uuid());
+          }
+        )();
+      case 'toggle':
+        return await toggleValueDefinitionFormState.handleSubmit(
+          (numberDefinition) => {
+            valueDefinitions.append(numberDefinition);
+            setIsAddValueDefinitionSheetOpen(false);
+            toggleValueDefinitionFormState.reset();
+            toggleValueDefinitionFormState.setValue('id', uuid());
           }
         )();
       default:
@@ -598,6 +631,14 @@ function ProjectCollectionCreate() {
                           context.currentProject.settings.language.default
                         }
                       />
+                    )) ||
+                    (selectedInputType === 'toggle' && (
+                      <ToggleValueDefinitionFormExample
+                        state={toggleValueDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
                     ))
                   }
                 >
@@ -660,6 +701,18 @@ function ProjectCollectionCreate() {
                                   .supported
                               }
                             />
+                          )) ||
+                          (selectedInputType === 'toggle' && (
+                            <ToggleValueDefinitionForm
+                              state={toggleValueDefinitionFormState}
+                              currentLanguage={
+                                context.currentProject.settings.language.default
+                              }
+                              supportedLanguages={
+                                context.currentProject.settings.language
+                                  .supported
+                              }
+                            />
                           ))}
                       </div>
                     </ScrollArea>
@@ -696,6 +749,7 @@ function ProjectCollectionCreate() {
                           )}
                         </FormLabel>
                         <FormControl>
+                          {/* @todo add styling for toggle switches */}
                           {ValueInputFromDefinition<CreateCollectionProps>(
                             definition,
                             createCollectionForm,

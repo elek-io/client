@@ -2,6 +2,7 @@ import { ValueDefinition } from '@elek-io/shared';
 import { ReactElement } from 'react';
 import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
 import { Input } from '../ui/input';
+import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 
 export function ValueInputFromDefinition<T>(
@@ -35,6 +36,15 @@ export function ValueInputFromDefinition<T>(
           type="number"
           min={definition.min}
           max={definition.max}
+          required={definition.isRequired}
+          disabled={definition.isDisabled}
+        />
+      );
+    case 'toggle':
+      return (
+        <Switch
+          {...field}
+          checked={definition.defaultValue}
           required={definition.isRequired}
           disabled={definition.isDisabled}
         />
