@@ -17,6 +17,7 @@ import {
   DefaultValueDefinitionFormProps,
 } from './default-value-definition-form';
 import { IsUniqueFormField } from './is-unique-form-field';
+import { setValueAsNumber } from './util';
 
 export interface TextValueDefinitionFormProps
   extends DefaultValueDefinitionFormProps<TextValueDefinition> {}
@@ -54,7 +55,13 @@ const TextValueDefinitionForm = React.forwardRef<
                 <FormItem>
                   <FormLabel isRequired={false}>Minimum</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" />
+                    <Input
+                      {...field}
+                      {...state.register('min', {
+                        setValueAs: setValueAsNumber,
+                      })}
+                      type="number"
+                    />
                   </FormControl>
                   <FormDescription>
                     The minimum number of characters the user is able to enter.
@@ -70,7 +77,13 @@ const TextValueDefinitionForm = React.forwardRef<
                 <FormItem>
                   <FormLabel isRequired={false}>Maximum</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" />
+                    <Input
+                      {...field}
+                      {...state.register('max', {
+                        setValueAs: setValueAsNumber,
+                      })}
+                      type="number"
+                    />
                   </FormControl>
                   <FormDescription>
                     The maximum number of characters the user is able to enter.
