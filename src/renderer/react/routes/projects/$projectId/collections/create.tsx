@@ -3,6 +3,10 @@ import {
   NumberValueDefinitionFormFieldExample,
 } from '@/renderer/react/components/forms/number-value-definition-form';
 import {
+  RangeValueDefinitionForm,
+  RangeValueDefinitionFormFieldExample,
+} from '@/renderer/react/components/forms/range-value-definition-form';
+import {
   TextValueDefinitionForm,
   TextValueDefinitionFormExample,
 } from '@/renderer/react/components/forms/text-value-definition-form';
@@ -40,6 +44,7 @@ import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
   NumberValueDefinition,
+  RangeValueDefinition,
   TextValueDefinition,
   TextareaValueDefinition,
   ToggleValueDefinition,
@@ -48,6 +53,7 @@ import {
   ValueInputTypeSchema,
   createCollectionSchema,
   numberValueDefinitionSchema,
+  rangeValueDefinitionSchema,
   supportedIconSchema,
   textValueDefinitionSchema,
   textareaValueDefinitionSchema,
@@ -178,6 +184,26 @@ function ProjectCollectionCreate() {
       defaultValue: undefined,
       min: undefined,
       max: undefined,
+    },
+  });
+
+  const rangeValueDefinitionFormState = useForm<RangeValueDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'RangeValueDefinition validation result',
+        await zodResolver(rangeValueDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(rangeValueDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...valueDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'number',
+      inputType: 'range',
+      defaultValue: 50,
+      min: 0,
+      max: 100,
       isUnique: false,
     },
   });
@@ -318,6 +344,15 @@ function ProjectCollectionCreate() {
             setIsAddValueDefinitionSheetOpen(false);
             numberValueDefinitionFormState.reset();
             numberValueDefinitionFormState.setValue('id', uuid());
+          }
+        )();
+      case 'range':
+        return await rangeValueDefinitionFormState.handleSubmit(
+          (rangeDefinition) => {
+            valueDefinitions.append(rangeDefinition);
+            setIsAddValueDefinitionSheetOpen(false);
+            rangeValueDefinitionFormState.reset();
+            rangeValueDefinitionFormState.setValue('id', uuid());
           }
         )();
       case 'toggle':
@@ -660,6 +695,14 @@ function ProjectCollectionCreate() {
                         }
                       />
                     )) ||
+                    (selectedInputType === 'range' && (
+                      <RangeValueDefinitionFormFieldExample
+                        state={rangeValueDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
+                    )) ||
                     (selectedInputType === 'text' && (
                       <TextValueDefinitionFormExample
                         state={textValueDefinitionFormState}
@@ -732,8 +775,20 @@ function ProjectCollectionCreate() {
                             supportedLanguages={
                               context.currentProject.settings.language.supported
                             }
-                          ></NumberValueDefinitionForm>
+                          />
                         )) ||
+                          (selectedInputType === 'range' && (
+                            <RangeValueDefinitionForm
+                              state={rangeValueDefinitionFormState}
+                              currentLanguage={
+                                context.currentProject.settings.language.default
+                              }
+                              supportedLanguages={
+                                context.currentProject.settings.language
+                                  .supported
+                              }
+                            />
+                          )) ||
                           (selectedInputType === 'text' && (
                             <TextValueDefinitionForm
                               state={textValueDefinitionFormState}
