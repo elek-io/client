@@ -113,7 +113,7 @@ function CreateProjectPage() {
                 name={'name'}
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel>Project name</FormLabel>
+                    <FormLabel isRequired={true}>Project name</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -128,7 +128,7 @@ function CreateProjectPage() {
                 name={'description'}
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel>Project description</FormLabel>
+                    <FormLabel isRequired={true}>Project description</FormLabel>
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>

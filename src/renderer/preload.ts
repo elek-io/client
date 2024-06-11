@@ -46,13 +46,13 @@ export interface ContextBridgeApi {
       update: Core['entries']['update'];
       delete: Core['entries']['delete'];
     };
-    sharedValues: {
-      list: Core['sharedValues']['list'];
-      create: Core['sharedValues']['create'];
-      read: Core['sharedValues']['read'];
-      update: Core['sharedValues']['update'];
-      delete: Core['sharedValues']['delete'];
-    };
+    // sharedValues: {
+    //   list: Core['sharedValues']['list'];
+    //   create: Core['sharedValues']['create'];
+    //   read: Core['sharedValues']['read'];
+    //   update: Core['sharedValues']['update'];
+    //   delete: Core['sharedValues']['delete'];
+    // };
   };
 }
 
@@ -101,13 +101,13 @@ const exposedApi: ContextBridgeApi = {
       update: (...args) => ipcRenderer.invoke('core:entries:update', args),
       delete: (...args) => ipcRenderer.invoke('core:entries:delete', args),
     },
-    sharedValues: {
-      list: (...args) => ipcRenderer.invoke('core:sharedValues:list', args),
-      create: (...args) => ipcRenderer.invoke('core:sharedValues:create', args),
-      read: (...args) => ipcRenderer.invoke('core:sharedValues:read', args),
-      update: (...args) => ipcRenderer.invoke('core:sharedValues:update', args),
-      delete: (...args) => ipcRenderer.invoke('core:sharedValues:delete', args),
-    },
+    // sharedValues: {
+    //   list: (...args) => ipcRenderer.invoke('core:sharedValues:list', args),
+    //   create: (...args) => ipcRenderer.invoke('core:sharedValues:create', args),
+    //   read: (...args) => ipcRenderer.invoke('core:sharedValues:read', args),
+    //   update: (...args) => ipcRenderer.invoke('core:sharedValues:update', args),
+    //   delete: (...args) => ipcRenderer.invoke('core:sharedValues:delete', args),
+    // },
   },
 };
 

@@ -902,12 +902,12 @@
     fs-extra "^11.1.1"
     minimist "^1.2.8"
 
-"@elek-io/core@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.2.1.tgz#bd140653fc6743514a6010d09a84d05611aead7b"
-  integrity sha512-guBbNqRWO99n84whN1gG9/xBgDefJPPGa8c0vcBcnG36tdYT64ClkGH0mc/cAoXqMNVpRM7dTuWKqCX0roTQbg==
+"@elek-io/core@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.3.0.tgz#bcf170e87a61582343b6d013ae8431cf17156ad8"
+  integrity sha512-sQyQgN+8FkZAjL0TpaLzCEAgTJqSiBmwWjDAUB2dPrNgQyIzeMMo1QX3PBz/vZ5mXMeb1Bg/4C4zqYpR/s+vXQ==
   dependencies:
-    "@elek-io/shared" "0.4.7"
+    "@elek-io/shared" "0.5.0"
     file-type "^19.0.0"
     fs-extra "^11.2.0"
     is-svg "^5.0.0"
@@ -915,14 +915,14 @@
     p-queue "^8.0.1"
     semver "^7.5.4"
 
-"@elek-io/shared@0.4.7":
-  version "0.4.7"
-  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.4.7.tgz#7f16a355c03a43d049c17d846257b1518c516b55"
-  integrity sha512-UP6sizE2T322NL46Fx+w6E100ylxHrdHLHslq+b/Ywi7/tftIwCtXSWUDB8p3Amh/76rK9Ttww43Kwa/FGBKsg==
+"@elek-io/shared@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.5.0.tgz#5927eb373c318563eee7132d161a51ab54e10ae7"
+  integrity sha512-Lls7JUXeeajq/+BFjGP/Gyko33QzCDDTJ2DERiWw+HYIZz+cF10dnkTcvt7sCKgnuFn5IvwWBwmcli3Wwj5RaA==
   dependencies:
     slugify "^1.6.6"
     uuid "^9.0.1"
-    zod "^3.22.4"
+    zod "^3.23"
 
 "@elek-io/shared@^0.2.0":
   version "0.2.0"
@@ -3362,6 +3362,11 @@ date-fns@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-3.3.1.tgz#7581daca0892d139736697717a168afbb908cfed"
   integrity sha512-y8e109LYGgoQDveiEBD3DYXKba1jWf5BA8YU1FL5Tvm0BTdEfy54WLCwnuYWZNnzzvALy/QQ4Hov+Q9RVRv+Zw==
+
+date-fns@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-3.6.0.tgz#f20ca4fe94f8b754951b24240676e8618c0206bf"
+  integrity sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==
 
 debug@2.6.9, debug@^2.2.0:
   version "2.6.9"
@@ -6476,6 +6481,11 @@ rcedit@^4.0.0:
   dependencies:
     cross-spawn-windows-exe "^1.1.0"
 
+react-day-picker@^8.10.1:
+  version "8.10.1"
+  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-8.10.1.tgz#4762ec298865919b93ec09ba69621580835b8e80"
+  integrity sha512-TMx7fNbhLk15eqcMt+7Z7S2KF7mfTId/XJDjKE8f+IUcFn0l08/kI4FiYTL/0yuOLmEcbR4Fwe3GJf/NiiMnPA==
+
 react-dom@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"
@@ -8084,6 +8094,11 @@ zod@^3.22.4:
   version "3.22.4"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
+
+zod@^3.23:
+  version "3.23.8"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
+  integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==
 
 zustand@^4.5.1:
   version "4.5.1"

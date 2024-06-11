@@ -12,10 +12,7 @@ function SetUserPage() {
       userType: 'local',
       name: 'John Doe',
       email: 'john.doe@example.com',
-      locale: {
-        id: 'en',
-        name: 'English',
-      },
+      language: 'en',
     });
   }
 

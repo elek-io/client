@@ -1,4 +1,14 @@
 import { ValueInputFromDefinition } from '@/renderer/react/components/forms/util';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/renderer/react/components/ui/dialog';
 import { fieldWidth } from '@/util';
 import { CreateEntryProps, createEntrySchema } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
@@ -56,7 +66,10 @@ function ProjectCollectionEntryCreatePage() {
               objectType: 'value',
               definitionId: definition.id,
               valueType: definition.valueType,
-              content: definition.defaultValue || undefined,
+              content: {
+                en: definition.defaultValue || undefined,
+                de: definition.defaultValue || undefined,
+              },
             };
 
           case 'reference':
@@ -69,7 +82,7 @@ function ProjectCollectionEntryCreatePage() {
 
           default:
             throw new Error(
-              // @ts-ignore Property 'valueType' does not exist on type 'never' as long as we always implement all possible valueTypes
+              // @ts-expect-error
               `Unsupported valueType "${definition.valueType}" while setting form state defaults for creating the Entry`
             );
         }
@@ -89,12 +102,11 @@ function ProjectCollectionEntryCreatePage() {
         description: '',
       });
       router.navigate({
-        to: '/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage',
+        to: '/projects/$projectId/collections/$collectionId/$entryId',
         params: {
           projectId: context.currentProject.id,
           collectionId: context.currentCollection.id,
           entryId: entry.id,
-          entryLanguage: entry.language,
         },
       });
     } catch (error) {
@@ -269,25 +281,80 @@ function ProjectCollectionEntryCreatePage() {
                   <FormField
                     key={definition.id}
                     control={createEntryFormState.control}
-                    name={`values.${index}.content`}
+                    name={`values.${index}.content.${context.currentProject.settings.language.default}`}
                     render={({ field }) => (
                       <FormItem
                         className={`col-span-12 ${fieldWidth(
                           definition.inputWidth
                         )}`}
                       >
-                        <FormLabel>
+                        <FormLabel isRequired={true}>
                           {context.translate(
-                            'definition.name',
-                            definition.name
+                            'definition.label',
+                            definition.label
                           )}
                         </FormLabel>
                         <FormControl>
-                          {ValueInputFromDefinition<CreateEntryProps>(
-                            definition,
-                            createEntryFormState,
-                            field
-                          )}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              {ValueInputFromDefinition<CreateEntryProps>(
+                                definition,
+                                createEntryFormState,
+                                field
+                              )}
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  {context.translate(
+                                    'definition.label',
+                                    definition.label
+                                  )}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  {context.translate(
+                                    'definition.description',
+                                    definition.description
+                                  )}
+                                </DialogDescription>
+                              </DialogHeader>
+
+                              {context.currentProject.settings.language.supported.map(
+                                (language) => {
+                                  return (
+                                    <FormField
+                                      key={language}
+                                      control={createEntryFormState.control}
+                                      name={`values.${index}.content.${language}`}
+                                      render={({ field }) => (
+                                        <FormItem className="col-span-12 sm:col-span-5">
+                                          <FormLabel isRequired={true}>
+                                            {language}
+                                          </FormLabel>
+                                          <FormControl>
+                                            {ValueInputFromDefinition<CreateEntryProps>(
+                                              definition,
+                                              createEntryFormState,
+                                              field
+                                            )}
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  );
+                                }
+                              )}
+
+                              <DialogFooter>
+                                <DialogClose asChild>
+                                  <Button type="button" variant="secondary">
+                                    Done
+                                  </Button>
+                                </DialogClose>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
                         </FormControl>
                         <FormDescription>
                           {context.translate(

@@ -43,7 +43,7 @@ const DefaultValueDefinitionForm = React.forwardRef<
       <>
         <FormField
           control={state.control}
-          name={`name.${currentLanguage}`}
+          name={`label.${currentLanguage}`}
           render={({ field }) => (
             <FormItem>
               <FormLabel isRequired={true}>Label</FormLabel>
@@ -66,7 +66,7 @@ const DefaultValueDefinitionForm = React.forwardRef<
                       return (
                         <FormField
                           control={state.control}
-                          name={`name.${language}`}
+                          name={`label.${language}`}
                           render={({ field }) => (
                             <FormItem className="col-span-12 sm:col-span-5">
                               <FormLabel isRequired={true}>

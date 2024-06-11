@@ -73,7 +73,6 @@ function ProjectCollectionIndexPage() {
       dataQuery.data?.list.map((entry) => {
         const row: { [x: string]: unknown } = {
           id: entry.id,
-          language: entry.language,
           created: formatTimestamp(entry.created, context.currentUser.language)
             .relative,
           updated: formatTimestamp(entry.updated, context.currentUser.language)
@@ -81,7 +80,8 @@ function ProjectCollectionIndexPage() {
         };
 
         entry.values.map((value) => {
-          row[value.definitionId] = value.content;
+          row[value.definitionId] =
+            value.content[context.currentProject.settings.language.default];
         });
         return row;
       }) ?? [],
@@ -163,7 +163,7 @@ function ProjectCollectionIndexPage() {
       context.currentCollection.valueDefinitions.map((definition) => {
         return {
           accessorKey: definition.id,
-          header: context.translate('definition.name', definition.name),
+          header: context.translate('definition.label', definition.label),
         };
       });
 
@@ -188,14 +188,13 @@ function ProjectCollectionIndexPage() {
     return columns;
   }
 
-  function onRowClicked(id: string, language: string) {
+  function onRowClicked(id: string) {
     router.navigate({
-      to: '/projects/$projectId/collections/$collectionId/$entryId/$entryLanguage',
+      to: '/projects/$projectId/collections/$collectionId/$entryId',
       params: {
         projectId: context.currentProject.id,
         collectionId: context.currentCollection.id,
         entryId: id,
-        entryLanguage: language,
       },
     });
   }
@@ -270,9 +269,7 @@ function ProjectCollectionIndexPage() {
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
-                onClick={() =>
-                  onRowClicked(row.original.id, row.original.language)
-                }
+                onClick={() => onRowClicked(row.original.id)}
                 className="hover:cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (

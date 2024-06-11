@@ -43,6 +43,7 @@ import {
 import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
+  DateValueDefinition,
   NumberValueDefinition,
   RangeValueDefinition,
   TextValueDefinition,
@@ -52,6 +53,7 @@ import {
   ValueInputType,
   ValueInputTypeSchema,
   createCollectionSchema,
+  dateValueDefinitionSchema,
   numberValueDefinitionSchema,
   rangeValueDefinitionSchema,
   supportedIconSchema,
@@ -118,7 +120,7 @@ function ProjectCollectionCreate() {
       });
 
   const valueDefinitionBaseDefaults: Omit<ValueDefinitionBase, 'id'> = {
-    name: currentProjectTranslatableStringDefault,
+    label: currentProjectTranslatableStringDefault,
     description: currentProjectTranslatableStringDefault,
     isRequired: true,
     isDisabled: false,
@@ -163,6 +165,25 @@ function ProjectCollectionCreate() {
       defaultValue: undefined,
       min: undefined,
       max: undefined,
+      isUnique: false,
+    },
+  });
+
+  const dateValueDefinitionFormState = useForm<DateValueDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'DateValueDefinition validation result',
+        await zodResolver(dateValueDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(dateValueDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...valueDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'string',
+      inputType: 'date',
+      defaultValue: undefined,
       isUnique: false,
     },
   });
@@ -853,10 +874,16 @@ function ProjectCollectionCreate() {
                           definition.inputWidth
                         )}`}
                       >
-                        <FormLabel isRequired={definition.isRequired}>
+                        <FormLabel
+                          isRequired={
+                            'isRequired' in definition
+                              ? definition.isRequired
+                              : false
+                          }
+                        >
                           {context.translate(
-                            'definition.name',
-                            definition.name
+                            'definition.label',
+                            definition.label
                           )}
                         </FormLabel>
                         <FormControl>
