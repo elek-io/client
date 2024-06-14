@@ -1,10 +1,25 @@
-import { ValueDefinition } from '@elek-io/shared';
+import { SupportedLanguage, ValueDefinition } from '@elek-io/shared';
 import { ReactElement } from 'react';
 import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
 import { Input } from '../ui/input';
 import { Slider } from '../ui/slider';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
+
+export function translatableStringDefault(
+  supportedLanguages: SupportedLanguage[]
+) {
+  return supportedLanguages
+    .map((language) => {
+      return { [language]: '' };
+    })
+    .reduce((prev, curr) => {
+      return {
+        ...prev,
+        ...curr,
+      };
+    });
+}
 
 export function ValueInputFromDefinition<T>(
   definition: ValueDefinition,

@@ -124,7 +124,7 @@ const RangeValueDefinitionFormFieldExample = React.forwardRef<
       render={({ field }) => (
         <FormItem>
           <FormLabel isRequired={state.watch('isRequired')}>
-            {state.watch(`name.${currentLanguage}`)}
+            {state.watch(`label.${currentLanguage}`)}
           </FormLabel>
           <FormControl>
             <Slider
@@ -133,7 +133,6 @@ const RangeValueDefinitionFormFieldExample = React.forwardRef<
               min={state.watch('min')}
               max={state.watch('max')}
               step={1}
-              required={state.watch('isRequired')}
               disabled={state.watch('isDisabled')}
             />
             {/* <Input

@@ -121,7 +121,7 @@ const TextareaValueDefinitionFormExample = React.forwardRef<
       render={({ field }) => (
         <FormItem>
           <FormLabel isRequired={state.watch('isRequired')}>
-            {state.watch(`name.${currentLanguage}`)}
+            {state.watch(`label.${currentLanguage}`)}
           </FormLabel>
           <FormControl>
             <Textarea

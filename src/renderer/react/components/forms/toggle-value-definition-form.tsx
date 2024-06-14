@@ -75,7 +75,7 @@ const ToggleValueDefinitionFormExample = React.forwardRef<
         <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
           <div>
             <FormLabel isRequired={state.watch('isRequired')}>
-              {state.watch(`name.${currentLanguage}`)}
+              {state.watch(`label.${currentLanguage}`)}
             </FormLabel>
             <FormDescription>
               {state.watch(`description.${currentLanguage}`)}

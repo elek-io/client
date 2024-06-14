@@ -7,7 +7,7 @@ export interface PageProps extends React.HTMLAttributes<HTMLElement> {
   description?: ReactElement;
   actions?: ReactElement;
   layout?: 'bare';
-  children: ReactNode;
+  children?: ReactNode;
   onDragOver?: React.DragEventHandler<HTMLElement>;
   onDragLeave?: React.DragEventHandler<HTMLElement>;
   onDragEnter?: React.DragEventHandler<HTMLElement>;
