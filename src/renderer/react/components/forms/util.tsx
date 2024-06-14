@@ -68,7 +68,6 @@ export function ValueInputFromDefinition<T>(
           min={definition.min}
           max={definition.max}
           step={1}
-          required={definition.isRequired}
           disabled={definition.isDisabled}
         />
       );

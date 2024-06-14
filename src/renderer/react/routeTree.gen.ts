@@ -29,6 +29,7 @@ import { Route as ProjectsProjectIdCollectionsCollectionIdImport } from './route
 import { Route as ProjectsProjectIdCollectionsCollectionIdIndexImport } from './routes/projects/$projectId/collections/$collectionId/index'
 import { Route as ProjectsProjectIdCollectionsCollectionIdUpdateImport } from './routes/projects/$projectId/collections/$collectionId/update'
 import { Route as ProjectsProjectIdCollectionsCollectionIdCreateImport } from './routes/projects/$projectId/collections/$collectionId/create'
+import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdImport } from './routes/projects/$projectId/collections/$collectionId/$entryId'
 import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport } from './routes/projects/$projectId/collections/$collectionId/$entryId/index'
 
 // Create/Update Routes
@@ -135,10 +136,16 @@ const ProjectsProjectIdCollectionsCollectionIdCreateRoute =
     getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
   } as any)
 
+const ProjectsProjectIdCollectionsCollectionIdEntryIdRoute =
+  ProjectsProjectIdCollectionsCollectionIdEntryIdImport.update({
+    path: '/$entryId',
+    getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
+  } as any)
+
 const ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute =
   ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport.update({
-    path: '/$entryId/',
-    getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdRoute,
+    path: '/',
+    getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdEntryIdRoute,
   } as any)
 
 // Populate the FileRoutesByPath interface
@@ -205,6 +212,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdSettingsIndexImport
       parentRoute: typeof ProjectsProjectIdSettingsImport
     }
+    '/projects/$projectId/collections/$collectionId/$entryId': {
+      preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdImport
+      parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
+    }
     '/projects/$projectId/collections/$collectionId/create': {
       preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdCreateImport
       parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
@@ -219,7 +230,7 @@ declare module '@tanstack/react-router' {
     }
     '/projects/$projectId/collections/$collectionId/$entryId/': {
       preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport
-      parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
+      parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdImport
     }
   }
 }
@@ -231,10 +242,12 @@ export const routeTree = rootRoute.addChildren([
   ProjectsProjectIdRoute.addChildren([
     ProjectsProjectIdCollectionsRoute.addChildren([
       ProjectsProjectIdCollectionsCollectionIdRoute.addChildren([
+        ProjectsProjectIdCollectionsCollectionIdEntryIdRoute.addChildren([
+          ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
+        ]),
         ProjectsProjectIdCollectionsCollectionIdCreateRoute,
         ProjectsProjectIdCollectionsCollectionIdUpdateRoute,
         ProjectsProjectIdCollectionsCollectionIdIndexRoute,
-        ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
       ]),
       ProjectsProjectIdCollectionsCreateRoute,
       ProjectsProjectIdCollectionsIndexRoute,
