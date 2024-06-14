@@ -1,17 +1,5 @@
+import { CreateUpdateCollectionPage } from '@/renderer/react/components/pages/create-update-collection-page';
 import { Button } from '@/renderer/react/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/renderer/react/components/ui/dialog';
-import { Form } from '@/renderer/react/components/ui/form';
-import { Page } from '@/renderer/react/components/ui/page';
-import { formatTimestamp } from '@/util';
 import {
   DeleteCollectionProps,
   UpdateCollectionProps,
@@ -20,7 +8,7 @@ import {
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check, Trash } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
@@ -35,6 +23,7 @@ function ProjectCollectionUpdate() {
   const context = Route.useRouteContext();
   const addNotification = context.store((state) => state.addNotification);
   const [isUpdatingCollection, setIsUpdatingCollection] = useState(false);
+
   const updateCollectionForm = useForm<UpdateCollectionProps>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
@@ -45,7 +34,10 @@ function ProjectCollectionUpdate() {
       );
       return zodResolver(updateCollectionSchema)(data, context, options);
     },
-    defaultValues: context.currentCollection,
+    defaultValues: {
+      ...context.currentCollection,
+      projectId: context.currentProject.id,
+    },
   });
 
   function Title(): string {
@@ -58,20 +50,13 @@ function ProjectCollectionUpdate() {
   function Description(): ReactElement {
     return (
       <>
-        <span className="mr-2 inline-flex items-center rounded-full bg-gray-100 px-3 py-0.5 text-sm font-medium text-gray-800">
-          Created:{' '}
-          {
-            formatTimestamp(context.currentCollection?.created || 0, 'en')
-              .absolute
-          }
-        </span>
-        <span className="mr-2 inline-flex items-center rounded-full bg-gray-100 px-3 py-0.5 text-sm font-medium text-gray-800">
-          Updated:{' '}
-          {
-            formatTimestamp(context.currentCollection?.updated || 0, 'en')
-              .absolute
-          }
-        </span>
+        A Collection holds information about how your content is structured.
+        <br></br>
+        Read more about{' '}
+        <a href="#" className="text-brand-600 hover:underline">
+          Collections in the documentation
+        </a>
+        .
       </>
     );
   }
@@ -95,7 +80,6 @@ function ProjectCollectionUpdate() {
     try {
       await context.core.collections.update({
         ...collection,
-        projectId: context.currentProject.id,
       });
       setIsUpdatingCollection(false);
       router.navigate({
@@ -144,52 +128,14 @@ function ProjectCollectionUpdate() {
   };
 
   return (
-    <Page
+    <CreateUpdateCollectionPage
       title={Title()}
       actions={<Actions></Actions>}
       description={<Description></Description>}
-    >
-      <Form {...updateCollectionForm}>
-        <form onSubmit={updateCollectionForm.handleSubmit(onUpdate)}>
-          <h1>Update Collection here</h1>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash className="w-4 h-4 mr-2"></Trash>
-                Delete Collection
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Are you absolutely sure?</DialogTitle>
-                <DialogDescription>
-                  This action cannot be undone if your Project is not replicated
-                  somewhere else than this device.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    No, I've changed my mind
-                  </Button>
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  onClick={() =>
-                    onDelete({
-                      projectId: context.currentProject.id,
-                      id: context.currentCollection.id,
-                    })
-                  }
-                >
-                  <Trash className="w-4 h-4 mr-2"></Trash>
-                  Yes, delete this Collection
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </form>
-      </Form>
-    </Page>
+      context={context}
+      collectionForm={updateCollectionForm}
+      onCollectionSubmit={onUpdate}
+      onCollectionDelete={onDelete}
+    />
   );
 }
