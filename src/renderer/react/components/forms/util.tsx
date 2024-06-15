@@ -6,12 +6,15 @@ import { Slider } from '../ui/slider';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
 
-export function translatableStringDefault(
-  supportedLanguages: SupportedLanguage[]
-) {
-  return supportedLanguages
+export function translatableDefault(props: {
+  supportedLanguages: SupportedLanguage[];
+  default: string | number | boolean;
+}) {
+  const defaultValue = props.default;
+
+  return props.supportedLanguages
     .map((language) => {
-      return { [language]: '' };
+      return { [language]: defaultValue };
     })
     .reduce((prev, curr) => {
       return {

@@ -52,10 +52,7 @@ import {
   ToggleValueDefinitionForm,
   ToggleValueDefinitionFormExample,
 } from '../forms/toggle-value-definition-form';
-import {
-  ValueInputFromDefinition,
-  translatableStringDefault,
-} from '../forms/util';
+import { ValueInputFromDefinition, translatableDefault } from '../forms/util';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -125,12 +122,14 @@ export const CreateUpdateCollectionPage = React.forwardRef<
       useState<ValueInputType>('text');
 
     const valueDefinitionBaseDefaults: Omit<ValueDefinitionBase, 'id'> = {
-      label: translatableStringDefault(
-        context.currentProject.settings.language.supported
-      ),
-      description: translatableStringDefault(
-        context.currentProject.settings.language.supported
-      ),
+      label: translatableDefault({
+        supportedLanguages: context.currentProject.settings.language.supported,
+        default: '',
+      }),
+      description: translatableDefault({
+        supportedLanguages: context.currentProject.settings.language.supported,
+        default: '',
+      }),
       isRequired: true,
       isDisabled: false,
       inputWidth: '12',

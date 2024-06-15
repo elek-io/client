@@ -6,7 +6,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { translatableStringDefault } from '../../../../components/forms/util';
+import { translatableDefault } from '../../../../components/forms/util';
 import { Button } from '../../../../components/ui/button';
 
 export const Route = createFileRoute('/projects/$projectId/collections/create')(
@@ -35,16 +35,21 @@ function ProjectCollectionCreate() {
       projectId: context.currentProject.id,
       icon: 'home',
       name: {
-        singular: translatableStringDefault(
-          context.currentProject.settings.language.supported
-        ),
-        plural: translatableStringDefault(
-          context.currentProject.settings.language.supported
-        ),
+        singular: translatableDefault({
+          supportedLanguages:
+            context.currentProject.settings.language.supported,
+          default: '',
+        }),
+        plural: translatableDefault({
+          supportedLanguages:
+            context.currentProject.settings.language.supported,
+          default: '',
+        }),
       },
-      description: translatableStringDefault(
-        context.currentProject.settings.language.supported
-      ),
+      description: translatableDefault({
+        supportedLanguages: context.currentProject.settings.language.supported,
+        default: '',
+      }),
       slug: {
         singular: '',
         plural: '',

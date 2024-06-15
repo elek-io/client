@@ -1,5 +1,19 @@
+import {
+  ValueInputFromDefinition,
+  translatableDefault,
+} from '@/renderer/react/components/forms/util';
 import { Button } from '@/renderer/react/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/renderer/react/components/ui/form';
 import { Page } from '@/renderer/react/components/ui/page';
+import { fieldWidth } from '@/util';
 import { UpdateEntryProps, updateEntrySchema } from '@elek-io/shared';
 import { NotificationIntent } from '@elek-io/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +34,7 @@ function ProjectCollectionEntryIndexPage() {
   const addNotification = context.store((state) => state.addNotification);
   const [isUpdatingEntry, setIsUpdatingEntry] = useState(false);
 
-  const updateEntryForm = useForm<UpdateEntryProps>({
+  const updateEntryFormState = useForm<UpdateEntryProps>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
       console.log('formData', data);
@@ -32,6 +46,23 @@ function ProjectCollectionEntryIndexPage() {
     },
     defaultValues: {
       ...context.currentEntry,
+      values: context.currentCollection.valueDefinitions.map(
+        (definition, index) => {
+          return {
+            objectType: 'value',
+            definitionId: definition.id,
+            valueType: definition.valueType,
+            content:
+              context.currentEntry.values[index]?.content ||
+              translatableDefault({
+                supportedLanguages:
+                  context.currentProject.settings.language.supported,
+                default: definition.valueType === 'string' ? '' : null,
+              }),
+          };
+        }
+      ),
+      collectionId: context.currentCollection.id,
       projectId: context.currentProject.id,
     },
   });
@@ -54,7 +85,7 @@ function ProjectCollectionEntryIndexPage() {
       <>
         <Button
           isLoading={isUpdatingEntry}
-          onClick={updateEntryForm.handleSubmit(onUpdate)}
+          onClick={updateEntryFormState.handleSubmit(onUpdate)}
         >
           <Check className="w-4 h-4 mr-2"></Check>
           Save changes
@@ -95,7 +126,55 @@ function ProjectCollectionEntryIndexPage() {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
-      {JSON.stringify(updateEntryForm.watch())}
+      {JSON.stringify(updateEntryFormState.watch())}
+      <Form {...updateEntryFormState}>
+        <form>
+          {context.currentCollection.valueDefinitions.map(
+            (definition, definitionIndex) => {
+              return (
+                <FormField
+                  key={definition.id}
+                  name={`values.${definitionIndex}.content.${context.currentProject.settings.language.default}`}
+                  render={({ field }) => (
+                    <FormItem
+                      className={`col-span-12 ${fieldWidth(
+                        definition.inputWidth
+                      )}`}
+                    >
+                      <FormLabel
+                        isRequired={
+                          'isRequired' in definition
+                            ? definition.isRequired
+                            : false
+                        }
+                      >
+                        {context.translate(
+                          'definition.label',
+                          definition.label
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        {ValueInputFromDefinition<UpdateEntryProps>(
+                          definition,
+                          updateEntryFormState,
+                          field
+                        )}
+                      </FormControl>
+                      <FormDescription>
+                        {context.translate(
+                          'definition.description',
+                          definition.description
+                        )}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              );
+            }
+          )}
+        </form>
+      </Form>
     </Page>
   );
 }
