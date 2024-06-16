@@ -4,6 +4,16 @@ import {
 } from '@/renderer/react/components/forms/util';
 import { Button } from '@/renderer/react/components/ui/button';
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/renderer/react/components/ui/dialog';
+import {
   Form,
   FormControl,
   FormDescription,
@@ -129,50 +139,109 @@ function ProjectCollectionEntryIndexPage() {
       {JSON.stringify(updateEntryFormState.watch())}
       <Form {...updateEntryFormState}>
         <form>
-          {context.currentCollection.valueDefinitions.map(
-            (definition, definitionIndex) => {
-              return (
-                <FormField
-                  key={definition.id}
-                  name={`values.${definitionIndex}.content.${context.currentProject.settings.language.default}`}
-                  render={({ field }) => (
-                    <FormItem
-                      className={`col-span-12 ${fieldWidth(
-                        definition.inputWidth
-                      )}`}
-                    >
-                      <FormLabel
-                        isRequired={
-                          'isRequired' in definition
-                            ? definition.isRequired
-                            : false
-                        }
-                      >
-                        {context.translate(
-                          'definition.label',
-                          definition.label
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        {ValueInputFromDefinition<UpdateEntryProps>(
-                          definition,
-                          updateEntryFormState,
-                          field
-                        )}
-                      </FormControl>
-                      <FormDescription>
-                        {context.translate(
-                          'definition.description',
-                          definition.description
-                        )}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              );
-            }
-          )}
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-12 gap-6">
+              {context.currentCollection.valueDefinitions.map(
+                (definition, definitionIndex) => {
+                  return (
+                    <FormField
+                      key={definition.id}
+                      name={`values.${definitionIndex}.content.${context.currentProject.settings.language.default}`}
+                      render={({ field }) => (
+                        <FormItem
+                          className={`col-span-12 ${fieldWidth(
+                            definition.inputWidth
+                          )}`}
+                        >
+                          <FormLabel
+                            isRequired={
+                              'isRequired' in definition
+                                ? definition.isRequired
+                                : false
+                            }
+                          >
+                            {context.translate(
+                              'definition.label',
+                              definition.label
+                            )}
+                          </FormLabel>
+                          <FormControl>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                {ValueInputFromDefinition<UpdateEntryProps>(
+                                  definition,
+                                  updateEntryFormState,
+                                  field
+                                )}
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>
+                                    {context.translate(
+                                      'definition.label',
+                                      definition.label
+                                    )}
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    {context.translate(
+                                      'definition.description',
+                                      definition.description
+                                    )}
+                                  </DialogDescription>
+                                </DialogHeader>
+
+                                {context.currentProject.settings.language.supported.map(
+                                  (language) => {
+                                    return (
+                                      <FormField
+                                        key={language}
+                                        control={updateEntryFormState.control}
+                                        name={`values.${definitionIndex}.content.${language}`}
+                                        render={({ field }) => (
+                                          <FormItem className="col-span-12 sm:col-span-5">
+                                            <FormLabel isRequired={true}>
+                                              {language}
+                                            </FormLabel>
+                                            <FormControl>
+                                              {ValueInputFromDefinition<UpdateEntryProps>(
+                                                definition,
+                                                updateEntryFormState,
+                                                field
+                                              )}
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    );
+                                  }
+                                )}
+
+                                <DialogFooter>
+                                  <DialogClose asChild>
+                                    <Button type="button" variant="secondary">
+                                      Done
+                                    </Button>
+                                  </DialogClose>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </FormControl>
+                          <FormDescription>
+                            {context.translate(
+                              'definition.description',
+                              definition.description
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  );
+                }
+              )}
+            </div>
+          </div>
         </form>
       </Form>
     </Page>
