@@ -132,6 +132,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
       }),
       isRequired: true,
       isDisabled: false,
+      isUnique: false,
       inputWidth: '12',
     };
 
@@ -152,7 +153,6 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         defaultValue: undefined,
         min: undefined,
         max: 250,
-        isUnique: false,
       },
     });
 
@@ -181,7 +181,6 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         defaultValue: undefined,
         min: undefined,
         max: undefined,
-        isUnique: false,
       },
     });
 
@@ -200,7 +199,6 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         valueType: 'string',
         inputType: 'date',
         defaultValue: undefined,
-        isUnique: false,
       },
     });
 
@@ -241,7 +239,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         defaultValue: 50,
         min: 0,
         max: 100,
-        isUnique: false,
+        isRequired: true,
       },
     });
 
@@ -260,6 +258,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         valueType: 'boolean',
         inputType: 'toggle',
         defaultValue: false,
+        isRequired: true,
       },
     });
 
