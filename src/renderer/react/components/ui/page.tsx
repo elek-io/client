@@ -1,5 +1,5 @@
-import { cn } from '@/util';
 import React, { type ReactElement, type ReactNode } from 'react';
+import { cn } from '../../../../util';
 import { ScrollArea } from './scroll-area';
 
 export interface PageProps extends React.HTMLAttributes<HTMLElement> {

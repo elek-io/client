@@ -5,7 +5,7 @@ import { Cross2Icon } from '@radix-ui/react-icons';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
-import { cn } from '@/util';
+import { cn } from '../../../../util';
 
 const Sheet = SheetPrimitive.Root;
 
@@ -15,8 +15,9 @@ const SheetClose = SheetPrimitive.Close;
 
 const SheetPortal = SheetPrimitive.Portal;
 
-interface SheetOverlayProps
-  extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay> {}
+type SheetOverlayProps = React.ComponentPropsWithoutRef<
+  typeof SheetPrimitive.Overlay
+>;
 
 const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,

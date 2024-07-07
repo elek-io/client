@@ -1,12 +1,12 @@
-import { CreateUpdateCollectionPage } from '@/renderer/react/components/pages/create-update-collection-page';
-import { NotificationIntent } from '@/renderer/react/store';
 import { CreateCollectionProps, createCollectionSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { NotificationIntent } from '../../../../../react/store';
 import { translatableDefault } from '../../../../components/forms/util';
+import { CreateUpdateCollectionPage } from '../../../../components/pages/create-update-collection-page';
 import { Button } from '../../../../components/ui/button';
 
 export const Route = createFileRoute('/projects/$projectId/collections/create')(

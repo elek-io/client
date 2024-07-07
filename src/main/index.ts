@@ -277,9 +277,6 @@ class Main {
     ipcMain.handle('core:projects:delete', async (event, args) => {
       return await core.projects.delete(args[0]);
     });
-    ipcMain.handle('core:projects:search', async (event, args) => {
-      return await core.projects.search(args[0], args[1], args[2]);
-    });
     ipcMain.handle('core:assets:list', async (event, args) => {
       return await core.assets.list(args[0]);
     });
@@ -330,18 +327,6 @@ class Main {
     });
     ipcMain.handle('core:entries:delete', async (event, args) => {
       return await core.entries.delete(args[0]);
-    });
-    ipcMain.handle('core:sharedValues:create', async (event, args) => {
-      return await core.sharedValues.create(args[0]);
-    });
-    ipcMain.handle('core:sharedValues:read', async (event, args) => {
-      return await core.sharedValues.read(args[0]);
-    });
-    ipcMain.handle('core:sharedValues:update', async (event, args) => {
-      return await core.sharedValues.update(args[0]);
-    });
-    ipcMain.handle('core:sharedValues:delete', async (event, args) => {
-      return await core.sharedValues.delete(args[0]);
     });
     // this.handleIpcMain<Parameters<AssetService['list']>>('core:assets:list', async (event, args) => {
     //   return await core.assets.list(args.projectId);

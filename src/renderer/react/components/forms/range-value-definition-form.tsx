@@ -1,7 +1,7 @@
-import { cn } from '@/util';
 import { RangeValueDefinition, SupportedLanguage } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { cn } from '../../../../util';
 import {
   Form,
   FormControl,
@@ -19,8 +19,8 @@ import {
 } from './default-value-definition-form';
 import { setValueAsNumber } from './util';
 
-export interface RangeValueDefinitionFormProps
-  extends DefaultValueDefinitionFormProps<RangeValueDefinition> {}
+export type RangeValueDefinitionFormProps =
+  DefaultValueDefinitionFormProps<RangeValueDefinition>;
 
 const RangeValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
@@ -119,7 +119,7 @@ const RangeValueDefinitionFormFieldExample = React.forwardRef<
   return (
     <FormField
       control={state.control}
-      // @ts-ignore It's just an example
+      // @ts-expect-error It's just an example
       name={'example'}
       render={({ field }) => (
         <FormItem>

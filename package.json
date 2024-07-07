@@ -16,7 +16,7 @@
   "license": "todo",
   "main": ".vite/build/index.js",
   "scripts": {
-    "lint": "eslint --ext .ts,.tsx .",
+    "lint": "eslint --ext .ts,.tsx ./src",
     "dev": "electron-forge start",
     "package": "electron-forge package",
     "build": "electron-forge make",

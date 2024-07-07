@@ -1,7 +1,7 @@
-import { cn } from '@/util';
 import { NumberValueDefinition, SupportedLanguage } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { cn } from '../../../../util';
 import {
   Form,
   FormControl,
@@ -19,8 +19,8 @@ import {
 import { IsUniqueFormField } from './is-unique-form-field';
 import { setValueAsNumber } from './util';
 
-export interface NumberValueDefinitionFormProps
-  extends DefaultValueDefinitionFormProps<NumberValueDefinition> {}
+export type NumberValueDefinitionFormProps =
+  DefaultValueDefinitionFormProps<NumberValueDefinition>;
 
 const NumberValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
@@ -121,7 +121,7 @@ const NumberValueDefinitionFormFieldExample = React.forwardRef<
   return (
     <FormField
       control={state.control}
-      // @ts-ignore It's just an example
+      // @ts-expect-error It's just an example
       name={'example'}
       render={({ field }) => (
         <FormItem>

@@ -1,4 +1,3 @@
-import { formatTimestamp } from '@/util';
 import { Entry } from '@elek-io/core';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
@@ -11,6 +10,7 @@ import {
 } from '@tanstack/react-table';
 import { ChevronDown, Plus, Settings } from 'lucide-react';
 import { ReactElement, useState } from 'react';
+import { formatTimestamp } from '../../../../../../../util';
 import { Button } from '../../../../../components/ui/button';
 import {
   DropdownMenu,

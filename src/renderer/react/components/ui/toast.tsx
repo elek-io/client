@@ -1,5 +1,6 @@
 'use client';
 
+// eslint-disable-next-line import/no-unresolved
 import { Toaster as Sonner, toast } from 'sonner';
 import { useTheme } from '../theme-provider';
 

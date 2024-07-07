@@ -1,7 +1,7 @@
-import { cn } from '@/util';
 import { SupportedLanguage, ToggleValueDefinition } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { cn } from '../../../../util';
 import {
   Form,
   FormControl,
@@ -17,8 +17,8 @@ import {
   DefaultValueDefinitionFormProps,
 } from './default-value-definition-form';
 
-export interface ToggleValueDefinitionFormProps
-  extends DefaultValueDefinitionFormProps<ToggleValueDefinition> {}
+export type ToggleValueDefinitionFormProps =
+  DefaultValueDefinitionFormProps<ToggleValueDefinition>;
 
 const ToggleValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
@@ -69,7 +69,7 @@ const ToggleValueDefinitionFormExample = React.forwardRef<
   return (
     <FormField
       control={state.control}
-      // @ts-ignore It's just an example
+      // @ts-expect-error It's just an example
       name={'example'}
       render={({ field }) => (
         <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">

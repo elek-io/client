@@ -1,12 +1,11 @@
 import * as React from 'react';
 
-import { cn } from '@/util';
+import { cn } from '../../../../util';
 
-export interface SidebarNavigationProps
-  extends React.DetailedHTMLProps<
-    React.HTMLAttributes<HTMLElement>,
-    HTMLElement
-  > {}
+export type SidebarNavigationProps = React.DetailedHTMLProps<
+  React.HTMLAttributes<HTMLElement>,
+  HTMLElement
+>;
 
 function SidebarNavigation({ className, ...props }: SidebarNavigationProps) {
   return (

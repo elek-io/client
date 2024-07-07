@@ -1,7 +1,7 @@
-import { cn } from '@/util';
 import { SupportedLanguage, TextareaValueDefinition } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { cn } from '../../../../util';
 import {
   Form,
   FormControl,
@@ -20,8 +20,8 @@ import {
 import { IsUniqueFormField } from './is-unique-form-field';
 import { setValueAsNumber } from './util';
 
-export interface TextareaValueDefinitionFormProps
-  extends DefaultValueDefinitionFormProps<TextareaValueDefinition> {}
+export type TextareaValueDefinitionFormProps =
+  DefaultValueDefinitionFormProps<TextareaValueDefinition>;
 
 const TextareaValueDefinitionForm = React.forwardRef<
   HTMLFormElement,
@@ -116,7 +116,7 @@ const TextareaValueDefinitionFormExample = React.forwardRef<
   return (
     <FormField
       control={state.control}
-      // @ts-ignore It's just an example
+      // @ts-expect-error It's just an example
       name={'example'}
       render={({ field }) => (
         <FormItem>

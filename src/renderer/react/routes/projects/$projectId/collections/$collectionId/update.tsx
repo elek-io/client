@@ -1,6 +1,3 @@
-import { CreateUpdateCollectionPage } from '@/renderer/react/components/pages/create-update-collection-page';
-import { Button } from '@/renderer/react/components/ui/button';
-import { NotificationIntent } from '@/renderer/react/store';
 import {
   DeleteCollectionProps,
   UpdateCollectionProps,
@@ -11,6 +8,9 @@ import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { CreateUpdateCollectionPage } from '../../../../../components/pages/create-update-collection-page';
+import { Button } from '../../../../../components/ui/button';
+import { NotificationIntent } from '../../../../../store';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/update'

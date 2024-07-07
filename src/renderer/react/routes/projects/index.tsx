@@ -1,7 +1,7 @@
-import { formatTimestamp } from '@/util';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { ReactElement } from 'react';
+import { formatTimestamp } from '../../../../util';
 import { Button } from '../../components/ui/button';
 import {
   Card,

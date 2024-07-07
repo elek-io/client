@@ -1,4 +1,3 @@
-import { cn } from '@/util';
 import {
   Link,
   Outlet,
@@ -18,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Fragment } from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
+import { cn } from '../../../util';
 import { ContextBridgeApi } from '../../preload';
 import { useTheme } from '../components/theme-provider';
 import { Avatar } from '../components/ui/avatar';

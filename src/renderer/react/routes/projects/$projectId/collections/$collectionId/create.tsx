@@ -1,4 +1,12 @@
-import { ValueInputFromDefinition } from '@/renderer/react/components/forms/util';
+import { CreateEntryProps, createEntrySchema } from '@elek-io/core';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { ReactElement, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { fieldWidth } from '../../../../../../../util';
+import { ValueInputFromDefinition } from '../../../../../components/forms/util';
+import { Button } from '../../../../../components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -8,16 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/renderer/react/components/ui/dialog';
-import { NotificationIntent } from '@/renderer/react/store';
-import { fieldWidth } from '@/util';
-import { CreateEntryProps, createEntrySchema } from '@elek-io/core';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { Button } from '../../../../../components/ui/button';
+} from '../../../../../components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -28,6 +27,7 @@ import {
   FormMessage,
 } from '../../../../../components/ui/form';
 import { Page } from '../../../../../components/ui/page';
+import { NotificationIntent } from '../../../../../store';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/create'
@@ -82,7 +82,7 @@ function ProjectCollectionEntryCreatePage() {
 
           default:
             throw new Error(
-              // @ts-expect-error
+              // @ts-expect-error Since usually it's not reachable
               `Unsupported valueType "${definition.valueType}" while setting form state defaults for creating the Entry`
             );
         }

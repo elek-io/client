@@ -1,7 +1,7 @@
-import { formatBytes } from '@/util';
-import type { Asset } from '@elek-io/shared';
+import { Asset } from '@elek-io/core';
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { MouseEventHandler } from 'react';
+import { formatBytes } from '../../../../util';
 import { AssetDisplay } from './asset-display';
 
 const styles = cva('');

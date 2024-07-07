@@ -1,8 +1,16 @@
+import { UpdateEntryProps, updateEntrySchema } from '@elek-io/core';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { ReactElement, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { fieldWidth } from '../../../../../../../../util';
+import { NotificationIntent } from '../../../../../../../react/store';
 import {
   ValueInputFromDefinition,
   translatableDefault,
-} from '@/renderer/react/components/forms/util';
-import { Button } from '@/renderer/react/components/ui/button';
+} from '../../../../../../components/forms/util';
+import { Button } from '../../../../../../components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -12,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/renderer/react/components/ui/dialog';
+} from '../../../../../../components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -21,16 +29,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/renderer/react/components/ui/form';
-import { Page } from '@/renderer/react/components/ui/page';
-import { NotificationIntent } from '@/renderer/react/store';
-import { fieldWidth } from '@/util';
-import { UpdateEntryProps, updateEntrySchema } from '@elek-io/core';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+} from '../../../../../../components/ui/form';
+import { Page } from '../../../../../../components/ui/page';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/$entryId/'

@@ -1,4 +1,3 @@
-import { fieldWidth } from '@/util';
 import {
   CreateCollectionProps,
   DateValueDefinition,
@@ -32,6 +31,7 @@ import {
   useFieldArray,
   useForm,
 } from 'react-hook-form';
+import { fieldWidth } from '../../../../util';
 import {
   NumberValueDefinitionForm,
   NumberValueDefinitionFormFieldExample,
@@ -219,6 +219,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         defaultValue: undefined,
         min: undefined,
         max: undefined,
+        isUnique: false,
       },
     });
 
@@ -240,6 +241,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         min: 0,
         max: 100,
         isRequired: true,
+        isUnique: false,
       },
     });
 
@@ -259,6 +261,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
         inputType: 'toggle',
         defaultValue: false,
         isRequired: true,
+        isUnique: false,
       },
     });
 

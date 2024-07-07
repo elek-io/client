@@ -3,7 +3,7 @@
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import * as React from 'react';
 
-import { cn } from '@/util';
+import { cn } from '../../../../util';
 
 interface AvatarProps extends AvatarPrimitive.PrimitiveSpanProps {
   name: string;
@@ -20,7 +20,7 @@ const Avatar = React.forwardRef<
 >(({ className, ...props }, ref) => {
   function initials(name: string) {
     const rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
-    let initials = [...name.matchAll(rgx)] || [];
+    const initials = [...name.matchAll(rgx)] || [];
 
     return (
       (initials.shift()?.[1] || '') + (initials.pop()?.[1] || '')

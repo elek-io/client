@@ -1,49 +1,3 @@
-import { Button } from '@/renderer/react/components/ui/button';
-import { Chip } from '@/renderer/react/components/ui/chip';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/renderer/react/components/ui/command';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/renderer/react/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/renderer/react/components/ui/form';
-import { Input } from '@/renderer/react/components/ui/input';
-import { Page } from '@/renderer/react/components/ui/page';
-import { PageSection } from '@/renderer/react/components/ui/page-section';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/renderer/react/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/renderer/react/components/ui/select';
-import { Textarea } from '@/renderer/react/components/ui/textarea';
-import { NotificationIntent } from '@/renderer/react/store';
 import {
   DeleteProjectProps,
   SupportedLanguage,
@@ -57,6 +11,52 @@ import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Plus, Trash } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { Button } from '../../../../components/ui/button';
+import { Chip } from '../../../../components/ui/chip';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '../../../../components/ui/command';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../../../../components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../../../../components/ui/form';
+import { Input } from '../../../../components/ui/input';
+import { Page } from '../../../../components/ui/page';
+import { PageSection } from '../../../../components/ui/page-section';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '../../../../components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../../components/ui/select';
+import { Textarea } from '../../../../components/ui/textarea';
+import { NotificationIntent } from '../../../../store';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsPage,

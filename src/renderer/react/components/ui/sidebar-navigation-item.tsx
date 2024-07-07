@@ -1,8 +1,8 @@
-import { cn } from '@/util';
 import { Link, LinkProps } from '@tanstack/react-router';
 import { ReactNode } from 'react';
+import { cn } from '../../../../util';
 
-export interface SidebarNavigationItemProps extends LinkProps {}
+export type SidebarNavigationItemProps = LinkProps;
 
 /**
  * @todo this whole component is more like a hack
