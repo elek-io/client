@@ -8,7 +8,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   release:
     name: Releasing on ${{ matrix.platform }} with Node.js ${{ matrix.node-version }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       matrix:
         # @see https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --network-timeout 100000
       - name: Run linter
         run: yarn run lint
       - name: Build and create pull request or publish to GitHub
