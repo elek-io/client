@@ -1,5 +1,4 @@
-import { SearchResult, TranslatableString } from '@elek-io/shared';
-import { NotificationIntent } from '@elek-io/ui';
+import { TranslatableString } from '@elek-io/core';
 import {
   Link,
   Outlet,
@@ -95,7 +94,7 @@ function ProjectLayout() {
     ]
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResult, setSearchResult] = useState<SearchResult[]>([]);
+  const [searchResult, setSearchResult] = useState<any[]>([]); // @todo remove for now
   const projectNavigation: {
     name: string;
     to: ToPathOption;
@@ -144,24 +143,25 @@ function ProjectLayout() {
 
   async function onSearch(value: string) {
     setSearchQuery(value);
-    try {
-      const searchResult = await context.core.projects.search(
-        context.currentProject.id,
-        searchQuery
-      );
-      setSearchResult(searchResult);
-      console.log('Searched: ', {
-        query: searchQuery,
-        result: searchResult,
-      });
-    } catch (error) {
-      console.error(error);
-      addNotification({
-        intent: NotificationIntent.DANGER,
-        title: 'Search failed',
-        description: 'There was an error searching for the provided query.',
-      });
-    }
+    // @todo noop
+    // try {
+    //   const searchResult = await context.core.projects.search(
+    //     context.currentProject.id,
+    //     searchQuery
+    //   );
+    //   setSearchResult(searchResult);
+    //   console.log('Searched: ', {
+    //     query: searchQuery,
+    //     result: searchResult,
+    //   });
+    // } catch (error) {
+    //   console.error(error);
+    //   addNotification({
+    //     intent: NotificationIntent.DANGER,
+    //     title: 'Search failed',
+    //     description: 'There was an error searching for the provided query.',
+    //   });
+    // }
   }
 
   return (

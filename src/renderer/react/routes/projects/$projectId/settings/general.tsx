@@ -43,14 +43,14 @@ import {
   SelectValue,
 } from '@/renderer/react/components/ui/select';
 import { Textarea } from '@/renderer/react/components/ui/textarea';
+import { NotificationIntent } from '@/renderer/react/store';
 import {
   DeleteProjectProps,
   SupportedLanguage,
   UpdateProjectProps,
   supportedLanguageSchema,
   updateProjectSchema,
-} from '@elek-io/shared';
-import { NotificationIntent } from '@elek-io/ui';
+} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { createFileRoute, useRouter } from '@tanstack/react-router';

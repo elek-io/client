@@ -22,7 +22,7 @@ import {
   textareaValueDefinitionSchema,
   toggleValueDefinitionSchema,
   uuid,
-} from '@elek-io/shared';
+} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash } from 'lucide-react';
 import React, { useState } from 'react';

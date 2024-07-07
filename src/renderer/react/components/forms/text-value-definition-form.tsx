@@ -1,5 +1,5 @@
 import { cn } from '@/util';
-import { SupportedLanguage, TextValueDefinition } from '@elek-io/shared';
+import { SupportedLanguage, TextValueDefinition } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import {

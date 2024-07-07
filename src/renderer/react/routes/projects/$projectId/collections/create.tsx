@@ -1,6 +1,6 @@
 import { CreateUpdateCollectionPage } from '@/renderer/react/components/pages/create-update-collection-page';
-import { CreateCollectionProps, createCollectionSchema } from '@elek-io/shared';
-import { NotificationIntent } from '@elek-io/ui';
+import { NotificationIntent } from '@/renderer/react/store';
+import { CreateCollectionProps, createCollectionSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';

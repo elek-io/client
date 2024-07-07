@@ -1,5 +1,6 @@
-import { Asset, supportedAssetExtensionSchema } from '@elek-io/shared';
-import { NotificationIntent, formatBytes, formatTimestamp } from '@elek-io/ui';
+import { NotificationIntent } from '@/renderer/react/store';
+import { formatBytes, formatTimestamp } from '@/util';
+import { Asset, supportedAssetExtensionSchema } from '@elek-io/core';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ImagePlus, Trash } from 'lucide-react';
 import { ReactElement, useState } from 'react';

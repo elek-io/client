@@ -1,5 +1,4 @@
-import { CreateProjectProps, createProjectSchema } from '@elek-io/shared';
-import { NotificationIntent } from '@elek-io/ui';
+import { CreateProjectProps, createProjectSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
@@ -18,6 +17,7 @@ import {
 import { Input } from '../../components/ui/input';
 import { Page } from '../../components/ui/page';
 import { Textarea } from '../../components/ui/textarea';
+import { NotificationIntent } from '../../store';
 
 export const Route = createFileRoute('/projects/create')({
   component: CreateProjectPage,

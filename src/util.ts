@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from '@elek-io/shared';
+import { SupportedLanguage } from '@elek-io/core';
 import { clsx, type ClassValue } from 'clsx';
 import { format, formatDistanceToNow, fromUnixTime } from 'date-fns';
 import {

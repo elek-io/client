@@ -25,7 +25,6 @@ export interface ContextBridgeApi {
       read: Core['projects']['read'];
       update: Core['projects']['update'];
       delete: Core['projects']['delete'];
-      search: Core['projects']['search'];
     };
     assets: {
       list: Core['assets']['list'];
@@ -75,7 +74,6 @@ const exposedApi: ContextBridgeApi = {
       read: (...args) => ipcRenderer.invoke('core:projects:read', args),
       update: (...args) => ipcRenderer.invoke('core:projects:update', args),
       delete: (...args) => ipcRenderer.invoke('core:projects:delete', args),
-      search: (...args) => ipcRenderer.invoke('core:projects:search', args),
     },
     assets: {
       list: (...args) => ipcRenderer.invoke('core:assets:list', args),

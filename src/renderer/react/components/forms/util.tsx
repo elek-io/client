@@ -1,4 +1,4 @@
-import { SupportedLanguage, ValueDefinition } from '@elek-io/shared';
+import { SupportedLanguage, ValueDefinition } from '@elek-io/core';
 import { ReactElement } from 'react';
 import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
 import { Input } from '../ui/input';

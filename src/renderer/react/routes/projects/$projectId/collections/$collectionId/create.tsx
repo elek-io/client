@@ -9,9 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/renderer/react/components/ui/dialog';
+import { NotificationIntent } from '@/renderer/react/store';
 import { fieldWidth } from '@/util';
-import { CreateEntryProps, createEntrySchema } from '@elek-io/shared';
-import { NotificationIntent } from '@elek-io/ui';
+import { CreateEntryProps, createEntrySchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';

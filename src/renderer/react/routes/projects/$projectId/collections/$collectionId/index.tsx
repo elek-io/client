@@ -1,5 +1,5 @@
 import { formatTimestamp } from '@/util';
-import { Entry } from '@elek-io/shared';
+import { Entry } from '@elek-io/core';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import {

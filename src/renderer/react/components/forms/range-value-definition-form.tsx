@@ -1,5 +1,5 @@
 import { cn } from '@/util';
-import { RangeValueDefinition, SupportedLanguage } from '@elek-io/shared';
+import { RangeValueDefinition, SupportedLanguage } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import {

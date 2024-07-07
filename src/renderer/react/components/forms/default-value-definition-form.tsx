@@ -1,7 +1,7 @@
-import { SupportedLanguage } from '@elek-io/shared';
-import { Button } from '@elek-io/ui';
+import { SupportedLanguage } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogClose,

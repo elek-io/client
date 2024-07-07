@@ -23,9 +23,9 @@ import {
   FormMessage,
 } from '@/renderer/react/components/ui/form';
 import { Page } from '@/renderer/react/components/ui/page';
+import { NotificationIntent } from '@/renderer/react/store';
 import { fieldWidth } from '@/util';
-import { UpdateEntryProps, updateEntrySchema } from '@elek-io/shared';
-import { NotificationIntent } from '@elek-io/ui';
+import { UpdateEntryProps, updateEntrySchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';

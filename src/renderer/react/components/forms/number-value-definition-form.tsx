@@ -1,5 +1,5 @@
 import { cn } from '@/util';
-import { NumberValueDefinition, SupportedLanguage } from '@elek-io/shared';
+import { NumberValueDefinition, SupportedLanguage } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import {

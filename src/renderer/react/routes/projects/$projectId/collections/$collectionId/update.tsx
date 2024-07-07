@@ -1,11 +1,11 @@
 import { CreateUpdateCollectionPage } from '@/renderer/react/components/pages/create-update-collection-page';
 import { Button } from '@/renderer/react/components/ui/button';
+import { NotificationIntent } from '@/renderer/react/store';
 import {
   DeleteCollectionProps,
   UpdateCollectionProps,
   updateCollectionSchema,
-} from '@elek-io/shared';
-import { NotificationIntent } from '@elek-io/ui';
+} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';

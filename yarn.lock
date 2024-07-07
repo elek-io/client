@@ -902,51 +902,21 @@
     fs-extra "^11.1.1"
     minimist "^1.2.8"
 
-"@elek-io/core@0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.3.1.tgz#b91870b37e97cf0958174fcb341993d6b6e0dfc9"
-  integrity sha512-Ousit9auhK+hWSfBIxXBuBZoXSS7FefUYj+xlHRHm0/7wAZqzK8khSLRnOHXQ2H6TVKIEuk6PR+YUgH1YwHOkw==
+"@elek-io/core@0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@elek-io/core/-/core-0.5.2.tgz#e0d73b7869c5ab35613b7cba4ca5b46e9dde048a"
+  integrity sha512-cYZbDzkENPVYZDVaEQ1Fc25F3frOooiSaO5JyIaz5oTyPsCmBVxzKDlfHeReczk/5HUYGye5u3GkuT5yYVwFPA==
   dependencies:
-    "@elek-io/shared" "0.5.1"
+    "@types/uuid" "^10.0.0"
     file-type "^19.0.0"
     fs-extra "^11.2.0"
     is-svg "^5.0.0"
     lodash-es "^4.17.21"
     p-queue "^8.0.1"
     semver "^7.5.4"
-
-"@elek-io/shared@0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.5.1.tgz#e5ec208f52518172cdcd0e037ba355548e89feee"
-  integrity sha512-NvOEhEg7XJ6xrJsdKnR+2Mo3sG84kuYpbMcVisamJoQiYD14hO7qG+1HHWG2xtwWqCOWY59WciNWWpNzQ9al8Q==
-  dependencies:
     slugify "^1.6.6"
-    uuid "^9.0.1"
-    zod "^3.23"
-
-"@elek-io/shared@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@elek-io/shared/-/shared-0.2.0.tgz#d0d2d52b2dbcdec905b494458c4665fa09ae79e4"
-  integrity sha512-AxAgLG0O9sRwDjJ8Zae6EDSmMP8hqQf9ejbb++oMNlVopzvwJsMeNJtHp1uQMG4liabPNX5RdpBQyEcQvaqKuA==
-  dependencies:
-    slugify "^1.6.6"
-    uuid "^9.0.1"
-    zod "^3.22.4"
-
-"@elek-io/ui@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@elek-io/ui/-/ui-0.1.3.tgz#0990b99b316124824a717ee4ca154a300f19f1df"
-  integrity sha512-w7r8yRJESWUnLtYhPUOMRLyABdH42DhgszHU+S/Vx2DecilU2yQAimGBAnCNrtNdsWeIuYWcpZCxgmDtKOwj1g==
-  dependencies:
-    "@elek-io/shared" "^0.2.0"
-    "@headlessui/react" "^1.7.18"
-    "@heroicons/react" "^2.1.1"
-    class-variance-authority "^0.7.0"
-    date-fns "^3.3.1"
-    react "^18.2.0"
-    react-dom "^18.2.0"
-    react-hook-form "^7.50.1"
-    tailwind-merge "^2.2.1"
+    uuid "^10.0.0"
+    zod "^3.23.8"
 
 "@esbuild/android-arm64@0.18.20":
   version "0.18.20"
@@ -1131,14 +1101,6 @@
   version "1.1.3"
   resolved "https://registry.npmjs.org/@gar/promisify/-/promisify-1.1.3.tgz"
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
-
-"@headlessui/react@^1.7.18":
-  version "1.7.18"
-  resolved "https://registry.yarnpkg.com/@headlessui/react/-/react-1.7.18.tgz#30af4634d2215b2ca1aa29d07f33d02bea82d9d7"
-  integrity sha512-4i5DOrzwN4qSgNsL4Si61VMkUcWbcSKueUV7sFhpHzQcSShdlHENE5+QBntMSRvHt8NyoFO2AGG8si9lq+w4zQ==
-  dependencies:
-    "@tanstack/react-virtual" "^3.0.0-beta.60"
-    client-only "^0.0.1"
 
 "@heroicons/react@^2.1.1":
   version "2.1.1"
@@ -2147,13 +2109,6 @@
   dependencies:
     "@tanstack/table-core" "8.15.3"
 
-"@tanstack/react-virtual@^3.0.0-beta.60":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.1.2.tgz#eb62b73cc82e34860604cd3d682a17db590f3c45"
-  integrity sha512-qibmxtctgOZo2I+3Rw5GR9kXgaa15U5r3/idDY1ItUKW15UK7GhCfyIfE6qYuJ1fxQF6dJDsD8SbpPyuJgpxuA==
-  dependencies:
-    "@tanstack/virtual-core" "3.1.2"
-
 "@tanstack/router-devtools@^1.15.23":
   version "1.15.23"
   resolved "https://registry.yarnpkg.com/@tanstack/router-devtools/-/router-devtools-1.15.23.tgz#a5aebe5a6fb3bcde5014d9c0eb745d3f3f3ff222"
@@ -2186,11 +2141,6 @@
   version "8.15.3"
   resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.15.3.tgz#1a11cef82a458e90694bedfb40dcff610e69460e"
   integrity sha512-wOgV0HfEvuMOv8RlqdR9MdNNqq0uyvQtP39QOvGlggHvIObOE4exS+D5LGO8LZ3LUXxId2IlUKcHDHaGujWhUg==
-
-"@tanstack/virtual-core@3.1.2":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.1.2.tgz#ca76f28f826fbd3310f88c3cd355d9c4aba80abb"
-  integrity sha512-DATZJs8iejkIUqXZe6ruDAnjFo78BKnIIgqQZrc7CmEFqfLEN/TPD91n4hRfo6hpRB6xC00bwKxv7vdjFNEmOg==
 
 "@tokenizer/token@^0.3.0":
   version "0.3.0"
@@ -2373,6 +2323,11 @@
   version "7.5.6"
   resolved "https://registry.npmjs.org/@types/semver/-/semver-7.5.6.tgz"
   integrity sha512-dn1l8LaMea/IjDoHNd9J52uBbInB796CDffS6VdIxvqYCPSG0V0DzHp76GpaWnlhg88uYyPbXCDIowa86ybd5A==
+
+"@types/uuid@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-10.0.0.tgz#e9c07fe50da0f53dc24970cca94d619ff03f6f6d"
+  integrity sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==
 
 "@types/yauzl@^2.9.1":
   version "2.10.3"
@@ -3105,11 +3060,6 @@ cli-truncate@^2.1.0:
     slice-ansi "^3.0.0"
     string-width "^4.2.0"
 
-client-only@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/client-only/-/client-only-0.0.1.tgz#38bba5d403c41ab150bff64a95c85013cf73bca1"
-  integrity sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==
-
 cliui@^6.0.0:
   version "6.0.0"
   resolved "https://registry.npmjs.org/cliui/-/cliui-6.0.0.tgz"
@@ -3357,11 +3307,6 @@ date-fns@^2.29.1:
   integrity sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==
   dependencies:
     "@babel/runtime" "^7.21.0"
-
-date-fns@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-3.3.1.tgz#7581daca0892d139736697717a168afbb908cfed"
-  integrity sha512-y8e109LYGgoQDveiEBD3DYXKba1jWf5BA8YU1FL5Tvm0BTdEfy54WLCwnuYWZNnzzvALy/QQ4Hov+Q9RVRv+Zw==
 
 date-fns@^3.6.0:
   version "3.6.0"
@@ -6494,11 +6439,6 @@ react-dom@^18.2.0:
     loose-envify "^1.1.0"
     scheduler "^0.23.0"
 
-react-hook-form@^7.50.1:
-  version "7.50.1"
-  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.50.1.tgz#f6aeb17a863327e5a0252de8b35b4fc8990377ed"
-  integrity sha512-3PCY82oE0WgeOgUtIr3nYNNtNvqtJ7BZjsbxh6TnYNbXButaD5WpjOmTjdxZfheuHKR68qfeFnEDVYoSSFPMTQ==
-
 react-hook-form@^7.51.0:
   version "7.51.0"
   resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.51.0.tgz#757ae71b37c26e00590bd3788508287dcc5ecdaf"
@@ -7772,10 +7712,10 @@ utils-merge@1.0.1:
   resolved "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
 
-uuid@^9.0.1:
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
-  integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
+uuid@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-10.0.0.tgz#5a95aa454e6e002725c79055fd42aaba30ca6294"
+  integrity sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==
 
 v8-compile-cache-lib@^3.0.1:
   version "3.0.1"
@@ -8095,7 +8035,7 @@ zod@^3.22.4:
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
-zod@^3.23:
+zod@^3.23, zod@^3.23.8:
   version "3.23.8"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
   integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==

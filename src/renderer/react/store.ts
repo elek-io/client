@@ -1,8 +1,22 @@
-import { NotificationIntent, NotificationProps } from '@elek-io/ui';
+import { Icon } from '@/util';
 import type {} from '@redux-devtools/extension'; // required for devtools typing
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { toast } from './components/ui/toast';
+
+export enum NotificationIntent {
+  INFO = 'info',
+  SUCCESS = 'success',
+  WARNING = 'warning',
+  DANGER = 'danger',
+}
+
+export interface NotificationProps {
+  intent?: NotificationIntent;
+  icon?: Icon;
+  title: string;
+  description: string;
+}
 
 export interface StoreState {
   notifications: NotificationProps[];
