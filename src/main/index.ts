@@ -12,7 +12,7 @@ import {
   shell,
 } from 'electron';
 import Path from 'path';
-// import icon from '../../resources/icon.png?asset';
+import icon from '../../resources/icon.png?asset';
 // import { updateElectronApp } from 'update-electron-app';
 
 export class SecurityError extends Error {
@@ -201,7 +201,7 @@ class Main {
       contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
       sandbox: false, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
-    // options.icon = icon;
+    options.icon = process.platform === 'linux' ? icon : undefined;
     options.frame = false;
     options.titleBarStyle = 'hidden';
     options.titleBarOverlay = true;
