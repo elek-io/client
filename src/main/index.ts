@@ -12,8 +12,16 @@ import {
   shell,
 } from 'electron';
 import Path from 'path';
-import { updateElectronApp } from 'update-electron-app';
-import { SecurityError } from '../util';
+// import icon from '../../resources/icon.png?asset';
+// import { updateElectronApp } from 'update-electron-app';
+
+export class SecurityError extends Error {
+  constructor(message: string) {
+    super(message);
+
+    this.name = 'SecurityError';
+  }
+}
 
 Sentry.init({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
@@ -29,25 +37,25 @@ class Main {
 
   constructor() {
     // Allow the vite dev server to do HMR in development
-    if (app.isPackaged === false) {
-      this.allowedOriginsToLoadInternal.push(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-    }
+    // if (app.isPackaged === false) {
+    //   this.allowedOriginsToLoadInternal.push(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    // }
 
     // Overwrite dugites resolved path to the embedded git directory
     // @see https://github.com/desktop/dugite/blob/0f5a4f11300fbfa8d2dd272b8ee9b771e5b34cd4/lib/git-environment.ts#L25
     // This seems to be necessary, since it resolves to `elek.io Client.app/Contents/Resources/app/git` instead of dugites git inside node_modules `elek.io Client.app/Contents/Resources/app/node_modules/dugite/git`
-    process.env.LOCAL_GIT_DIRECTORY = Path.resolve(
-      __dirname,
-      '../../',
-      'node_modules',
-      'dugite',
-      'git'
-    );
+    // process.env.LOCAL_GIT_DIRECTORY = Path.resolve(
+    //   __dirname,
+    //   '../../',
+    //   'node_modules',
+    //   'dugite',
+    //   'git'
+    // );
 
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-    if (require('electron-squirrel-startup')) {
-      app.quit();
-    }
+    // if (require('electron-squirrel-startup')) {
+    //   app.quit();
+    // }
 
     // Register app events
     app.on('ready', this.onReady.bind(this));
@@ -57,7 +65,7 @@ class Main {
 
     // Enable auto-updates
     // @see https://github.com/electron/update-electron-app
-    updateElectronApp();
+    // updateElectronApp();
   }
 
   private onWebContentsCreated(
@@ -89,6 +97,7 @@ class Main {
       setImmediate(() => {
         shell.openExternal(url);
       });
+      return { action: 'deny' };
     });
   }
 
@@ -186,13 +195,13 @@ class Main {
     // Overwrite webPreferences to always load the correct preload script
     // and explicitly enable security features - although Electron > v28 should set these by default
     options.webPreferences = {
-      preload: Path.join(__dirname, 'preload.js'),
+      preload: Path.join(__dirname, '../preload/index.mjs'),
       disableBlinkFeatures: 'Auxclick', // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
       nodeIntegration: false,
       contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
-      sandbox: true, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
+      sandbox: false, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
-    options.icon = 'icons/icon.png';
+    // options.icon = icon;
     options.frame = false;
     options.titleBarStyle = 'hidden';
     options.titleBarOverlay = true;
@@ -227,9 +236,7 @@ class Main {
 
       // Client is in production
       // Load the static index.html directly
-      window.loadFile(
-        Path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
-      );
+      window.loadFile(Path.join(__dirname, `../renderer/index.html`));
     } else {
       // Client is in development
       window.webContents.openDevTools();
@@ -239,11 +246,13 @@ class Main {
       //     console.log('An error occurred adding Chrome extension: ', err)
       //   );
 
-      console.log(
-        'Loading frontend in development by URL:',
-        MAIN_WINDOW_VITE_DEV_SERVER_URL
-      );
-      window.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+      const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
+      if (!rendererUrl) {
+        throw new Error(`"process.env['ELECTRON_RENDERER_URL']" is empty`);
+      }
+
+      console.log('Loading frontend in development by URL:', rendererUrl);
+      window.loadURL(rendererUrl);
     }
 
     return window;

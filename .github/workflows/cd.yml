@@ -27,15 +27,15 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn install --network-timeout 100000
+        run: npm install
       - name: Run linter
-        run: yarn run lint
+        run: npm run lint
       - name: Build and create pull request or publish to GitHub
         uses: changesets/action@v1
         with:
           title: 'WIP: Release x.x.x'
           commit: Release new version
-          publish: yarn run release
+          publish: npm run release
         env:
           # See https://github.com/changesets/action/issues/147
           HOME: ${{ github.workspace }}
