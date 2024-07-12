@@ -42,5 +42,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artifact_${{ matrix.platform }}
-          path: out/make
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
           if-no-files-found: error
