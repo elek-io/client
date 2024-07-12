@@ -5,13 +5,13 @@
   "tsx": true,
   "tailwind": {
     "config": "tailwind.config.js",
-    "css": "src/renderer/react/index.css",
+    "css": "src/renderer/src/index.css",
     "baseColor": "zinc",
     "cssVariables": false,
     "prefix": ""
   },
   "aliases": {
-    "components": "@/renderer/react/components",
-    "utils": "@/util"
+    "components": "@renderer/components",
+    "utils": "@renderer/util"
   }
 }
