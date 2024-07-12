@@ -37,9 +37,11 @@ class Main {
 
   constructor() {
     // Allow the vite dev server to do HMR in development
-    // if (app.isPackaged === false) {
-    //   this.allowedOriginsToLoadInternal.push(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-    // }
+    if (app.isPackaged === false && process.env['ELECTRON_RENDERER_URL']) {
+      this.allowedOriginsToLoadInternal.push(
+        process.env['ELECTRON_RENDERER_URL']
+      );
+    }
 
     // Overwrite dugites resolved path to the embedded git directory
     // @see https://github.com/desktop/dugite/blob/0f5a4f11300fbfa8d2dd272b8ee9b771e5b34cd4/lib/git-environment.ts#L25
