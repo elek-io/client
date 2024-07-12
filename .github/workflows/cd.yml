@@ -15,7 +15,7 @@ jobs:
         # macos-12 = intel
         # macos-14 = M1 (arm)
         platform: [ubuntu-22.04, macos-12, macos-14, windows-2022]
-        node-version: [18]
+        node-version: [20]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out code
