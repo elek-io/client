@@ -1,6 +1,6 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
-import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
-import react from '@vitejs/plugin-react';
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
+import viteReact from '@vitejs/plugin-react';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { resolve } from 'path';
 
@@ -25,7 +25,7 @@ export default defineConfig({
       },
     },
     plugins: [
-      react(),
+      viteReact(),
       TanStackRouterVite({
         routesDirectory: './src/renderer/src/routes',
         generatedRouteTree: './src/renderer/src/routeTree.gen.ts',
