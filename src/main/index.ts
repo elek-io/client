@@ -203,7 +203,9 @@ class Main {
       contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
       sandbox: false, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
-    options.icon = process.platform === 'linux' ? icon : undefined;
+    if (process.platform === 'linux') {
+      options.icon = icon;
+    }
     options.frame = false;
     options.titleBarStyle = 'hidden';
     options.titleBarOverlay = true;
