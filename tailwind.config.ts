@@ -3,9 +3,7 @@ import colors from 'tailwindcss/colors';
 
 export default {
   darkMode: ['class'],
-  content: [
-    './src/renderer/**/*.{ts,tsx,html}',
-  ],
+  content: ['./src/renderer/**/*.{ts,tsx,html}'],
   prefix: '',
   theme: {
     container: {
@@ -38,5 +36,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config
+  plugins: [require('tailwindcss-animate')],
+} satisfies Config;

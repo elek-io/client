@@ -1,5 +1,5 @@
-import { electronAPI } from '@electron-toolkit/preload'
-import { contextBridge, ipcRenderer } from 'electron'
+import { electronAPI } from '@electron-toolkit/preload';
+import { contextBridge, ipcRenderer } from 'electron';
 
 // Custom APIs for renderer
 const ipc = {
@@ -41,23 +41,22 @@ const ipc = {
       update: (...args) => ipcRenderer.invoke('core:entries:update', args),
       delete: (...args) => ipcRenderer.invoke('core:entries:delete', args),
     },
-  }
-}
+  },
+};
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('ipc', ipc)
+    contextBridge.exposeInMainWorld('ipc', ipc);
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 } else {
   // @ts-ignore (define in dts)
-  window.ipc = ipc
+  window.ipc = ipc;
 }
-
 
 // // See the Electron documentation for details on how to use preload scripts:
 // // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
@@ -124,42 +123,42 @@ if (process.contextIsolated) {
 //     },
 //   },
 //   core: {
-    // user: {
-    //   get: (...args) => ipcRenderer.invoke('core:user:get', args),
-    //   set: (...args) => ipcRenderer.invoke('core:user:set', args),
-    // },
-    // projects: {
-    //   count: (...args) => ipcRenderer.invoke('core:projects:count', args),
-    //   create: (...args) => ipcRenderer.invoke('core:projects:create', args),
-    //   list: (...args) => ipcRenderer.invoke('core:projects:list', args),
-    //   read: (...args) => ipcRenderer.invoke('core:projects:read', args),
-    //   update: (...args) => ipcRenderer.invoke('core:projects:update', args),
-    //   delete: (...args) => ipcRenderer.invoke('core:projects:delete', args),
-    // },
-    // assets: {
-    //   list: (...args) => ipcRenderer.invoke('core:assets:list', args),
-    //   create: (...args) => ipcRenderer.invoke('core:assets:create', args),
-    //   delete: (...args) => ipcRenderer.invoke('core:assets:delete', args),
-    // },
-    // // snapshots: {
-    // //   commitHistory: (...args) =>
-    // //     ipcRenderer.invoke('core:snapshots:commitHistory', args),
-    // //   list: (...args) => ipcRenderer.invoke('core:snapshots:list', args),
-    // // },
-    // collections: {
-    //   list: (...args) => ipcRenderer.invoke('core:collections:list', args),
-    //   create: (...args) => ipcRenderer.invoke('core:collections:create', args),
-    //   read: (...args) => ipcRenderer.invoke('core:collections:read', args),
-    //   update: (...args) => ipcRenderer.invoke('core:collections:update', args),
-    //   delete: (...args) => ipcRenderer.invoke('core:collections:delete', args),
-    // },
-    // entries: {
-    //   list: (...args) => ipcRenderer.invoke('core:entries:list', args),
-    //   create: (...args) => ipcRenderer.invoke('core:entries:create', args),
-    //   read: (...args) => ipcRenderer.invoke('core:entries:read', args),
-    //   update: (...args) => ipcRenderer.invoke('core:entries:update', args),
-    //   delete: (...args) => ipcRenderer.invoke('core:entries:delete', args),
-    // },
+// user: {
+//   get: (...args) => ipcRenderer.invoke('core:user:get', args),
+//   set: (...args) => ipcRenderer.invoke('core:user:set', args),
+// },
+// projects: {
+//   count: (...args) => ipcRenderer.invoke('core:projects:count', args),
+//   create: (...args) => ipcRenderer.invoke('core:projects:create', args),
+//   list: (...args) => ipcRenderer.invoke('core:projects:list', args),
+//   read: (...args) => ipcRenderer.invoke('core:projects:read', args),
+//   update: (...args) => ipcRenderer.invoke('core:projects:update', args),
+//   delete: (...args) => ipcRenderer.invoke('core:projects:delete', args),
+// },
+// assets: {
+//   list: (...args) => ipcRenderer.invoke('core:assets:list', args),
+//   create: (...args) => ipcRenderer.invoke('core:assets:create', args),
+//   delete: (...args) => ipcRenderer.invoke('core:assets:delete', args),
+// },
+// // snapshots: {
+// //   commitHistory: (...args) =>
+// //     ipcRenderer.invoke('core:snapshots:commitHistory', args),
+// //   list: (...args) => ipcRenderer.invoke('core:snapshots:list', args),
+// // },
+// collections: {
+//   list: (...args) => ipcRenderer.invoke('core:collections:list', args),
+//   create: (...args) => ipcRenderer.invoke('core:collections:create', args),
+//   read: (...args) => ipcRenderer.invoke('core:collections:read', args),
+//   update: (...args) => ipcRenderer.invoke('core:collections:update', args),
+//   delete: (...args) => ipcRenderer.invoke('core:collections:delete', args),
+// },
+// entries: {
+//   list: (...args) => ipcRenderer.invoke('core:entries:list', args),
+//   create: (...args) => ipcRenderer.invoke('core:entries:create', args),
+//   read: (...args) => ipcRenderer.invoke('core:entries:read', args),
+//   update: (...args) => ipcRenderer.invoke('core:entries:update', args),
+//   delete: (...args) => ipcRenderer.invoke('core:entries:delete', args),
+// },
 //     // sharedValues: {
 //     //   list: (...args) => ipcRenderer.invoke('core:sharedValues:list', args),
 //     //   create: (...args) => ipcRenderer.invoke('core:sharedValues:create', args),

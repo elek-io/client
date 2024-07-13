@@ -6,24 +6,30 @@ import { resolve } from 'path';
 
 export default defineConfig({
   main: {
-    build: {sourcemap: true},
-    plugins: [externalizeDepsPlugin(), sentryVitePlugin({
-      org: 'elek-io',
-      project: 'client',
-    }),]
+    build: { sourcemap: true },
+    plugins: [
+      externalizeDepsPlugin(),
+      sentryVitePlugin({
+        org: 'elek-io',
+        project: 'client',
+      }),
+    ],
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
   },
   renderer: {
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src')
-      }
+        '@renderer': resolve('src/renderer/src'),
+      },
     },
-    plugins: [react(), TanStackRouterVite({
-      routesDirectory: './src/renderer/src/routes',
-      generatedRouteTree: './src/renderer/src/routeTree.gen.ts',
-    }),]
-  }
-})
+    plugins: [
+      react(),
+      TanStackRouterVite({
+        routesDirectory: './src/renderer/src/routes',
+        generatedRouteTree: './src/renderer/src/routeTree.gen.ts',
+      }),
+    ],
+  },
+});

@@ -1,4 +1,4 @@
-import type { } from '@redux-devtools/extension'; // required for devtools typing
+import type {} from '@redux-devtools/extension'; // required for devtools typing
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { toast } from './components/ui/toast';

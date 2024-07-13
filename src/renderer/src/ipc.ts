@@ -4,9 +4,9 @@ import type Core from '@elek-io/core';
 declare global {
   interface Window {
     ipc: {
-      electron: ElectronAPI
-      core: Core
-    }
+      electron: ElectronAPI;
+      core: Core;
+    };
   }
 }
 

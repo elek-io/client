@@ -11,7 +11,7 @@ Sentry.init(
       Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
-      })
+      }),
     ],
     sampleRate: 1.0, // For error events @todo change this to a lower number once more people are using Client
     tracesSampleRate: 1.0, // For tracing events @todo change this to a lower number once more people are using Client
