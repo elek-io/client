@@ -72,7 +72,7 @@ class Main {
   }
 
   private onWebContentsCreated(
-    event: {
+    _event: {
       preventDefault: () => void;
       readonly defaultPrevented: boolean;
     },
@@ -117,7 +117,7 @@ class Main {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
-      this.createWindow('/projects');
+      this.createWindow();
     }
   }
 
@@ -132,24 +132,12 @@ class Main {
       return net.fetch(filePath);
     });
 
-    // Check in Core if either local or cloud user is set
-    // If no, show the user the /user/create page
-    // If yes use this to init core and show /projects
-
     const core = new ElekIoCore({
       environment: app.isPackaged ? 'production' : 'development',
     });
-    this.registerIpcMain(core);
 
-    // const user = await core.user.get();
-    // let mainWindow: BrowserWindow;
-    this.createWindow('/');
-
-    // if (user) {
-    //   mainWindow = await this.createWindow('/projects');
-    // } else {
-    //   mainWindow = await this.createWindow('/user/create');
-    // }
+    const window = this.createWindow();
+    this.registerIpcMain(window, core);
   }
 
   /**
@@ -182,10 +170,7 @@ class Main {
     return windowSize;
   }
 
-  private createWindow(
-    path: string,
-    options?: BrowserWindowConstructorOptions
-  ) {
+  private createWindow(options?: BrowserWindowConstructorOptions) {
     const { width, height } = this.getWindowSize();
 
     // Set defaults if missing
@@ -263,41 +248,41 @@ class Main {
     return window;
   }
 
-  private registerIpcMain(core: ElekIoCore) {
-    ipcMain.handle('electron:dialog:showOpenDialog', async (event, args) => {
-      return await dialog.showOpenDialog(undefined, args);
+  private registerIpcMain(window: Electron.BrowserWindow, core: ElekIoCore) {
+    ipcMain.handle('electron:dialog:showOpenDialog', async (_event, args) => {
+      return await dialog.showOpenDialog(window, args);
     });
     ipcMain.handle('core:user:get', async () => {
       return await core.user.get();
     });
-    ipcMain.handle('core:user:set', async (event, args) => {
+    ipcMain.handle('core:user:set', async (_event, args) => {
       return await core.user.set(args[0]);
     });
     ipcMain.handle('core:projects:count', async () => {
       return await core.projects.count();
     });
-    ipcMain.handle('core:projects:create', async (event, args) => {
+    ipcMain.handle('core:projects:create', async (_event, args) => {
       return await core.projects.create(args[0]);
     });
-    ipcMain.handle('core:projects:list', async (event, args) => {
+    ipcMain.handle('core:projects:list', async (_event, args) => {
       return await core.projects.list(args[0]);
     });
-    ipcMain.handle('core:projects:read', async (event, args) => {
+    ipcMain.handle('core:projects:read', async (_event, args) => {
       return await core.projects.read(args[0]);
     });
-    ipcMain.handle('core:projects:update', async (event, args) => {
+    ipcMain.handle('core:projects:update', async (_event, args) => {
       return await core.projects.update(args[0]);
     });
-    ipcMain.handle('core:projects:delete', async (event, args) => {
+    ipcMain.handle('core:projects:delete', async (_event, args) => {
       return await core.projects.delete(args[0]);
     });
-    ipcMain.handle('core:assets:list', async (event, args) => {
+    ipcMain.handle('core:assets:list', async (_event, args) => {
       return await core.assets.list(args[0]);
     });
-    ipcMain.handle('core:assets:create', async (event, args) => {
+    ipcMain.handle('core:assets:create', async (_event, args) => {
       return await core.assets.create(args[0]);
     });
-    ipcMain.handle('core:assets:delete', async (event, args) => {
+    ipcMain.handle('core:assets:delete', async (_event, args) => {
       return await core.assets.delete(args[0]);
     });
     // ipcMain.handle('core:snapshots:list', async (event, args) => {
@@ -312,34 +297,34 @@ class Main {
     // ipcMain.handle('core:snapshots:commitHistory', async (event, args) => {
     //   return await core.snapshots.commitHistory(args[0]);
     // });
-    ipcMain.handle('core:collections:list', async (event, args) => {
+    ipcMain.handle('core:collections:list', async (_event, args) => {
       return await core.collections.list(args[0]);
     });
-    ipcMain.handle('core:collections:create', async (event, args) => {
+    ipcMain.handle('core:collections:create', async (_event, args) => {
       return await core.collections.create(args[0]);
     });
-    ipcMain.handle('core:collections:read', async (event, args) => {
+    ipcMain.handle('core:collections:read', async (_event, args) => {
       return await core.collections.read(args[0]);
     });
-    ipcMain.handle('core:collections:update', async (event, args) => {
+    ipcMain.handle('core:collections:update', async (_event, args) => {
       return await core.collections.update(args[0]);
     });
-    ipcMain.handle('core:collections:delete', async (event, args) => {
+    ipcMain.handle('core:collections:delete', async (_event, args) => {
       return await core.collections.delete(args[0]);
     });
-    ipcMain.handle('core:entries:list', async (event, args) => {
+    ipcMain.handle('core:entries:list', async (_event, args) => {
       return await core.entries.list(args[0]);
     });
-    ipcMain.handle('core:entries:create', async (event, args) => {
+    ipcMain.handle('core:entries:create', async (_event, args) => {
       return await core.entries.create(args[0]);
     });
-    ipcMain.handle('core:entries:read', async (event, args) => {
+    ipcMain.handle('core:entries:read', async (_event, args) => {
       return await core.entries.read(args[0]);
     });
-    ipcMain.handle('core:entries:update', async (event, args) => {
+    ipcMain.handle('core:entries:update', async (_event, args) => {
       return await core.entries.update(args[0]);
     });
-    ipcMain.handle('core:entries:delete', async (event, args) => {
+    ipcMain.handle('core:entries:delete', async (_event, args) => {
       return await core.entries.delete(args[0]);
     });
     // this.handleIpcMain<Parameters<AssetService['list']>>('core:assets:list', async (event, args) => {
