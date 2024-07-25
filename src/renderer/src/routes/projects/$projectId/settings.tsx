@@ -1,22 +1,15 @@
-import {
-  Outlet,
-  ToPathOption,
-  createFileRoute,
-  useRouter,
-} from '@tanstack/react-router';
+import { ScrollArea } from '@renderer/components/ui/scroll-area';
+import { Sidebar } from '@renderer/components/ui/sidebar';
+import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
+import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
+import { Outlet, ToPathOption, createFileRoute } from '@tanstack/react-router';
 import { LucideIcon, Settings } from 'lucide-react';
-import { ScrollArea } from '../../../components/ui/scroll-area';
-import { Sidebar } from '../../../components/ui/sidebar';
-import { SidebarNavigation } from '../../../components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '../../../components/ui/sidebar-navigation-item';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectCollectionsLayout,
 });
 
 function ProjectCollectionsLayout() {
-  const router = useRouter();
-  const context = Route.useRouteContext();
   const settingsNavigation: {
     name: string;
     to: ToPathOption;

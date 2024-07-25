@@ -1,4 +1,31 @@
 import { Entry } from '@elek-io/core';
+import { Button } from '@renderer/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@renderer/components/ui/dropdown-menu';
+import { Input } from '@renderer/components/ui/input';
+import { Page } from '@renderer/components/ui/page';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@renderer/components/ui/pagination';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@renderer/components/ui/table';
+import { useStore } from '@renderer/store';
+import { formatDatetime } from '@renderer/util';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import {
@@ -10,32 +37,6 @@ import {
 } from '@tanstack/react-table';
 import { ChevronDown, Plus, Settings } from 'lucide-react';
 import { ReactElement, useState } from 'react';
-import { Button } from '../../../../../components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '../../../../../components/ui/dropdown-menu';
-import { Input } from '../../../../../components/ui/input';
-import { Page } from '../../../../../components/ui/page';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '../../../../../components/ui/pagination';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../../../../components/ui/table';
-import { formatTimestamp } from '../../../../../util';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/'
@@ -46,7 +47,7 @@ export const Route = createFileRoute(
 function ProjectCollectionIndexPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
+  const addNotification = useStore((state) => state.addNotification);
   const [pagination, setPagination] = useState({
     pageIndex: 0, // initial page index
     pageSize: 10, // default page size
@@ -73,9 +74,9 @@ function ProjectCollectionIndexPage() {
       dataQuery.data?.list.map((entry) => {
         const row: { [x: string]: unknown } = {
           id: entry.id,
-          created: formatTimestamp(entry.created, context.currentUser.language)
+          created: formatDatetime(entry.created, context.currentUser.language)
             .relative,
-          updated: formatTimestamp(entry.updated, context.currentUser.language)
+          updated: formatDatetime(entry.updated, context.currentUser.language)
             .relative,
         };
 

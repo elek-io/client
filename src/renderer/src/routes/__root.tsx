@@ -1,34 +1,15 @@
 import { electronAPI } from '@electron-toolkit/preload';
-import type Core from '@elek-io/core';
-import {
-  Link,
-  Outlet,
-  createRootRouteWithContext,
-  redirect,
-  useRouter,
-  useRouterState,
-} from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
-import {
-  ArrowLeft,
-  ArrowLeftToLine,
-  ArrowRight,
-  ChevronDown,
-  Moon,
-  Sun,
-} from 'lucide-react';
-import { Fragment } from 'react';
-import { StoreApi, UseBoundStore } from 'zustand';
-import { Theme, useTheme } from '../components/theme-provider';
-import { Avatar } from '../components/ui/avatar';
+import { ElekIoCore } from '@elek-io/core';
+import { Theme, useTheme } from '@renderer/components/theme-provider';
+import { Avatar } from '@renderer/components/ui/avatar';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from '../components/ui/breadcrumb';
-import { Button } from '../components/ui/button';
+} from '@renderer/components/ui/breadcrumb';
+import { Button } from '@renderer/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,15 +25,37 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '../components/ui/dropdown-menu';
-import { Toaster } from '../components/ui/toast';
-import { StoreState } from '../store';
-import { cn } from '../util';
+} from '@renderer/components/ui/dropdown-menu';
+import { Toaster } from '@renderer/components/ui/toast';
+import { useStore } from '@renderer/store';
+import { cn } from '@renderer/util';
+import {
+  Link,
+  Outlet,
+  createRootRouteWithContext,
+  redirect,
+  useRouter,
+  useRouterState,
+} from '@tanstack/react-router';
+import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import {
+  ArrowLeft,
+  ArrowLeftToLine,
+  ArrowRight,
+  ChevronDown,
+  ExternalLink,
+  Moon,
+  Sun,
+} from 'lucide-react';
+import { Fragment } from 'react';
+import {
+  version as clientVersion,
+  dependencies,
+} from '../../../../package.json';
 
-interface RouterContext {
+export interface RouterContext {
   electron: typeof electronAPI;
-  core: Core;
-  store: UseBoundStore<StoreApi<StoreState>>;
+  core: ElekIoCore;
 }
 
 // Use the routerContext to create your root route
@@ -70,21 +73,25 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     const projects = await context.core.projects.list({ limit: 0 });
     return { currentUser, projects };
   },
-  component: RootRoute,
+  loader: ({ context }) => context,
+  component: RootComponent,
 });
 
-function RootRoute() {
+function RootComponent() {
   const router = useRouter();
-  const context = Route.useRouteContext();
-  const state = useRouterState();
-  const [isProjectSidebarNarrow, setIsProjectSidebarNarrow] = context.store(
-    (state) => [state.isProjectSidebarNarrow, state.setIsProjectSidebarNarrow]
+  const routerState = useRouterState();
+  const { currentUser, electron } = Route.useLoaderData();
+  const [isProjectSidebarNarrow, setIsProjectSidebarNarrow] = useStore(
+    (storeState) => [
+      storeState.isProjectSidebarNarrow,
+      storeState.setIsProjectSidebarNarrow,
+    ]
   );
   const { theme, setTheme } = useTheme();
-  const breadcrumbLookupMap = context.store(
-    (state) => state.breadcrumbLookupMap
+  const breadcrumbLookupMap = useStore(
+    (storeState) => storeState.breadcrumbLookupMap
   );
-  const breadcrumbs = state.location.pathname
+  const breadcrumbs = routerState.location.pathname
     .split('/')
     .filter((value) => value) // Filter out empty values for beginning or ending slashes
     .map((part, index, array) => {
@@ -132,7 +139,7 @@ function RootRoute() {
       return {
         part,
         path,
-        full: state.location.pathname,
+        full: routerState.location.pathname,
       };
     });
 
@@ -144,8 +151,69 @@ function RootRoute() {
           className="p-2 text-sm text-center border-b border-zinc-200 dark:border-zinc-800"
         >
           <h1>
-            elek.<span className="text-brand-600">io</span>{' '}
-            <strong className="text-xs">Client</strong>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size={'sm'}>
+                  elek.<span className="text-brand-600">io</span>
+                  <strong className="ml-2 text-xs">Client</strong>
+                  <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 mt-4 mr-2 window-not-draggable-area">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() =>
+                      window.open(
+                        'https://github.com/elek-io/client/issues',
+                        '_blank'
+                      )
+                    }
+                  >
+                    Report an issue
+                    <DropdownMenuShortcut>
+                      <ExternalLink className="w-4 h-4"></ExternalLink>
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    elek.io Client
+                    <DropdownMenuShortcut>
+                      v{clientVersion}
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    elek.io Core
+                    <DropdownMenuShortcut>
+                      v{dependencies['@elek-io/core']}
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    Electron
+                    <DropdownMenuShortcut>
+                      v{electron.process.versions['electron']}
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Chromium
+                    <DropdownMenuShortcut>
+                      v{electron.process.versions['chrome']}
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Node
+                    <DropdownMenuShortcut>
+                      v{electron.process.versions['node']}
+                    </DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </h1>
         </div>
         <div
@@ -218,10 +286,10 @@ function RootRoute() {
                   <Button variant="ghost">
                     <Avatar
                       className="w-8 h-8 mr-2"
-                      name={context.currentUser.name}
+                      name={currentUser.name}
                       src="https://github.com/shadcn.png"
                     ></Avatar>
-                    {context.currentUser.name}
+                    {currentUser.name}
                     <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
                   </Button>
                 </DropdownMenuTrigger>

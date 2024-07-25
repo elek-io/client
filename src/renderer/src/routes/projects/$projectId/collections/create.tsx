@@ -1,13 +1,13 @@
 import { CreateCollectionProps, createCollectionSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { NotificationIntent } from '@renderer/store';
+import { translatableDefault } from '@renderer/components/forms/util';
+import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
+import { Button } from '@renderer/components/ui/button';
+import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { translatableDefault } from '../../../../components/forms/util';
-import { CreateUpdateCollectionPage } from '../../../../components/pages/create-update-collection-page';
-import { Button } from '../../../../components/ui/button';
 
 export const Route = createFileRoute('/projects/$projectId/collections/create')(
   {
@@ -18,7 +18,7 @@ export const Route = createFileRoute('/projects/$projectId/collections/create')(
 function ProjectCollectionCreate() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
+  const addNotification = useStore((state) => state.addNotification);
   const [isCreatingCollection, setIsCreatingCollection] = useState(false);
 
   const createCollectionForm = useForm<CreateCollectionProps>({

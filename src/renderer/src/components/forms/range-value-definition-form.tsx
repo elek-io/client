@@ -1,7 +1,7 @@
-import { RangeValueDefinition, SupportedLanguage } from '@elek-io/core';
+import { RangeFieldDefinition, SupportedLanguage } from '@elek-io/core';
+import { cn } from '@renderer/util';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { cn } from '../../util';
 import {
   Form,
   FormControl,
@@ -11,25 +11,24 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
-import { Input } from '../ui/input';
+import { FormInput } from '../ui/form-input';
 import { Slider } from '../ui/slider';
 import {
-  DefaultValueDefinitionForm,
-  DefaultValueDefinitionFormProps,
-} from './default-value-definition-form';
-import { setValueAsNumber } from './util';
+  DefaultFieldDefinitionForm,
+  DefaultFieldDefinitionFormProps,
+} from './default-field-definition-form';
 
-export type RangeValueDefinitionFormProps =
-  DefaultValueDefinitionFormProps<RangeValueDefinition>;
+export type RangeFieldDefinitionFormProps =
+  DefaultFieldDefinitionFormProps<RangeFieldDefinition>;
 
-const RangeValueDefinitionForm = React.forwardRef<
+const RangeFieldDefinitionForm = React.forwardRef<
   HTMLFormElement,
-  RangeValueDefinitionFormProps
->(({ className, state, ...props }, ref) => {
+  RangeFieldDefinitionFormProps
+>(({ className, form: state, ...props }) => {
   return (
     <Form {...state}>
       <form className="space-y-6">
-        <DefaultValueDefinitionForm state={state} {...props}>
+        <DefaultFieldDefinitionForm form={state} {...props}>
           <FormField
             control={state.control}
             name={`defaultValue`}
@@ -37,13 +36,7 @@ const RangeValueDefinitionForm = React.forwardRef<
               <FormItem>
                 <FormLabel isRequired={true}>Default value</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    {...state.register('defaultValue', {
-                      setValueAs: setValueAsNumber,
-                    })}
-                    type="number"
-                  />
+                  <FormInput field={field} type="number" />
                 </FormControl>
                 <FormDescription>
                   The initial value for the field.
@@ -61,13 +54,7 @@ const RangeValueDefinitionForm = React.forwardRef<
                 <FormItem>
                   <FormLabel isRequired={true}>Minimum</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      {...state.register('min', {
-                        setValueAs: setValueAsNumber,
-                      })}
-                      type="number"
-                    />
+                    <FormInput field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The minimum Value the user is able to enter.
@@ -83,13 +70,7 @@ const RangeValueDefinitionForm = React.forwardRef<
                 <FormItem>
                   <FormLabel isRequired={true}>Maximum</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      {...state.register('max', {
-                        setValueAs: setValueAsNumber,
-                      })}
-                      type="number"
-                    />
+                    <FormInput field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The maximum Value the user is able to enter.
@@ -99,22 +80,22 @@ const RangeValueDefinitionForm = React.forwardRef<
               )}
             />
           </div>
-        </DefaultValueDefinitionForm>
+        </DefaultFieldDefinitionForm>
       </form>
     </Form>
   );
 });
-RangeValueDefinitionForm.displayName = 'RangeValueDefinitionForm';
+RangeFieldDefinitionForm.displayName = 'RangeFieldDefinitionForm';
 
-export interface RangeValueDefinitionFormFieldProps
+export interface RangeFieldDefinitionFormFieldProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<RangeValueDefinition>;
+  state: UseFormReturn<RangeFieldDefinition>;
   currentLanguage: SupportedLanguage;
 }
 
-const RangeValueDefinitionFormFieldExample = React.forwardRef<
+const RangeFieldDefinitionFormFieldExample = React.forwardRef<
   HTMLFormElement,
-  RangeValueDefinitionFormFieldProps
+  RangeFieldDefinitionFormFieldProps
 >(({ className, state, currentLanguage, ...props }, ref) => {
   return (
     <FormField
@@ -150,7 +131,7 @@ const RangeValueDefinitionFormFieldExample = React.forwardRef<
     />
   );
 });
-RangeValueDefinitionFormFieldExample.displayName =
-  'RangeValueDefinitionFormFieldExample';
+RangeFieldDefinitionFormFieldExample.displayName =
+  'RangeFieldDefinitionFormFieldExample';
 
-export { RangeValueDefinitionForm, RangeValueDefinitionFormFieldExample };
+export { RangeFieldDefinitionForm, RangeFieldDefinitionFormFieldExample };

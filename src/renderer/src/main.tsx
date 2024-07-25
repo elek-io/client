@@ -1,6 +1,6 @@
+import '@renderer/app';
 import * as Sentry from '@sentry/electron/renderer';
 import { init as sentryReactInit } from '@sentry/react';
-import './app';
 
 Sentry.init(
   {

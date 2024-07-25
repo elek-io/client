@@ -1,7 +1,7 @@
-import { SupportedLanguage, TextValueDefinition } from '@elek-io/core';
+import { SupportedLanguage, TextFieldDefinition } from '@elek-io/core';
+import { cn } from '@renderer/util';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { cn } from '../../util';
 import {
   Form,
   FormControl,
@@ -11,33 +11,33 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
+import { FormInput } from '../ui/form-input';
 import { Input } from '../ui/input';
 import {
-  DefaultValueDefinitionForm,
-  DefaultValueDefinitionFormProps,
-} from './default-value-definition-form';
-import { IsUniqueFormField } from './is-unique-form-field';
-import { setValueAsNumber } from './util';
+  DefaultFieldDefinitionForm,
+  DefaultFieldDefinitionFormProps,
+} from './default-field-definition-form';
 
-export type TextValueDefinitionFormProps =
-  DefaultValueDefinitionFormProps<TextValueDefinition>;
+export type TextFieldDefinitionFormProps =
+  DefaultFieldDefinitionFormProps<TextFieldDefinition>;
 
-const TextValueDefinitionForm = React.forwardRef<
+const TextFieldDefinitionForm = React.forwardRef<
   HTMLFormElement,
-  TextValueDefinitionFormProps
->(({ className, state, ...props }, ref) => {
+  TextFieldDefinitionFormProps
+>(({ className, form, ...props }, ref) => {
   return (
-    <Form {...state}>
+    <Form {...form}>
       <form className="space-y-6">
-        <DefaultValueDefinitionForm state={state} {...props}>
+        {JSON.stringify(form.watch())}
+        <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
-            control={state.control}
+            control={form.control}
             name={`defaultValue`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel isRequired={false}>Default value</FormLabel>
                 <FormControl>
-                  <Input {...field} type="text" />
+                  <FormInput field={field} type="text" />
                 </FormControl>
                 <FormDescription>
                   The initial value for the field.
@@ -49,19 +49,13 @@ const TextValueDefinitionForm = React.forwardRef<
 
           <div className="flex flex-row items-center justify-between space-x-2">
             <FormField
-              control={state.control}
+              control={form.control}
               name={`min`}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel isRequired={false}>Minimum</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      {...state.register('min', {
-                        setValueAs: setValueAsNumber,
-                      })}
-                      type="number"
-                    />
+                    <FormInput field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The minimum number of characters the user is able to enter.
@@ -71,19 +65,13 @@ const TextValueDefinitionForm = React.forwardRef<
               )}
             />
             <FormField
-              control={state.control}
+              control={form.control}
               name={`max`}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel isRequired={false}>Maximum</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      {...state.register('max', {
-                        setValueAs: setValueAsNumber,
-                      })}
-                      type="number"
-                    />
+                    <FormInput field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The maximum number of characters the user is able to enter.
@@ -93,24 +81,22 @@ const TextValueDefinitionForm = React.forwardRef<
               )}
             />
           </div>
-        </DefaultValueDefinitionForm>
-
-        <IsUniqueFormField state={state} />
+        </DefaultFieldDefinitionForm>
       </form>
     </Form>
   );
 });
-TextValueDefinitionForm.displayName = 'TextValueDefinitionForm';
+TextFieldDefinitionForm.displayName = 'TextFieldDefinitionForm';
 
-export interface TextValueDefinitionFormExampleProps
+export interface TextFieldDefinitionFormExampleProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<TextValueDefinition>;
+  state: UseFormReturn<TextFieldDefinition>;
   currentLanguage: SupportedLanguage;
 }
 
-const TextValueDefinitionFormExample = React.forwardRef<
+const TextFieldDefinitionFormExample = React.forwardRef<
   HTMLFormElement,
-  TextValueDefinitionFormExampleProps
+  TextFieldDefinitionFormExampleProps
 >(({ className, state, currentLanguage, ...props }, ref) => {
   return (
     <FormField
@@ -123,6 +109,7 @@ const TextValueDefinitionFormExample = React.forwardRef<
             {state.watch(`label.${currentLanguage}`)}
           </FormLabel>
           <FormControl>
+            {/* {InputFromDefinition()} */}
             <Input
               className={cn('bg-white dark:bg-zinc-900', className)}
               type="text"
@@ -142,6 +129,6 @@ const TextValueDefinitionFormExample = React.forwardRef<
     />
   );
 });
-TextValueDefinitionFormExample.displayName = 'TextValueDefinitionFormExample';
+TextFieldDefinitionFormExample.displayName = 'TextFieldDefinitionFormExample';
 
-export { TextValueDefinitionForm, TextValueDefinitionFormExample };
+export { TextFieldDefinitionForm, TextFieldDefinitionFormExample };

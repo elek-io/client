@@ -1,10 +1,23 @@
-import { SupportedLanguage, ValueDefinition } from '@elek-io/core';
+import {
+  FieldDefinition,
+  SupportedLanguage,
+  TranslatableString,
+} from '@elek-io/core';
+import { fieldWidth } from '@renderer/util';
 import { ReactElement } from 'react';
-import { ControllerRenderProps, UseFormReturn } from 'react-hook-form';
-import { Input } from '../ui/input';
+import { ControllerRenderProps, FieldValues, Path } from 'react-hook-form';
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '../ui/form';
+import { FormInput } from '../ui/form-input';
+import { FormTextarea } from '../ui/form-textarea';
 import { Slider } from '../ui/slider';
 import { Switch } from '../ui/switch';
-import { Textarea } from '../ui/textarea';
 
 export function translatableDefault(props: {
   supportedLanguages: SupportedLanguage[];
@@ -24,98 +37,109 @@ export function translatableDefault(props: {
     });
 }
 
-export function ValueInputFromDefinition<T>(
-  definition: ValueDefinition,
-  state: UseFormReturn<T>,
+export function FormFieldFromDefinition<T extends FieldValues>(
+  fieldDefinition: FieldDefinition,
+  name: Path<T>,
+  translate: (key: string, record: TranslatableString) => string
+) {
+  return (
+    <FormField
+      key={fieldDefinition.id}
+      name={name}
+      render={({ field }) => (
+        <FormItem
+          className={`col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`}
+        >
+          <FormLabel
+            isRequired={
+              'isRequired' in fieldDefinition
+                ? fieldDefinition.isRequired
+                : false
+            }
+          >
+            {translate('fieldDefinition.label', fieldDefinition.label)}
+          </FormLabel>
+          <FormControl>
+            {/* @todo add styling for toggle switches */}
+            {InputFromDefinition<T>(fieldDefinition, field)}
+          </FormControl>
+          <FormDescription>
+            {translate(
+              'fieldDefinition.description',
+              fieldDefinition.description
+            )}
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+export function InputFromDefinition<T extends FieldValues>(
+  fieldDefinition: FieldDefinition,
   field: ControllerRenderProps<T>
 ): ReactElement {
-  switch (definition.inputType) {
+  switch (fieldDefinition.fieldType) {
     case 'text':
       return (
-        <Input
-          {...field}
+        <FormInput
+          field={field}
           type="text"
-          minLength={definition.min}
-          maxLength={definition.max}
-          required={definition.isRequired}
-          disabled={definition.isDisabled}
+          minLength={fieldDefinition.min || undefined}
+          maxLength={fieldDefinition.max || undefined}
+          defaultValue={fieldDefinition.defaultValue || undefined}
+          required={fieldDefinition.isRequired}
+          disabled={fieldDefinition.isDisabled}
         />
       );
     case 'textarea':
       return (
-        <Textarea
-          {...field}
-          minLength={definition.min}
-          maxLength={definition.max}
-          required={definition.isRequired}
-          disabled={definition.isDisabled}
+        <FormTextarea
+          field={field}
+          minLength={fieldDefinition.min || undefined}
+          maxLength={fieldDefinition.max || undefined}
+          defaultValue={fieldDefinition.defaultValue || undefined}
+          required={fieldDefinition.isRequired}
+          disabled={fieldDefinition.isDisabled}
         />
       );
     case 'number':
       return (
-        <Input
-          {...field}
-          {...state.register(field.name, { setValueAs: setValueAsNumber })}
+        <FormInput
+          field={field}
           type="number"
-          min={definition.min}
-          max={definition.max}
-          required={definition.isRequired}
-          disabled={definition.isDisabled}
+          min={fieldDefinition.min || undefined}
+          max={fieldDefinition.max || undefined}
+          defaultValue={fieldDefinition.defaultValue || undefined}
+          required={fieldDefinition.isRequired}
+          disabled={fieldDefinition.isDisabled}
         />
       );
     case 'range':
       return (
         <Slider
           {...field}
-          defaultValue={[definition.defaultValue]}
-          min={definition.min}
-          max={definition.max}
-          step={1}
-          disabled={definition.isDisabled}
+          defaultValue={[fieldDefinition.defaultValue]}
+          min={fieldDefinition.min}
+          max={fieldDefinition.max}
+          step={1} // @todo Core needs to support this too
+          disabled={fieldDefinition.isDisabled}
         />
       );
     case 'toggle':
       return (
         <Switch
           {...field}
-          checked={definition.defaultValue}
-          required={definition.isRequired}
-          disabled={definition.isDisabled}
+          defaultChecked={fieldDefinition.defaultValue}
+          checked={fieldDefinition.defaultValue}
+          required={fieldDefinition.isRequired}
+          disabled={fieldDefinition.isDisabled}
         />
       );
     default:
-      console.error(
-        `Unsupported Entry definition inputType "${definition.inputType}"`
+      throw new Error(
+        `Unsupported Entry definition FieldType "${fieldDefinition.fieldType}"`
       );
-      break;
   }
-}
-
-/**
- * Custom transform function that will be called before validation
- * when used with react hook form's setValueAs of the register method
- * to return the input's value as a number instead of string and undefined if empty.
- *
- * Imagine we have a useForm() with zod validation and the schema used
- * contains an optional number and we have a number input that has the value 5.
- * Then the value of 5 is returned as a string by the input.
- *
- * React hook form's valueAsNumber is returning the value 5 as a number (great!)
- * but it returns NaN if the input field is empty.
- * So we need to use this custom transform function that returns undefined instead
- * to satisfy the zod validator.
- *
- * If the zod schema for number is required, it is still correct to return undefined
- * instead of an empty string or NaN, since the zod validator then is complaining
- * about the required value not being set.
- *
- * @see https://github.com/orgs/react-hook-form/discussions/6980#discussioncomment-1785009
- * @see https://react-hook-form.com/docs/useform/register
- */
-export function setValueAsNumber(value: any) {
-  if (value === '') {
-    return undefined;
-  }
-
-  return parseInt(value);
 }

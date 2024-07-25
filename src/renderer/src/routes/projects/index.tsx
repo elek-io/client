@@ -1,15 +1,15 @@
-import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
-import { ReactElement } from 'react';
-import { Button } from '../../components/ui/button';
+import { Button } from '@renderer/components/ui/button';
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../../components/ui/card';
-import { Page } from '../../components/ui/page';
-import { formatTimestamp } from '../../util';
+} from '@renderer/components/ui/card';
+import { Page } from '@renderer/components/ui/page';
+import { formatDatetime } from '@renderer/util';
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
+import { Plus } from 'lucide-react';
+import { ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/')({
   component: ListProjectsPage,
@@ -53,11 +53,11 @@ function ListProjectsPage() {
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {context.projects.list.map((project) => {
-          const created = formatTimestamp(
+          const created = formatDatetime(
             project.created,
             context.currentUser.language
           );
-          const updated = formatTimestamp(
+          const updated = formatDatetime(
             project.updated,
             context.currentUser.language
           );

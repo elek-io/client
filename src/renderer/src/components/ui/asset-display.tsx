@@ -1,4 +1,4 @@
-import type { Asset } from '@elek-io/shared';
+import { Asset } from '@elek-io/core';
 import { FolderArchive } from 'lucide-react';
 
 export interface AssetDisplayProps extends Asset {

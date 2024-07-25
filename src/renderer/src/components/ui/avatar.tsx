@@ -3,9 +3,9 @@
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import * as React from 'react';
 
-import { cn } from '../../util';
+import { cn } from '@renderer/util';
 
-interface AvatarProps extends AvatarPrimitive.PrimitiveSpanProps {
+interface AvatarProps extends AvatarPrimitive.AvatarProps {
   name: string;
   src?: string;
 }

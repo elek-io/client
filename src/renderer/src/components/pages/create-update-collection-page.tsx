@@ -1,25 +1,25 @@
 import {
   CreateCollectionProps,
-  DateValueDefinition,
+  DateFieldDefinition,
   DeleteCollectionProps,
-  NumberValueDefinition,
+  FieldDefinitionBase,
+  FieldType,
+  FieldTypeSchema,
+  NumberFieldDefinition,
   Project,
-  RangeValueDefinition,
-  TextValueDefinition,
-  TextareaValueDefinition,
-  ToggleValueDefinition,
+  RangeFieldDefinition,
+  TextFieldDefinition,
+  TextareaFieldDefinition,
+  ToggleFieldDefinition,
   TranslatableString,
   UpdateCollectionProps,
-  ValueDefinitionBase,
-  ValueInputType,
-  ValueInputTypeSchema,
-  dateValueDefinitionSchema,
-  numberValueDefinitionSchema,
-  rangeValueDefinitionSchema,
+  dateFieldDefinitionSchema,
+  numberFieldDefinitionSchema,
+  rangeFieldDefinitionSchema,
   supportedIconSchema,
-  textValueDefinitionSchema,
-  textareaValueDefinitionSchema,
-  toggleValueDefinitionSchema,
+  textFieldDefinitionSchema,
+  textareaFieldDefinitionSchema,
+  toggleFieldDefinitionSchema,
   uuid,
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,28 +31,24 @@ import {
   useFieldArray,
   useForm,
 } from 'react-hook-form';
-import { fieldWidth } from '../../util';
+import { NumberFieldDefinitionForm } from '../forms/number-value-definition-form';
 import {
-  NumberValueDefinitionForm,
-  NumberValueDefinitionFormFieldExample,
-} from '../forms/number-value-definition-form';
-import {
-  RangeValueDefinitionForm,
-  RangeValueDefinitionFormFieldExample,
+  RangeFieldDefinitionForm,
+  RangeFieldDefinitionFormFieldExample,
 } from '../forms/range-value-definition-form';
 import {
-  TextValueDefinitionForm,
-  TextValueDefinitionFormExample,
+  TextFieldDefinitionForm,
+  TextFieldDefinitionFormExample,
 } from '../forms/text-value-definition-form';
 import {
-  TextareaValueDefinitionForm,
-  TextareaValueDefinitionFormExample,
+  TextareaFieldDefinitionForm,
+  TextareaFieldDefinitionFormExample,
 } from '../forms/textarea-value-definition-form';
 import {
-  ToggleValueDefinitionForm,
-  ToggleValueDefinitionFormExample,
+  ToggleFieldDefinitionForm,
+  ToggleFieldDefinitionFormExample,
 } from '../forms/toggle-value-definition-form';
-import { ValueInputFromDefinition, translatableDefault } from '../forms/util';
+import { FormFieldFromDefinition, translatableDefault } from '../forms/util';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -111,224 +107,211 @@ export interface CreateUpdateCollectionPageProps extends PageProps {
 export const CreateUpdateCollectionPage = React.forwardRef<
   HTMLElement,
   CreateUpdateCollectionPageProps
->(
-  (
-    { className, context, collectionForm, onCollectionSubmit, ...props },
-    ref
-  ) => {
-    const [isAddValueDefinitionSheetOpen, setIsAddValueDefinitionSheetOpen] =
-      useState(false);
-    const [selectedInputType, setSelectedInputType] =
-      useState<ValueInputType>('text');
+>(({ className, context, collectionForm, onCollectionSubmit, ...props }) => {
+  const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
+    useState(false);
+  const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
 
-    const valueDefinitionBaseDefaults: Omit<ValueDefinitionBase, 'id'> = {
-      label: translatableDefault({
-        supportedLanguages: context.currentProject.settings.language.supported,
-        default: '',
-      }),
-      description: translatableDefault({
-        supportedLanguages: context.currentProject.settings.language.supported,
-        default: '',
-      }),
-      isRequired: true,
-      isDisabled: false,
+  const FieldDefinitionBaseDefaults: Omit<FieldDefinitionBase, 'id'> = {
+    label: translatableDefault({
+      supportedLanguages: context.currentProject.settings.language.supported,
+      default: '',
+    }),
+    description: translatableDefault({
+      supportedLanguages: context.currentProject.settings.language.supported,
+      default: '',
+    }),
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+  };
+
+  const textFieldDefinitionFormState = useForm<TextFieldDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'TextFieldDefinition validation result',
+        await zodResolver(textFieldDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(textFieldDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...FieldDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'string',
+      fieldType: 'text',
+      defaultValue: null,
+      min: null,
+      max: 250,
+    },
+  });
+
+  const textareaFieldDefinitionFormState = useForm<TextareaFieldDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'TextareaFieldDefinition validation result',
+        await zodResolver(textareaFieldDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(textareaFieldDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...FieldDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'string',
+      fieldType: 'textarea',
+      defaultValue: null,
+      min: null,
+      max: null,
+    },
+  });
+
+  const dateFieldDefinitionFormState = useForm<DateFieldDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'DateFieldDefinition validation result',
+        await zodResolver(dateFieldDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(dateFieldDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...FieldDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'string',
+      fieldType: 'date',
+      defaultValue: null,
+    },
+  });
+
+  const numberFieldDefinitionFormState = useForm<NumberFieldDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'NumberFieldDefinition validation result',
+        await zodResolver(numberFieldDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(numberFieldDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...FieldDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'number',
+      fieldType: 'number',
+      defaultValue: null,
+      min: null,
+      max: null,
       isUnique: false,
-      inputWidth: '12',
-    };
+    },
+  });
 
-    const textValueDefinitionFormState = useForm<TextValueDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'TextValueDefinition validation result',
-          await zodResolver(textValueDefinitionSchema)(data, context, options)
+  const rangeFieldDefinitionFormState = useForm<RangeFieldDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'RangeFieldDefinition validation result',
+        await zodResolver(rangeFieldDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(rangeFieldDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...FieldDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'number',
+      fieldType: 'range',
+      defaultValue: 50,
+      min: 0,
+      max: 100,
+      isRequired: true,
+      isUnique: false,
+    },
+  });
+
+  const toggleFieldDefinitionFormState = useForm<ToggleFieldDefinition>({
+    resolver: async (data, context, options) => {
+      // you can debug your validation schema here
+      console.log(
+        'ToggleFieldDefinition validation result',
+        await zodResolver(toggleFieldDefinitionSchema)(data, context, options)
+      );
+      return zodResolver(toggleFieldDefinitionSchema)(data, context, options);
+    },
+    defaultValues: {
+      ...FieldDefinitionBaseDefaults,
+      id: uuid(),
+      valueType: 'boolean',
+      fieldType: 'toggle',
+      defaultValue: false,
+      isRequired: true,
+      isUnique: false,
+    },
+  });
+
+  const fieldDefinitions = useFieldArray({
+    control: collectionForm.control, // control props comes from useForm (optional: if you are using FormContext)
+    name: 'fieldDefinitions', // unique name for your Field Array
+  });
+
+  async function validateFieldDefinition() {
+    switch (selectedFieldType) {
+      case 'text':
+        return await textFieldDefinitionFormState.handleSubmit(
+          (textDefinition) => {
+            fieldDefinitions.append(textDefinition);
+            setIsAddFieldDefinitionSheetOpen(false);
+            textFieldDefinitionFormState.reset();
+            textFieldDefinitionFormState.setValue('id', uuid());
+          }
+        )();
+      case 'textarea':
+        return await textareaFieldDefinitionFormState.handleSubmit(
+          (textareaDefinition) => {
+            fieldDefinitions.append(textareaDefinition);
+            setIsAddFieldDefinitionSheetOpen(false);
+            textareaFieldDefinitionFormState.reset();
+            textareaFieldDefinitionFormState.setValue('id', uuid());
+          }
+        )();
+      case 'number':
+        return await numberFieldDefinitionFormState.handleSubmit(
+          (numberDefinition) => {
+            fieldDefinitions.append(numberDefinition);
+            setIsAddFieldDefinitionSheetOpen(false);
+            numberFieldDefinitionFormState.reset();
+            numberFieldDefinitionFormState.setValue('id', uuid());
+          }
+        )();
+      case 'range':
+        return await rangeFieldDefinitionFormState.handleSubmit(
+          (rangeDefinition) => {
+            fieldDefinitions.append(rangeDefinition);
+            setIsAddFieldDefinitionSheetOpen(false);
+            rangeFieldDefinitionFormState.reset();
+            rangeFieldDefinitionFormState.setValue('id', uuid());
+          }
+        )();
+      case 'toggle':
+        return await toggleFieldDefinitionFormState.handleSubmit(
+          (toggleDefinition) => {
+            fieldDefinitions.append(toggleDefinition);
+            setIsAddFieldDefinitionSheetOpen(false);
+            toggleFieldDefinitionFormState.reset();
+            toggleFieldDefinitionFormState.setValue('id', uuid());
+          }
+        )();
+      default:
+        throw new Error(
+          `Tried to validate unsupported fieldType "${selectedFieldType}" of Value definition`
         );
-        return zodResolver(textValueDefinitionSchema)(data, context, options);
-      },
-      defaultValues: {
-        ...valueDefinitionBaseDefaults,
-        id: uuid(),
-        valueType: 'string',
-        inputType: 'text',
-        defaultValue: undefined,
-        min: undefined,
-        max: 250,
-      },
-    });
-
-    const textareaValueDefinitionFormState = useForm<TextareaValueDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'TextareaValueDefinition validation result',
-          await zodResolver(textareaValueDefinitionSchema)(
-            data,
-            context,
-            options
-          )
-        );
-        return zodResolver(textareaValueDefinitionSchema)(
-          data,
-          context,
-          options
-        );
-      },
-      defaultValues: {
-        ...valueDefinitionBaseDefaults,
-        id: uuid(),
-        valueType: 'string',
-        inputType: 'textarea',
-        defaultValue: undefined,
-        min: undefined,
-        max: undefined,
-      },
-    });
-
-    const dateValueDefinitionFormState = useForm<DateValueDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'DateValueDefinition validation result',
-          await zodResolver(dateValueDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(dateValueDefinitionSchema)(data, context, options);
-      },
-      defaultValues: {
-        ...valueDefinitionBaseDefaults,
-        id: uuid(),
-        valueType: 'string',
-        inputType: 'date',
-        defaultValue: undefined,
-      },
-    });
-
-    const numberValueDefinitionFormState = useForm<NumberValueDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'NumberValueDefinition validation result',
-          await zodResolver(numberValueDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(numberValueDefinitionSchema)(data, context, options);
-      },
-      defaultValues: {
-        ...valueDefinitionBaseDefaults,
-        id: uuid(),
-        valueType: 'number',
-        inputType: 'number',
-        defaultValue: undefined,
-        min: undefined,
-        max: undefined,
-        isUnique: false,
-      },
-    });
-
-    const rangeValueDefinitionFormState = useForm<RangeValueDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'RangeValueDefinition validation result',
-          await zodResolver(rangeValueDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(rangeValueDefinitionSchema)(data, context, options);
-      },
-      defaultValues: {
-        ...valueDefinitionBaseDefaults,
-        id: uuid(),
-        valueType: 'number',
-        inputType: 'range',
-        defaultValue: 50,
-        min: 0,
-        max: 100,
-        isRequired: true,
-        isUnique: false,
-      },
-    });
-
-    const toggleValueDefinitionFormState = useForm<ToggleValueDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'ToggleValueDefinition validation result',
-          await zodResolver(toggleValueDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(toggleValueDefinitionSchema)(data, context, options);
-      },
-      defaultValues: {
-        ...valueDefinitionBaseDefaults,
-        id: uuid(),
-        valueType: 'boolean',
-        inputType: 'toggle',
-        defaultValue: false,
-        isRequired: true,
-        isUnique: false,
-      },
-    });
-
-    const valueDefinitions = useFieldArray({
-      control: collectionForm.control, // control props comes from useForm (optional: if you are using FormContext)
-      name: 'valueDefinitions', // unique name for your Field Array
-    });
-
-    async function validateValueDefinition() {
-      switch (selectedInputType) {
-        case 'text':
-          return await textValueDefinitionFormState.handleSubmit(
-            (textDefinition) => {
-              valueDefinitions.append(textDefinition);
-              setIsAddValueDefinitionSheetOpen(false);
-              textValueDefinitionFormState.reset();
-              textValueDefinitionFormState.setValue('id', uuid());
-            }
-          )();
-        case 'textarea':
-          return await textareaValueDefinitionFormState.handleSubmit(
-            (textareaDefinition) => {
-              valueDefinitions.append(textareaDefinition);
-              setIsAddValueDefinitionSheetOpen(false);
-              textareaValueDefinitionFormState.reset();
-              textareaValueDefinitionFormState.setValue('id', uuid());
-            }
-          )();
-        case 'number':
-          return await numberValueDefinitionFormState.handleSubmit(
-            (numberDefinition) => {
-              valueDefinitions.append(numberDefinition);
-              setIsAddValueDefinitionSheetOpen(false);
-              numberValueDefinitionFormState.reset();
-              numberValueDefinitionFormState.setValue('id', uuid());
-            }
-          )();
-        case 'range':
-          return await rangeValueDefinitionFormState.handleSubmit(
-            (rangeDefinition) => {
-              valueDefinitions.append(rangeDefinition);
-              setIsAddValueDefinitionSheetOpen(false);
-              rangeValueDefinitionFormState.reset();
-              rangeValueDefinitionFormState.setValue('id', uuid());
-            }
-          )();
-        case 'toggle':
-          return await toggleValueDefinitionFormState.handleSubmit(
-            (toggleDefinition) => {
-              valueDefinitions.append(toggleDefinition);
-              setIsAddValueDefinitionSheetOpen(false);
-              toggleValueDefinitionFormState.reset();
-              toggleValueDefinitionFormState.setValue('id', uuid());
-            }
-          )();
-        default:
-          throw new Error(
-            `Tried to validate unsupported inputType "${selectedInputType}" of Value definition`
-          );
-      }
     }
+  }
 
-    return (
-      <Page {...props}>
-        {JSON.stringify(context.currentProject.settings)}
-        {JSON.stringify(collectionForm.watch())}
-        {/* <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+  return (
+    <Page {...props}>
+      {JSON.stringify(context.currentProject.settings)}
+      {JSON.stringify(collectionForm.watch())}
+      {/* <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
@@ -342,232 +325,229 @@ export const CreateUpdateCollectionPage = React.forwardRef<
           })}
         </SelectContent>
       </Select> */}
-        <Form {...collectionForm}>
-          <form onSubmit={collectionForm.handleSubmit(onCollectionSubmit)}>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-12 gap-6">
-                <FormField
-                  control={collectionForm.control}
-                  name={`icon`}
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 sm:col-span-2">
-                      <FormLabel isRequired={true}>Icon</FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} {...field}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {supportedIconSchema.options.map((option) => {
+      <Form {...collectionForm}>
+        <form onSubmit={collectionForm.handleSubmit(onCollectionSubmit)}>
+          <div className="p-6 space-y-4">
+            <div className="grid grid-cols-12 gap-6">
+              <FormField
+                control={collectionForm.control}
+                name={`icon`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-2">
+                    <FormLabel isRequired={true}>Icon</FormLabel>
+                    <FormControl>
+                      <Select onValueChange={field.onChange} {...field}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {supportedIconSchema.options.map((option) => {
+                            return (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={collectionForm.control}
+                name={`name.plural.${context.currentProject.settings.language.default}`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-5">
+                    <FormLabel isRequired={true}>
+                      Collection name (Plural)
+                    </FormLabel>
+                    <FormControl>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Input {...field} />
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Collection name (Plural)</DialogTitle>
+                            <DialogDescription>
+                              The name of your new collection. Choose a short
+                              name in plural that explains the content of the
+                              collection - e.g. "Blogposts".
+                            </DialogDescription>
+                          </DialogHeader>
+
+                          {context.currentProject.settings.language.supported.map(
+                            (language) => {
                               return (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
+                                <FormField
+                                  key={language}
+                                  control={collectionForm.control}
+                                  name={`name.plural.${language}`}
+                                  render={({ field }) => (
+                                    <FormItem className="col-span-12 sm:col-span-5">
+                                      <FormLabel isRequired={true}>
+                                        {language}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
                               );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                            }
+                          )}
 
-                <FormField
-                  control={collectionForm.control}
-                  name={`name.plural.${context.currentProject.settings.language.default}`}
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 sm:col-span-5">
-                      <FormLabel isRequired={true}>
-                        Collection name (Plural)
-                      </FormLabel>
-                      <FormControl>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Input {...field} />
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>
-                                Collection name (Plural)
-                              </DialogTitle>
-                              <DialogDescription>
-                                The name of your new collection. Choose a short
-                                name in plural that explains the content of the
-                                collection - e.g. "Blogposts".
-                              </DialogDescription>
-                            </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Done
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </FormControl>
+                    <FormDescription>
+                      The name of your new collection. Choose a short name in
+                      plural that explains the content of the collection - e.g.
+                      "Blogposts".
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                            {context.currentProject.settings.language.supported.map(
-                              (language) => {
-                                return (
-                                  <FormField
-                                    key={language}
-                                    control={collectionForm.control}
-                                    name={`name.plural.${language}`}
-                                    render={({ field }) => (
-                                      <FormItem className="col-span-12 sm:col-span-5">
-                                        <FormLabel isRequired={true}>
-                                          {language}
-                                        </FormLabel>
-                                        <FormControl>
-                                          <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                );
-                              }
-                            )}
+              <FormField
+                control={collectionForm.control}
+                name={`name.singular.${context.currentProject.settings.language.default}`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-5">
+                    <FormLabel isRequired={true}>
+                      Entry name (Singluar)
+                    </FormLabel>
+                    <FormControl>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Input {...field} />
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Entry name (Singular)</DialogTitle>
+                            <DialogDescription>
+                              The name of each Entry inside your new Collection.
+                              Choose a short name in singluar - e.g. "Blogpost".
+                            </DialogDescription>
+                          </DialogHeader>
 
-                            <DialogFooter>
-                              <DialogClose asChild>
-                                <Button type="button" variant="secondary">
-                                  Done
-                                </Button>
-                              </DialogClose>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </FormControl>
-                      <FormDescription>
-                        The name of your new collection. Choose a short name in
-                        plural that explains the content of the collection -
-                        e.g. "Blogposts".
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          {context.currentProject.settings.language.supported.map(
+                            (language) => {
+                              return (
+                                <FormField
+                                  key={language}
+                                  control={collectionForm.control}
+                                  name={`name.singular.${language}`}
+                                  render={({ field }) => (
+                                    <FormItem className="col-span-12 sm:col-span-5">
+                                      <FormLabel isRequired={true}>
+                                        {language}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Input {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              );
+                            }
+                          )}
 
-                <FormField
-                  control={collectionForm.control}
-                  name={`name.singular.${context.currentProject.settings.language.default}`}
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 sm:col-span-5">
-                      <FormLabel isRequired={true}>
-                        Entry name (Singluar)
-                      </FormLabel>
-                      <FormControl>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Input {...field} />
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Entry name (Singular)</DialogTitle>
-                              <DialogDescription>
-                                The name of each Entry inside your new
-                                Collection. Choose a short name in singluar -
-                                e.g. "Blogpost".
-                              </DialogDescription>
-                            </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Done
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </FormControl>
+                    <FormDescription>
+                      The name of each Entry inside your new Collection. Choose
+                      a short name in singluar - e.g. "Blogpost".
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                            {context.currentProject.settings.language.supported.map(
-                              (language) => {
-                                return (
-                                  <FormField
-                                    key={language}
-                                    control={collectionForm.control}
-                                    name={`name.singular.${language}`}
-                                    render={({ field }) => (
-                                      <FormItem className="col-span-12 sm:col-span-5">
-                                        <FormLabel isRequired={true}>
-                                          {language}
-                                        </FormLabel>
-                                        <FormControl>
-                                          <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                );
-                              }
-                            )}
+              <FormField
+                control={collectionForm.control}
+                name={`description.${context.currentProject.settings.language.default}`}
+                render={({ field }) => (
+                  <FormItem className="col-span-12 sm:col-span-12">
+                    <FormLabel isRequired={true}>Description</FormLabel>
+                    <FormControl>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Textarea {...field} />
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Description</DialogTitle>
+                            <DialogDescription>
+                              A description of what this new Collection is used
+                              for.
+                            </DialogDescription>
+                          </DialogHeader>
 
-                            <DialogFooter>
-                              <DialogClose asChild>
-                                <Button type="button" variant="secondary">
-                                  Done
-                                </Button>
-                              </DialogClose>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </FormControl>
-                      <FormDescription>
-                        The name of each Entry inside your new Collection.
-                        Choose a short name in singluar - e.g. "Blogpost".
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          {context.currentProject.settings.language.supported.map(
+                            (language) => {
+                              return (
+                                <FormField
+                                  key={language}
+                                  control={collectionForm.control}
+                                  name={`description.${language}`}
+                                  render={({ field }) => (
+                                    <FormItem className="col-span-12 sm:col-span-5">
+                                      <FormLabel isRequired={true}>
+                                        {language}
+                                      </FormLabel>
+                                      <FormControl>
+                                        <Textarea {...field} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              );
+                            }
+                          )}
 
-                <FormField
-                  control={collectionForm.control}
-                  name={`description.${context.currentProject.settings.language.default}`}
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 sm:col-span-12">
-                      <FormLabel isRequired={true}>Description</FormLabel>
-                      <FormControl>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Textarea {...field} />
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Description</DialogTitle>
-                              <DialogDescription>
-                                A description of what this new Collection is
-                                used for.
-                              </DialogDescription>
-                            </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Done
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </FormControl>
+                    <FormDescription>
+                      A description of what this new Collection is used for.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-                            {context.currentProject.settings.language.supported.map(
-                              (language) => {
-                                return (
-                                  <FormField
-                                    key={language}
-                                    control={collectionForm.control}
-                                    name={`description.${language}`}
-                                    render={({ field }) => (
-                                      <FormItem className="col-span-12 sm:col-span-5">
-                                        <FormLabel isRequired={true}>
-                                          {language}
-                                        </FormLabel>
-                                        <FormControl>
-                                          <Textarea {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                );
-                              }
-                            )}
-
-                            <DialogFooter>
-                              <DialogClose asChild>
-                                <Button type="button" variant="secondary">
-                                  Done
-                                </Button>
-                              </DialogClose>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </FormControl>
-                      <FormDescription>
-                        A description of what this new Collection is used for.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* <FormField
+            {/* <FormField
               control={collectionForm.control}
               name={`slug.plural`}
               render={({ field }) => (
@@ -586,7 +566,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
               )}
             /> */}
 
-              {/* <FormField
+            {/* <FormField
               control={collectionForm.control}
               name={`slug.singular`}
               render={({ field }) => (
@@ -604,123 +584,134 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                 </FormItem>
               )}
             /> */}
-            </div>
+          </div>
 
-            <PageSection
-              title="Define this Collections Values"
-              description="Here you can define what the Collections content looks like. Add
+          <PageSection
+            title="Define this Collections Values"
+            description="Here you can define what the Collections content looks like. Add
               Value definitions to structure the Collections content and add
               input definitions to define how users interact with those
               Values. For example you can create a Value `createdAt` of type
               `date` which atomatically restricts the input to only allow
               dates being inserted. Additionally this shows a datepicker UI to
               help users selecting a date."
-              actions={
-                <Sheet
-                  open={isAddValueDefinitionSheetOpen}
-                  onOpenChange={setIsAddValueDefinitionSheetOpen}
-                >
-                  <SheetTrigger asChild>
-                    <Button
-                      onClick={(event) => {
-                        event.preventDefault();
-                        setIsAddValueDefinitionSheetOpen(true);
-                      }}
-                    >
-                      <Plus className="w-4 h-4 mr-2"></Plus>
-                      Add Value definition
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent
-                    // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
-                    //
-                    // onInteractOutside={(event) => {
-                    //   console.log(event);
-                    //   event.preventDefault();
-                    // }}
-                    overlayChildren={
-                      (selectedInputType === 'number' && (
-                        <NumberValueDefinitionFormFieldExample
-                          state={numberValueDefinitionFormState}
-                          currentLanguage={
-                            context.currentProject.settings.language.default
-                          }
-                        />
-                      )) ||
-                      (selectedInputType === 'range' && (
-                        <RangeValueDefinitionFormFieldExample
-                          state={rangeValueDefinitionFormState}
-                          currentLanguage={
-                            context.currentProject.settings.language.default
-                          }
-                        />
-                      )) ||
-                      (selectedInputType === 'text' && (
-                        <TextValueDefinitionFormExample
-                          state={textValueDefinitionFormState}
-                          currentLanguage={
-                            context.currentProject.settings.language.default
-                          }
-                        />
-                      )) ||
-                      (selectedInputType === 'textarea' && (
-                        <TextareaValueDefinitionFormExample
-                          state={textareaValueDefinitionFormState}
-                          currentLanguage={
-                            context.currentProject.settings.language.default
-                          }
-                        />
-                      )) ||
-                      (selectedInputType === 'toggle' && (
-                        <ToggleValueDefinitionFormExample
-                          state={toggleValueDefinitionFormState}
-                          currentLanguage={
-                            context.currentProject.settings.language.default
-                          }
-                        />
-                      ))
-                    }
+            actions={
+              <Sheet
+                open={isAddFieldDefinitionSheetOpen}
+                onOpenChange={setIsAddFieldDefinitionSheetOpen}
+              >
+                <SheetTrigger asChild>
+                  <Button
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setIsAddFieldDefinitionSheetOpen(true);
+                    }}
                   >
-                    <SheetHeader>
-                      <SheetTitle>Add a Field to this Collection</SheetTitle>
-                      <SheetDescription>
-                        Adding Fields to your Collection will enable users to
-                        enter data that follows the boundries you've set.
-                      </SheetDescription>
-                      <FormItem>
-                        <FormLabel isRequired={true}>Input type</FormLabel>
-                        <Select
-                          value={selectedInputType}
-                          onValueChange={(value: ValueInputType) =>
-                            setSelectedInputType(value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ValueInputTypeSchema.options.map((option) => {
-                              return (
-                                <SelectItem key={option} value={option}>
-                                  {option}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          The type of input the user is able to enter for this
-                          Field.
-                        </FormDescription>
-                      </FormItem>
-                    </SheetHeader>
+                    <Plus className="w-4 h-4 mr-2"></Plus>
+                    Add Value definition
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
+                  //
+                  // onInteractOutside={(event) => {
+                  //   console.log(event);
+                  //   event.preventDefault();
+                  // }}
+                  overlayChildren={
+                    (selectedFieldType === 'number' &&
+                      FormFieldFromDefinition<NumberFieldDefinition>(
+                        numberFieldDefinitionFormState.getValues(),
+                        // @ts-expect-error It's just an example
+                        'content',
+                        context.translate
+                      )) ||
+                    (selectedFieldType === 'range' && (
+                      <RangeFieldDefinitionFormFieldExample
+                        state={rangeFieldDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
+                    )) ||
+                    (selectedFieldType === 'text' && (
+                      <TextFieldDefinitionFormExample
+                        state={textFieldDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
+                    )) ||
+                    (selectedFieldType === 'textarea' && (
+                      <TextareaFieldDefinitionFormExample
+                        state={textareaFieldDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
+                    )) ||
+                    (selectedFieldType === 'toggle' && (
+                      <ToggleFieldDefinitionFormExample
+                        state={toggleFieldDefinitionFormState}
+                        currentLanguage={
+                          context.currentProject.settings.language.default
+                        }
+                      />
+                    ))
+                  }
+                >
+                  <SheetHeader>
+                    <SheetTitle>Add a Field to this Collection</SheetTitle>
+                    <SheetDescription>
+                      Adding Fields to your Collection will enable users to
+                      enter data that follows the boundries you've set.
+                    </SheetDescription>
+                    <FormItem>
+                      <FormLabel isRequired={true}>Input type</FormLabel>
+                      <Select
+                        value={selectedFieldType}
+                        onValueChange={(value: FieldType) =>
+                          setSelectedFieldType(value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FieldTypeSchema.options.map((option) => {
+                            return (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        The type of input the user is able to enter for this
+                        Field.
+                      </FormDescription>
+                    </FormItem>
+                  </SheetHeader>
 
-                    <SheetBody>
-                      <ScrollArea>
-                        <div className="p-6 space-y-6">
-                          {(selectedInputType === 'number' && (
-                            <NumberValueDefinitionForm
-                              state={numberValueDefinitionFormState}
+                  <SheetBody>
+                    <ScrollArea>
+                      <div className="p-6 space-y-6">
+                        {(selectedFieldType === 'number' && (
+                          <NumberFieldDefinitionForm
+                            form={numberFieldDefinitionFormState}
+                            currentLanguage={
+                              context.currentProject.settings.language.default
+                            }
+                            supportedLanguages={
+                              context.currentProject.settings.language.supported
+                            }
+                            fieldType={selectedFieldType}
+                          />
+                        )) ||
+                          (selectedFieldType === 'range' && (
+                            <RangeFieldDefinitionForm
+                              form={rangeFieldDefinitionFormState}
                               currentLanguage={
                                 context.currentProject.settings.language.default
                               }
@@ -728,176 +719,128 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                                 context.currentProject.settings.language
                                   .supported
                               }
+                              fieldType={selectedFieldType}
                             />
                           )) ||
-                            (selectedInputType === 'range' && (
-                              <RangeValueDefinitionForm
-                                state={rangeValueDefinitionFormState}
-                                currentLanguage={
-                                  context.currentProject.settings.language
-                                    .default
-                                }
-                                supportedLanguages={
-                                  context.currentProject.settings.language
-                                    .supported
-                                }
-                              />
-                            )) ||
-                            (selectedInputType === 'text' && (
-                              <TextValueDefinitionForm
-                                state={textValueDefinitionFormState}
-                                currentLanguage={
-                                  context.currentProject.settings.language
-                                    .default
-                                }
-                                supportedLanguages={
-                                  context.currentProject.settings.language
-                                    .supported
-                                }
-                              />
-                            )) ||
-                            (selectedInputType === 'textarea' && (
-                              <TextareaValueDefinitionForm
-                                state={textareaValueDefinitionFormState}
-                                currentLanguage={
-                                  context.currentProject.settings.language
-                                    .default
-                                }
-                                supportedLanguages={
-                                  context.currentProject.settings.language
-                                    .supported
-                                }
-                              />
-                            )) ||
-                            (selectedInputType === 'toggle' && (
-                              <ToggleValueDefinitionForm
-                                state={toggleValueDefinitionFormState}
-                                currentLanguage={
-                                  context.currentProject.settings.language
-                                    .default
-                                }
-                                supportedLanguages={
-                                  context.currentProject.settings.language
-                                    .supported
-                                }
-                              />
-                            ))}
-                        </div>
-                      </ScrollArea>
-                    </SheetBody>
+                          (selectedFieldType === 'text' && (
+                            <TextFieldDefinitionForm
+                              form={textFieldDefinitionFormState}
+                              currentLanguage={
+                                context.currentProject.settings.language.default
+                              }
+                              supportedLanguages={
+                                context.currentProject.settings.language
+                                  .supported
+                              }
+                              fieldType={selectedFieldType}
+                            />
+                          )) ||
+                          (selectedFieldType === 'textarea' && (
+                            <TextareaFieldDefinitionForm
+                              form={textareaFieldDefinitionFormState}
+                              currentLanguage={
+                                context.currentProject.settings.language.default
+                              }
+                              supportedLanguages={
+                                context.currentProject.settings.language
+                                  .supported
+                              }
+                              fieldType={selectedFieldType}
+                            />
+                          )) ||
+                          (selectedFieldType === 'toggle' && (
+                            <ToggleFieldDefinitionForm
+                              form={toggleFieldDefinitionFormState}
+                              currentLanguage={
+                                context.currentProject.settings.language.default
+                              }
+                              supportedLanguages={
+                                context.currentProject.settings.language
+                                  .supported
+                              }
+                              fieldType={selectedFieldType}
+                            />
+                          ))}
+                      </div>
+                    </ScrollArea>
+                  </SheetBody>
 
-                    <SheetFooter>
-                      <Button
-                        className="w-full"
-                        onClick={validateValueDefinition}
-                      >
-                        Add definition
-                      </Button>
-                    </SheetFooter>
-                  </SheetContent>
-                </Sheet>
-              }
-            >
-              <div className="grid grid-cols-12 gap-6 mt-6">
-                {valueDefinitions.fields.map((definition, definitionIndex) => {
-                  return (
-                    <FormField
-                      key={definition.id}
-                      name={`valueDefinitions.${definitionIndex}.content`}
-                      render={({ field }) => (
-                        <FormItem
-                          className={`col-span-12 ${fieldWidth(
-                            definition.inputWidth
-                          )}`}
-                        >
-                          <FormLabel
-                            isRequired={
-                              'isRequired' in definition
-                                ? definition.isRequired
-                                : false
-                            }
-                          >
-                            {context.translate(
-                              'definition.label',
-                              definition.label
-                            )}
-                          </FormLabel>
-                          <FormControl>
-                            {/* @todo add styling for toggle switches */}
-                            {ValueInputFromDefinition<CreateCollectionProps>(
-                              definition,
-                              collectionForm,
-                              field
-                            )}
-                          </FormControl>
-                          <FormDescription>
-                            {context.translate(
-                              'definition.description',
-                              definition.description
-                            )}
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <SheetFooter>
+                    <Button
+                      className="w-full"
+                      onClick={validateFieldDefinition}
+                    >
+                      Add definition
+                    </Button>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+            }
+          >
+            <div className="grid grid-cols-12 gap-6 mt-6">
+              {fieldDefinitions.fields.map(
+                (fieldDefinition, definitionIndex) => {
+                  return FormFieldFromDefinition(
+                    fieldDefinition,
+                    context.translate
                   );
-                })}
-              </div>
-              {/* <p>
+                }
+              )}
+            </div>
+            {/* <p>
               Dynamic Field generation. See
               https://react-hook-form.com/api/usefieldarray/
             </p>
             {JSON.stringify(collectionForm.watch())} */}
-            </PageSection>
-            {'onCollectionDelete' in props &&
-              'id' in collectionForm.getValues() && (
-                <PageSection title="Danger Zone">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium leading-6">
-                        Delete this Collection
-                      </p>
-                    </div>
-                    <div>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="destructive">
-                            <Trash className="w-4 h-4 mr-2"></Trash>
-                            Delete Collection
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Are you sure?</DialogTitle>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <DialogClose asChild>
-                              <Button type="button" variant="secondary">
-                                No, I've changed my mind
-                              </Button>
-                            </DialogClose>
-                            <Button
-                              variant="destructive"
-                              onClick={() =>
-                                props.onCollectionDelete({
-                                  projectId: context.currentProject.id,
-                                  id: collectionForm.getValues().id,
-                                })
-                              }
-                            >
-                              <Trash className="w-4 h-4 mr-2"></Trash>
-                              Yes, delete this Collection
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+          </PageSection>
+          {'onCollectionDelete' in props &&
+            'id' in collectionForm.getValues() && (
+              <PageSection title="Danger Zone">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-medium leading-6">
+                      Delete this Collection
+                    </p>
                   </div>
-                </PageSection>
-              )}
-          </form>
-        </Form>
-      </Page>
-    );
-  }
-);
+                  <div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="destructive">
+                          <Trash className="w-4 h-4 mr-2"></Trash>
+                          Delete Collection
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Are you sure?</DialogTitle>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button type="button" variant="secondary">
+                              No, I've changed my mind
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              props.onCollectionDelete({
+                                projectId: context.currentProject.id,
+                                id: collectionForm.getValues().id,
+                              })
+                            }
+                          >
+                            <Trash className="w-4 h-4 mr-2"></Trash>
+                            Yes, delete this Collection
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              </PageSection>
+            )}
+        </form>
+      </Form>
+    </Page>
+  );
+});

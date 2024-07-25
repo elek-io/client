@@ -1,7 +1,4 @@
 import { Asset, supportedAssetExtensionSchema } from '@elek-io/core';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { ImagePlus, Trash } from 'lucide-react';
-import { ReactElement, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,19 +9,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '../../../../components/ui/alert-dialog';
-import { AssetDisplay } from '../../../../components/ui/asset-display';
-import { AssetTeaser } from '../../../../components/ui/asset-teaser';
-import { Button } from '../../../../components/ui/button';
-import { Page } from '../../../../components/ui/page';
+} from '@renderer/components/ui/alert-dialog';
+import { AssetDisplay } from '@renderer/components/ui/asset-display';
+import { AssetTeaser } from '@renderer/components/ui/asset-teaser';
+import { Button } from '@renderer/components/ui/button';
+import { Page } from '@renderer/components/ui/page';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '../../../../components/ui/tooltip';
-import { NotificationIntent } from '../../../../store';
-import { formatBytes, formatTimestamp } from '../../../../util';
+} from '@renderer/components/ui/tooltip';
+import { NotificationIntent, useStore } from '@renderer/store';
+import { formatBytes, formatDatetime } from '@renderer/util';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { ImagePlus, Trash } from 'lucide-react';
+import { ReactElement, useState } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/assets/')({
   beforeLoad: async ({ context, params }) => {
@@ -47,11 +47,11 @@ export const Route = createFileRoute('/projects/$projectId/assets/')({
 function ProjectAssetsPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
+  const addNotification = useStore((state) => state.addNotification);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset>();
-  const createdTime = formatTimestamp(selectedAsset?.created, 'en');
-  const updatedTime = formatTimestamp(selectedAsset?.updated, 'en');
+  const createdTime = formatDatetime(selectedAsset?.created, 'en');
+  const updatedTime = formatDatetime(selectedAsset?.updated, 'en');
   const information = [
     {
       key: 'Created',

@@ -1,4 +1,24 @@
 import { TranslatableString } from '@elek-io/core';
+import { Badge } from '@renderer/components/ui/badge';
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@renderer/components/ui/command';
+import { ScrollArea } from '@renderer/components/ui/scroll-area';
+import { Sidebar } from '@renderer/components/ui/sidebar';
+import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
+import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@renderer/components/ui/tooltip';
+import { useStore } from '@renderer/store';
 import {
   Link,
   Outlet,
@@ -17,25 +37,6 @@ import {
   Settings,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Badge } from '../../components/ui/badge';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '../../components/ui/command';
-import { ScrollArea } from '../../components/ui/scroll-area';
-import { Sidebar } from '../../components/ui/sidebar';
-import { SidebarNavigation } from '../../components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '../../components/ui/sidebar-navigation-item';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../../components/ui/tooltip';
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
@@ -83,11 +84,11 @@ export const Route = createFileRoute('/projects/$projectId')({
 function ProjectLayout() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
-  const isProjectSidebarNarrow = context.store(
+  const addNotification = useStore((state) => state.addNotification);
+  const isProjectSidebarNarrow = useStore(
     (state) => state.isProjectSidebarNarrow
   );
-  const [isProjectSearchDialogOpen, setProjectSearchDialogOpen] = context.store(
+  const [isProjectSearchDialogOpen, setProjectSearchDialogOpen] = useStore(
     (state) => [
       state.isProjectSearchDialogOpen,
       state.setProjectSearchDialogOpen,
@@ -123,7 +124,7 @@ function ProjectLayout() {
   ];
 
   useEffect(() => {
-    context.store.setState((prev) => ({
+    useStore.setState((prev) => ({
       breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
         context.currentProject.id,
         context.currentProject.name
@@ -132,7 +133,7 @@ function ProjectLayout() {
   }, [context.currentProject]);
   useEffect(() => {
     context.collections.list.map((collection) => {
-      context.store.setState((prev) => ({
+      useStore.setState((prev) => ({
         breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
           collection.id,
           context.translate('collection.name.plural', collection.name.plural)
@@ -268,7 +269,10 @@ function ProjectLayout() {
                 return (
                   <CommandItem
                     onClick={() =>
-                      router.navigate({ to: '/projects/$projectId/assets' })
+                      router.navigate({
+                        to: '/projects/$projectId/assets',
+                        params: { projectId: context.currentProject.id },
+                      })
                     }
                     key={result.id}
                   >
@@ -288,6 +292,7 @@ function ProjectLayout() {
                     onClick={() =>
                       router.navigate({
                         to: '/projects/$projectId/collections',
+                        params: { projectId: context.currentProject.id },
                       })
                     }
                     key={result.id}

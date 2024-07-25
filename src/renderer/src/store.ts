@@ -1,8 +1,8 @@
 import type {} from '@redux-devtools/extension'; // required for devtools typing
+import { toast } from '@renderer/components/ui/toast';
+import { Icon } from '@renderer/util';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { toast } from './components/ui/toast';
-import { Icon } from './util';
 
 export enum NotificationIntent {
   INFO = 'info',

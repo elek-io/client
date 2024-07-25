@@ -1,7 +1,7 @@
-import { SupportedLanguage, ToggleValueDefinition } from '@elek-io/core';
+import { SupportedLanguage, ToggleFieldDefinition } from '@elek-io/core';
+import { cn } from '@renderer/util';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { cn } from '../../util';
 import {
   Form,
   FormControl,
@@ -13,23 +13,23 @@ import {
 } from '../ui/form';
 import { Switch } from '../ui/switch';
 import {
-  DefaultValueDefinitionForm,
-  DefaultValueDefinitionFormProps,
-} from './default-value-definition-form';
+  DefaultFieldDefinitionForm,
+  DefaultFieldDefinitionFormProps,
+} from './default-field-definition-form';
 
-export type ToggleValueDefinitionFormProps =
-  DefaultValueDefinitionFormProps<ToggleValueDefinition>;
+export type ToggleFieldDefinitionFormProps =
+  DefaultFieldDefinitionFormProps<ToggleFieldDefinition>;
 
-const ToggleValueDefinitionForm = React.forwardRef<
+const ToggleFieldDefinitionForm = React.forwardRef<
   HTMLFormElement,
-  ToggleValueDefinitionFormProps
->(({ className, state, ...props }, ref) => {
+  ToggleFieldDefinitionFormProps
+>(({ className, form, ...props }, ref) => {
   return (
-    <Form {...state}>
+    <Form {...form}>
       <form className="space-y-6">
-        <DefaultValueDefinitionForm state={state} {...props}>
+        <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
-            control={state.control}
+            control={form.control}
             name={`defaultValue`}
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
@@ -49,22 +49,22 @@ const ToggleValueDefinitionForm = React.forwardRef<
               </FormItem>
             )}
           />
-        </DefaultValueDefinitionForm>
+        </DefaultFieldDefinitionForm>
       </form>
     </Form>
   );
 });
-ToggleValueDefinitionForm.displayName = 'ToggleValueDefinitionForm';
+ToggleFieldDefinitionForm.displayName = 'ToggleFieldDefinitionForm';
 
-export interface ToggleValueDefinitionFormExampleProps
+export interface ToggleFieldDefinitionFormExampleProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<ToggleValueDefinition>;
+  state: UseFormReturn<ToggleFieldDefinition>;
   currentLanguage: SupportedLanguage;
 }
 
-const ToggleValueDefinitionFormExample = React.forwardRef<
+const ToggleFieldDefinitionFormExample = React.forwardRef<
   HTMLFormElement,
-  ToggleValueDefinitionFormExampleProps
+  ToggleFieldDefinitionFormExampleProps
 >(({ className, state, currentLanguage, ...props }, ref) => {
   return (
     <FormField
@@ -95,7 +95,7 @@ const ToggleValueDefinitionFormExample = React.forwardRef<
     />
   );
 });
-ToggleValueDefinitionFormExample.displayName =
-  'ToggleValueDefinitionFormExample';
+ToggleFieldDefinitionFormExample.displayName =
+  'ToggleFieldDefinitionFormExample';
 
-export { ToggleValueDefinitionForm, ToggleValueDefinitionFormExample };
+export { ToggleFieldDefinitionForm, ToggleFieldDefinitionFormExample };

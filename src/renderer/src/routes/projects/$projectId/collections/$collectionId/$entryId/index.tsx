@@ -1,15 +1,10 @@
 import { UpdateEntryProps, updateEntrySchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { NotificationIntent } from '@renderer/store';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
 import {
-  ValueInputFromDefinition,
+  InputFromDefinition,
   translatableDefault,
-} from '../../../../../../components/forms/util';
-import { Button } from '../../../../../../components/ui/button';
+} from '@renderer/components/forms/util';
+import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -19,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../../../../../components/ui/dialog';
+} from '@renderer/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -28,9 +23,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../../../../../components/ui/form';
-import { Page } from '../../../../../../components/ui/page';
-import { fieldWidth } from '../../../../../../util';
+} from '@renderer/components/ui/form';
+import { Page } from '@renderer/components/ui/page';
+import { NotificationIntent, useStore } from '@renderer/store';
+import { fieldWidth } from '@renderer/util';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { ReactElement, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/$entryId/'
@@ -41,7 +41,7 @@ export const Route = createFileRoute(
 function ProjectCollectionEntryIndexPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
+  const addNotification = useStore((state) => state.addNotification);
   const [isUpdatingEntry, setIsUpdatingEntry] = useState(false);
 
   const updateEntryFormState = useForm<UpdateEntryProps>({
@@ -168,7 +168,7 @@ function ProjectCollectionEntryIndexPage() {
                           <FormControl>
                             <Dialog>
                               <DialogTrigger asChild>
-                                {ValueInputFromDefinition<UpdateEntryProps>(
+                                {InputFromDefinition<UpdateEntryProps>(
                                   definition,
                                   updateEntryFormState,
                                   field
@@ -203,7 +203,7 @@ function ProjectCollectionEntryIndexPage() {
                                               {language}
                                             </FormLabel>
                                             <FormControl>
-                                              {ValueInputFromDefinition<UpdateEntryProps>(
+                                              {InputFromDefinition<UpdateEntryProps>(
                                                 definition,
                                                 updateEntryFormState,
                                                 field

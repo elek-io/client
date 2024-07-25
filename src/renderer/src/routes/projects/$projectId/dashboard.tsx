@@ -1,6 +1,6 @@
+import { Page } from '@renderer/components/ui/page';
 import { createFileRoute } from '@tanstack/react-router';
 import { ReactElement } from 'react';
-import { Page } from '../../../components/ui/page';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,

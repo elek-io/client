@@ -1,9 +1,9 @@
+import { ScrollArea } from '@renderer/components/ui/scroll-area';
+import { Sidebar } from '@renderer/components/ui/sidebar';
+import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
+import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
 import { Outlet, createFileRoute, useRouter } from '@tanstack/react-router';
 import { Layers, Plus } from 'lucide-react';
-import { ScrollArea } from '../../../components/ui/scroll-area';
-import { Sidebar } from '../../../components/ui/sidebar';
-import { SidebarNavigation } from '../../../components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '../../../components/ui/sidebar-navigation-item';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   component: ProjectCollectionsLayout,

@@ -1,7 +1,6 @@
-import { NumberValueDefinition, SupportedLanguage } from '@elek-io/core';
+import { NumberFieldDefinition, SupportedLanguage } from '@elek-io/core';
 import * as React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { cn } from '../../util';
 import {
   Form,
   FormControl,
@@ -11,39 +10,32 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
-import { Input } from '../ui/input';
+import { FormInput } from '../ui/form-input';
 import {
-  DefaultValueDefinitionForm,
-  DefaultValueDefinitionFormProps,
-} from './default-value-definition-form';
-import { IsUniqueFormField } from './is-unique-form-field';
-import { setValueAsNumber } from './util';
+  DefaultFieldDefinitionForm,
+  DefaultFieldDefinitionFormProps,
+} from './default-field-definition-form';
 
-export type NumberValueDefinitionFormProps =
-  DefaultValueDefinitionFormProps<NumberValueDefinition>;
+export type NumberFieldDefinitionFormProps =
+  DefaultFieldDefinitionFormProps<NumberFieldDefinition>;
 
-const NumberValueDefinitionForm = React.forwardRef<
+const NumberFieldDefinitionForm = React.forwardRef<
   HTMLFormElement,
-  NumberValueDefinitionFormProps
->(({ className, state, ...props }, ref) => {
+  NumberFieldDefinitionFormProps
+>(({ className, form, ...props }) => {
   return (
-    <Form {...state}>
+    <Form {...form}>
       <form className="space-y-6">
-        <DefaultValueDefinitionForm state={state} {...props}>
+        {JSON.stringify(form.watch())}
+        <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
-            control={state.control}
+            control={form.control}
             name={`defaultValue`}
             render={({ field }) => (
               <FormItem>
                 <FormLabel isRequired={false}>Default value</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    {...state.register('defaultValue', {
-                      setValueAs: setValueAsNumber,
-                    })}
-                    type="number"
-                  />
+                  <FormInput field={field} type="number" />
                 </FormControl>
                 <FormDescription>
                   The initial value for the field.
@@ -55,19 +47,13 @@ const NumberValueDefinitionForm = React.forwardRef<
 
           <div className="flex flex-row items-center justify-between space-x-2">
             <FormField
-              control={state.control}
+              control={form.control}
               name={`min`}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel isRequired={false}>Minimum</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      {...state.register('min', {
-                        setValueAs: setValueAsNumber,
-                      })}
-                      type="number"
-                    />
+                    <FormInput field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The minimum Value the user is able to enter.
@@ -77,19 +63,13 @@ const NumberValueDefinitionForm = React.forwardRef<
               )}
             />
             <FormField
-              control={state.control}
+              control={form.control}
               name={`max`}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel isRequired={false}>Maximum</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      {...state.register('max', {
-                        setValueAs: setValueAsNumber,
-                      })}
-                      type="number"
-                    />
+                    <FormInput field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The maximum Value the user is able to enter.
@@ -99,24 +79,22 @@ const NumberValueDefinitionForm = React.forwardRef<
               )}
             />
           </div>
-        </DefaultValueDefinitionForm>
-
-        <IsUniqueFormField state={state} {...props} />
+        </DefaultFieldDefinitionForm>
       </form>
     </Form>
   );
 });
-NumberValueDefinitionForm.displayName = 'NumberValueDefinitionForm';
+NumberFieldDefinitionForm.displayName = 'NumberFieldDefinitionForm';
 
-export interface NumberValueDefinitionFormFieldProps
+export interface NumberFieldDefinitionFormFieldProps
   extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<NumberValueDefinition>;
+  state: UseFormReturn<NumberFieldDefinition>;
   currentLanguage: SupportedLanguage;
 }
 
-const NumberValueDefinitionFormFieldExample = React.forwardRef<
+const NumberFieldDefinitionFormFieldExample = React.forwardRef<
   HTMLFormElement,
-  NumberValueDefinitionFormFieldProps
+  NumberFieldDefinitionFormFieldProps
 >(({ className, state, currentLanguage, ...props }, ref) => {
   return (
     <FormField
@@ -129,7 +107,7 @@ const NumberValueDefinitionFormFieldExample = React.forwardRef<
             {state.watch(`label.${currentLanguage}`)}
           </FormLabel>
           <FormControl>
-            <Input
+            {/* <Input
               {...state.register(field.name, { setValueAs: setValueAsNumber })}
               className={cn('bg-white dark:bg-zinc-900', className)}
               type="number"
@@ -138,7 +116,7 @@ const NumberValueDefinitionFormFieldExample = React.forwardRef<
               defaultValue={state.watch('defaultValue')}
               required={state.watch('isRequired')}
               disabled={state.watch('isDisabled')}
-            />
+            /> */}
           </FormControl>
           <FormDescription>
             {state.watch(`description.${currentLanguage}`)}
@@ -149,7 +127,7 @@ const NumberValueDefinitionFormFieldExample = React.forwardRef<
     />
   );
 });
-NumberValueDefinitionFormFieldExample.displayName =
-  'NumberValueDefinitionFormFieldExample';
+NumberFieldDefinitionFormFieldExample.displayName =
+  'NumberFieldDefinitionFormFieldExample';
 
-export { NumberValueDefinitionForm, NumberValueDefinitionFormFieldExample };
+export { NumberFieldDefinitionForm, NumberFieldDefinitionFormFieldExample };

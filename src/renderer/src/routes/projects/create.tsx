@@ -1,10 +1,6 @@
 import { CreateProjectProps, createProjectSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { Button } from '../../components/ui/button';
+import { Button } from '@renderer/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,11 +9,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../components/ui/form';
-import { Input } from '../../components/ui/input';
-import { Page } from '../../components/ui/page';
-import { Textarea } from '../../components/ui/textarea';
-import { NotificationIntent } from '../../store';
+} from '@renderer/components/ui/form';
+import { Input } from '@renderer/components/ui/input';
+import { Page } from '@renderer/components/ui/page';
+import { Textarea } from '@renderer/components/ui/textarea';
+import { NotificationIntent, useStore } from '@renderer/store';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { ReactElement, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/create')({
   component: CreateProjectPage,
@@ -26,8 +26,7 @@ export const Route = createFileRoute('/projects/create')({
 function CreateProjectPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
-  const data = Route.useLoaderData();
+  const addNotification = useStore((state) => state.addNotification);
   const [isCreatingProject, setCreatingProject] = useState(false);
   const createProjectForm = useForm<CreateProjectProps>({
     resolver: async (data, context, options) => {

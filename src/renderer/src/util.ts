@@ -1,6 +1,6 @@
 import { SupportedLanguage } from '@elek-io/core';
 import { clsx, type ClassValue } from 'clsx';
-import { format, formatDistanceToNow, fromUnixTime } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import {
   bg,
   cs,
@@ -79,17 +79,14 @@ const importedLocales = {
 };
 
 /**
- * Formats given Unix timestamp to be human readable
+ * Formats given datetime string to be human readable
  * and be in the user selected locale
- *
- * @param timestamp Unix timestamp to format
- * @param language The language to format into - uses the users language if empty
  */
-export function formatTimestamp(
-  timestamp: number | undefined,
+export function formatDatetime(
+  datetime: string | null,
   language: SupportedLanguage
 ) {
-  if (!timestamp) {
+  if (!datetime) {
     // e.g. in case of a file not being updated yet, show a dash
     return {
       relative: '-',
@@ -97,11 +94,11 @@ export function formatTimestamp(
     };
   }
   return {
-    relative: formatDistanceToNow(fromUnixTime(timestamp), {
+    relative: formatDistanceToNow(datetime, {
       addSuffix: true,
       locale: importedLocales[language],
     }),
-    absolute: format(fromUnixTime(timestamp), 'Pp', {
+    absolute: format(datetime, 'Pp', {
       locale: importedLocales[language],
     }),
   };

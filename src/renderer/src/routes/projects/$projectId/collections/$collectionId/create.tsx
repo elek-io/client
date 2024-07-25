@@ -1,11 +1,7 @@
 import { CreateEntryProps, createEntrySchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { ValueInputFromDefinition } from '../../../../../components/forms/util';
-import { Button } from '../../../../../components/ui/button';
+import { InputFromDefinition } from '@renderer/components/forms/util';
+import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -15,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../../../../components/ui/dialog';
+} from '@renderer/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -24,10 +20,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../../../../components/ui/form';
-import { Page } from '../../../../../components/ui/page';
-import { NotificationIntent } from '../../../../../store';
-import { fieldWidth } from '../../../../../util';
+} from '@renderer/components/ui/form';
+import { Page } from '@renderer/components/ui/page';
+import { NotificationIntent, useStore } from '@renderer/store';
+import { fieldWidth } from '@renderer/util';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { ReactElement, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/create'
@@ -39,7 +39,7 @@ function ProjectCollectionEntryCreatePage() {
   const router = useRouter();
   const context = Route.useRouteContext();
   const [isCreatingEntry, setIsCreatingEntry] = useState(false);
-  const addNotification = context.store((state) => state.addNotification);
+  const addNotification = useStore((state) => state.addNotification);
 
   const createEntryFormState = useForm<CreateEntryProps>({
     resolver: async (data, context, options) => {
@@ -297,7 +297,7 @@ function ProjectCollectionEntryCreatePage() {
                         <FormControl>
                           <Dialog>
                             <DialogTrigger asChild>
-                              {ValueInputFromDefinition<CreateEntryProps>(
+                              {InputFromDefinition<CreateEntryProps>(
                                 definition,
                                 createEntryFormState,
                                 field
@@ -332,7 +332,7 @@ function ProjectCollectionEntryCreatePage() {
                                             {language}
                                           </FormLabel>
                                           <FormControl>
-                                            {ValueInputFromDefinition<CreateEntryProps>(
+                                            {InputFromDefinition<CreateEntryProps>(
                                               definition,
                                               createEntryFormState,
                                               field

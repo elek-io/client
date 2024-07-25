@@ -7,12 +7,8 @@ import {
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Cross2Icon } from '@radix-ui/react-icons';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check, Plus, Trash } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { Button } from '../../../../components/ui/button';
-import { Chip } from '../../../../components/ui/chip';
+import { Button } from '@renderer/components/ui/button';
+import { Chip } from '@renderer/components/ui/chip';
 import {
   Command,
   CommandEmpty,
@@ -20,7 +16,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '../../../../components/ui/command';
+} from '@renderer/components/ui/command';
 import {
   Dialog,
   DialogClose,
@@ -30,7 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../../../components/ui/dialog';
+} from '@renderer/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -39,24 +35,28 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../../../../components/ui/form';
-import { Input } from '../../../../components/ui/input';
-import { Page } from '../../../../components/ui/page';
-import { PageSection } from '../../../../components/ui/page-section';
+} from '@renderer/components/ui/form';
+import { Input } from '@renderer/components/ui/input';
+import { Page } from '@renderer/components/ui/page';
+import { PageSection } from '@renderer/components/ui/page-section';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '../../../../components/ui/popover';
+} from '@renderer/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../../../components/ui/select';
-import { Textarea } from '../../../../components/ui/textarea';
-import { NotificationIntent } from '../../../../store';
+} from '@renderer/components/ui/select';
+import { Textarea } from '@renderer/components/ui/textarea';
+import { NotificationIntent, useStore } from '@renderer/store';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check, Plus, Trash } from 'lucide-react';
+import { ReactElement, useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsPage,
@@ -65,7 +65,7 @@ export const Route = createFileRoute('/projects/$projectId/settings/general')({
 function ProjectSettingsPage() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
+  const addNotification = useStore((state) => state.addNotification);
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [
     isDeleteDefaultLanguageDialogOpen,

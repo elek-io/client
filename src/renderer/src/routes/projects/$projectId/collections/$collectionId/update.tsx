@@ -4,13 +4,13 @@ import {
   updateCollectionSchema,
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
+import { Button } from '@renderer/components/ui/button';
+import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { CreateUpdateCollectionPage } from '../../../../../components/pages/create-update-collection-page';
-import { Button } from '../../../../../components/ui/button';
-import { NotificationIntent } from '../../../../../store';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/update'
@@ -21,7 +21,7 @@ export const Route = createFileRoute(
 function ProjectCollectionUpdate() {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = context.store((state) => state.addNotification);
+  const addNotification = useStore((state) => state.addNotification);
   const [isUpdatingCollection, setIsUpdatingCollection] = useState(false);
 
   const updateCollectionForm = useForm<UpdateCollectionProps>({
