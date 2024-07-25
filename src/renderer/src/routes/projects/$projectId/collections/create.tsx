@@ -54,7 +54,7 @@ function ProjectCollectionCreate() {
         singular: '',
         plural: '',
       },
-      valueDefinitions: [],
+      fieldDefinitions: [],
     },
   });
 
