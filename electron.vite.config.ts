@@ -16,7 +16,18 @@ export default defineConfig({
     ],
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        output: {
+          // With a sandboxed renderer and preload process the preload cannot use ESM
+          // This is a current (v31.2) limitation of using ESM in Electron
+          // @see https://www.electronjs.org/docs/latest/tutorial/esm#summary-esm-support-matrix
+          // @see https://github.com/alex8088/electron-vite/discussions/423#discussioncomment-8922407
+          format: 'cjs',
+        },
+      },
+    },
+    // plugins: [externalizeDepsPlugin()], @see above
   },
   renderer: {
     resolve: {
@@ -25,11 +36,11 @@ export default defineConfig({
       },
     },
     plugins: [
-      viteReact(),
       TanStackRouterVite({
         routesDirectory: './src/renderer/src/routes',
         generatedRouteTree: './src/renderer/src/routeTree.gen.ts',
       }),
+      viteReact(),
     ],
   },
 });
