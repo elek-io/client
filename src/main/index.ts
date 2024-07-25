@@ -33,6 +33,7 @@ class Main {
   private allowedOriginsToLoadExternal: string[] = [
     'https://elek.io',
     'https://api.elek.io',
+    'https://github.com',
   ];
 
   constructor() {
@@ -197,11 +198,11 @@ class Main {
     // Overwrite webPreferences to always load the correct preload script
     // and explicitly enable security features - although Electron > v28 should set these by default
     options.webPreferences = {
-      preload: Path.join(__dirname, '../preload/index.mjs'),
+      preload: Path.join(__dirname, '../preload/index.cjs'),
       disableBlinkFeatures: 'Auxclick', // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
       nodeIntegration: false,
       contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
-      sandbox: false, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
+      sandbox: true, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
     if (process.platform === 'linux') {
       options.icon = icon;

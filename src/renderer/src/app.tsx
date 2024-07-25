@@ -1,5 +1,8 @@
 import '@fontsource-variable/montserrat';
 import '@fontsource/roboto';
+import { ThemeProvider } from '@renderer/components/theme-provider';
+import '@renderer/index.css';
+import { ipc } from '@renderer/ipc';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   RouterProvider,
@@ -8,20 +11,16 @@ import {
 } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import { ipc } from './ipc';
-import { useStore } from './store';
 
 // Import the generated route tree
-import { ThemeProvider } from './components/theme-provider';
-import { routeTree } from './routeTree.gen';
+import { routeTree } from '@renderer/routeTree.gen';
 
 // Create a new router instance
 const hashHistory = createHashHistory(); // Use hash based routing since in production electron just loads the index.html via the file protocol
 const router = createRouter({
   routeTree,
   history: hashHistory,
-  context: { electron: ipc.electron, core: ipc.core, store: useStore },
+  context: { electron: ipc.electron, core: ipc.core },
 });
 
 // Register the router instance for type safety
