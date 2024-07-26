@@ -1,4 +1,4 @@
-import { FieldType, SupportedLanguage } from '@elek-io/core';
+import { FieldDefinition, FieldType, SupportedLanguage } from '@elek-io/core';
 import * as React from 'react';
 import { FieldValues, UseFormReturn } from 'react-hook-form';
 import { Button } from '../ui/button';
@@ -35,7 +35,7 @@ export interface DefaultFieldDefinitionFormProps<T extends FieldValues>
 
 const DefaultFieldDefinitionForm = React.forwardRef<
   HTMLFormElement,
-  DefaultFieldDefinitionFormProps<any>
+  DefaultFieldDefinitionFormProps<FieldDefinition>
 >(({ form, currentLanguage, supportedLanguages, children, fieldType }) => {
   return (
     <>
@@ -63,6 +63,7 @@ const DefaultFieldDefinitionForm = React.forwardRef<
                   {supportedLanguages.map((language) => {
                     return (
                       <FormField
+                        key={language}
                         control={form.control}
                         name={`label.${language}`}
                         render={({ field }) => (
@@ -122,6 +123,7 @@ const DefaultFieldDefinitionForm = React.forwardRef<
                   {supportedLanguages.map((language) => {
                     return (
                       <FormField
+                        key={language}
                         control={form.control}
                         name={`description.${language}`}
                         render={({ field }) => (

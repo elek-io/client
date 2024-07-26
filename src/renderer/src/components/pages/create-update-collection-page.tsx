@@ -107,19 +107,23 @@ export interface CreateUpdateCollectionPageProps extends PageProps {
 export const CreateUpdateCollectionPage = React.forwardRef<
   HTMLElement,
   CreateUpdateCollectionPageProps
->(({ className, context, collectionForm, onCollectionSubmit, ...props }) => {
+>(({ context, collectionForm, onCollectionSubmit, ...props }) => {
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
+  const collectionFormProps = collectionForm.getValues();
+  function isUpdatingCollection(
+    collectionFormProps: CreateCollectionProps | UpdateCollectionProps
+  ): collectionFormProps is UpdateCollectionProps {
+    return (collectionFormProps as UpdateCollectionProps).id !== undefined;
+  }
 
   const FieldDefinitionBaseDefaults: Omit<FieldDefinitionBase, 'id'> = {
     label: translatableDefault({
       supportedLanguages: context.currentProject.settings.language.supported,
-      default: '',
     }),
     description: translatableDefault({
       supportedLanguages: context.currentProject.settings.language.supported,
-      default: '',
     }),
     isRequired: true,
     isDisabled: false,
@@ -253,7 +257,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
     name: 'fieldDefinitions', // unique name for your Field Array
   });
 
-  async function validateFieldDefinition() {
+  async function validateFieldDefinition(): Promise<void> {
     switch (selectedFieldType) {
       case 'text':
         return await textFieldDefinitionFormState.handleSubmit(
@@ -778,14 +782,13 @@ export const CreateUpdateCollectionPage = React.forwardRef<
             }
           >
             <div className="grid grid-cols-12 gap-6 mt-6">
-              {fieldDefinitions.fields.map(
-                (fieldDefinition, definitionIndex) => {
-                  return FormFieldFromDefinition(
-                    fieldDefinition,
-                    context.translate
-                  );
-                }
-              )}
+              {fieldDefinitions.fields.map((fieldDefinition, index) => {
+                return FormFieldFromDefinition(
+                  fieldDefinition,
+                  `fields.field-${index}.content`,
+                  context.translate
+                );
+              })}
             </div>
             {/* <p>
               Dynamic Field generation. See
@@ -793,54 +796,56 @@ export const CreateUpdateCollectionPage = React.forwardRef<
             </p>
             {JSON.stringify(collectionForm.watch())} */}
           </PageSection>
-          {'onCollectionDelete' in props &&
-            'id' in collectionForm.getValues() && (
-              <PageSection title="Danger Zone">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-medium leading-6">
-                      Delete this Collection
-                    </p>
-                  </div>
-                  <div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="destructive">
-                          <Trash className="w-4 h-4 mr-2"></Trash>
-                          Delete Collection
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Are you sure?</DialogTitle>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button type="button" variant="secondary">
-                              No, I've changed my mind
-                            </Button>
-                          </DialogClose>
-                          <Button
-                            variant="destructive"
-                            onClick={() =>
-                              props.onCollectionDelete({
-                                projectId: context.currentProject.id,
-                                id: collectionForm.getValues().id,
-                              })
-                            }
-                          >
-                            <Trash className="w-4 h-4 mr-2"></Trash>
-                            Yes, delete this Collection
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+          {isUpdatingCollection(collectionFormProps) && (
+            <PageSection title="Danger Zone">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium leading-6">
+                    Delete this Collection
+                  </p>
                 </div>
-              </PageSection>
-            )}
+                <div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Trash className="w-4 h-4 mr-2"></Trash>
+                        Delete Collection
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Are you sure?</DialogTitle>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button type="button" variant="secondary">
+                            No, I've changed my mind
+                          </Button>
+                        </DialogClose>
+                        <Button
+                          variant="destructive"
+                          onClick={() =>
+                            props.onCollectionDelete &&
+                            props.onCollectionDelete({
+                              projectId: context.currentProject.id,
+                              id: collectionFormProps.id,
+                            })
+                          }
+                        >
+                          <Trash className="w-4 h-4 mr-2"></Trash>
+                          Yes, delete this Collection
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+            </PageSection>
+          )}
         </form>
       </Form>
     </Page>
   );
 });
+
+CreateUpdateCollectionPage.displayName = 'CreateUpdateCollectionPage';

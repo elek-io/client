@@ -4,7 +4,6 @@ import {
   TranslatableString,
 } from '@elek-io/core';
 import { fieldWidth } from '@renderer/util';
-import { ReactElement } from 'react';
 import { ControllerRenderProps, FieldValues, Path } from 'react-hook-form';
 import {
   FormControl,
@@ -21,13 +20,15 @@ import { Switch } from '../ui/switch';
 
 export function translatableDefault(props: {
   supportedLanguages: SupportedLanguage[];
-  default: string | number | boolean;
-}) {
-  const defaultValue = props.default;
+  // default: string | number | boolean | ;
+}): {
+  [x: string]: null;
+} {
+  // const defaultValue = props.default;
 
   return props.supportedLanguages
     .map((language) => {
-      return { [language]: defaultValue };
+      return { [language]: null };
     })
     .reduce((prev, curr) => {
       return {
@@ -41,7 +42,7 @@ export function FormFieldFromDefinition<T extends FieldValues>(
   fieldDefinition: FieldDefinition,
   name: Path<T>,
   translate: (key: string, record: TranslatableString) => string
-) {
+): JSX.Element {
   return (
     <FormField
       key={fieldDefinition.id}
@@ -78,8 +79,8 @@ export function FormFieldFromDefinition<T extends FieldValues>(
 
 export function InputFromDefinition<T extends FieldValues>(
   fieldDefinition: FieldDefinition,
-  field: ControllerRenderProps<T>
-): ReactElement {
+  field: ControllerRenderProps<FieldValues, Path<T>>
+): JSX.Element {
   switch (fieldDefinition.fieldType) {
     case 'text':
       return (

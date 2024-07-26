@@ -22,7 +22,7 @@ export type NumberFieldDefinitionFormProps =
 const NumberFieldDefinitionForm = React.forwardRef<
   HTMLFormElement,
   NumberFieldDefinitionFormProps
->(({ className, form, ...props }) => {
+>(({ form, ...props }) => {
   return (
     <Form {...form}>
       <form className="space-y-6">

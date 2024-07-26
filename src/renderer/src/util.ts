@@ -35,7 +35,7 @@ import type {
 } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
@@ -85,7 +85,10 @@ const importedLocales = {
 export function formatDatetime(
   datetime: string | null,
   language: SupportedLanguage
-) {
+): {
+  relative: string;
+  absolute: string;
+} {
   if (!datetime) {
     // e.g. in case of a file not being updated yet, show a dash
     return {
@@ -109,7 +112,7 @@ export function formatDatetime(
  *
  * @param bytes Number of bytes
  */
-export function formatBytes(bytes: number) {
+export function formatBytes(bytes: number): string {
   if (bytes == 0) return '0 Bytes';
   const k = 1024,
     decimals = 2,
@@ -126,7 +129,7 @@ export function formatBytes(bytes: number) {
  * @param classes Array of classes to join
  * @returns Joined class string
  */
-export function classNames(...classes: string[]) {
+export function classNames(...classes: string[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
@@ -134,7 +137,9 @@ export function classNames(...classes: string[]) {
  * Dynamic class names for field widths
  * @see https://tailwindcss.com/docs/content-configuration#dynamic-class-names
  */
-export function fieldWidth(width: string) {
+export function fieldWidth(
+  width: string
+): 'sm:col-span-3' | 'sm:col-span-4' | 'sm:col-span-6' | 'sm:col-span-12' {
   switch (width) {
     case '3':
       return 'sm:col-span-3';
@@ -145,6 +150,6 @@ export function fieldWidth(width: string) {
     case '12':
       return 'sm:col-span-12';
     default:
-      break;
+      throw new Error(`Unsupported Field width "${width}"`);
   }
 }
