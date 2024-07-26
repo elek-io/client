@@ -12,8 +12,16 @@ import {
   shell,
 } from 'electron';
 import Path from 'path';
-import { updateElectronApp } from 'update-electron-app';
-import { SecurityError } from '../util';
+import icon from '../../resources/icon.png?asset';
+// import { updateElectronApp } from 'update-electron-app';
+
+export class SecurityError extends Error {
+  constructor(message: string) {
+    super(message);
+
+    this.name = 'SecurityError';
+  }
+}
 
 Sentry.init({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
@@ -25,29 +33,32 @@ class Main {
   private allowedOriginsToLoadExternal: string[] = [
     'https://elek.io',
     'https://api.elek.io',
+    'https://github.com',
   ];
 
   constructor() {
     // Allow the vite dev server to do HMR in development
-    if (app.isPackaged === false) {
-      this.allowedOriginsToLoadInternal.push(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    if (app.isPackaged === false && process.env['ELECTRON_RENDERER_URL']) {
+      this.allowedOriginsToLoadInternal.push(
+        process.env['ELECTRON_RENDERER_URL']
+      );
     }
 
     // Overwrite dugites resolved path to the embedded git directory
     // @see https://github.com/desktop/dugite/blob/0f5a4f11300fbfa8d2dd272b8ee9b771e5b34cd4/lib/git-environment.ts#L25
     // This seems to be necessary, since it resolves to `elek.io Client.app/Contents/Resources/app/git` instead of dugites git inside node_modules `elek.io Client.app/Contents/Resources/app/node_modules/dugite/git`
-    process.env.LOCAL_GIT_DIRECTORY = Path.resolve(
-      __dirname,
-      '../../',
-      'node_modules',
-      'dugite',
-      'git'
-    );
+    // process.env.LOCAL_GIT_DIRECTORY = Path.resolve(
+    //   __dirname,
+    //   '../../',
+    //   'node_modules',
+    //   'dugite',
+    //   'git'
+    // );
 
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-    if (require('electron-squirrel-startup')) {
-      app.quit();
-    }
+    // if (require('electron-squirrel-startup')) {
+    //   app.quit();
+    // }
 
     // Register app events
     app.on('ready', this.onReady.bind(this));
@@ -57,11 +68,11 @@ class Main {
 
     // Enable auto-updates
     // @see https://github.com/electron/update-electron-app
-    updateElectronApp();
+    // updateElectronApp();
   }
 
   private onWebContentsCreated(
-    event: {
+    _event: {
       preventDefault: () => void;
       readonly defaultPrevented: boolean;
     },
@@ -89,6 +100,7 @@ class Main {
       setImmediate(() => {
         shell.openExternal(url);
       });
+      return { action: 'deny' };
     });
   }
 
@@ -105,7 +117,7 @@ class Main {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
-      this.createWindow('/projects');
+      this.createWindow();
     }
   }
 
@@ -120,24 +132,12 @@ class Main {
       return net.fetch(filePath);
     });
 
-    // Check in Core if either local or cloud user is set
-    // If no, show the user the /user/create page
-    // If yes use this to init core and show /projects
-
     const core = new ElekIoCore({
       environment: app.isPackaged ? 'production' : 'development',
     });
-    this.registerIpcMain(core);
 
-    // const user = await core.user.get();
-    // let mainWindow: BrowserWindow;
-    this.createWindow('/');
-
-    // if (user) {
-    //   mainWindow = await this.createWindow('/projects');
-    // } else {
-    //   mainWindow = await this.createWindow('/user/create');
-    // }
+    const window = this.createWindow();
+    this.registerIpcMain(window, core);
   }
 
   /**
@@ -170,10 +170,7 @@ class Main {
     return windowSize;
   }
 
-  private createWindow(
-    path: string,
-    options?: BrowserWindowConstructorOptions
-  ) {
+  private createWindow(options?: BrowserWindowConstructorOptions) {
     const { width, height } = this.getWindowSize();
 
     // Set defaults if missing
@@ -186,13 +183,15 @@ class Main {
     // Overwrite webPreferences to always load the correct preload script
     // and explicitly enable security features - although Electron > v28 should set these by default
     options.webPreferences = {
-      preload: Path.join(__dirname, 'preload.js'),
+      preload: Path.join(__dirname, '../preload/index.cjs'),
       disableBlinkFeatures: 'Auxclick', // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
       nodeIntegration: false,
       contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
       sandbox: true, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
-    options.icon = 'icons/icon.png';
+    if (process.platform === 'linux') {
+      options.icon = icon;
+    }
     options.frame = false;
     options.titleBarStyle = 'hidden';
     options.titleBarOverlay = true;
@@ -227,9 +226,7 @@ class Main {
 
       // Client is in production
       // Load the static index.html directly
-      window.loadFile(
-        Path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
-      );
+      window.loadFile(Path.join(__dirname, `../renderer/index.html`));
     } else {
       // Client is in development
       window.webContents.openDevTools();
@@ -239,51 +236,53 @@ class Main {
       //     console.log('An error occurred adding Chrome extension: ', err)
       //   );
 
-      console.log(
-        'Loading frontend in development by URL:',
-        MAIN_WINDOW_VITE_DEV_SERVER_URL
-      );
-      window.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+      const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
+      if (!rendererUrl) {
+        throw new Error(`"process.env['ELECTRON_RENDERER_URL']" is empty`);
+      }
+
+      console.log('Loading frontend in development by URL:', rendererUrl);
+      window.loadURL(rendererUrl);
     }
 
     return window;
   }
 
-  private registerIpcMain(core: ElekIoCore) {
-    ipcMain.handle('electron:dialog:showOpenDialog', async (event, args) => {
-      return await dialog.showOpenDialog(undefined, args);
+  private registerIpcMain(window: Electron.BrowserWindow, core: ElekIoCore) {
+    ipcMain.handle('electron:dialog:showOpenDialog', async (_event, args) => {
+      return await dialog.showOpenDialog(window, args);
     });
     ipcMain.handle('core:user:get', async () => {
       return await core.user.get();
     });
-    ipcMain.handle('core:user:set', async (event, args) => {
+    ipcMain.handle('core:user:set', async (_event, args) => {
       return await core.user.set(args[0]);
     });
     ipcMain.handle('core:projects:count', async () => {
       return await core.projects.count();
     });
-    ipcMain.handle('core:projects:create', async (event, args) => {
+    ipcMain.handle('core:projects:create', async (_event, args) => {
       return await core.projects.create(args[0]);
     });
-    ipcMain.handle('core:projects:list', async (event, args) => {
+    ipcMain.handle('core:projects:list', async (_event, args) => {
       return await core.projects.list(args[0]);
     });
-    ipcMain.handle('core:projects:read', async (event, args) => {
+    ipcMain.handle('core:projects:read', async (_event, args) => {
       return await core.projects.read(args[0]);
     });
-    ipcMain.handle('core:projects:update', async (event, args) => {
+    ipcMain.handle('core:projects:update', async (_event, args) => {
       return await core.projects.update(args[0]);
     });
-    ipcMain.handle('core:projects:delete', async (event, args) => {
+    ipcMain.handle('core:projects:delete', async (_event, args) => {
       return await core.projects.delete(args[0]);
     });
-    ipcMain.handle('core:assets:list', async (event, args) => {
+    ipcMain.handle('core:assets:list', async (_event, args) => {
       return await core.assets.list(args[0]);
     });
-    ipcMain.handle('core:assets:create', async (event, args) => {
+    ipcMain.handle('core:assets:create', async (_event, args) => {
       return await core.assets.create(args[0]);
     });
-    ipcMain.handle('core:assets:delete', async (event, args) => {
+    ipcMain.handle('core:assets:delete', async (_event, args) => {
       return await core.assets.delete(args[0]);
     });
     // ipcMain.handle('core:snapshots:list', async (event, args) => {
@@ -298,34 +297,34 @@ class Main {
     // ipcMain.handle('core:snapshots:commitHistory', async (event, args) => {
     //   return await core.snapshots.commitHistory(args[0]);
     // });
-    ipcMain.handle('core:collections:list', async (event, args) => {
+    ipcMain.handle('core:collections:list', async (_event, args) => {
       return await core.collections.list(args[0]);
     });
-    ipcMain.handle('core:collections:create', async (event, args) => {
+    ipcMain.handle('core:collections:create', async (_event, args) => {
       return await core.collections.create(args[0]);
     });
-    ipcMain.handle('core:collections:read', async (event, args) => {
+    ipcMain.handle('core:collections:read', async (_event, args) => {
       return await core.collections.read(args[0]);
     });
-    ipcMain.handle('core:collections:update', async (event, args) => {
+    ipcMain.handle('core:collections:update', async (_event, args) => {
       return await core.collections.update(args[0]);
     });
-    ipcMain.handle('core:collections:delete', async (event, args) => {
+    ipcMain.handle('core:collections:delete', async (_event, args) => {
       return await core.collections.delete(args[0]);
     });
-    ipcMain.handle('core:entries:list', async (event, args) => {
+    ipcMain.handle('core:entries:list', async (_event, args) => {
       return await core.entries.list(args[0]);
     });
-    ipcMain.handle('core:entries:create', async (event, args) => {
+    ipcMain.handle('core:entries:create', async (_event, args) => {
       return await core.entries.create(args[0]);
     });
-    ipcMain.handle('core:entries:read', async (event, args) => {
+    ipcMain.handle('core:entries:read', async (_event, args) => {
       return await core.entries.read(args[0]);
     });
-    ipcMain.handle('core:entries:update', async (event, args) => {
+    ipcMain.handle('core:entries:update', async (_event, args) => {
       return await core.entries.update(args[0]);
     });
-    ipcMain.handle('core:entries:delete', async (event, args) => {
+    ipcMain.handle('core:entries:delete', async (_event, args) => {
       return await core.entries.delete(args[0]);
     });
     // this.handleIpcMain<Parameters<AssetService['list']>>('core:assets:list', async (event, args) => {
