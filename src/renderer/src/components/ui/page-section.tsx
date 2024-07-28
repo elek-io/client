@@ -10,7 +10,7 @@ export interface PageSectionProps extends VariantProps<typeof styles> {
   actions?: ReactElement;
 }
 
-export function PageSection(props: PageSectionProps) {
+export function PageSection(props: PageSectionProps): JSX.Element {
   return (
     <section className="p-6 border-t border-zinc-200 dark:border-zinc-800">
       <div className="sm:flex sm:items-center">

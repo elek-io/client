@@ -20,6 +20,6 @@ export const Route = createFileRoute(
   component: ProjectCollectionLayout,
 });
 
-function ProjectCollectionLayout() {
+function ProjectCollectionLayout(): JSX.Element {
   return <Outlet></Outlet>;
 }

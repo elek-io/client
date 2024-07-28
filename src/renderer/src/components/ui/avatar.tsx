@@ -1,24 +1,27 @@
 'use client';
 
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
-import * as React from 'react';
-
 import { cn } from '@renderer/util';
+import {
+  ComponentPropsWithoutRef,
+  ElementRef,
+  forwardRef,
+  ForwardRefExoticComponent,
+  RefAttributes,
+} from 'react';
 
 interface AvatarProps extends AvatarPrimitive.AvatarProps {
   name: string;
   src?: string;
 }
 
-const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarBase>,
-  React.ComponentPropsWithoutRef<
-    React.ForwardRefExoticComponent<
-      AvatarProps & React.RefAttributes<HTMLSpanElement>
-    >
+const Avatar = forwardRef<
+  ElementRef<typeof AvatarBase>,
+  ComponentPropsWithoutRef<
+    ForwardRefExoticComponent<AvatarProps & RefAttributes<HTMLSpanElement>>
   >
 >(({ className, ...props }, ref) => {
-  function initials(name: string) {
+  function initials(name: string): string {
     const rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
     const initials = [...name.matchAll(rgx)] || [];
 
@@ -36,9 +39,9 @@ const Avatar = React.forwardRef<
 });
 Avatar.displayName = AvatarPrimitive.Root.displayName;
 
-const AvatarBase = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+const AvatarBase = forwardRef<
+  ElementRef<typeof AvatarPrimitive.Root>,
+  ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
@@ -51,9 +54,9 @@ const AvatarBase = React.forwardRef<
 ));
 AvatarBase.displayName = AvatarPrimitive.Root.displayName;
 
-const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+const AvatarImage = forwardRef<
+  ElementRef<typeof AvatarPrimitive.Image>,
+  ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
@@ -63,9 +66,9 @@ const AvatarImage = React.forwardRef<
 ));
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
-const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+const AvatarFallback = forwardRef<
+  ElementRef<typeof AvatarPrimitive.Fallback>,
+  ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Fallback
     ref={ref}

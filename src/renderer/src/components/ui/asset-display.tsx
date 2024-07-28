@@ -5,7 +5,7 @@ export interface AssetDisplayProps extends Asset {
   preview?: boolean;
 }
 
-export function AssetDisplay(props: AssetDisplayProps) {
+export function AssetDisplay(props: AssetDisplayProps): JSX.Element {
   switch (props.mimeType) {
     case 'image/avif':
     case 'image/gif':
@@ -46,6 +46,6 @@ export function AssetDisplay(props: AssetDisplayProps) {
       );
 
     default:
-      return `Mime type "${props.mimeType}" not supported`;
+      throw new Error(`Mime type "${props.mimeType}" not supported`);
   }
 }

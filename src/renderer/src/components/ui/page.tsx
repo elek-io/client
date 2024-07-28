@@ -1,20 +1,26 @@
 import { cn } from '@renderer/util';
-import React, { type ReactElement, type ReactNode } from 'react';
+import {
+  DragEventHandler,
+  forwardRef,
+  HTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { ScrollArea } from './scroll-area';
 
-export interface PageProps extends React.HTMLAttributes<HTMLElement> {
+export interface PageProps extends HTMLAttributes<HTMLElement> {
   title: string;
   description?: ReactElement;
   actions?: ReactElement;
   layout?: 'bare';
   children?: ReactNode;
-  onDragOver?: React.DragEventHandler<HTMLElement>;
-  onDragLeave?: React.DragEventHandler<HTMLElement>;
-  onDragEnter?: React.DragEventHandler<HTMLElement>;
-  onDrop?: React.DragEventHandler<HTMLElement>;
+  onDragOver?: DragEventHandler<HTMLElement>;
+  onDragLeave?: DragEventHandler<HTMLElement>;
+  onDragEnter?: DragEventHandler<HTMLElement>;
+  onDrop?: DragEventHandler<HTMLElement>;
 }
 
-export const Page = React.forwardRef<HTMLElement, PageProps>(
+export const Page = forwardRef<HTMLElement, PageProps>(
   ({ className, ...props }, ref) => (
     <ScrollArea>
       <main

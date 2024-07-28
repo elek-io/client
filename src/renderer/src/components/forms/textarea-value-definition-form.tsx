@@ -1,7 +1,4 @@
-import { SupportedLanguage, TextareaFieldDefinition } from '@elek-io/core';
-import { cn } from '@renderer/util';
-import * as React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { TextareaFieldDefinition } from '@elek-io/core';
 import {
   Form,
   FormControl,
@@ -13,7 +10,6 @@ import {
 } from '../ui/form';
 import { FormInput } from '../ui/form-input';
 import { FormTextarea } from '../ui/form-textarea';
-import { Textarea } from '../ui/textarea';
 import {
   DefaultFieldDefinitionForm,
   DefaultFieldDefinitionFormProps,
@@ -22,16 +18,16 @@ import {
 export type TextareaFieldDefinitionFormProps =
   DefaultFieldDefinitionFormProps<TextareaFieldDefinition>;
 
-const TextareaFieldDefinitionForm = React.forwardRef<
-  HTMLFormElement,
-  TextareaFieldDefinitionFormProps
->(({ className, form: state, ...props }, ref) => {
+const TextareaFieldDefinitionForm = ({
+  form,
+  ...props
+}: TextareaFieldDefinitionFormProps): JSX.Element => {
   return (
-    <Form {...state}>
+    <Form {...form}>
       <form className="space-y-6">
-        <DefaultFieldDefinitionForm form={state} {...props}>
+        <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
-            control={state.control}
+            control={form.control}
             name={`defaultValue`}
             render={({ field }) => (
               <FormItem>
@@ -49,7 +45,7 @@ const TextareaFieldDefinitionForm = React.forwardRef<
 
           <div className="flex flex-row items-center justify-between space-x-2">
             <FormField
-              control={state.control}
+              control={form.control}
               name={`min`}
               render={({ field }) => (
                 <FormItem>
@@ -65,7 +61,7 @@ const TextareaFieldDefinitionForm = React.forwardRef<
               )}
             />
             <FormField
-              control={state.control}
+              control={form.control}
               name={`max`}
               render={({ field }) => (
                 <FormItem>
@@ -85,49 +81,7 @@ const TextareaFieldDefinitionForm = React.forwardRef<
       </form>
     </Form>
   );
-});
+};
 TextareaFieldDefinitionForm.displayName = 'TextareaFieldDefinitionForm';
 
-export interface TextareaFieldDefinitionFormExampleProps
-  extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<TextareaFieldDefinition>;
-  currentLanguage: SupportedLanguage;
-}
-
-const TextareaFieldDefinitionFormExample = React.forwardRef<
-  HTMLFormElement,
-  TextareaFieldDefinitionFormExampleProps
->(({ className, state, currentLanguage, ...props }, ref) => {
-  return (
-    <FormField
-      control={state.control}
-      // @ts-expect-error It's just an example
-      name={'example'}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel isRequired={state.watch('isRequired')}>
-            {state.watch(`label.${currentLanguage}`)}
-          </FormLabel>
-          <FormControl>
-            <Textarea
-              className={cn('bg-white dark:bg-zinc-900', className)}
-              minLength={state.watch('min')}
-              maxLength={state.watch('max')}
-              defaultValue={state.watch('defaultValue')}
-              required={state.watch('isRequired')}
-              disabled={state.watch('isDisabled')}
-            />
-          </FormControl>
-          <FormDescription>
-            {state.watch(`description.${currentLanguage}`)}
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-});
-TextareaFieldDefinitionFormExample.displayName =
-  'TextareaFieldDefinitionFormExample';
-
-export { TextareaFieldDefinitionForm, TextareaFieldDefinitionFormExample };
+export { TextareaFieldDefinitionForm };

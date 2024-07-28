@@ -1,7 +1,4 @@
-import { RangeFieldDefinition, SupportedLanguage } from '@elek-io/core';
-import { cn } from '@renderer/util';
-import * as React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { RangeFieldDefinition } from '@elek-io/core';
 import {
   Form,
   FormControl,
@@ -12,7 +9,6 @@ import {
   FormMessage,
 } from '../ui/form';
 import { FormInput } from '../ui/form-input';
-import { Slider } from '../ui/slider';
 import {
   DefaultFieldDefinitionForm,
   DefaultFieldDefinitionFormProps,
@@ -21,16 +17,16 @@ import {
 export type RangeFieldDefinitionFormProps =
   DefaultFieldDefinitionFormProps<RangeFieldDefinition>;
 
-const RangeFieldDefinitionForm = React.forwardRef<
-  HTMLFormElement,
-  RangeFieldDefinitionFormProps
->(({ className, form: state, ...props }) => {
+const RangeFieldDefinitionForm = ({
+  form,
+  ...props
+}: RangeFieldDefinitionFormProps): JSX.Element => {
   return (
-    <Form {...state}>
+    <Form {...form}>
       <form className="space-y-6">
-        <DefaultFieldDefinitionForm form={state} {...props}>
+        <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
-            control={state.control}
+            control={form.control}
             name={`defaultValue`}
             render={({ field }) => (
               <FormItem>
@@ -48,7 +44,7 @@ const RangeFieldDefinitionForm = React.forwardRef<
 
           <div className="flex flex-row items-center justify-between space-x-2">
             <FormField
-              control={state.control}
+              control={form.control}
               name={`min`}
               render={({ field }) => (
                 <FormItem>
@@ -64,7 +60,7 @@ const RangeFieldDefinitionForm = React.forwardRef<
               )}
             />
             <FormField
-              control={state.control}
+              control={form.control}
               name={`max`}
               render={({ field }) => (
                 <FormItem>
@@ -84,54 +80,7 @@ const RangeFieldDefinitionForm = React.forwardRef<
       </form>
     </Form>
   );
-});
+};
 RangeFieldDefinitionForm.displayName = 'RangeFieldDefinitionForm';
 
-export interface RangeFieldDefinitionFormFieldProps
-  extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<RangeFieldDefinition>;
-  currentLanguage: SupportedLanguage;
-}
-
-const RangeFieldDefinitionFormFieldExample = React.forwardRef<
-  HTMLFormElement,
-  RangeFieldDefinitionFormFieldProps
->(({ className, state, currentLanguage, ...props }, ref) => {
-  return (
-    <FormField
-      control={state.control}
-      // @ts-expect-error It's just an example
-      name={'example'}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel isRequired={state.watch('isRequired')}>
-            {state.watch(`label.${currentLanguage}`)}
-          </FormLabel>
-          <FormControl>
-            <Slider
-              className={cn('bg-white dark:bg-zinc-900', className)}
-              defaultValue={[state.watch('defaultValue')]}
-              min={state.watch('min')}
-              max={state.watch('max')}
-              step={1}
-              disabled={state.watch('isDisabled')}
-            />
-            {/* <Input
-              {...state.register(field.name, { setValueAs: setValueAsNumber })}
-              type="number"
-              
-            /> */}
-          </FormControl>
-          <FormDescription>
-            {state.watch(`description.${currentLanguage}`)}
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-});
-RangeFieldDefinitionFormFieldExample.displayName =
-  'RangeFieldDefinitionFormFieldExample';
-
-export { RangeFieldDefinitionForm, RangeFieldDefinitionFormFieldExample };
+export { RangeFieldDefinitionForm };

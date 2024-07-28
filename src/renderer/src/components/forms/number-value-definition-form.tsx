@@ -1,6 +1,4 @@
-import { NumberFieldDefinition, SupportedLanguage } from '@elek-io/core';
-import * as React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { NumberFieldDefinition } from '@elek-io/core';
 import {
   Form,
   FormControl,
@@ -19,10 +17,10 @@ import {
 export type NumberFieldDefinitionFormProps =
   DefaultFieldDefinitionFormProps<NumberFieldDefinition>;
 
-const NumberFieldDefinitionForm = React.forwardRef<
-  HTMLFormElement,
-  NumberFieldDefinitionFormProps
->(({ form, ...props }) => {
+const NumberFieldDefinitionForm = ({
+  form,
+  ...props
+}: NumberFieldDefinitionFormProps): JSX.Element => {
   return (
     <Form {...form}>
       <form className="space-y-6">
@@ -83,51 +81,7 @@ const NumberFieldDefinitionForm = React.forwardRef<
       </form>
     </Form>
   );
-});
+};
 NumberFieldDefinitionForm.displayName = 'NumberFieldDefinitionForm';
 
-export interface NumberFieldDefinitionFormFieldProps
-  extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<NumberFieldDefinition>;
-  currentLanguage: SupportedLanguage;
-}
-
-const NumberFieldDefinitionFormFieldExample = React.forwardRef<
-  HTMLFormElement,
-  NumberFieldDefinitionFormFieldProps
->(({ className, state, currentLanguage, ...props }, ref) => {
-  return (
-    <FormField
-      control={state.control}
-      // @ts-expect-error It's just an example
-      name={'example'}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel isRequired={state.watch('isRequired')}>
-            {state.watch(`label.${currentLanguage}`)}
-          </FormLabel>
-          <FormControl>
-            {/* <Input
-              {...state.register(field.name, { setValueAs: setValueAsNumber })}
-              className={cn('bg-white dark:bg-zinc-900', className)}
-              type="number"
-              min={state.watch('min')}
-              max={state.watch('max')}
-              defaultValue={state.watch('defaultValue')}
-              required={state.watch('isRequired')}
-              disabled={state.watch('isDisabled')}
-            /> */}
-          </FormControl>
-          <FormDescription>
-            {state.watch(`description.${currentLanguage}`)}
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-});
-NumberFieldDefinitionFormFieldExample.displayName =
-  'NumberFieldDefinitionFormFieldExample';
-
-export { NumberFieldDefinitionForm, NumberFieldDefinitionFormFieldExample };
+export { NumberFieldDefinitionForm };

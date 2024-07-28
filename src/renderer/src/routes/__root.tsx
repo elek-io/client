@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
 });
 
-function RootComponent() {
+function RootComponent(): JSX.Element {
   const router = useRouter();
   const routerState = useRouterState();
   const { currentUser, electron } = Route.useLoaderData();

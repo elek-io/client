@@ -77,7 +77,7 @@ class Main {
       readonly defaultPrevented: boolean;
     },
     contents: Electron.WebContents
-  ) {
+  ): void {
     // Disable the creation of new windows e.g. by using target="_blank"
     // Instead, let the operating system handle this event's url if it's in the whitelist
     // and open external links inside the default browser
@@ -104,7 +104,7 @@ class Main {
     });
   }
 
-  private onWindowAllClosed() {
+  private onWindowAllClosed(): void {
     // Quit when all windows are closed, except on macOS. There, it's common
     // for applications and their menu bar to stay active until the user quits
     // explicitly with Cmd + Q.
@@ -113,7 +113,7 @@ class Main {
     }
   }
 
-  private onActivate() {
+  private onActivate(): void {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -121,7 +121,7 @@ class Main {
     }
   }
 
-  private onReady() {
+  private async onReady(): Promise<void> {
     // Register a protocol that is able to load files from local FS
     protocol.handle('elek-io-local-file', (request) => {
       const filePath = request.url.replace(
@@ -135,8 +135,21 @@ class Main {
     const core = new ElekIoCore({
       environment: app.isPackaged ? 'production' : 'development',
     });
+    // @todo Get the current users last saved window size and location
+    // and use it for creating the new window. Core needs to support this first
+    // const window: BrowserWindow;
+    // const user = await core.user.get();
+    // if (user.window.size) {
+    //   window = this.createWindow({width, height});
+    // }
 
     const window = this.createWindow();
+
+    // @todo Save the current window size and location to the users configuration file
+    // Core needs to support this first
+    // window.on('close', async (event) => {
+    //   await core.user.set({});
+    // })
     this.registerIpcMain(window, core);
   }
 
@@ -147,7 +160,10 @@ class Main {
    * The size, monitor and maybe position should be saved locally in the users configuration and then applied on each start.
    * If the setup changes (display not available anymore or different resolution), default back to this.
    */
-  private getWindowSize() {
+  private getWindowSize(): {
+    width: number;
+    height: number;
+  } {
     const display = screen.getPrimaryDisplay();
     const displaySize = display.workAreaSize;
     const aspectRatioFactor = 16 / 9;
@@ -170,7 +186,9 @@ class Main {
     return windowSize;
   }
 
-  private createWindow(options?: BrowserWindowConstructorOptions) {
+  private createWindow(
+    options?: BrowserWindowConstructorOptions
+  ): BrowserWindow {
     const { width, height } = this.getWindowSize();
 
     // Set defaults if missing
@@ -216,39 +234,29 @@ class Main {
     });
 
     if (app.isPackaged) {
-      // Uncomment to debug a production build
-      window.webContents.openDevTools();
-      // installExtension(REACT_DEVELOPER_TOOLS)
-      //   .then((name) => console.log(`Added Chrome extension:  ${name}`))
-      //   .catch((err) =>
-      //     console.log('An error occurred adding Chrome extension: ', err)
-      //   );
-
       // Client is in production
       // Load the static index.html directly
       window.loadFile(Path.join(__dirname, `../renderer/index.html`));
+      // Uncomment to debug a production build
+      // window.webContents.openDevTools();
     } else {
       // Client is in development
-      window.webContents.openDevTools();
-      // installExtension(REACT_DEVELOPER_TOOLS)
-      //   .then((name) => console.log(`Added Chrome extension:  ${name}`))
-      //   .catch((err) =>
-      //     console.log('An error occurred adding Chrome extension: ', err)
-      //   );
-
       const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
       if (!rendererUrl) {
         throw new Error(`"process.env['ELECTRON_RENDERER_URL']" is empty`);
       }
-
       console.log('Loading frontend in development by URL:', rendererUrl);
       window.loadURL(rendererUrl);
+      window.webContents.openDevTools();
     }
 
     return window;
   }
 
-  private registerIpcMain(window: Electron.BrowserWindow, core: ElekIoCore) {
+  private registerIpcMain(
+    window: Electron.BrowserWindow,
+    core: ElekIoCore
+  ): void {
     ipcMain.handle('electron:dialog:showOpenDialog', async (_event, args) => {
       return await dialog.showOpenDialog(window, args);
     });

@@ -15,6 +15,6 @@ export const Route = createFileRoute(
   component: ProjectCollectionEntryLayout,
 });
 
-function ProjectCollectionEntryLayout() {
+function ProjectCollectionEntryLayout(): JSX.Element {
   return <Outlet></Outlet>;
 }

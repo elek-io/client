@@ -4,10 +4,10 @@ export const Route = createFileRoute('/user/set')({
   component: SetUserPage,
 });
 
-function SetUserPage() {
+function SetUserPage(): JSX.Element {
   const context = Route.useRouteContext();
 
-  function setUser() {
+  function setUser(): void {
     context.core.user.set({
       userType: 'local',
       name: 'John Doe',

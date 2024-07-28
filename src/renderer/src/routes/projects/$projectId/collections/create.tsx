@@ -15,7 +15,7 @@ export const Route = createFileRoute('/projects/$projectId/collections/create')(
   }
 );
 
-function ProjectCollectionCreate() {
+function ProjectCollectionCreate(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -38,17 +38,14 @@ function ProjectCollectionCreate() {
         singular: translatableDefault({
           supportedLanguages:
             context.currentProject.settings.language.supported,
-          default: '',
         }),
         plural: translatableDefault({
           supportedLanguages:
             context.currentProject.settings.language.supported,
-          default: '',
         }),
       },
       description: translatableDefault({
         supportedLanguages: context.currentProject.settings.language.supported,
-        default: '',
       }),
       slug: {
         singular: '',

@@ -6,7 +6,7 @@ export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,
 });
 
-function ProjectDashboardPage() {
+function ProjectDashboardPage(): JSX.Element {
   const context = Route.useRouteContext();
 
   function Description(): ReactElement {

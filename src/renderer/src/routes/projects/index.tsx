@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from '@renderer/components/ui/card';
 import { Page } from '@renderer/components/ui/page';
-import { formatDatetime } from '@renderer/util';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { ReactElement } from 'react';
@@ -15,7 +14,7 @@ export const Route = createFileRoute('/projects/')({
   component: ListProjectsPage,
 });
 
-function ListProjectsPage() {
+function ListProjectsPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
 
@@ -53,14 +52,14 @@ function ListProjectsPage() {
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {context.projects.list.map((project) => {
-          const created = formatDatetime(
-            project.created,
-            context.currentUser.language
-          );
-          const updated = formatDatetime(
-            project.updated,
-            context.currentUser.language
-          );
+          // const created = formatDatetime(
+          //   project.created,
+          //   context.currentUser.language
+          // );
+          // const updated = formatDatetime(
+          //   project.updated,
+          //   context.currentUser.language
+          // );
 
           return (
             <Link

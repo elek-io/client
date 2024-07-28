@@ -2,15 +2,14 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Sidebar } from '@renderer/components/ui/sidebar';
 import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
 import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
-import { Outlet, createFileRoute, useRouter } from '@tanstack/react-router';
+import { Outlet, createFileRoute } from '@tanstack/react-router';
 import { Layers, Plus } from 'lucide-react';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   component: ProjectCollectionsLayout,
 });
 
-function ProjectCollectionsLayout() {
-  const router = useRouter();
+function ProjectCollectionsLayout(): JSX.Element {
   const context = Route.useRouteContext();
 
   return (

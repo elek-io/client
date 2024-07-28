@@ -1,5 +1,5 @@
 import { FieldDefinition, FieldType, SupportedLanguage } from '@elek-io/core';
-import * as React from 'react';
+import { Fragment, HTMLAttributes } from 'react';
 import { FieldValues, UseFormReturn } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
@@ -26,19 +26,22 @@ import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 
 export interface DefaultFieldDefinitionFormProps<T extends FieldValues>
-  extends React.HTMLAttributes<HTMLFormElement> {
+  extends HTMLAttributes<HTMLFormElement> {
   form: UseFormReturn<T>;
   supportedLanguages: SupportedLanguage[];
   currentLanguage: SupportedLanguage;
   fieldType: FieldType;
 }
 
-const DefaultFieldDefinitionForm = React.forwardRef<
-  HTMLFormElement,
-  DefaultFieldDefinitionFormProps<FieldDefinition>
->(({ form, currentLanguage, supportedLanguages, children, fieldType }) => {
+const DefaultFieldDefinitionForm = ({
+  form,
+  currentLanguage,
+  supportedLanguages,
+  children,
+  fieldType,
+}: DefaultFieldDefinitionFormProps<FieldDefinition>): JSX.Element => {
   return (
-    <>
+    <Fragment>
       <FormField
         control={form.control}
         name={`label.${currentLanguage}`}
@@ -243,9 +246,9 @@ const DefaultFieldDefinitionForm = React.forwardRef<
           </FormItem>
         )}
       />
-    </>
+    </Fragment>
   );
-});
+};
 DefaultFieldDefinitionForm.displayName = 'DefaultFieldDefinitionForm';
 
 export { DefaultFieldDefinitionForm };

@@ -81,7 +81,7 @@ export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectLayout,
 });
 
-function ProjectLayout() {
+function ProjectLayout(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -142,7 +142,7 @@ function ProjectLayout() {
     });
   }, [context.collections]);
 
-  async function onSearch(value: string) {
+  async function onSearch(value: string): Promise<void> {
     setSearchQuery(value);
     // @todo noop
     // try {
@@ -216,7 +216,7 @@ function ProjectLayout() {
 
             {projectNavigation.map((navigation) => {
               const item = (
-                <SidebarNavigationItem key={navigation.to} to={navigation.to}>
+                <SidebarNavigationItem to={navigation.to}>
                   <navigation.icon
                     className="h-6 w-6"
                     aria-hidden="true"
@@ -229,7 +229,7 @@ function ProjectLayout() {
 
               if (isProjectSidebarNarrow) {
                 return (
-                  <TooltipProvider>
+                  <TooltipProvider key={navigation.to}>
                     <Tooltip>
                       <TooltipTrigger asChild>{item}</TooltipTrigger>
                       <TooltipContent side="right" align="center">

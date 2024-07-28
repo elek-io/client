@@ -10,7 +10,7 @@ export interface AssetTeaserProps extends VariantProps<typeof styles>, Asset {
   onClick?: MouseEventHandler;
 }
 
-export function AssetTeaser(props: AssetTeaserProps) {
+export function AssetTeaser(props: AssetTeaserProps): JSX.Element {
   return (
     <a
       className="cursor-pointer no-underline transition-colors bg-white dark:bg-zinc-900 hover:bg-zinc-300 hover:dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 rounded-md p-2"

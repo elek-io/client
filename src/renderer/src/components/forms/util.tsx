@@ -20,12 +20,9 @@ import { Switch } from '../ui/switch';
 
 export function translatableDefault(props: {
   supportedLanguages: SupportedLanguage[];
-  // default: string | number | boolean | ;
 }): {
   [x: string]: null;
 } {
-  // const defaultValue = props.default;
-
   return props.supportedLanguages
     .map((language) => {
       return { [language]: null };

@@ -1,12 +1,12 @@
 'use client';
 
-// eslint-disable-next-line import/no-unresolved
+import { ComponentProps } from 'react';
 import { Toaster as Sonner, toast } from 'sonner';
 import { useTheme } from '../theme-provider';
 
-type ToasterProps = React.ComponentProps<typeof Sonner>;
+type ToasterProps = ComponentProps<typeof Sonner>;
 
-const Toaster = ({ ...props }: ToasterProps) => {
+const Toaster = ({ ...props }: ToasterProps): JSX.Element => {
   const { theme } = useTheme();
 
   return (
@@ -31,4 +31,4 @@ const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-export { Toaster, toast };
+export { toast, Toaster };

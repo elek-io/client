@@ -9,7 +9,7 @@ export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectCollectionsLayout,
 });
 
-function ProjectCollectionsLayout() {
+function ProjectCollectionsLayout(): JSX.Element {
   const settingsNavigation: {
     name: string;
     to: ToPathOption;

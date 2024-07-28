@@ -1,7 +1,4 @@
-import { SupportedLanguage, TextFieldDefinition } from '@elek-io/core';
-import { cn } from '@renderer/util';
-import * as React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { TextFieldDefinition } from '@elek-io/core';
 import {
   Form,
   FormControl,
@@ -12,7 +9,6 @@ import {
   FormMessage,
 } from '../ui/form';
 import { FormInput } from '../ui/form-input';
-import { Input } from '../ui/input';
 import {
   DefaultFieldDefinitionForm,
   DefaultFieldDefinitionFormProps,
@@ -21,10 +17,10 @@ import {
 export type TextFieldDefinitionFormProps =
   DefaultFieldDefinitionFormProps<TextFieldDefinition>;
 
-const TextFieldDefinitionForm = React.forwardRef<
-  HTMLFormElement,
-  TextFieldDefinitionFormProps
->(({ className, form, ...props }, ref) => {
+const TextFieldDefinitionForm = ({
+  form,
+  ...props
+}: TextFieldDefinitionFormProps): JSX.Element => {
   return (
     <Form {...form}>
       <form className="space-y-6">
@@ -85,50 +81,7 @@ const TextFieldDefinitionForm = React.forwardRef<
       </form>
     </Form>
   );
-});
+};
 TextFieldDefinitionForm.displayName = 'TextFieldDefinitionForm';
 
-export interface TextFieldDefinitionFormExampleProps
-  extends React.HTMLAttributes<HTMLFormElement> {
-  state: UseFormReturn<TextFieldDefinition>;
-  currentLanguage: SupportedLanguage;
-}
-
-const TextFieldDefinitionFormExample = React.forwardRef<
-  HTMLFormElement,
-  TextFieldDefinitionFormExampleProps
->(({ className, state, currentLanguage, ...props }, ref) => {
-  return (
-    <FormField
-      control={state.control}
-      // @ts-expect-error It's just an example
-      name={'example'}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel isRequired={state.watch('isRequired')}>
-            {state.watch(`label.${currentLanguage}`)}
-          </FormLabel>
-          <FormControl>
-            {/* {InputFromDefinition()} */}
-            <Input
-              className={cn('bg-white dark:bg-zinc-900', className)}
-              type="text"
-              min={state.watch('min')}
-              max={state.watch('max')}
-              defaultValue={state.watch('defaultValue')}
-              required={state.watch('isRequired')}
-              disabled={state.watch('isDisabled')}
-            />
-          </FormControl>
-          <FormDescription>
-            {state.watch(`description.${currentLanguage}`)}
-          </FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-});
-TextFieldDefinitionFormExample.displayName = 'TextFieldDefinitionFormExample';
-
-export { TextFieldDefinitionForm, TextFieldDefinitionFormExample };
+export { TextFieldDefinitionForm };

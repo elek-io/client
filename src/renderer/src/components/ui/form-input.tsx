@@ -1,12 +1,16 @@
-import * as React from 'react';
-
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLInputTypeAttribute,
+  InputHTMLAttributes,
+} from 'react';
 import { ControllerRenderProps, FieldValues } from 'react-hook-form';
 import { Input } from './input';
 
 export interface FormInputProps<T extends FieldValues>
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+  extends InputHTMLAttributes<HTMLInputElement> {
   field: ControllerRenderProps<T>;
-  type: Extract<React.HTMLInputTypeAttribute, 'text' | 'number'>;
+  type: Extract<HTMLInputTypeAttribute, 'text' | 'number'>;
 }
 
 /**
@@ -16,11 +20,11 @@ export interface FormInputProps<T extends FieldValues>
  * It also returns null instead of an empty string
  * if the user did not put in a value.
  */
-function FormInput<T extends FieldValues>({
-  field,
-  ...props
-}: FormInputProps<T>) {
-  function transform(value: string) {
+function _FormInput<T extends FieldValues>(
+  { field, ...props }: FormInputProps<T>,
+  ref: ForwardedRef<HTMLInputElement>
+): JSX.Element {
+  function transform(value: string): string | number | null {
     if (value.trim() === '') {
       return null;
     }
@@ -40,9 +44,11 @@ function FormInput<T extends FieldValues>({
     <Input
       {...props}
       {...field}
+      value={field.value || ''} // The value can now also be null but the input cannot handle it, so we set a default empty string instead
+      ref={ref}
       onChange={(event) => field.onChange(transform(event.target.value))}
     />
   );
 }
 
-export { FormInput };
+export const FormInput: ForwardRefWithGenerics = forwardRef(_FormInput);

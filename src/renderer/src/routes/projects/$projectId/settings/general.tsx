@@ -62,7 +62,7 @@ export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsPage,
 });
 
-function ProjectSettingsPage() {
+function ProjectSettingsPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -221,7 +221,7 @@ function ProjectSettingsPage() {
                                     variant="ghost"
                                     size="icon"
                                     className="ml-4 rounded-full"
-                                    onClick={(event) => {
+                                    onClick={() => {
                                       if (
                                         language ===
                                         projectForm.getValues(

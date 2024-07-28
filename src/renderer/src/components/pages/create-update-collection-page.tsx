@@ -24,7 +24,7 @@ import {
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   SubmitHandler,
   UseFormReturn,
@@ -32,22 +32,10 @@ import {
   useForm,
 } from 'react-hook-form';
 import { NumberFieldDefinitionForm } from '../forms/number-value-definition-form';
-import {
-  RangeFieldDefinitionForm,
-  RangeFieldDefinitionFormFieldExample,
-} from '../forms/range-value-definition-form';
-import {
-  TextFieldDefinitionForm,
-  TextFieldDefinitionFormExample,
-} from '../forms/text-value-definition-form';
-import {
-  TextareaFieldDefinitionForm,
-  TextareaFieldDefinitionFormExample,
-} from '../forms/textarea-value-definition-form';
-import {
-  ToggleFieldDefinitionForm,
-  ToggleFieldDefinitionFormExample,
-} from '../forms/toggle-value-definition-form';
+import { RangeFieldDefinitionForm } from '../forms/range-value-definition-form';
+import { TextFieldDefinitionForm } from '../forms/text-value-definition-form';
+import { TextareaFieldDefinitionForm } from '../forms/textarea-value-definition-form';
+import { ToggleFieldDefinitionForm } from '../forms/toggle-value-definition-form';
 import { FormFieldFromDefinition, translatableDefault } from '../forms/util';
 import { Button } from '../ui/button';
 import {
@@ -69,7 +57,8 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
-import { Input } from '../ui/input';
+import { FormInput } from '../ui/form-input';
+import { FormTextarea } from '../ui/form-textarea';
 import { Page, PageProps } from '../ui/page';
 import { PageSection } from '../ui/page-section';
 import { ScrollArea } from '../ui/scroll-area';
@@ -90,7 +79,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../ui/sheet';
-import { Textarea } from '../ui/textarea';
 
 export interface CreateUpdateCollectionPageProps extends PageProps {
   collectionForm: UseFormReturn<CreateCollectionProps | UpdateCollectionProps>;
@@ -104,10 +92,12 @@ export interface CreateUpdateCollectionPageProps extends PageProps {
   };
 }
 
-export const CreateUpdateCollectionPage = React.forwardRef<
-  HTMLElement,
-  CreateUpdateCollectionPageProps
->(({ context, collectionForm, onCollectionSubmit, ...props }) => {
+export const CreateUpdateCollectionPage = ({
+  context,
+  collectionForm,
+  onCollectionSubmit,
+  ...props
+}: CreateUpdateCollectionPageProps): JSX.Element => {
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
@@ -311,6 +301,112 @@ export const CreateUpdateCollectionPage = React.forwardRef<
     }
   }
 
+  const ExampleFormField = (): JSX.Element => {
+    switch (selectedFieldType) {
+      case 'number':
+        return FormFieldFromDefinition<NumberFieldDefinition>(
+          numberFieldDefinitionFormState.getValues(),
+          // @ts-expect-error It's just an example
+          'exampleFields.number.content',
+          context.translate
+        );
+      case 'range':
+        return FormFieldFromDefinition<RangeFieldDefinition>(
+          rangeFieldDefinitionFormState.getValues(),
+          // @ts-expect-error It's just an example
+          'exampleFields.range.content',
+          context.translate
+        );
+      case 'text':
+        return FormFieldFromDefinition<TextFieldDefinition>(
+          textFieldDefinitionFormState.getValues(),
+          // @ts-expect-error It's just an example
+          'exampleFields.text.content',
+          context.translate
+        );
+      case 'textarea':
+        return FormFieldFromDefinition<TextareaFieldDefinition>(
+          textareaFieldDefinitionFormState.getValues(),
+          // @ts-expect-error It's just an example
+          'exampleFields.textarea.content',
+          context.translate
+        );
+      case 'toggle':
+        return FormFieldFromDefinition<ToggleFieldDefinition>(
+          toggleFieldDefinitionFormState.getValues(),
+          // @ts-expect-error It's just an example
+          'exampleFields.toggle.content',
+          context.translate
+        );
+      default:
+        throw new Error(
+          `Unsupported example form Field "${selectedFieldType}"`
+        );
+    }
+  };
+
+  const FieldDefinitionForm = (): JSX.Element => {
+    switch (selectedFieldType) {
+      case 'number':
+        return (
+          <NumberFieldDefinitionForm
+            form={numberFieldDefinitionFormState}
+            currentLanguage={context.currentProject.settings.language.default}
+            supportedLanguages={
+              context.currentProject.settings.language.supported
+            }
+            fieldType={selectedFieldType}
+          />
+        );
+      case 'range':
+        return (
+          <RangeFieldDefinitionForm
+            form={rangeFieldDefinitionFormState}
+            currentLanguage={context.currentProject.settings.language.default}
+            supportedLanguages={
+              context.currentProject.settings.language.supported
+            }
+            fieldType={selectedFieldType}
+          />
+        );
+      case 'text':
+        return (
+          <TextFieldDefinitionForm
+            form={textFieldDefinitionFormState}
+            currentLanguage={context.currentProject.settings.language.default}
+            supportedLanguages={
+              context.currentProject.settings.language.supported
+            }
+            fieldType={selectedFieldType}
+          />
+        );
+      case 'textarea':
+        return (
+          <TextareaFieldDefinitionForm
+            form={textareaFieldDefinitionFormState}
+            currentLanguage={context.currentProject.settings.language.default}
+            supportedLanguages={
+              context.currentProject.settings.language.supported
+            }
+            fieldType={selectedFieldType}
+          />
+        );
+      case 'toggle':
+        return (
+          <ToggleFieldDefinitionForm
+            form={toggleFieldDefinitionFormState}
+            currentLanguage={context.currentProject.settings.language.default}
+            supportedLanguages={
+              context.currentProject.settings.language.supported
+            }
+            fieldType={selectedFieldType}
+          />
+        );
+      default:
+        throw new Error(`Unsupported definition form "${selectedFieldType}"`);
+    }
+  };
+
   return (
     <Page {...props}>
       {JSON.stringify(context.currentProject.settings)}
@@ -340,7 +436,10 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                   <FormItem className="col-span-12 sm:col-span-2">
                     <FormLabel isRequired={true}>Icon</FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange} {...field}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -370,7 +469,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                     <FormControl>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Input {...field} />
+                          <FormInput field={field} type="text" />
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
@@ -395,7 +494,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                                         {language}
                                       </FormLabel>
                                       <FormControl>
-                                        <Input {...field} />
+                                        <FormInput field={field} type="text" />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -436,7 +535,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                     <FormControl>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Input {...field} />
+                          <FormInput field={field} type="text" />
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
@@ -460,7 +559,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                                         {language}
                                       </FormLabel>
                                       <FormControl>
-                                        <Input {...field} />
+                                        <FormInput field={field} type="text" />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -498,7 +597,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                     <FormControl>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Textarea {...field} />
+                          <FormTextarea field={field} />
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
@@ -522,7 +621,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                                         {language}
                                       </FormLabel>
                                       <FormControl>
-                                        <Textarea {...field} />
+                                        <FormTextarea field={field} />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -622,47 +721,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                   //   console.log(event);
                   //   event.preventDefault();
                   // }}
-                  overlayChildren={
-                    (selectedFieldType === 'number' &&
-                      FormFieldFromDefinition<NumberFieldDefinition>(
-                        numberFieldDefinitionFormState.getValues(),
-                        // @ts-expect-error It's just an example
-                        'content',
-                        context.translate
-                      )) ||
-                    (selectedFieldType === 'range' && (
-                      <RangeFieldDefinitionFormFieldExample
-                        state={rangeFieldDefinitionFormState}
-                        currentLanguage={
-                          context.currentProject.settings.language.default
-                        }
-                      />
-                    )) ||
-                    (selectedFieldType === 'text' && (
-                      <TextFieldDefinitionFormExample
-                        state={textFieldDefinitionFormState}
-                        currentLanguage={
-                          context.currentProject.settings.language.default
-                        }
-                      />
-                    )) ||
-                    (selectedFieldType === 'textarea' && (
-                      <TextareaFieldDefinitionFormExample
-                        state={textareaFieldDefinitionFormState}
-                        currentLanguage={
-                          context.currentProject.settings.language.default
-                        }
-                      />
-                    )) ||
-                    (selectedFieldType === 'toggle' && (
-                      <ToggleFieldDefinitionFormExample
-                        state={toggleFieldDefinitionFormState}
-                        currentLanguage={
-                          context.currentProject.settings.language.default
-                        }
-                      />
-                    ))
-                  }
+                  overlayChildren={<ExampleFormField></ExampleFormField>}
                 >
                   <SheetHeader>
                     <SheetTitle>Add a Field to this Collection</SheetTitle>
@@ -701,70 +760,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
                   <SheetBody>
                     <ScrollArea>
                       <div className="p-6 space-y-6">
-                        {(selectedFieldType === 'number' && (
-                          <NumberFieldDefinitionForm
-                            form={numberFieldDefinitionFormState}
-                            currentLanguage={
-                              context.currentProject.settings.language.default
-                            }
-                            supportedLanguages={
-                              context.currentProject.settings.language.supported
-                            }
-                            fieldType={selectedFieldType}
-                          />
-                        )) ||
-                          (selectedFieldType === 'range' && (
-                            <RangeFieldDefinitionForm
-                              form={rangeFieldDefinitionFormState}
-                              currentLanguage={
-                                context.currentProject.settings.language.default
-                              }
-                              supportedLanguages={
-                                context.currentProject.settings.language
-                                  .supported
-                              }
-                              fieldType={selectedFieldType}
-                            />
-                          )) ||
-                          (selectedFieldType === 'text' && (
-                            <TextFieldDefinitionForm
-                              form={textFieldDefinitionFormState}
-                              currentLanguage={
-                                context.currentProject.settings.language.default
-                              }
-                              supportedLanguages={
-                                context.currentProject.settings.language
-                                  .supported
-                              }
-                              fieldType={selectedFieldType}
-                            />
-                          )) ||
-                          (selectedFieldType === 'textarea' && (
-                            <TextareaFieldDefinitionForm
-                              form={textareaFieldDefinitionFormState}
-                              currentLanguage={
-                                context.currentProject.settings.language.default
-                              }
-                              supportedLanguages={
-                                context.currentProject.settings.language
-                                  .supported
-                              }
-                              fieldType={selectedFieldType}
-                            />
-                          )) ||
-                          (selectedFieldType === 'toggle' && (
-                            <ToggleFieldDefinitionForm
-                              form={toggleFieldDefinitionFormState}
-                              currentLanguage={
-                                context.currentProject.settings.language.default
-                              }
-                              supportedLanguages={
-                                context.currentProject.settings.language
-                                  .supported
-                              }
-                              fieldType={selectedFieldType}
-                            />
-                          ))}
+                        <FieldDefinitionForm></FieldDefinitionForm>
                       </div>
                     </ScrollArea>
                   </SheetBody>
@@ -785,7 +781,7 @@ export const CreateUpdateCollectionPage = React.forwardRef<
               {fieldDefinitions.fields.map((fieldDefinition, index) => {
                 return FormFieldFromDefinition(
                   fieldDefinition,
-                  `fields.field-${index}.content`,
+                  `currentFields.field-${index}.content`,
                   context.translate
                 );
               })}
@@ -846,6 +842,6 @@ export const CreateUpdateCollectionPage = React.forwardRef<
       </Form>
     </Page>
   );
-});
+};
 
 CreateUpdateCollectionPage.displayName = 'CreateUpdateCollectionPage';

@@ -1,16 +1,12 @@
-import * as React from 'react';
-
 import { cn } from '@renderer/util';
+import { DetailedHTMLProps, HTMLAttributes } from 'react';
 
 export interface SidebarProps
-  extends React.DetailedHTMLProps<
-    React.HTMLAttributes<HTMLElement>,
-    HTMLElement
-  > {
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
   isNarrow?: boolean;
 }
 
-function Sidebar({ className, isNarrow, ...props }: SidebarProps) {
+function Sidebar({ className, isNarrow, ...props }: SidebarProps): JSX.Element {
   return (
     <aside
       className={cn(

@@ -38,7 +38,7 @@ export const Route = createFileRoute(
   component: ProjectCollectionEntryIndexPage,
 });
 
-function ProjectCollectionEntryIndexPage() {
+function ProjectCollectionEntryIndexPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);

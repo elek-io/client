@@ -44,7 +44,7 @@ export const Route = createFileRoute('/projects/$projectId/assets/')({
   component: ProjectAssetsPage,
 });
 
-function ProjectAssetsPage() {
+function ProjectAssetsPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -90,7 +90,7 @@ function ProjectAssetsPage() {
     );
   }
 
-  async function onAddAssetClicked() {
+  async function onAddAssetClicked(): Promise<void> {
     try {
       const result = await context.electron.dialog.showOpenDialog({
         title: 'Select Assets to add',
@@ -119,7 +119,7 @@ function ProjectAssetsPage() {
     }
   }
 
-  async function onAssetDelete() {
+  async function onAssetDelete(): Promise<void> {
     if (!selectedAsset) {
       addNotification({
         intent: NotificationIntent.DANGER,
@@ -151,7 +151,7 @@ function ProjectAssetsPage() {
     }
   }
 
-  async function createAssetsFromPaths(paths: string[]) {
+  async function createAssetsFromPaths(paths: string[]): Promise<void> {
     const assetPromisses: Promise<Asset>[] = [];
 
     for (const path of paths) {
@@ -170,18 +170,18 @@ function ProjectAssetsPage() {
     console.log('Asset create results: ', results);
   }
 
-  function onDragOver(event: React.DragEvent<HTMLElement>) {
+  function onDragOver(event: DragEvent<HTMLElement>): void {
     event.preventDefault();
     event.stopPropagation();
   }
 
-  function onDragEnter(event: React.DragEvent<HTMLElement>) {
+  function onDragEnter(event: DragEvent<HTMLElement>): void {
     event.preventDefault();
     event.stopPropagation();
     setIsDraggingOver(true);
   }
 
-  function onDragLeave(event: React.DragEvent<HTMLElement>) {
+  function onDragLeave(event: DragEvent<HTMLElement>): void {
     event.preventDefault();
     event.stopPropagation();
     setIsDraggingOver(false);
@@ -190,7 +190,7 @@ function ProjectAssetsPage() {
   /**
    * @todo This creates one commit for all instead on one per uploaded file, how is this possible?
    */
-  async function onAssetsDropped(event: React.DragEvent<HTMLElement>) {
+  async function onAssetsDropped(event: DragEvent<HTMLElement>): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
 

@@ -31,7 +31,7 @@ export interface StoreState {
 export const useStore = create<StoreState>()(
   devtools((set) => ({
     notifications: [],
-    addNotification: (notification) => {
+    addNotification: (notification): void => {
       console.log('New notification:', notification);
       switch (notification.intent) {
         case NotificationIntent.INFO:
@@ -61,14 +61,14 @@ export const useStore = create<StoreState>()(
       }));
     },
     isProjectSidebarNarrow: false,
-    setIsProjectSidebarNarrow: (isNarrow) => {
-      set((state) => ({
+    setIsProjectSidebarNarrow: (isNarrow): void => {
+      set(() => ({
         isProjectSidebarNarrow: isNarrow,
       }));
     },
     isProjectSearchDialogOpen: false,
-    setProjectSearchDialogOpen: (isOpen) => {
-      set((state) => ({
+    setProjectSearchDialogOpen: (isOpen): void => {
+      set(() => ({
         isProjectSearchDialogOpen: isOpen,
       }));
     },

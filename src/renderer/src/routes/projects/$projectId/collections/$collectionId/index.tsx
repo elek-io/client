@@ -44,7 +44,7 @@ export const Route = createFileRoute(
   component: ProjectCollectionIndexPage,
 });
 
-function ProjectCollectionIndexPage() {
+function ProjectCollectionIndexPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -159,7 +159,7 @@ function ProjectCollectionIndexPage() {
     );
   }
 
-  function columns() {
+  function columns(): ColumnDef<Entry>[] {
     const columns: ColumnDef<Entry>[] =
       context.currentCollection.valueDefinitions.map((definition) => {
         return {
@@ -189,7 +189,7 @@ function ProjectCollectionIndexPage() {
     return columns;
   }
 
-  function onRowClicked(id: string) {
+  function onRowClicked(id: string): void {
     router.navigate({
       to: '/projects/$projectId/collections/$collectionId/$entryId',
       params: {
