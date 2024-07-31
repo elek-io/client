@@ -2,10 +2,15 @@
 // // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 import { ElectronAPI, electronAPI } from '@electron-toolkit/preload';
 import ElekIoCore from '@elek-io/core';
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, Dialog, ipcRenderer } from 'electron';
 
 export interface ContextBridgeApi {
-  electron: ElectronAPI;
+  electron: {
+    process: ElectronAPI['process'];
+    dialog: {
+      showOpenDialog: Dialog['showOpenDialog'];
+    };
+  };
   core: {
     user: {
       get: ElekIoCore['user']['get'];
@@ -43,7 +48,13 @@ export interface ContextBridgeApi {
 
 // Custom APIs for renderer
 const ipc: ContextBridgeApi = {
-  electron: electronAPI,
+  electron: {
+    process: electronAPI.process,
+    dialog: {
+      showOpenDialog: (options: Electron.OpenDialogOptions) =>
+        ipcRenderer.invoke('electron:dialog:showOpenDialog', [options]),
+    },
+  },
   core: {
     user: {
       get: (...args) => ipcRenderer.invoke('core:user:get', args),

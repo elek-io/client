@@ -29,8 +29,10 @@ Sentry.init({
 });
 
 class Main {
+  private customFileProtocol: string = 'elek-io-local-file';
   private allowedOriginsToLoadInternal: string[] = [];
   private allowedOriginsToLoadExternal: string[] = [
+    this.customFileProtocol,
     'https://elek.io',
     'https://api.elek.io',
     'https://github.com',
@@ -123,11 +125,9 @@ class Main {
 
   private async onReady(): Promise<void> {
     // Register a protocol that is able to load files from local FS
-    protocol.handle('elek-io-local-file', (request) => {
-      const filePath = request.url.replace(
-        /^elek-io-local-file:\/\//,
-        'file://'
-      );
+    protocol.handle(this.customFileProtocol, (request) => {
+      const regEx = new RegExp(String.raw`/^${this.customFileProtocol}:\/\//`);
+      const filePath = request.url.replace(regEx, 'file://');
 
       return net.fetch(filePath);
     });

@@ -138,7 +138,7 @@ function RootComponent(): JSX.Element {
 
       return {
         part,
-        path,
+        path: `/${path}`,
         full: routerState.location.pathname,
       };
     });

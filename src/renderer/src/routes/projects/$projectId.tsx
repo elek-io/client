@@ -216,7 +216,7 @@ function ProjectLayout(): JSX.Element {
 
             {projectNavigation.map((navigation) => {
               const item = (
-                <SidebarNavigationItem to={navigation.to}>
+                <SidebarNavigationItem to={navigation.to} key={navigation.to}>
                   <navigation.icon
                     className="h-6 w-6"
                     aria-hidden="true"
