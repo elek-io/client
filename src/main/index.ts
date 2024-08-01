@@ -124,17 +124,26 @@ class Main {
   }
 
   private async onReady(): Promise<void> {
-    // Register a protocol that is able to load files from local FS
-    protocol.handle(this.customFileProtocol, (request) => {
-      const regEx = new RegExp(String.raw`/^${this.customFileProtocol}:\/\//`);
-      const filePath = request.url.replace(regEx, 'file://');
-
-      return net.fetch(filePath);
-    });
-
     const core = new ElekIoCore({
       environment: app.isPackaged ? 'production' : 'development',
     });
+
+    // Register a protocol that is able to load files from local FS
+    protocol.handle(this.customFileProtocol, async (request) => {
+      const absoluteFilePath = request.url.replace(
+        `${this.customFileProtocol}://`,
+        ''
+      );
+
+      if (absoluteFilePath.startsWith(core.util.pathTo.projects) === false) {
+        throw new SecurityError(
+          `Tried to load file "${absoluteFilePath}" outside of Projects folder.`
+        );
+      }
+
+      return await net.fetch(`file://${absoluteFilePath}`);
+    });
+
     // @todo Get the current users last saved window size and location
     // and use it for creating the new window. Core needs to support this first
     // const window: BrowserWindow;
