@@ -1,11 +1,7 @@
-import { type ElectronAPI } from '@electron-toolkit/preload';
-import { type ElekIoCore } from '@elek-io/core';
+import { type ContextBridgeApi } from './index';
 
 declare global {
   interface Window {
-    ipc: {
-      electron: ElectronAPI;
-      core: ElekIoCore;
-    };
+    ipc: ContextBridgeApi;
   }
 }
