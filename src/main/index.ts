@@ -29,7 +29,7 @@ Sentry.init({
 });
 
 class Main {
-  private customFileProtocol: string = 'elek-io-local-file';
+  public readonly customFileProtocol: string = 'elek-io-local-file';
   private allowedOriginsToLoadInternal: string[] = [];
   private allowedOriginsToLoadExternal: string[] = [
     this.customFileProtocol,
@@ -37,6 +37,7 @@ class Main {
     'https://api.elek.io',
     'https://github.com',
   ];
+  private core: ElekIoCore | null = null;
 
   constructor() {
     // Allow the vite dev server to do HMR in development
@@ -46,46 +47,78 @@ class Main {
       );
     }
 
-    // Overwrite dugites resolved path to the embedded git directory
-    // @see https://github.com/desktop/dugite/blob/0f5a4f11300fbfa8d2dd272b8ee9b771e5b34cd4/lib/git-environment.ts#L25
-    // This seems to be necessary, since it resolves to `elek.io Client.app/Contents/Resources/app/git` instead of dugites git inside node_modules `elek.io Client.app/Contents/Resources/app/node_modules/dugite/git`
-    // process.env.LOCAL_GIT_DIRECTORY = Path.resolve(
-    //   __dirname,
-    //   '../../',
-    //   'node_modules',
-    //   'dugite',
-    //   'git'
-    // );
-
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
     // if (require('electron-squirrel-startup')) {
     //   app.quit();
     // }
 
     // Register app events
-    app.on('ready', this.onReady.bind(this));
-    app.on('activate', this.onActivate.bind(this));
-    app.on('window-all-closed', this.onWindowAllClosed.bind(this));
-    app.on('web-contents-created', this.onWebContentsCreated.bind(this));
+    app.on('ready', () => this.onAppReady());
+    app.on('activate', () => this.onAppActivate());
+    app.on('window-all-closed', () => this.onAppAllWindowsClosed());
+    app.on('web-contents-created', (event, webContents) =>
+      this.onAppWebContentsCreated(event, webContents)
+    );
 
     // Enable auto-updates
     // @see https://github.com/electron/update-electron-app
     // updateElectronApp();
   }
 
-  private onWebContentsCreated(
+  /**
+   * Initializes Core, registers custom file protocol
+   * creates the first window and registers IPC handlers
+   *
+   * Needs to be called once Electron has finished initializing
+   */
+  private async onAppReady(): Promise<void> {
+    this.core = new ElekIoCore({
+      environment: app.isPackaged ? 'production' : 'development',
+    });
+
+    this.registerCustomFileProtocol();
+
+    const window = await this.createWindow();
+    this.registerIpcMain(window, this.core);
+  }
+
+  /**
+   * Creates a new window when the app is activated
+   *
+   * Triggered when launching the application for the first time,
+   * attempting to re-launch the application when it's already running,
+   * or clicking on the application's dock or taskbar icon.
+   */
+  private async onAppActivate(): Promise<void> {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+      await this.createWindow();
+    }
+  }
+
+  private onAppAllWindowsClosed(): void {
+    // Quit when all windows are closed, except on macOS. There, it's common
+    // for applications and their menu bar to stay active until the user quits
+    // explicitly with Cmd + Q.
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  }
+
+  private onAppWebContentsCreated(
     _event: {
       preventDefault: () => void;
       readonly defaultPrevented: boolean;
     },
-    contents: Electron.WebContents
+    webContents: Electron.WebContents
   ): void {
     // Disable the creation of new windows e.g. by using target="_blank"
     // Instead, let the operating system handle this event's url if it's in the whitelist
     // and open external links inside the default browser
     // @see https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
     // @todo in the future we can also allow mailto: URL's etc.
-    contents.setWindowOpenHandler(({ url }) => {
+    webContents.setWindowOpenHandler(({ url }) => {
       const parsedUrl = new URL(url);
 
       if (
@@ -93,7 +126,7 @@ class Main {
       ) {
         Sentry.captureException(
           new SecurityError(
-            `Prevented navigation to untrusted, external origin "${parsedUrl}" from "${contents.getURL()}"`
+            `Prevented navigation to untrusted, external origin "${parsedUrl}" from "${webContents.getURL()}"`
           )
         );
         return { action: 'deny' };
@@ -106,106 +139,30 @@ class Main {
     });
   }
 
-  private onWindowAllClosed(): void {
-    // Quit when all windows are closed, except on macOS. There, it's common
-    // for applications and their menu bar to stay active until the user quits
-    // explicitly with Cmd + Q.
-    if (process.platform !== 'darwin') {
-      app.quit();
-    }
-  }
-
-  private onActivate(): void {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) {
-      this.createWindow();
-    }
-  }
-
-  private async onReady(): Promise<void> {
-    const core = new ElekIoCore({
-      environment: app.isPackaged ? 'production' : 'development',
-    });
-
-    // Register a protocol that is able to load files from local FS
-    protocol.handle(this.customFileProtocol, async (request) => {
-      const absoluteFilePath = request.url.replace(
-        `${this.customFileProtocol}://`,
-        ''
-      );
-
-      if (absoluteFilePath.startsWith(core.util.pathTo.projects) === false) {
-        throw new SecurityError(
-          `Tried to load file "${absoluteFilePath}" outside of Projects folder.`
-        );
-      }
-
-      return await net.fetch(`file://${absoluteFilePath}`);
-    });
-
-    // @todo Get the current users last saved window size and location
-    // and use it for creating the new window. Core needs to support this first
-    // const window: BrowserWindow;
-    // const user = await core.user.get();
-    // if (user.window.size) {
-    //   window = this.createWindow({width, height});
-    // }
-
-    const window = this.createWindow();
-
-    // @todo Save the current window size and location to the users configuration file
-    // Core needs to support this first
-    // window.on('close', async (event) => {
-    //   await core.user.set({});
-    // })
-    this.registerIpcMain(window, core);
-  }
-
   /**
-   * Figures out where and how to display the window
-   *
-   * @todo only do this on first start. After that, the user will have adjusted it to his liking.
-   * The size, monitor and maybe position should be saved locally in the users configuration and then applied on each start.
-   * If the setup changes (display not available anymore or different resolution), default back to this.
+   * Creates a new window with security in mind and loads the frontend
    */
-  private getWindowSize(): {
-    width: number;
-    height: number;
-  } {
-    const display = screen.getPrimaryDisplay();
-    const displaySize = display.workAreaSize;
-    const aspectRatioFactor = 16 / 9;
-
-    const windowSize = {
-      width: 0,
-      height: 0,
-    };
-
-    if (displaySize.width >= displaySize.height) {
-      // Use 80% of possible height and set width to match 16/9
-      windowSize.height = Math.round(displaySize.height * 0.8);
-      windowSize.width = Math.round(windowSize.height * aspectRatioFactor);
-    } else {
-      // Use 80% of possible width and set height to match 16/9
-      windowSize.width = Math.round(displaySize.width * 0.8);
-      windowSize.height = Math.round(windowSize.width * aspectRatioFactor);
+  private async createWindow(): Promise<BrowserWindow> {
+    if (!this.core) {
+      throw new Error(
+        'Trying to create a new window but Core is not initialized.'
+      );
     }
 
-    return windowSize;
-  }
+    const initialWindowSize = this.getInitialWindowSize();
+    const user = await this.core.user.get();
 
-  private createWindow(
-    options?: BrowserWindowConstructorOptions
-  ): BrowserWindow {
-    const { width, height } = this.getWindowSize();
-
-    // Set defaults if missing
-    const defaults: BrowserWindowConstructorOptions = {
-      height,
-      width,
+    const options: BrowserWindowConstructorOptions = {
+      width: initialWindowSize.width,
+      height: initialWindowSize.height,
     };
-    options = Object.assign({}, defaults, options);
+
+    if (user?.window) {
+      options.width = user.window.width;
+      options.height = user.window.height;
+      options.x = user.window.position.x;
+      options.y = user.window.position.y;
+    }
 
     // Overwrite webPreferences to always load the correct preload script
     // and explicitly enable security features - although Electron > v28 should set these by default
@@ -225,22 +182,11 @@ class Main {
 
     const window = new BrowserWindow(options);
 
-    // Prevent loading untrusted origins internally / inside elek.io Client
-    // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
-    window.webContents.on('will-navigate', (event, urlToLoad) => {
-      const parsedUrl = new URL(urlToLoad);
+    window.webContents.on('will-navigate', (event, urlToLoad) =>
+      this.onWindowWebContentsWillNavigate(window, event, urlToLoad)
+    );
 
-      if (
-        this.allowedOriginsToLoadInternal.includes(parsedUrl.origin) === false
-      ) {
-        event.preventDefault();
-        Sentry.captureException(
-          new SecurityError(
-            `Prevented navigation to untrusted, internal origin "${urlToLoad}" from "${window.webContents.getURL()}"`
-          )
-        );
-      }
-    });
+    window.on('close', (event) => this.onWindowClose(window, event));
 
     if (app.isPackaged) {
       // Client is in production
@@ -262,6 +208,143 @@ class Main {
     return window;
   }
 
+  /**
+   * Returns the initial window size based on the primary display
+   */
+  private getInitialWindowSize(): {
+    width: number;
+    height: number;
+  } {
+    const display = screen.getPrimaryDisplay();
+    const displaySize = display.workAreaSize;
+    const aspectRatioFactor = 16 / 9;
+
+    const windowProps = {
+      width: 0,
+      height: 0,
+    };
+
+    if (displaySize.width >= displaySize.height) {
+      // Use 80% of possible height and set width to match 16/9
+      windowProps.height = Math.round(displaySize.height * 0.8);
+      windowProps.width = Math.round(windowProps.height * aspectRatioFactor);
+    } else {
+      // Use 80% of possible width and set height to match 16/9
+      windowProps.width = Math.round(displaySize.width * 0.8);
+      windowProps.height = Math.round(windowProps.width * aspectRatioFactor);
+    }
+
+    return windowProps;
+  }
+
+  /**
+   * Prevents loading untrusted origins internally / inside elek.io Client
+   *
+   * @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
+   */
+  private onWindowWebContentsWillNavigate(
+    window: BrowserWindow,
+    event: Electron.Event<Electron.WebContentsWillNavigateEventParams>,
+    urlToLoad: string
+  ): void {
+    const parsedUrl = new URL(urlToLoad);
+
+    if (
+      this.allowedOriginsToLoadInternal.includes(parsedUrl.origin) === false
+    ) {
+      event.preventDefault();
+      Sentry.captureException(
+        new SecurityError(
+          `Prevented navigation to untrusted, internal origin "${urlToLoad}" from "${window.webContents.getURL()}"`
+        )
+      );
+    }
+  }
+
+  /**
+   * Saves the window size and position inside the users file before the window is closed
+   */
+  private async onWindowClose(
+    window: BrowserWindow,
+    event: Electron.Event
+  ): Promise<void> {
+    event.preventDefault();
+
+    if (!this.core) {
+      Sentry.captureException(
+        new Error('Trying to close the window but Core is not initialized.')
+      );
+      window.destroy();
+      return;
+    }
+
+    const user = await this.core.user.get();
+    const width = window.getSize()[0];
+    const height = window.getSize()[1];
+    const x = window.getPosition()[0];
+    const y = window.getPosition()[1];
+
+    if (!user || !width || !height || !x || !y) {
+      window.destroy();
+      return;
+    }
+
+    await this.core.user.set({
+      ...user,
+      window: {
+        width,
+        height,
+        position: {
+          x,
+          y,
+        },
+      },
+    });
+
+    window.destroy();
+    return;
+  }
+
+  /**
+   * Registers a custom file protocol to load files from the local file system
+   */
+  private registerCustomFileProtocol(): void {
+    protocol.handle(this.customFileProtocol, async (request) => {
+      const absoluteFilePath = request.url.replace(
+        `${this.customFileProtocol}://`,
+        ''
+      );
+
+      if (!this.core) {
+        Sentry.captureException(
+          new Error(
+            'Trying to handle custom file protocol but Core is not initialized.'
+          )
+        );
+        return new Response('Internal Server Error', { status: 500 });
+      }
+
+      if (
+        absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false
+      ) {
+        Sentry.captureException(
+          new SecurityError(
+            `Tried to load file "${absoluteFilePath}" outside of Projects directory.`
+          )
+        );
+        return new Response(
+          'Forbidden: Tried to load a file from outside of elek.io Projects directory',
+          { status: 403 }
+        );
+      }
+
+      return await net.fetch(`file://${absoluteFilePath}`);
+    });
+  }
+
+  /**
+   * Registers IPC handlers for the main process
+   */
   private registerIpcMain(
     window: Electron.BrowserWindow,
     core: ElekIoCore
