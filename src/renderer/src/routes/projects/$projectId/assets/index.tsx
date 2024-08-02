@@ -49,7 +49,7 @@ function ProjectAssetsPage(): JSX.Element {
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<Asset>();
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const createdTime = formatDatetime(selectedAsset?.created, 'en');
   const updatedTime = formatDatetime(selectedAsset?.updated, 'en');
   const information = [
@@ -139,7 +139,7 @@ function ProjectAssetsPage(): JSX.Element {
         title: 'Successfully deleted Asset',
         description: 'The Asset was deleted successfully.',
       });
-      setSelectedAsset(undefined);
+      setSelectedAsset(null);
       router.invalidate();
     } catch (error) {
       console.error(error);
@@ -160,7 +160,6 @@ function ProjectAssetsPage(): JSX.Element {
           name: path.split('/').pop() || '',
           description: '',
           projectId: context.currentProject.id,
-          language: 'en', // @todo user should select what language the file should be assigned to
           filePath: path,
         })
       );
@@ -170,27 +169,32 @@ function ProjectAssetsPage(): JSX.Element {
     console.log('Asset create results: ', results);
   }
 
-  function onDragOver(event: DragEvent<HTMLElement>): void {
+  function onDragOver(event: React.DragEvent<HTMLElement>): void {
     event.preventDefault();
     event.stopPropagation();
+    console.log('onDragOver');
   }
 
-  function onDragEnter(event: DragEvent<HTMLElement>): void {
+  function onDragEnter(event: React.DragEvent<HTMLElement>): void {
     event.preventDefault();
     event.stopPropagation();
     setIsDraggingOver(true);
+    console.log('onDragEnter');
   }
 
-  function onDragLeave(event: DragEvent<HTMLElement>): void {
+  function onDragLeave(event: React.DragEvent<HTMLElement>): void {
     event.preventDefault();
     event.stopPropagation();
     setIsDraggingOver(false);
+    console.log('onDragLeave');
   }
 
   /**
    * @todo This creates one commit for all instead on one per uploaded file, how is this possible?
    */
-  async function onAssetsDropped(event: DragEvent<HTMLElement>): Promise<void> {
+  async function onAssetsDropped(
+    event: React.DragEvent<HTMLElement>
+  ): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
 
