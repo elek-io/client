@@ -1,4 +1,4 @@
-import { electronAPI } from '@electron-toolkit/preload';
+import { ElectronAPI } from '@electron-toolkit/preload';
 import { ElekIoCore } from '@elek-io/core';
 import { Theme, useTheme } from '@renderer/components/theme-provider';
 import { Avatar } from '@renderer/components/ui/avatar';
@@ -38,6 +38,7 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import { Dialog } from 'electron';
 import {
   ArrowLeft,
   ArrowLeftToLine,
@@ -54,7 +55,12 @@ import {
 } from '../../../../package.json';
 
 export interface RouterContext {
-  electron: typeof electronAPI;
+  electron: {
+    process: ElectronAPI['process'];
+    dialog: {
+      showOpenDialog: Dialog['showOpenDialog'];
+    };
+  };
   core: ElekIoCore;
 }
 
@@ -73,14 +79,13 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     const projects = await context.core.projects.list({ limit: 0 });
     return { currentUser, projects };
   },
-  loader: ({ context }) => context,
   component: RootComponent,
 });
 
 function RootComponent(): JSX.Element {
   const router = useRouter();
   const routerState = useRouterState();
-  const { currentUser, electron } = Route.useLoaderData();
+  const { currentUser, electron } = Route.useRouteContext();
   const [isProjectSidebarNarrow, setIsProjectSidebarNarrow] = useStore(
     (storeState) => [
       storeState.isProjectSidebarNarrow,
