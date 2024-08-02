@@ -83,7 +83,7 @@ const importedLocales = {
  * and be in the user selected locale
  */
 export function formatDatetime(
-  datetime: string | null,
+  datetime: string | null | undefined,
   language: SupportedLanguage
 ): {
   relative: string;
