@@ -481,28 +481,33 @@ export const CreateUpdateCollectionPage = ({
                             </DialogDescription>
                           </DialogHeader>
 
-                          {context.currentProject.settings.language.supported.map(
-                            (language) => {
-                              return (
-                                <FormField
-                                  key={language}
-                                  control={collectionForm.control}
-                                  name={`name.plural.${language}`}
-                                  render={({ field }) => (
-                                    <FormItem className="col-span-12 sm:col-span-5">
-                                      <FormLabel isRequired={true}>
-                                        {language}
-                                      </FormLabel>
-                                      <FormControl>
-                                        <FormInput field={field} type="text" />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              );
-                            }
-                          )}
+                          <div className="space-y-2 py-6">
+                            {context.currentProject.settings.language.supported.map(
+                              (language) => {
+                                return (
+                                  <FormField
+                                    key={language}
+                                    control={collectionForm.control}
+                                    name={`name.plural.${language}`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel isRequired={true}>
+                                          {language}
+                                        </FormLabel>
+                                        <FormControl>
+                                          <FormInput
+                                            field={field}
+                                            type="text"
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                );
+                              }
+                            )}
+                          </div>
 
                           <DialogFooter>
                             <DialogClose asChild>
@@ -546,28 +551,33 @@ export const CreateUpdateCollectionPage = ({
                             </DialogDescription>
                           </DialogHeader>
 
-                          {context.currentProject.settings.language.supported.map(
-                            (language) => {
-                              return (
-                                <FormField
-                                  key={language}
-                                  control={collectionForm.control}
-                                  name={`name.singular.${language}`}
-                                  render={({ field }) => (
-                                    <FormItem className="col-span-12 sm:col-span-5">
-                                      <FormLabel isRequired={true}>
-                                        {language}
-                                      </FormLabel>
-                                      <FormControl>
-                                        <FormInput field={field} type="text" />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              );
-                            }
-                          )}
+                          <div className="space-y-2 py-6">
+                            {context.currentProject.settings.language.supported.map(
+                              (language) => {
+                                return (
+                                  <FormField
+                                    key={language}
+                                    control={collectionForm.control}
+                                    name={`name.singular.${language}`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel isRequired={true}>
+                                          {language}
+                                        </FormLabel>
+                                        <FormControl>
+                                          <FormInput
+                                            field={field}
+                                            type="text"
+                                          />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                );
+                              }
+                            )}
+                          </div>
 
                           <DialogFooter>
                             <DialogClose asChild>
@@ -608,28 +618,30 @@ export const CreateUpdateCollectionPage = ({
                             </DialogDescription>
                           </DialogHeader>
 
-                          {context.currentProject.settings.language.supported.map(
-                            (language) => {
-                              return (
-                                <FormField
-                                  key={language}
-                                  control={collectionForm.control}
-                                  name={`description.${language}`}
-                                  render={({ field }) => (
-                                    <FormItem className="col-span-12 sm:col-span-5">
-                                      <FormLabel isRequired={true}>
-                                        {language}
-                                      </FormLabel>
-                                      <FormControl>
-                                        <FormTextarea field={field} />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              );
-                            }
-                          )}
+                          <div className="space-y-2 py-6">
+                            {context.currentProject.settings.language.supported.map(
+                              (language) => {
+                                return (
+                                  <FormField
+                                    key={language}
+                                    control={collectionForm.control}
+                                    name={`description.${language}`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel isRequired={true}>
+                                          {language}
+                                        </FormLabel>
+                                        <FormControl>
+                                          <FormTextarea field={field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                );
+                              }
+                            )}
+                          </div>
 
                           <DialogFooter>
                             <DialogClose asChild>

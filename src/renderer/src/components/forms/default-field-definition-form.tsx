@@ -63,24 +63,28 @@ const DefaultFieldDefinitionForm = ({
                     </DialogDescription>
                   </DialogHeader>
 
-                  {supportedLanguages.map((language) => {
-                    return (
-                      <FormField
-                        key={language}
-                        control={form.control}
-                        name={`label.${language}`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-12 sm:col-span-5">
-                            <FormLabel isRequired={true}>{language}</FormLabel>
-                            <FormControl>
-                              <FormInput field={field} type="text" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    );
-                  })}
+                  <div className="space-y-2 py-6">
+                    {supportedLanguages.map((language) => {
+                      return (
+                        <FormField
+                          key={language}
+                          control={form.control}
+                          name={`label.${language}`}
+                          render={({ field }) => (
+                            <FormItem className="col-span-12 sm:col-span-5">
+                              <FormLabel isRequired={true}>
+                                {language}
+                              </FormLabel>
+                              <FormControl>
+                                <FormInput field={field} type="text" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      );
+                    })}
+                  </div>
 
                   <DialogFooter>
                     <DialogClose asChild>
@@ -123,24 +127,28 @@ const DefaultFieldDefinitionForm = ({
                     </DialogDescription>
                   </DialogHeader>
 
-                  {supportedLanguages.map((language) => {
-                    return (
-                      <FormField
-                        key={language}
-                        control={form.control}
-                        name={`description.${language}`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-12 sm:col-span-5">
-                            <FormLabel isRequired={true}>{language}</FormLabel>
-                            <FormControl>
-                              <FormTextarea field={field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    );
-                  })}
+                  <div className="space-y-2 py-6">
+                    {supportedLanguages.map((language) => {
+                      return (
+                        <FormField
+                          key={language}
+                          control={form.control}
+                          name={`description.${language}`}
+                          render={({ field }) => (
+                            <FormItem className="col-span-12 sm:col-span-5">
+                              <FormLabel isRequired={true}>
+                                {language}
+                              </FormLabel>
+                              <FormControl>
+                                <FormTextarea field={field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      );
+                    })}
+                  </div>
 
                   <DialogFooter>
                     <DialogClose asChild>
