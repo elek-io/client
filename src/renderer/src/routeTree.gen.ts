@@ -31,6 +31,7 @@ import { Route as ProjectsProjectIdCollectionsCollectionIdUpdateImport } from '.
 import { Route as ProjectsProjectIdCollectionsCollectionIdCreateImport } from './routes/projects/$projectId/collections/$collectionId/create'
 import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdImport } from './routes/projects/$projectId/collections/$collectionId/$entryId'
 import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport } from './routes/projects/$projectId/collections/$collectionId/$entryId/index'
+import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateImport } from './routes/projects/$projectId/collections/$collectionId/$entryId/update'
 
 // Create/Update Routes
 
@@ -145,6 +146,12 @@ const ProjectsProjectIdCollectionsCollectionIdEntryIdRoute =
 const ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute =
   ProjectsProjectIdCollectionsCollectionIdEntryIdIndexImport.update({
     path: '/',
+    getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdEntryIdRoute,
+  } as any)
+
+const ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute =
+  ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateImport.update({
+    path: '/update',
     getParentRoute: () => ProjectsProjectIdCollectionsCollectionIdEntryIdRoute,
   } as any)
 
@@ -285,6 +292,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdIndexImport
       parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdImport
     }
+    '/projects/$projectId/collections/$collectionId/$entryId/update': {
+      id: '/projects/$projectId/collections/$collectionId/$entryId/update'
+      path: '/update'
+      fullPath: '/projects/$projectId/collections/$collectionId/$entryId/update'
+      preLoaderRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateImport
+      parentRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdImport
+    }
     '/projects/$projectId/collections/$collectionId/$entryId/': {
       id: '/projects/$projectId/collections/$collectionId/$entryId/'
       path: '/'
@@ -306,6 +320,7 @@ export const routeTree = rootRoute.addChildren({
           ProjectsProjectIdCollectionsCollectionIdRoute.addChildren({
             ProjectsProjectIdCollectionsCollectionIdEntryIdRoute:
               ProjectsProjectIdCollectionsCollectionIdEntryIdRoute.addChildren({
+                ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute,
                 ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
               }),
             ProjectsProjectIdCollectionsCollectionIdCreateRoute,
@@ -424,6 +439,7 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "projects/$projectId/collections/$collectionId/$entryId.tsx",
       "parent": "/projects/$projectId/collections/$collectionId",
       "children": [
+        "/projects/$projectId/collections/$collectionId/$entryId/update",
         "/projects/$projectId/collections/$collectionId/$entryId/"
       ]
     },
@@ -438,6 +454,10 @@ export const routeTree = rootRoute.addChildren({
     "/projects/$projectId/collections/$collectionId/": {
       "filePath": "projects/$projectId/collections/$collectionId/index.tsx",
       "parent": "/projects/$projectId/collections/$collectionId"
+    },
+    "/projects/$projectId/collections/$collectionId/$entryId/update": {
+      "filePath": "projects/$projectId/collections/$collectionId/$entryId/update.tsx",
+      "parent": "/projects/$projectId/collections/$collectionId/$entryId"
     },
     "/projects/$projectId/collections/$collectionId/$entryId/": {
       "filePath": "projects/$projectId/collections/$collectionId/$entryId/index.tsx",

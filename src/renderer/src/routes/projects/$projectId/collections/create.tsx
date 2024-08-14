@@ -1,6 +1,6 @@
 import { CreateCollectionProps, createCollectionSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { translatableDefault } from '@renderer/components/forms/util';
+import { translatableDefaultNull } from '@renderer/components/forms/util';
 import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
 import { Button } from '@renderer/components/ui/button';
 import { NotificationIntent, useStore } from '@renderer/store';
@@ -35,16 +35,16 @@ function ProjectCollectionCreate(): JSX.Element {
       projectId: context.currentProject.id,
       icon: 'home',
       name: {
-        singular: translatableDefault({
+        singular: translatableDefaultNull({
           supportedLanguages:
             context.currentProject.settings.language.supported,
         }),
-        plural: translatableDefault({
+        plural: translatableDefaultNull({
           supportedLanguages:
             context.currentProject.settings.language.supported,
         }),
       },
-      description: translatableDefault({
+      description: translatableDefaultNull({
         supportedLanguages: context.currentProject.settings.language.supported,
       }),
       slug: {

@@ -11,6 +11,14 @@ import {
 } from '@renderer/components/ui/breadcrumb';
 import { Button } from '@renderer/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@renderer/components/ui/dialog';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -26,10 +34,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@renderer/components/ui/dropdown-menu';
+import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/toast';
 import { useStore } from '@renderer/store';
 import { cn } from '@renderer/util';
 import {
+  ErrorComponentProps,
   Link,
   Outlet,
   createRootRouteWithContext,
@@ -38,7 +48,7 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
-import { Dialog } from 'electron';
+import { Dialog as ElectronDialog } from 'electron';
 import {
   ArrowLeft,
   ArrowLeftToLine,
@@ -46,6 +56,7 @@ import {
   ChevronDown,
   ExternalLink,
   Moon,
+  RefreshCw,
   Sun,
 } from 'lucide-react';
 import { Fragment } from 'react';
@@ -58,7 +69,7 @@ export interface RouterContext {
   electron: {
     process: ElectronAPI['process'];
     dialog: {
-      showOpenDialog: Dialog['showOpenDialog'];
+      showOpenDialog: ElectronDialog['showOpenDialog'];
     };
   };
   core: ElekIoCore;
@@ -80,7 +91,35 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     return { currentUser, projects };
   },
   component: RootComponent,
+  errorComponent: ErrorComponent,
 });
+
+function ErrorComponent(props: ErrorComponentProps): JSX.Element {
+  return (
+    <Dialog defaultOpen={true}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Error</DialogTitle>
+          <DialogDescription>{props.error.message}</DialogDescription>
+        </DialogHeader>
+
+        <ScrollArea>
+          <div className="py-6 flex w-max text-xs">
+            <pre>{props.error.stack}</pre>
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+
+        <DialogFooter>
+          <Button variant="default" onClick={() => location.reload()}>
+            <RefreshCw className="w-4 h-4 mr-2"></RefreshCw>
+            Reload
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function RootComponent(): JSX.Element {
   const router = useRouter();

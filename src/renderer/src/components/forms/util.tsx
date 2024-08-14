@@ -18,7 +18,7 @@ import { FormTextarea } from '../ui/form-textarea';
 import { Slider } from '../ui/slider';
 import { Switch } from '../ui/switch';
 
-export function translatableDefault(props: {
+export function translatableDefaultNull(props: {
   supportedLanguages: SupportedLanguage[];
 }): {
   [x: string]: null;
@@ -26,6 +26,23 @@ export function translatableDefault(props: {
   return props.supportedLanguages
     .map((language) => {
       return { [language]: null };
+    })
+    .reduce((prev, curr) => {
+      return {
+        ...prev,
+        ...curr,
+      };
+    });
+}
+
+export function translatableDefaultArray(props: {
+  supportedLanguages: SupportedLanguage[];
+}): {
+  [x: string]: never[];
+} {
+  return props.supportedLanguages
+    .map((language) => {
+      return { [language]: [] };
     })
     .reduce((prev, curr) => {
       return {

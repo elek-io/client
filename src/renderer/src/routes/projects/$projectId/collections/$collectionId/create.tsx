@@ -1,29 +1,14 @@
 import { CreateEntryProps, createEntrySchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { InputFromDefinition } from '@renderer/components/forms/util';
+import {
+  FormFieldFromDefinition,
+  translatableDefaultArray,
+  translatableDefaultNull,
+} from '@renderer/components/forms/util';
 import { Button } from '@renderer/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@renderer/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@renderer/components/ui/form';
+import { Form } from '@renderer/components/ui/form';
 import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { fieldWidth } from '@renderer/util';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
@@ -41,7 +26,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
   const [isCreatingEntry, setIsCreatingEntry] = useState(false);
   const addNotification = useStore((state) => state.addNotification);
 
-  const createEntryFormState = useForm<CreateEntryProps>({
+  const createEntryForm = useForm<CreateEntryProps>({
     resolver: async (data, context, options) => {
       // you can debug your validation schema here
       console.log('create Entry form formData', data);
@@ -56,28 +41,30 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
     defaultValues: {
       projectId: context.currentProject.id,
       collectionId: context.currentCollection.id,
-      language: context.currentProject.settings.language.default,
-      values: context.currentCollection.valueDefinitions.map((definition) => {
+      values: context.currentCollection.fieldDefinitions.map((definition) => {
         switch (definition.valueType) {
           case 'boolean':
           case 'number':
           case 'string':
             return {
               objectType: 'value',
-              definitionId: definition.id,
+              fieldDefinitionId: definition.id,
               valueType: definition.valueType,
-              content: {
-                en: definition.defaultValue || undefined,
-                de: definition.defaultValue || undefined,
-              },
+              content: translatableDefaultNull({
+                supportedLanguages:
+                  context.currentProject.settings.language.supported,
+              }),
             };
 
           case 'reference':
             return {
               objectType: 'value',
-              definitionId: definition.id,
+              fieldDefinitionId: definition.id,
               valueType: definition.valueType,
-              content: undefined,
+              content: translatableDefaultArray({
+                supportedLanguages:
+                  context.currentProject.settings.language.supported,
+              }),
             };
 
           default:
@@ -249,7 +236,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
       <>
         <Button
           isLoading={isCreatingEntry}
-          onClick={createEntryFormState.handleSubmit(onCreateEntry)}
+          onClick={createEntryForm.handleSubmit(onCreateEntry)}
         >
           <Check className="h-4 w-4 mr-2"></Check>
           Create{' '}
@@ -268,14 +255,24 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
-      <Form {...createEntryFormState}>
+      <Form {...createEntryForm}>
         <form>
-          {JSON.stringify(createEntryFormState.watch())}
+          {JSON.stringify(createEntryForm.watch())}
           {
             // The Collections Field definitions are displayed here, so the user can either create a new field based on the definition or choose an existing one that matches the criterea
           }
           <div className="p-6 grid grid-cols-12 gap-x-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
-            {context.currentCollection.valueDefinitions.map(
+            {context.currentCollection.fieldDefinitions.map(
+              (fieldDefinition, index) => {
+                // return <p>{JSON.stringify(fieldDefinition)}</p>;
+                return FormFieldFromDefinition(
+                  fieldDefinition,
+                  `values.${index}.content.${context.currentProject.settings.language.default}`,
+                  context.translate
+                );
+              }
+            )}
+            {/* {context.currentCollection.fieldDefinitions.map(
               (definition, index) => {
                 return (
                   <FormField
@@ -368,7 +365,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
                   />
                 );
               }
-            )}
+            )} */}
           </div>
 
           {/* <h2>Definitions</h2>

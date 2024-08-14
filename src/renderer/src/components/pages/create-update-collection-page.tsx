@@ -36,7 +36,10 @@ import { RangeFieldDefinitionForm } from '../forms/range-value-definition-form';
 import { TextFieldDefinitionForm } from '../forms/text-value-definition-form';
 import { TextareaFieldDefinitionForm } from '../forms/textarea-value-definition-form';
 import { ToggleFieldDefinitionForm } from '../forms/toggle-value-definition-form';
-import { FormFieldFromDefinition, translatableDefault } from '../forms/util';
+import {
+  FormFieldFromDefinition,
+  translatableDefaultNull,
+} from '../forms/util';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -109,10 +112,10 @@ export const CreateUpdateCollectionPage = ({
   }
 
   const FieldDefinitionBaseDefaults: Omit<FieldDefinitionBase, 'id'> = {
-    label: translatableDefault({
+    label: translatableDefaultNull({
       supportedLanguages: context.currentProject.settings.language.supported,
     }),
-    description: translatableDefault({
+    description: translatableDefaultNull({
       supportedLanguages: context.currentProject.settings.language.supported,
     }),
     isRequired: true,
@@ -702,14 +705,8 @@ export const CreateUpdateCollectionPage = ({
           </div>
 
           <PageSection
-            title="Define this Collections Values"
-            description="Here you can define what the Collections content looks like. Add
-              Value definitions to structure the Collections content and add
-              input definitions to define how users interact with those
-              Values. For example you can create a Value `createdAt` of type
-              `date` which atomatically restricts the input to only allow
-              dates being inserted. Additionally this shows a datepicker UI to
-              help users selecting a date."
+            title="Define this Collections Fields"
+            description="Add Fields to structure the Collections content and define how users interact with those Fields."
             actions={
               <Sheet
                 open={isAddFieldDefinitionSheetOpen}
@@ -723,7 +720,7 @@ export const CreateUpdateCollectionPage = ({
                     }}
                   >
                     <Plus className="w-4 h-4 mr-2"></Plus>
-                    Add Value definition
+                    Add Field
                   </Button>
                 </SheetTrigger>
                 <SheetContent

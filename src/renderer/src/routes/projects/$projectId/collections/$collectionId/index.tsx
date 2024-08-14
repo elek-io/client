@@ -24,7 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from '@renderer/components/ui/table';
-import { useStore } from '@renderer/store';
 import { formatDatetime } from '@renderer/util';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
@@ -47,7 +46,6 @@ export const Route = createFileRoute(
 function ProjectCollectionIndexPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = useStore((state) => state.addNotification);
   const [pagination, setPagination] = useState({
     pageIndex: 0, // initial page index
     pageSize: 10, // default page size
@@ -60,7 +58,6 @@ function ProjectCollectionIndexPage(): JSX.Element {
       context.core.entries.list({
         projectId: context.currentProject.id,
         collectionId: context.currentCollection.id,
-        filter: filter,
         limit: pagination.pageSize,
         offset:
           pagination.pageIndex === 0
@@ -81,7 +78,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
         };
 
         entry.values.map((value) => {
-          row[value.definitionId] =
+          row[value.fieldDefinitionId] =
             value.content[context.currentProject.settings.language.default];
         });
         return row;
@@ -161,7 +158,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
 
   function columns(): ColumnDef<Entry>[] {
     const columns: ColumnDef<Entry>[] =
-      context.currentCollection.valueDefinitions.map((definition) => {
+      context.currentCollection.fieldDefinitions.map((definition) => {
         return {
           accessorKey: definition.id,
           header: context.translate('definition.label', definition.label),
@@ -191,7 +188,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
 
   function onRowClicked(id: string): void {
     router.navigate({
-      to: '/projects/$projectId/collections/$collectionId/$entryId',
+      to: '/projects/$projectId/collections/$collectionId/$entryId/update',
       params: {
         projectId: context.currentProject.id,
         collectionId: context.currentCollection.id,
@@ -321,7 +318,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
             </PaginationItem>
 
             {Array.from({ length: table.getPageCount() }).map(
-              (value, index) => (
+              (_value, index) => (
                 <PaginationItem key={index + 1}>
                   <PaginationLink
                     onClick={() => table.setPageIndex(index)}
