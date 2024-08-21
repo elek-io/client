@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
 import { NotificationIntent, useStore } from '@renderer/store';
+import { useQuery } from '@tanstack/react-query';
 import {
   Link,
   Outlet,
@@ -28,6 +29,8 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import {
+  ArrowDownUp,
+  DownloadCloud,
   FolderGit2,
   FolderOutput,
   Image,
@@ -37,6 +40,7 @@ import {
   RefreshCw,
   Search,
   Settings,
+  UploadCloud,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -73,22 +77,6 @@ export const Route = createFileRoute('/projects/$projectId')({
       id: params.projectId,
     });
 
-    let currentProjectRemoteOriginUrl = null;
-    try {
-      currentProjectRemoteOriginUrl =
-        await context.core.projects.remotes.getOriginUrl({
-          id: params.projectId,
-        });
-    } catch (error) {
-      console.info(error);
-    }
-
-    const changes = currentProjectRemoteOriginUrl
-      ? await context.core.projects.getChanges({
-          id: params.projectId,
-        })
-      : null;
-
     const collections = await context.core.collections.list({
       projectId: params.projectId,
       limit: 0,
@@ -96,8 +84,6 @@ export const Route = createFileRoute('/projects/$projectId')({
 
     return {
       currentProject,
-      currentProjectRemoteOriginUrl,
-      changes,
       collections,
       translate,
     };
@@ -167,6 +153,24 @@ function ProjectLayout(): JSX.Element {
     });
   }, [context.collections]);
 
+  const {
+    status,
+    data: projectChanges,
+    error,
+    isFetching: isFetchingProjectChanges,
+    refetch: refetchProjectChanges,
+  } = useQuery({
+    queryKey: ['projectChanges'],
+    queryFn: async () => {
+      const changes = await context.core.projects.getChanges({
+        id: context.currentProject.id,
+      });
+      return changes;
+    },
+    // Refetch the data every 3 minutes
+    refetchInterval: 180000,
+  });
+
   async function onSearch(value: string): Promise<void> {
     setSearchQuery(value);
     // @todo noop
@@ -202,7 +206,8 @@ function ProjectLayout(): JSX.Element {
         title: 'Successfully synchronized Project',
         description: 'The Project was successfully synchronized.',
       });
-      router.invalidate();
+      await refetchProjectChanges();
+      // router.invalidate();
     } catch (error) {
       setIsSynchronizing(false);
       console.error(error);
@@ -241,22 +246,43 @@ function ProjectLayout(): JSX.Element {
             </div>
             {context.currentProjectRemoteOriginUrl && (
               <>
-                <div className="p-4 flex flex-col">
-                  <Button
-                    onClick={onSynchronize}
-                    isLoading={isSynchronizing}
-                    disabled={
-                      context.changes === null ||
-                      (context.changes.ahead.length === 0 &&
-                        context.changes.behind.length === 0)
-                    }
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2"></RefreshCw>
-                    Synchronize
-                  </Button>
+                <div className="p-4 pt-0 flex flex-col">
+                  <div className="flex">
+                    <Button
+                      className="flex-1 rounded-r-none"
+                      onClick={onSynchronize}
+                      isLoading={isSynchronizing}
+                      disabled={
+                        isFetchingProjectChanges ||
+                        isSynchronizing ||
+                        projectChanges === undefined ||
+                        (projectChanges.ahead.length === 0 &&
+                          projectChanges.behind.length === 0)
+                      }
+                    >
+                      <ArrowDownUp className="w-4 h-4 mr-2" />
+                      Synchronize
+                    </Button>
+                    <Button
+                      className="rounded-l-none ml-0.5"
+                      onClick={() => refetchProjectChanges()}
+                      disabled={isFetchingProjectChanges || isSynchronizing}
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                  </div>
+
                   <p className="mt-2 text-center text-xs font-medium text-zinc-400">
-                    Downloads {context.changes?.behind.length} and uploads{' '}
-                    {context.changes?.ahead.length} changes
+                    {isFetchingProjectChanges ? (
+                      'Loading'
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <DownloadCloud className="w-4 h-4 mr-1" />
+                        {projectChanges?.behind.length}
+                        <UploadCloud className="w-4 h-4 ml-4 mr-1" />
+                        {projectChanges?.ahead.length}
+                      </div>
+                    )}
                   </p>
                 </div>
               </>
@@ -264,7 +290,7 @@ function ProjectLayout(): JSX.Element {
           </>
         )}
 
-        <ScrollArea>
+        <ScrollArea className="border-t border-zinc-200 dark:border-zinc-800">
           <SidebarNavigation>
             {isProjectSidebarNarrow && (
               <SidebarNavigationItem
