@@ -48,6 +48,7 @@ const CommandInput = forwardRef<
   ElementRef<typeof CommandPrimitive.Input>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
+  // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk @see https://github.com/shadcn-ui/ui/issues/3366
   <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
     <MagnifyingGlassIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
     <CommandPrimitive.Input
