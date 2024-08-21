@@ -3,7 +3,7 @@ import { Sidebar } from '@renderer/components/ui/sidebar';
 import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
 import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
 import { Outlet, ToPathOption, createFileRoute } from '@tanstack/react-router';
-import { LucideIcon, Settings } from 'lucide-react';
+import { GitBranch, LucideIcon, Settings } from 'lucide-react';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectCollectionsLayout,
@@ -19,6 +19,11 @@ function ProjectCollectionsLayout(): JSX.Element {
       name: 'General',
       to: '/projects/$projectId/settings/general',
       icon: Settings,
+    },
+    {
+      name: 'Git',
+      to: '/projects/$projectId/settings/git',
+      icon: GitBranch,
     },
   ];
 

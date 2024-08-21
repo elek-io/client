@@ -23,6 +23,7 @@ import { Route as ProjectsProjectIdCollectionsImport } from './routes/projects/$
 import { Route as ProjectsProjectIdSettingsIndexImport } from './routes/projects/$projectId/settings/index'
 import { Route as ProjectsProjectIdCollectionsIndexImport } from './routes/projects/$projectId/collections/index'
 import { Route as ProjectsProjectIdAssetsIndexImport } from './routes/projects/$projectId/assets/index'
+import { Route as ProjectsProjectIdSettingsGitImport } from './routes/projects/$projectId/settings/git'
 import { Route as ProjectsProjectIdSettingsGeneralImport } from './routes/projects/$projectId/settings/general'
 import { Route as ProjectsProjectIdCollectionsCreateImport } from './routes/projects/$projectId/collections/create'
 import { Route as ProjectsProjectIdCollectionsCollectionIdImport } from './routes/projects/$projectId/collections/$collectionId'
@@ -99,6 +100,12 @@ const ProjectsProjectIdAssetsIndexRoute =
   ProjectsProjectIdAssetsIndexImport.update({
     path: '/assets/',
     getParentRoute: () => ProjectsProjectIdRoute,
+  } as any)
+
+const ProjectsProjectIdSettingsGitRoute =
+  ProjectsProjectIdSettingsGitImport.update({
+    path: '/git',
+    getParentRoute: () => ProjectsProjectIdSettingsRoute,
   } as any)
 
 const ProjectsProjectIdSettingsGeneralRoute =
@@ -243,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdSettingsGeneralImport
       parentRoute: typeof ProjectsProjectIdSettingsImport
     }
+    '/projects/$projectId/settings/git': {
+      id: '/projects/$projectId/settings/git'
+      path: '/git'
+      fullPath: '/projects/$projectId/settings/git'
+      preLoaderRoute: typeof ProjectsProjectIdSettingsGitImport
+      parentRoute: typeof ProjectsProjectIdSettingsImport
+    }
     '/projects/$projectId/assets/': {
       id: '/projects/$projectId/assets/'
       path: '/assets'
@@ -333,6 +347,7 @@ export const routeTree = rootRoute.addChildren({
     ProjectsProjectIdDashboardRoute,
     ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRoute.addChildren({
       ProjectsProjectIdSettingsGeneralRoute,
+      ProjectsProjectIdSettingsGitRoute,
       ProjectsProjectIdSettingsIndexRoute,
     }),
     ProjectsProjectIdIndexRoute,
@@ -398,6 +413,7 @@ export const routeTree = rootRoute.addChildren({
       "parent": "/projects/$projectId",
       "children": [
         "/projects/$projectId/settings/general",
+        "/projects/$projectId/settings/git",
         "/projects/$projectId/settings/"
       ]
     },
@@ -421,6 +437,10 @@ export const routeTree = rootRoute.addChildren({
     },
     "/projects/$projectId/settings/general": {
       "filePath": "projects/$projectId/settings/general.tsx",
+      "parent": "/projects/$projectId/settings"
+    },
+    "/projects/$projectId/settings/git": {
+      "filePath": "projects/$projectId/settings/git.tsx",
       "parent": "/projects/$projectId/settings"
     },
     "/projects/$projectId/assets/": {

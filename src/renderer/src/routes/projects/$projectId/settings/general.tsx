@@ -59,10 +59,10 @@ import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
-  component: ProjectSettingsPage,
+  component: ProjectSettingsGeneralPage,
 });
 
-function ProjectSettingsPage(): JSX.Element {
+function ProjectSettingsGeneralPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -389,57 +389,56 @@ function ProjectSettingsPage(): JSX.Element {
               </DialogContent>
             </Dialog>
           </PageSection>
-
-          <PageSection title="Danger Zone">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium leading-6">
-                  Delete this Project from your current device
-                </p>
-                <p className="text-sm text-gray-500">
-                  The action does not delete this Project from other devices -
-                  just from the device you are currently using. But if this is
-                  the only device your Project is stored at, you will remove it
-                  permanently - there is no going back. Please be certain.
-                </p>
-              </div>
-              <div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Trash className="w-4 h-4 mr-2"></Trash>
-                      Delete Project
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Are you absolutely sure?</DialogTitle>
-                      <DialogDescription>
-                        This action cannot be undone if your Project is not
-                        replicated somewhere else than this device.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button type="button" variant="secondary">
-                          No, I've changed my mind
-                        </Button>
-                      </DialogClose>
-                      <Button
-                        variant="destructive"
-                        onClick={projectForm.handleSubmit(onDelete)}
-                      >
-                        <Trash className="w-4 h-4 mr-2"></Trash>
-                        Yes, delete this Project
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          </PageSection>
         </form>
       </Form>
+      <PageSection title="Danger Zone">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-sm font-medium leading-6">
+              Delete this Project from your current device
+            </p>
+            <p className="text-sm text-gray-500">
+              The action does not delete this Project from other devices - just
+              from the device you are currently using. But if this is the only
+              device your Project is stored at, you will remove it permanently -
+              there is no going back. Please be certain.
+            </p>
+          </div>
+          <div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash className="w-4 h-4 mr-2"></Trash>
+                  Delete Project
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone if your Project is not
+                    replicated somewhere else than this device.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="secondary">
+                      No, I've changed my mind
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    variant="destructive"
+                    onClick={projectForm.handleSubmit(onDelete)}
+                  >
+                    <Trash className="w-4 h-4 mr-2"></Trash>
+                    Yes, delete this Project
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </PageSection>
     </Page>
   );
 }

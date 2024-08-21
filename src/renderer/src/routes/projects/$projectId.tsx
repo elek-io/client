@@ -1,5 +1,6 @@
 import { TranslatableString } from '@elek-io/core';
 import { Badge } from '@renderer/components/ui/badge';
+import { Button } from '@renderer/components/ui/button';
 import {
   CommandDialog,
   CommandEmpty,
@@ -18,7 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
-import { useStore } from '@renderer/store';
+import { NotificationIntent, useStore } from '@renderer/store';
 import {
   Link,
   Outlet,
@@ -33,6 +34,7 @@ import {
   Layers,
   LayoutDashboard,
   LucideIcon,
+  RefreshCw,
   Search,
   Settings,
 } from 'lucide-react';
@@ -71,12 +73,34 @@ export const Route = createFileRoute('/projects/$projectId')({
       id: params.projectId,
     });
 
+    let currentProjectRemoteOriginUrl = null;
+    try {
+      currentProjectRemoteOriginUrl =
+        await context.core.projects.remotes.getOriginUrl({
+          id: params.projectId,
+        });
+    } catch (error) {
+      console.info(error);
+    }
+
+    const changes = currentProjectRemoteOriginUrl
+      ? await context.core.projects.getChanges({
+          id: params.projectId,
+        })
+      : null;
+
     const collections = await context.core.collections.list({
       projectId: params.projectId,
       limit: 0,
     });
 
-    return { currentProject, collections, translate };
+    return {
+      currentProject,
+      currentProjectRemoteOriginUrl,
+      changes,
+      collections,
+      translate,
+    };
   },
   component: ProjectLayout,
 });
@@ -94,6 +118,7 @@ function ProjectLayout(): JSX.Element {
       state.setProjectSearchDialogOpen,
     ]
   );
+  const [isSynchronizing, setIsSynchronizing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<any[]>([]); // @todo remove for now
   const projectNavigation: {
@@ -165,30 +190,78 @@ function ProjectLayout(): JSX.Element {
     // }
   }
 
+  async function onSynchronize(): Promise<void> {
+    setIsSynchronizing(true);
+    try {
+      await context.core.projects.synchronize({
+        id: context.currentProject.id,
+      });
+      setIsSynchronizing(false);
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully synchronized Project',
+        description: 'The Project was successfully synchronized.',
+      });
+      router.invalidate();
+    } catch (error) {
+      setIsSynchronizing(false);
+      console.error(error);
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to synchronize Project',
+        description: 'There was an error synchronizing the Project.',
+      });
+    }
+  }
+
   return (
     <div className="flex h-full overflow-hidden">
       <Sidebar isNarrow={isProjectSidebarNarrow}>
         {!isProjectSidebarNarrow && (
-          <div className="flex flex-shrink-0 flex-col p-4">
-            <div className="flex items-center">
-              <div className="">
-                <FolderGit2 className="w-8 h-8" />
+          <>
+            <div className="flex flex-shrink-0 flex-col p-4">
+              <div className="flex items-center">
+                <div className="">
+                  <FolderGit2 className="w-8 h-8" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium group-hover:text-gray-900">
+                    {context.currentProject.name}
+                  </p>
+                  <p className="text-xs font-medium text-zinc-400 group-hover:text-gray-700">
+                    Version {context.currentProject.version}
+                  </p>
+                </div>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium group-hover:text-gray-900">
-                  {context.currentProject.name}
-                </p>
-                <p className="text-xs font-medium text-zinc-400 group-hover:text-gray-700">
-                  Version {context.currentProject.version}
-                </p>
+              <div className="ml-11">
+                <Link to={'/projects'} className="text-xs">
+                  Change Project
+                </Link>
               </div>
             </div>
-            <div className="ml-11">
-              <Link to={'/projects'} className="text-xs">
-                Change Project
-              </Link>
-            </div>
-          </div>
+            {context.currentProjectRemoteOriginUrl && (
+              <>
+                <div className="p-4 flex flex-col">
+                  <Button
+                    onClick={onSynchronize}
+                    isLoading={isSynchronizing}
+                    disabled={
+                      context.changes === null ||
+                      (context.changes.ahead.length === 0 &&
+                        context.changes.behind.length === 0)
+                    }
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2"></RefreshCw>
+                    Synchronize
+                  </Button>
+                  <p className="mt-2 text-center text-xs font-medium text-zinc-400">
+                    Downloads {context.changes?.behind.length} and uploads{' '}
+                    {context.changes?.ahead.length} changes
+                  </p>
+                </div>
+              </>
+            )}
+          </>
         )}
 
         <ScrollArea>
