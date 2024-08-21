@@ -373,6 +373,24 @@ class Main {
     ipcMain.handle('core:projects:update', async (_event, args) => {
       return await core.projects.update(args[0]);
     });
+    ipcMain.handle('core:projects:getChanges', async (_event, args) => {
+      return await core.projects.getChanges(args[0]);
+    });
+    ipcMain.handle('core:projects:synchronize', async (_event, args) => {
+      return await core.projects.synchronize(args[0]);
+    });
+    ipcMain.handle(
+      'core:projects:remotes:getOriginUrl',
+      async (_event, args) => {
+        return await core.projects.remotes.getOriginUrl(args[0]);
+      }
+    );
+    ipcMain.handle(
+      'core:projects:remotes:setOriginUrl',
+      async (_event, args) => {
+        return await core.projects.remotes.setOriginUrl(args[0]);
+      }
+    );
     ipcMain.handle('core:projects:delete', async (_event, args) => {
       return await core.projects.delete(args[0]);
     });

@@ -22,6 +22,12 @@ export interface ContextBridgeApi {
       list: ElekIoCore['projects']['list'];
       read: ElekIoCore['projects']['read'];
       update: ElekIoCore['projects']['update'];
+      getChanges: ElekIoCore['projects']['getChanges'];
+      synchronize: ElekIoCore['projects']['synchronize'];
+      remotes: {
+        getOriginUrl: ElekIoCore['projects']['remotes']['getOriginUrl'];
+        setOriginUrl: ElekIoCore['projects']['remotes']['setOriginUrl'];
+      };
       delete: ElekIoCore['projects']['delete'];
     };
     assets: {
@@ -66,6 +72,16 @@ const ipc: ContextBridgeApi = {
       list: (...args) => ipcRenderer.invoke('core:projects:list', args),
       read: (...args) => ipcRenderer.invoke('core:projects:read', args),
       update: (...args) => ipcRenderer.invoke('core:projects:update', args),
+      getChanges: (...args) =>
+        ipcRenderer.invoke('core:projects:getChanges', args),
+      synchronize: (...args) =>
+        ipcRenderer.invoke('core:projects:synchronize', args),
+      remotes: {
+        getOriginUrl: (...args) =>
+          ipcRenderer.invoke('core:projects:remotes:getOriginUrl', args),
+        setOriginUrl: (...args) =>
+          ipcRenderer.invoke('core:projects:remotes:setOriginUrl', args),
+      },
       delete: (...args) => ipcRenderer.invoke('core:projects:delete', args),
     },
     assets: {
