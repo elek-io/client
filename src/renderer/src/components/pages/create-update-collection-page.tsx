@@ -22,6 +22,7 @@ import {
   toggleFieldDefinitionSchema,
   uuid,
 } from '@elek-io/core';
+import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
@@ -770,6 +771,10 @@ export const CreateUpdateCollectionPage = ({
                     <ScrollArea>
                       <div className="p-6 space-y-6">
                         <FieldDefinitionForm></FieldDefinitionForm>
+                        <DevTool
+                          placement="bottom-right"
+                          control={textFieldDefinitionFormState.control}
+                        />
                       </div>
                     </ScrollArea>
                   </SheetBody>
