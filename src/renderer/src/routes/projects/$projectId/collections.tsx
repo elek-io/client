@@ -28,7 +28,7 @@ function ProjectCollectionsLayout(): JSX.Element {
                 key={collection.id}
                 to="/projects/$projectId/collections/$collectionId"
                 params={{
-                  projectId: context.currentProject.id,
+                  projectId: context.project.id,
                   collectionId: collection.id,
                 }}
               >

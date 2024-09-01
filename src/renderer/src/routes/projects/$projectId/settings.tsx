@@ -21,8 +21,8 @@ function ProjectCollectionsLayout(): JSX.Element {
       icon: Settings,
     },
     {
-      name: 'Git',
-      to: '/projects/$projectId/settings/git',
+      name: 'Version Control',
+      to: '/projects/$projectId/settings/version-control',
       icon: GitBranch,
     },
   ];

@@ -91,7 +91,7 @@ export interface CreateUpdateCollectionPageProps extends PageProps {
   >;
   onCollectionDelete?: SubmitHandler<DeleteCollectionProps>;
   context: {
-    currentProject: Project;
+    project: Project;
     translate: (key: string, record: TranslatableString) => string;
   };
 }
@@ -114,10 +114,10 @@ export const CreateUpdateCollectionPage = ({
 
   const FieldDefinitionBaseDefaults: Omit<FieldDefinitionBase, 'id'> = {
     label: translatableDefaultNull({
-      supportedLanguages: context.currentProject.settings.language.supported,
+      supportedLanguages: context.project.settings.language.supported,
     }),
     description: translatableDefaultNull({
-      supportedLanguages: context.currentProject.settings.language.supported,
+      supportedLanguages: context.project.settings.language.supported,
     }),
     isRequired: true,
     isDisabled: false,
@@ -355,10 +355,8 @@ export const CreateUpdateCollectionPage = ({
         return (
           <NumberFieldDefinitionForm
             form={numberFieldDefinitionFormState}
-            currentLanguage={context.currentProject.settings.language.default}
-            supportedLanguages={
-              context.currentProject.settings.language.supported
-            }
+            currentLanguage={context.project.settings.language.default}
+            supportedLanguages={context.project.settings.language.supported}
             fieldType={selectedFieldType}
           />
         );
@@ -366,10 +364,8 @@ export const CreateUpdateCollectionPage = ({
         return (
           <RangeFieldDefinitionForm
             form={rangeFieldDefinitionFormState}
-            currentLanguage={context.currentProject.settings.language.default}
-            supportedLanguages={
-              context.currentProject.settings.language.supported
-            }
+            currentLanguage={context.project.settings.language.default}
+            supportedLanguages={context.project.settings.language.supported}
             fieldType={selectedFieldType}
           />
         );
@@ -377,10 +373,8 @@ export const CreateUpdateCollectionPage = ({
         return (
           <TextFieldDefinitionForm
             form={textFieldDefinitionFormState}
-            currentLanguage={context.currentProject.settings.language.default}
-            supportedLanguages={
-              context.currentProject.settings.language.supported
-            }
+            currentLanguage={context.project.settings.language.default}
+            supportedLanguages={context.project.settings.language.supported}
             fieldType={selectedFieldType}
           />
         );
@@ -388,10 +382,8 @@ export const CreateUpdateCollectionPage = ({
         return (
           <TextareaFieldDefinitionForm
             form={textareaFieldDefinitionFormState}
-            currentLanguage={context.currentProject.settings.language.default}
-            supportedLanguages={
-              context.currentProject.settings.language.supported
-            }
+            currentLanguage={context.project.settings.language.default}
+            supportedLanguages={context.project.settings.language.supported}
             fieldType={selectedFieldType}
           />
         );
@@ -399,10 +391,8 @@ export const CreateUpdateCollectionPage = ({
         return (
           <ToggleFieldDefinitionForm
             form={toggleFieldDefinitionFormState}
-            currentLanguage={context.currentProject.settings.language.default}
-            supportedLanguages={
-              context.currentProject.settings.language.supported
-            }
+            currentLanguage={context.project.settings.language.default}
+            supportedLanguages={context.project.settings.language.supported}
             fieldType={selectedFieldType}
           />
         );
@@ -413,7 +403,7 @@ export const CreateUpdateCollectionPage = ({
 
   return (
     <Page {...props}>
-      {JSON.stringify(context.currentProject.settings)}
+      {JSON.stringify(context.project.settings)}
       {JSON.stringify(collectionForm.watch())}
       {/* <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <SelectTrigger>
@@ -464,7 +454,7 @@ export const CreateUpdateCollectionPage = ({
 
               <FormField
                 control={collectionForm.control}
-                name={`name.plural.${context.currentProject.settings.language.default}`}
+                name={`name.plural.${context.project.settings.language.default}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired={true}>
@@ -486,7 +476,7 @@ export const CreateUpdateCollectionPage = ({
                           </DialogHeader>
 
                           <div className="space-y-2 py-6">
-                            {context.currentProject.settings.language.supported.map(
+                            {context.project.settings.language.supported.map(
                               (language) => {
                                 return (
                                   <FormField
@@ -535,7 +525,7 @@ export const CreateUpdateCollectionPage = ({
 
               <FormField
                 control={collectionForm.control}
-                name={`name.singular.${context.currentProject.settings.language.default}`}
+                name={`name.singular.${context.project.settings.language.default}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired={true}>
@@ -556,7 +546,7 @@ export const CreateUpdateCollectionPage = ({
                           </DialogHeader>
 
                           <div className="space-y-2 py-6">
-                            {context.currentProject.settings.language.supported.map(
+                            {context.project.settings.language.supported.map(
                               (language) => {
                                 return (
                                   <FormField
@@ -604,7 +594,7 @@ export const CreateUpdateCollectionPage = ({
 
               <FormField
                 control={collectionForm.control}
-                name={`description.${context.currentProject.settings.language.default}`}
+                name={`description.${context.project.settings.language.default}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-12">
                     <FormLabel isRequired={true}>Description</FormLabel>
@@ -623,7 +613,7 @@ export const CreateUpdateCollectionPage = ({
                           </DialogHeader>
 
                           <div className="space-y-2 py-6">
-                            {context.currentProject.settings.language.supported.map(
+                            {context.project.settings.language.supported.map(
                               (language) => {
                                 return (
                                   <FormField
@@ -837,7 +827,7 @@ export const CreateUpdateCollectionPage = ({
                           onClick={() =>
                             props.onCollectionDelete &&
                             props.onCollectionDelete({
-                              projectId: context.currentProject.id,
+                              projectId: context.project.id,
                               id: collectionFormProps.id,
                             })
                           }

@@ -1,18 +1,29 @@
+import { cn } from '@renderer/util';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { type ReactElement, type ReactNode } from 'react';
+import { HTMLAttributes, type ReactElement, type ReactNode } from 'react';
 
 const styles = cva('');
 
-export interface PageSectionProps extends VariantProps<typeof styles> {
+export interface PageSectionProps
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof styles> {
   children?: ReactNode;
   title?: string;
   description?: string;
   actions?: ReactElement;
 }
 
-export function PageSection(props: PageSectionProps): JSX.Element {
+export function PageSection({
+  className,
+  ...props
+}: PageSectionProps): JSX.Element {
   return (
-    <section className="p-6 border-t border-zinc-200 dark:border-zinc-800">
+    <section
+      className={cn(
+        'p-6 border-t border-zinc-200 dark:border-zinc-800',
+        className
+      )}
+    >
       <div className="sm:flex sm:items-center mb-4">
         <div className="sm:flex-auto">
           <h2 className="text-base font-semibold leading-6">{props.title}</h2>

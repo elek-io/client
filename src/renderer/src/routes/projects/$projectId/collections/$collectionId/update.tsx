@@ -36,7 +36,7 @@ function ProjectCollectionUpdate(): JSX.Element {
     },
     defaultValues: {
       ...context.currentCollection,
-      projectId: context.currentProject.id,
+      projectId: context.project.id,
     },
   });
 
@@ -85,7 +85,7 @@ function ProjectCollectionUpdate(): JSX.Element {
       router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
-          projectId: context.currentProject.id,
+          projectId: context.project.id,
           collectionId: context.currentCollection.id,
         },
       });
@@ -103,7 +103,7 @@ function ProjectCollectionUpdate(): JSX.Element {
   const onDelete: SubmitHandler<DeleteCollectionProps> = async (collection) => {
     try {
       await context.core.collections.delete({
-        projectId: context.currentProject.id,
+        projectId: context.project.id,
         id: collection.id,
       });
       addNotification({
@@ -114,7 +114,7 @@ function ProjectCollectionUpdate(): JSX.Element {
       router.navigate({
         to: '/projects/$projectId/collections',
         params: {
-          projectId: context.currentProject.id,
+          projectId: context.project.id,
         },
       });
     } catch (error) {

@@ -24,6 +24,7 @@ export interface ContextBridgeApi {
       update: ElekIoCore['projects']['update'];
       getChanges: ElekIoCore['projects']['getChanges'];
       synchronize: ElekIoCore['projects']['synchronize'];
+      clone: ElekIoCore['projects']['clone'];
       remotes: {
         getOriginUrl: ElekIoCore['projects']['remotes']['getOriginUrl'];
         setOriginUrl: ElekIoCore['projects']['remotes']['setOriginUrl'];
@@ -76,6 +77,7 @@ const ipc: ContextBridgeApi = {
         ipcRenderer.invoke('core:projects:getChanges', args),
       synchronize: (...args) =>
         ipcRenderer.invoke('core:projects:synchronize', args),
+      clone: (...args) => ipcRenderer.invoke('core:projects:clone', args),
       remotes: {
         getOriginUrl: (...args) =>
           ipcRenderer.invoke('core:projects:remotes:getOriginUrl', args),

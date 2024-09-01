@@ -1,14 +1,6 @@
 import { TranslatableString } from '@elek-io/core';
-import { Badge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@renderer/components/ui/command';
+import { Commit } from '@renderer/components/ui/commit';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Sidebar } from '@renderer/components/ui/sidebar';
 import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
@@ -38,7 +30,6 @@ import {
   LayoutDashboard,
   LucideIcon,
   RefreshCw,
-  Search,
   Settings,
   UploadCloud,
 } from 'lucide-react';
@@ -56,26 +47,34 @@ export const Route = createFileRoute('/projects/$projectId')({
      * that a translation should be added.
      */
     function translate(key: string, record: TranslatableString): string {
-      const toCurrentUserLanguage = record[context.currentUser.language];
-      if (toCurrentUserLanguage) {
-        return toCurrentUserLanguage;
+      const toUserLanguage = record[context.user.language];
+      if (toUserLanguage) {
+        return toUserLanguage;
       }
-      const toCurrentProjectsDefaultLanguage =
-        currentProject.settings.language.default &&
-        record[currentProject.settings.language.default];
-      if (toCurrentProjectsDefaultLanguage) {
-        return toCurrentProjectsDefaultLanguage;
+
+      const toProjectsDefaultLanguage =
+        project.settings.language.default &&
+        record[project.settings.language.default];
+      if (toProjectsDefaultLanguage) {
+        return toProjectsDefaultLanguage;
       }
+
       const toEnglish = record['en'];
       if (toEnglish) {
         return toEnglish;
       }
+
       return `(Missing translation for key "${key}")`;
     }
 
-    const currentProject = await context.core.projects.read({
+    const project = await context.core.projects.read({
       id: params.projectId,
     });
+
+    const projectRemoteOriginUrl =
+      await context.core.projects.remotes.getOriginUrl({
+        id: params.projectId,
+      });
 
     const collections = await context.core.collections.list({
       projectId: params.projectId,
@@ -83,7 +82,8 @@ export const Route = createFileRoute('/projects/$projectId')({
     });
 
     return {
-      currentProject,
+      project,
+      projectRemoteOriginUrl,
       collections,
       translate,
     };
@@ -98,15 +98,7 @@ function ProjectLayout(): JSX.Element {
   const isProjectSidebarNarrow = useStore(
     (state) => state.isProjectSidebarNarrow
   );
-  const [isProjectSearchDialogOpen, setProjectSearchDialogOpen] = useStore(
-    (state) => [
-      state.isProjectSearchDialogOpen,
-      state.setProjectSearchDialogOpen,
-    ]
-  );
   const [isSynchronizing, setIsSynchronizing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResult, setSearchResult] = useState<any[]>([]); // @todo remove for now
   const projectNavigation: {
     name: string;
     to: ToPathOption;
@@ -137,11 +129,12 @@ function ProjectLayout(): JSX.Element {
   useEffect(() => {
     useStore.setState((prev) => ({
       breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
-        context.currentProject.id,
-        context.currentProject.name
+        context.project.id,
+        context.project.name
       ),
     }));
-  }, [context.currentProject]);
+  }, [context.project]);
+
   useEffect(() => {
     context.collections.list.map((collection) => {
       useStore.setState((prev) => ({
@@ -153,17 +146,11 @@ function ProjectLayout(): JSX.Element {
     });
   }, [context.collections]);
 
-  const {
-    status,
-    data: projectChanges,
-    error,
-    isFetching: isFetchingProjectChanges,
-    refetch: refetchProjectChanges,
-  } = useQuery({
-    queryKey: ['projectChanges'],
+  const projectChangesQuery = useQuery({
+    queryKey: ['projectChanges', context.project.id],
     queryFn: async () => {
       const changes = await context.core.projects.getChanges({
-        id: context.currentProject.id,
+        id: context.project.id,
       });
       return changes;
     },
@@ -171,34 +158,11 @@ function ProjectLayout(): JSX.Element {
     refetchInterval: 180000,
   });
 
-  async function onSearch(value: string): Promise<void> {
-    setSearchQuery(value);
-    // @todo noop
-    // try {
-    //   const searchResult = await context.core.projects.search(
-    //     context.currentProject.id,
-    //     searchQuery
-    //   );
-    //   setSearchResult(searchResult);
-    //   console.log('Searched: ', {
-    //     query: searchQuery,
-    //     result: searchResult,
-    //   });
-    // } catch (error) {
-    //   console.error(error);
-    //   addNotification({
-    //     intent: NotificationIntent.DANGER,
-    //     title: 'Search failed',
-    //     description: 'There was an error searching for the provided query.',
-    //   });
-    // }
-  }
-
   async function onSynchronize(): Promise<void> {
     setIsSynchronizing(true);
     try {
       await context.core.projects.synchronize({
-        id: context.currentProject.id,
+        id: context.project.id,
       });
       setIsSynchronizing(false);
       addNotification({
@@ -206,7 +170,7 @@ function ProjectLayout(): JSX.Element {
         title: 'Successfully synchronized Project',
         description: 'The Project was successfully synchronized.',
       });
-      await refetchProjectChanges();
+      await projectChangesQuery.refetch();
       // router.invalidate();
     } catch (error) {
       setIsSynchronizing(false);
@@ -231,10 +195,10 @@ function ProjectLayout(): JSX.Element {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium group-hover:text-gray-900">
-                    {context.currentProject.name}
+                    {context.project.name}
                   </p>
                   <p className="text-xs font-medium text-zinc-400 group-hover:text-gray-700">
-                    Version {context.currentProject.version}
+                    Version {context.project.version}
                   </p>
                 </div>
               </div>
@@ -244,7 +208,7 @@ function ProjectLayout(): JSX.Element {
                 </Link>
               </div>
             </div>
-            {context.currentProjectRemoteOriginUrl && (
+            {context.projectRemoteOriginUrl && (
               <>
                 <div className="p-4 pt-0 flex flex-col">
                   <div className="flex">
@@ -253,11 +217,11 @@ function ProjectLayout(): JSX.Element {
                       onClick={onSynchronize}
                       isLoading={isSynchronizing}
                       disabled={
-                        isFetchingProjectChanges ||
+                        projectChangesQuery.isFetching ||
                         isSynchronizing ||
-                        projectChanges === undefined ||
-                        (projectChanges.ahead.length === 0 &&
-                          projectChanges.behind.length === 0)
+                        projectChangesQuery.data === undefined ||
+                        (projectChangesQuery.data.ahead.length === 0 &&
+                          projectChangesQuery.data.behind.length === 0)
                       }
                     >
                       <ArrowDownUp className="w-4 h-4 mr-2" />
@@ -265,25 +229,36 @@ function ProjectLayout(): JSX.Element {
                     </Button>
                     <Button
                       className="rounded-l-none ml-0.5"
-                      onClick={() => refetchProjectChanges()}
-                      disabled={isFetchingProjectChanges || isSynchronizing}
+                      onClick={() => projectChangesQuery.refetch()}
+                      disabled={
+                        projectChangesQuery.isFetching || isSynchronizing
+                      }
                     >
                       <RefreshCw className="w-4 h-4" />
                     </Button>
                   </div>
 
                   <p className="mt-2 text-center text-xs font-medium text-zinc-400">
-                    {isFetchingProjectChanges ? (
+                    {projectChangesQuery.isFetching ? (
                       'Loading'
                     ) : (
-                      <div className="flex items-center justify-center">
+                      <span className="flex items-center justify-center">
                         <DownloadCloud className="w-4 h-4 mr-1" />
-                        {projectChanges?.behind.length}
+                        {projectChangesQuery.data?.behind.length}
                         <UploadCloud className="w-4 h-4 ml-4 mr-1" />
-                        {projectChanges?.ahead.length}
-                      </div>
+                        {projectChangesQuery.data?.ahead.length}
+                      </span>
                     )}
                   </p>
+
+                  {projectChangesQuery.data &&
+                    projectChangesQuery.data.ahead.map((commit) => (
+                      <Commit
+                        key={commit.hash}
+                        {...commit}
+                        language={context.user.language}
+                      />
+                    ))}
                 </div>
               </>
             )}
@@ -305,13 +280,6 @@ function ProjectLayout(): JSX.Element {
                 )}
               </SidebarNavigationItem>
             )}
-
-            <SidebarNavigationItem
-              onClick={() => setProjectSearchDialogOpen(true)}
-            >
-              <Search className="h-6 w-6" aria-hidden="true"></Search>
-              {!isProjectSidebarNarrow && <span className="ml-4">Search</span>}
-            </SidebarNavigationItem>
 
             {projectNavigation.map((navigation) => {
               const item = (
@@ -348,62 +316,6 @@ function ProjectLayout(): JSX.Element {
       <div className="flex flex-1 flex-col">
         <Outlet></Outlet>
       </div>
-
-      <CommandDialog
-        open={isProjectSearchDialogOpen}
-        onOpenChange={setProjectSearchDialogOpen}
-      >
-        <CommandInput
-          placeholder="Type a command or search..."
-          value={searchQuery}
-          onValueChange={(value) => onSearch(value)}
-        />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-
-          <CommandGroup heading="Assets">
-            {searchResult
-              .filter((result) => result.type === 'asset')
-              .map((result) => {
-                return (
-                  <CommandItem
-                    onClick={() =>
-                      router.navigate({
-                        to: '/projects/$projectId/assets',
-                        params: { projectId: context.currentProject.id },
-                      })
-                    }
-                    key={result.id}
-                  >
-                    <Badge className="mr-2">{result.language}</Badge>
-                    {result.name}
-                  </CommandItem>
-                );
-              })}
-          </CommandGroup>
-
-          <CommandGroup heading="Collections">
-            {searchResult
-              .filter((result) => result.type === 'collection')
-              .map((result) => {
-                return (
-                  <CommandItem
-                    onClick={() =>
-                      router.navigate({
-                        to: '/projects/$projectId/collections',
-                        params: { projectId: context.currentProject.id },
-                      })
-                    }
-                    key={result.id}
-                  >
-                    <Badge className="mr-2">{result.language}</Badge>
-                    {result.name}
-                  </CommandItem>
-                );
-              })}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
     </div>
   );
 }

@@ -32,20 +32,18 @@ function ProjectCollectionCreate(): JSX.Element {
       return zodResolver(createCollectionSchema)(data, context, options);
     },
     defaultValues: {
-      projectId: context.currentProject.id,
+      projectId: context.project.id,
       icon: 'home',
       name: {
         singular: translatableDefaultNull({
-          supportedLanguages:
-            context.currentProject.settings.language.supported,
+          supportedLanguages: context.project.settings.language.supported,
         }),
         plural: translatableDefaultNull({
-          supportedLanguages:
-            context.currentProject.settings.language.supported,
+          supportedLanguages: context.project.settings.language.supported,
         }),
       },
       description: translatableDefaultNull({
-        supportedLanguages: context.currentProject.settings.language.supported,
+        supportedLanguages: context.project.settings.language.supported,
       }),
       slug: {
         singular: '',
@@ -100,7 +98,7 @@ function ProjectCollectionCreate(): JSX.Element {
       router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
-          projectId: context.currentProject.id,
+          projectId: context.project.id,
           collectionId: collection.id,
         },
       });

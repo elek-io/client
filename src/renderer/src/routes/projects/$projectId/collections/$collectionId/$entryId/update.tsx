@@ -45,7 +45,7 @@ function ProjectCollectionEntryUpdatePage(): JSX.Element {
       //   }
       // ),
       collectionId: context.currentCollection.id,
-      projectId: context.currentProject.id,
+      projectId: context.project.id,
     },
   });
 
@@ -89,7 +89,7 @@ function ProjectCollectionEntryUpdatePage(): JSX.Element {
       router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
-          projectId: context.currentProject.id,
+          projectId: context.project.id,
           collectionId: context.currentCollection.id,
         },
       });
@@ -120,7 +120,7 @@ function ProjectCollectionEntryUpdatePage(): JSX.Element {
                 (definition, definitionIndex) => {
                   return FormFieldFromDefinition(
                     definition,
-                    `values.${definitionIndex}.content.${context.currentProject.settings.language.default}`,
+                    `values.${definitionIndex}.content.${context.project.settings.language.default}`,
                     context.translate
                   );
                 }

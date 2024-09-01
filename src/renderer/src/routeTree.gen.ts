@@ -11,9 +11,11 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as ProjectsImport } from './routes/projects'
 import { Route as IndexImport } from './routes/index'
+import { Route as UserIndexImport } from './routes/user/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
-import { Route as UserSetImport } from './routes/user/set'
+import { Route as UserSetupImport } from './routes/user/setup'
 import { Route as ProjectsCreateImport } from './routes/projects/create'
 import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
@@ -23,7 +25,7 @@ import { Route as ProjectsProjectIdCollectionsImport } from './routes/projects/$
 import { Route as ProjectsProjectIdSettingsIndexImport } from './routes/projects/$projectId/settings/index'
 import { Route as ProjectsProjectIdCollectionsIndexImport } from './routes/projects/$projectId/collections/index'
 import { Route as ProjectsProjectIdAssetsIndexImport } from './routes/projects/$projectId/assets/index'
-import { Route as ProjectsProjectIdSettingsGitImport } from './routes/projects/$projectId/settings/git'
+import { Route as ProjectsProjectIdSettingsVersionControlImport } from './routes/projects/$projectId/settings/version-control'
 import { Route as ProjectsProjectIdSettingsGeneralImport } from './routes/projects/$projectId/settings/general'
 import { Route as ProjectsProjectIdCollectionsCreateImport } from './routes/projects/$projectId/collections/create'
 import { Route as ProjectsProjectIdCollectionsCollectionIdImport } from './routes/projects/$projectId/collections/$collectionId'
@@ -36,29 +38,39 @@ import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateImport } 
 
 // Create/Update Routes
 
+const ProjectsRoute = ProjectsImport.update({
+  path: '/projects',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const ProjectsIndexRoute = ProjectsIndexImport.update({
-  path: '/projects/',
+const UserIndexRoute = UserIndexImport.update({
+  path: '/user/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const UserSetRoute = UserSetImport.update({
-  path: '/user/set',
+const ProjectsIndexRoute = ProjectsIndexImport.update({
+  path: '/',
+  getParentRoute: () => ProjectsRoute,
+} as any)
+
+const UserSetupRoute = UserSetupImport.update({
+  path: '/user/setup',
   getParentRoute: () => rootRoute,
 } as any)
 
 const ProjectsCreateRoute = ProjectsCreateImport.update({
-  path: '/projects/create',
-  getParentRoute: () => rootRoute,
+  path: '/create',
+  getParentRoute: () => ProjectsRoute,
 } as any)
 
 const ProjectsProjectIdRoute = ProjectsProjectIdImport.update({
-  path: '/projects/$projectId',
-  getParentRoute: () => rootRoute,
+  path: '/$projectId',
+  getParentRoute: () => ProjectsRoute,
 } as any)
 
 const ProjectsProjectIdIndexRoute = ProjectsProjectIdIndexImport.update({
@@ -102,9 +114,9 @@ const ProjectsProjectIdAssetsIndexRoute =
     getParentRoute: () => ProjectsProjectIdRoute,
   } as any)
 
-const ProjectsProjectIdSettingsGitRoute =
-  ProjectsProjectIdSettingsGitImport.update({
-    path: '/git',
+const ProjectsProjectIdSettingsVersionControlRoute =
+  ProjectsProjectIdSettingsVersionControlImport.update({
+    path: '/version-control',
     getParentRoute: () => ProjectsProjectIdSettingsRoute,
   } as any)
 
@@ -173,32 +185,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsImport
+      parentRoute: typeof rootRoute
+    }
     '/projects/$projectId': {
       id: '/projects/$projectId'
-      path: '/projects/$projectId'
+      path: '/$projectId'
       fullPath: '/projects/$projectId'
       preLoaderRoute: typeof ProjectsProjectIdImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof ProjectsImport
     }
     '/projects/create': {
       id: '/projects/create'
-      path: '/projects/create'
+      path: '/create'
       fullPath: '/projects/create'
       preLoaderRoute: typeof ProjectsCreateImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof ProjectsImport
     }
-    '/user/set': {
-      id: '/user/set'
-      path: '/user/set'
-      fullPath: '/user/set'
-      preLoaderRoute: typeof UserSetImport
+    '/user/setup': {
+      id: '/user/setup'
+      path: '/user/setup'
+      fullPath: '/user/setup'
+      preLoaderRoute: typeof UserSetupImport
       parentRoute: typeof rootRoute
     }
     '/projects/': {
       id: '/projects/'
-      path: '/projects'
-      fullPath: '/projects'
+      path: '/'
+      fullPath: '/projects/'
       preLoaderRoute: typeof ProjectsIndexImport
+      parentRoute: typeof ProjectsImport
+    }
+    '/user/': {
+      id: '/user/'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof UserIndexImport
       parentRoute: typeof rootRoute
     }
     '/projects/$projectId/collections': {
@@ -250,11 +276,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdSettingsGeneralImport
       parentRoute: typeof ProjectsProjectIdSettingsImport
     }
-    '/projects/$projectId/settings/git': {
-      id: '/projects/$projectId/settings/git'
-      path: '/git'
-      fullPath: '/projects/$projectId/settings/git'
-      preLoaderRoute: typeof ProjectsProjectIdSettingsGitImport
+    '/projects/$projectId/settings/version-control': {
+      id: '/projects/$projectId/settings/version-control'
+      path: '/version-control'
+      fullPath: '/projects/$projectId/settings/version-control'
+      preLoaderRoute: typeof ProjectsProjectIdSettingsVersionControlImport
       parentRoute: typeof ProjectsProjectIdSettingsImport
     }
     '/projects/$projectId/assets/': {
@@ -327,35 +353,41 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexRoute,
-  ProjectsProjectIdRoute: ProjectsProjectIdRoute.addChildren({
-    ProjectsProjectIdCollectionsRoute:
-      ProjectsProjectIdCollectionsRoute.addChildren({
-        ProjectsProjectIdCollectionsCollectionIdRoute:
-          ProjectsProjectIdCollectionsCollectionIdRoute.addChildren({
-            ProjectsProjectIdCollectionsCollectionIdEntryIdRoute:
-              ProjectsProjectIdCollectionsCollectionIdEntryIdRoute.addChildren({
-                ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute,
-                ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
-              }),
-            ProjectsProjectIdCollectionsCollectionIdCreateRoute,
-            ProjectsProjectIdCollectionsCollectionIdUpdateRoute,
-            ProjectsProjectIdCollectionsCollectionIdIndexRoute,
-          }),
-        ProjectsProjectIdCollectionsCreateRoute,
-        ProjectsProjectIdCollectionsIndexRoute,
-      }),
-    ProjectsProjectIdDashboardRoute,
-    ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRoute.addChildren({
-      ProjectsProjectIdSettingsGeneralRoute,
-      ProjectsProjectIdSettingsGitRoute,
-      ProjectsProjectIdSettingsIndexRoute,
+  ProjectsRoute: ProjectsRoute.addChildren({
+    ProjectsProjectIdRoute: ProjectsProjectIdRoute.addChildren({
+      ProjectsProjectIdCollectionsRoute:
+        ProjectsProjectIdCollectionsRoute.addChildren({
+          ProjectsProjectIdCollectionsCollectionIdRoute:
+            ProjectsProjectIdCollectionsCollectionIdRoute.addChildren({
+              ProjectsProjectIdCollectionsCollectionIdEntryIdRoute:
+                ProjectsProjectIdCollectionsCollectionIdEntryIdRoute.addChildren(
+                  {
+                    ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute,
+                    ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
+                  },
+                ),
+              ProjectsProjectIdCollectionsCollectionIdCreateRoute,
+              ProjectsProjectIdCollectionsCollectionIdUpdateRoute,
+              ProjectsProjectIdCollectionsCollectionIdIndexRoute,
+            }),
+          ProjectsProjectIdCollectionsCreateRoute,
+          ProjectsProjectIdCollectionsIndexRoute,
+        }),
+      ProjectsProjectIdDashboardRoute,
+      ProjectsProjectIdSettingsRoute:
+        ProjectsProjectIdSettingsRoute.addChildren({
+          ProjectsProjectIdSettingsGeneralRoute,
+          ProjectsProjectIdSettingsVersionControlRoute,
+          ProjectsProjectIdSettingsIndexRoute,
+        }),
+      ProjectsProjectIdIndexRoute,
+      ProjectsProjectIdAssetsIndexRoute,
     }),
-    ProjectsProjectIdIndexRoute,
-    ProjectsProjectIdAssetsIndexRoute,
+    ProjectsCreateRoute,
+    ProjectsIndexRoute,
   }),
-  ProjectsCreateRoute,
-  UserSetRoute,
-  ProjectsIndexRoute,
+  UserSetupRoute,
+  UserIndexRoute,
 })
 
 /* prettier-ignore-end */
@@ -367,17 +399,25 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/projects/$projectId",
-        "/projects/create",
-        "/user/set",
-        "/projects/"
+        "/projects",
+        "/user/setup",
+        "/user/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/projects": {
+      "filePath": "projects.tsx",
+      "children": [
+        "/projects/$projectId",
+        "/projects/create",
+        "/projects/"
+      ]
+    },
     "/projects/$projectId": {
       "filePath": "projects/$projectId.tsx",
+      "parent": "/projects",
       "children": [
         "/projects/$projectId/collections",
         "/projects/$projectId/dashboard",
@@ -387,13 +427,18 @@ export const routeTree = rootRoute.addChildren({
       ]
     },
     "/projects/create": {
-      "filePath": "projects/create.tsx"
+      "filePath": "projects/create.tsx",
+      "parent": "/projects"
     },
-    "/user/set": {
-      "filePath": "user/set.tsx"
+    "/user/setup": {
+      "filePath": "user/setup.tsx"
     },
     "/projects/": {
-      "filePath": "projects/index.tsx"
+      "filePath": "projects/index.tsx",
+      "parent": "/projects"
+    },
+    "/user/": {
+      "filePath": "user/index.tsx"
     },
     "/projects/$projectId/collections": {
       "filePath": "projects/$projectId/collections.tsx",
@@ -413,7 +458,7 @@ export const routeTree = rootRoute.addChildren({
       "parent": "/projects/$projectId",
       "children": [
         "/projects/$projectId/settings/general",
-        "/projects/$projectId/settings/git",
+        "/projects/$projectId/settings/version-control",
         "/projects/$projectId/settings/"
       ]
     },
@@ -439,8 +484,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "projects/$projectId/settings/general.tsx",
       "parent": "/projects/$projectId/settings"
     },
-    "/projects/$projectId/settings/git": {
-      "filePath": "projects/$projectId/settings/git.tsx",
+    "/projects/$projectId/settings/version-control": {
+      "filePath": "projects/$projectId/settings/version-control.tsx",
       "parent": "/projects/$projectId/settings"
     },
     "/projects/$projectId/assets/": {

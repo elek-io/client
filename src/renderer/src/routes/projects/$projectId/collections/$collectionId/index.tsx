@@ -56,7 +56,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
     queryKey: ['entries', context.currentCollection.id, pagination, filter],
     queryFn: () =>
       context.core.entries.list({
-        projectId: context.currentProject.id,
+        projectId: context.project.id,
         collectionId: context.currentCollection.id,
         limit: pagination.pageSize,
         offset:
@@ -79,7 +79,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
 
         entry.values.map((value) => {
           row[value.fieldDefinitionId] =
-            value.content[context.currentProject.settings.language.default];
+            value.content[context.project.settings.language.default];
         });
         return row;
       }) ?? [],
@@ -124,7 +124,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/create',
               params: {
-                projectId: context.currentProject.id,
+                projectId: context.project.id,
                 collectionId: context.currentCollection.id,
               },
             })
@@ -143,7 +143,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/update',
               params: {
-                projectId: context.currentProject.id,
+                projectId: context.project.id,
                 collectionId: context.currentCollection.id,
               },
             })
@@ -190,7 +190,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
     router.navigate({
       to: '/projects/$projectId/collections/$collectionId/$entryId/update',
       params: {
-        projectId: context.currentProject.id,
+        projectId: context.project.id,
         collectionId: context.currentCollection.id,
         entryId: id,
       },

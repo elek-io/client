@@ -376,6 +376,9 @@ class Main {
     ipcMain.handle('core:projects:getChanges', async (_event, args) => {
       return await core.projects.getChanges(args[0]);
     });
+    ipcMain.handle('core:projects:clone', async (_event, args) => {
+      return await core.projects.clone(args[0]);
+    });
     ipcMain.handle('core:projects:synchronize', async (_event, args) => {
       return await core.projects.synchronize(args[0]);
     });

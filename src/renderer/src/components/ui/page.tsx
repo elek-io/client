@@ -37,7 +37,9 @@ export const Page = forwardRef<HTMLElement, PageProps>(
               <div className="md:flex-auto">
                 <h2 className="text-3xl">{props.title}</h2>
                 {props.description && (
-                  <p className="mt-2 text-sm">{props.description}</p>
+                  <p className="mt-2 text-sm max-w-screen-sm">
+                    {props.description}
+                  </p>
                 )}
               </div>
               <div className="mt-4 md:mt-0 md:ml-16 md:flex-none flex flex-row space-x-2">

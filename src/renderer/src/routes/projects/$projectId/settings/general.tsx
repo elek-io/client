@@ -80,7 +80,7 @@ function ProjectSettingsGeneralPage(): JSX.Element {
       );
       return zodResolver(updateProjectSchema)(data, context, options);
     },
-    defaultValues: context.currentProject,
+    defaultValues: context.project,
   });
   const supportedLanguages = supportedLanguageSchema.options.map((option) => {
     return {

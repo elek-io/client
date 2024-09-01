@@ -39,7 +39,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
       return zodResolver(createEntrySchema)(data, context, options);
     },
     defaultValues: {
-      projectId: context.currentProject.id,
+      projectId: context.project.id,
       collectionId: context.currentCollection.id,
       values: context.currentCollection.fieldDefinitions.map((definition) => {
         switch (definition.valueType) {
@@ -51,8 +51,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
               fieldDefinitionId: definition.id,
               valueType: definition.valueType,
               content: translatableDefaultNull({
-                supportedLanguages:
-                  context.currentProject.settings.language.supported,
+                supportedLanguages: context.project.settings.language.supported,
               }),
             };
 
@@ -62,8 +61,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
               fieldDefinitionId: definition.id,
               valueType: definition.valueType,
               content: translatableDefaultArray({
-                supportedLanguages:
-                  context.currentProject.settings.language.supported,
+                supportedLanguages: context.project.settings.language.supported,
               }),
             };
 
@@ -77,11 +75,11 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
     },
   });
 
-  const onCreateEntry: SubmitHandler<CreateEntryProps> = async (data) => {
+  const onCreateEntry: SubmitHandler<CreateEntryProps> = async (props) => {
     setIsCreatingEntry(true);
 
     try {
-      const entry = await context.core.entries.create(data);
+      const entry = await context.core.entries.create(props);
       setIsCreatingEntry(false);
       addNotification({
         intent: NotificationIntent.SUCCESS,
@@ -91,7 +89,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
       router.navigate({
         to: '/projects/$projectId/collections/$collectionId/$entryId',
         params: {
-          projectId: context.currentProject.id,
+          projectId: context.project.id,
           collectionId: context.currentCollection.id,
           entryId: entry.id,
         },
@@ -267,7 +265,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
                 // return <p>{JSON.stringify(fieldDefinition)}</p>;
                 return FormFieldFromDefinition(
                   fieldDefinition,
-                  `values.${index}.content.${context.currentProject.settings.language.default}`,
+                  `values.${index}.content.${context.project.settings.language.default}`,
                   context.translate
                 );
               }

@@ -132,7 +132,7 @@ function ProjectAssetsPage(): JSX.Element {
     try {
       await context.core.assets.delete({
         ...selectedAsset,
-        projectId: context.currentProject.id,
+        projectId: context.project.id,
       });
       addNotification({
         intent: NotificationIntent.SUCCESS,
@@ -159,7 +159,7 @@ function ProjectAssetsPage(): JSX.Element {
         context.core.assets.create({
           name: path.split('/').pop() || '',
           description: '',
-          projectId: context.currentProject.id,
+          projectId: context.project.id,
           filePath: path,
         })
       );

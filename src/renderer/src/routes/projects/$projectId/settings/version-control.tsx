@@ -22,11 +22,13 @@ import { Check } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
-export const Route = createFileRoute('/projects/$projectId/settings/git')({
-  component: ProjectSettingsGitPage,
+export const Route = createFileRoute(
+  '/projects/$projectId/settings/version-control'
+)({
+  component: ProjectSettingsVersionControlPage,
 });
 
-function ProjectSettingsGitPage(): JSX.Element {
+function ProjectSettingsVersionControlPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -50,8 +52,8 @@ function ProjectSettingsGitPage(): JSX.Element {
       );
     },
     defaultValues: {
-      id: context.currentProject.id,
-      url: context.currentProjectRemoteOriginUrl || '',
+      id: context.project.id,
+      url: context.projectRemoteOriginUrl || '',
     },
   });
 
@@ -89,7 +91,7 @@ function ProjectSettingsGitPage(): JSX.Element {
 
   return (
     <Page
-      title={`Git Settings`}
+      title={`Version Control Settings`}
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
