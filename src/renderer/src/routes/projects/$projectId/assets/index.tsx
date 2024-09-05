@@ -23,7 +23,7 @@ import {
 import { NotificationIntent, useStore } from '@renderer/store';
 import { formatBytes, formatDatetime } from '@renderer/util';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { ImagePlus, Trash } from 'lucide-react';
+import { Plus, Save, Trash } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/assets/')({
@@ -82,15 +82,15 @@ function ProjectAssetsPage(): JSX.Element {
   function Actions(): ReactElement {
     return (
       <>
-        <Button variant="default" onClick={() => onAddAssetClicked()}>
-          <ImagePlus className="w-4 h-4 mr-2"></ImagePlus>
+        <Button variant="default" onClick={() => onAddAssets()}>
+          <Plus className="w-4 h-4 mr-2"></Plus>
           Add Assets
         </Button>
       </>
     );
   }
 
-  async function onAddAssetClicked(): Promise<void> {
+  async function onAddAssets(): Promise<void> {
     try {
       const result = await context.electron.dialog.showOpenDialog({
         title: 'Select Assets to add',
@@ -103,10 +103,11 @@ function ProjectAssetsPage(): JSX.Element {
           },
         ],
       });
-      console.log('Selected files from dialog: ', result);
+
       if (result.canceled === true) {
         return;
       }
+
       await createAssetsFromPaths(result.filePaths);
       router.invalidate();
     } catch (error) {
@@ -119,12 +120,61 @@ function ProjectAssetsPage(): JSX.Element {
     }
   }
 
+  async function onAssetSave(): Promise<void> {
+    if (!selectedAsset) {
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to save Asset',
+        description: 'No Asset selected to save.',
+      });
+      return;
+    }
+
+    try {
+      const result = await context.electron.dialog.showSaveDialog({
+        // title: `Save Asset ${selectedAsset.name}.${selectedAsset.extension} to disk`,
+        // buttonLabel: 'Save Asset',
+        // message: 'Hello World!',
+        defaultPath: `*/${selectedAsset.name}.${selectedAsset.extension}`,
+        // properties: ['createDirectory', 'showOverwriteConfirmation'],
+        // filters: [
+        //   {
+        //     name: 'Supported files',
+        //     extensions: [...supportedAssetExtensionSchema.options],
+        //   },
+        // ],
+      });
+
+      if (result.canceled === true) {
+        return;
+      }
+
+      await context.core.assets.save({
+        projectId: context.project.id,
+        id: selectedAsset.id,
+        filePath: result.filePath,
+      });
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully saved Asset',
+        description: 'The Asset was saved successfully.',
+      });
+    } catch (error) {
+      console.error(error);
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to save Asset',
+        description: 'There was an error saving the Asset to disk.',
+      });
+    }
+  }
+
   async function onAssetDelete(): Promise<void> {
     if (!selectedAsset) {
       addNotification({
         intent: NotificationIntent.DANGER,
         title: 'Failed to delete Asset',
-        description: 'There was an error deleting the Asset from disk.',
+        description: 'No Asset selected to delete.',
       });
       return;
     }
@@ -281,7 +331,10 @@ function ProjectAssetsPage(): JSX.Element {
                   </div>
                 </div>
                 <div className="flex space-x-3">
-                  <Button variant="secondary">Download</Button>
+                  <Button variant="secondary" onClick={onAssetSave}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save
+                  </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive">
@@ -295,9 +348,8 @@ function ProjectAssetsPage(): JSX.Element {
                           You are about to delete this Asset
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your account and remove your data from our
-                          servers.
+                          This action can be undone later by restoring the Asset
+                          via it's history.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

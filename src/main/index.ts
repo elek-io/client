@@ -407,6 +407,9 @@ class Main {
     ipcMain.handle('core:assets:delete', async (_event, args) => {
       return await core.assets.delete(args[0]);
     });
+    ipcMain.handle('core:assets:save', async (_event, args) => {
+      return await core.assets.save(args[0]);
+    });
     // ipcMain.handle('core:snapshots:list', async (event, args) => {
     //   return await core.snapshots.list(
     //     args[0],

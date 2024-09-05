@@ -36,6 +36,7 @@ export interface ContextBridgeApi {
       list: ElekIoCore['assets']['list'];
       create: ElekIoCore['assets']['create'];
       delete: ElekIoCore['assets']['delete'];
+      save: ElekIoCore['assets']['save'];
     };
     collections: {
       list: ElekIoCore['collections']['list'];
@@ -93,6 +94,7 @@ const ipc: ContextBridgeApi = {
       list: (...args) => ipcRenderer.invoke('core:assets:list', args),
       create: (...args) => ipcRenderer.invoke('core:assets:create', args),
       delete: (...args) => ipcRenderer.invoke('core:assets:delete', args),
+      save: (...args) => ipcRenderer.invoke('core:assets:save', args),
     },
     collections: {
       list: (...args) => ipcRenderer.invoke('core:collections:list', args),
