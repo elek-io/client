@@ -9,6 +9,7 @@ export interface ContextBridgeApi {
     process: ElectronAPI['process'];
     dialog: {
       showOpenDialog: Dialog['showOpenDialog'];
+      showSaveDialog: Dialog['showSaveDialog'];
     };
   };
   core: {
@@ -60,6 +61,8 @@ const ipc: ContextBridgeApi = {
     dialog: {
       showOpenDialog: (options: Electron.OpenDialogOptions) =>
         ipcRenderer.invoke('electron:dialog:showOpenDialog', [options]),
+      showSaveDialog: (options: Electron.SaveDialogOptions) =>
+        ipcRenderer.invoke('electron:dialog:showSaveDialog', [options]),
     },
   },
   core: {

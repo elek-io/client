@@ -72,9 +72,7 @@ class Main {
    * Needs to be called once Electron has finished initializing
    */
   private async onAppReady(): Promise<void> {
-    this.core = new ElekIoCore({
-      environment: app.isPackaged ? 'production' : 'development',
-    });
+    this.core = new ElekIoCore();
 
     this.registerCustomFileProtocol();
 
@@ -351,6 +349,9 @@ class Main {
   ): void {
     ipcMain.handle('electron:dialog:showOpenDialog', async (_event, args) => {
       return await dialog.showOpenDialog(window, args);
+    });
+    ipcMain.handle('electron:dialog:showSaveDialog', async (_event, args) => {
+      return await dialog.showSaveDialog(window, args);
     });
     ipcMain.handle('core:user:get', async () => {
       return await core.user.get();

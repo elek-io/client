@@ -21,6 +21,7 @@ export interface RouterContext {
     process: ElectronAPI['process'];
     dialog: {
       showOpenDialog: ElectronDialog['showOpenDialog'];
+      showSaveDialog: ElectronDialog['showSaveDialog'];
     };
   };
   core: ElekIoCore;
