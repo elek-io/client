@@ -191,7 +191,9 @@ const ProjectHeader = forwardRef<HTMLInputElement, ProjectHeaderProps>(
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => router.navigate({ to: '/user/profile' })}
+                    >
                       Profile
                       <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                     </DropdownMenuItem>

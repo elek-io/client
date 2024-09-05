@@ -16,6 +16,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as UserIndexImport } from './routes/user/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
 import { Route as UserSetupImport } from './routes/user/setup'
+import { Route as UserProfileImport } from './routes/user/profile'
 import { Route as ProjectsCreateImport } from './routes/projects/create'
 import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
@@ -60,6 +61,11 @@ const ProjectsIndexRoute = ProjectsIndexImport.update({
 
 const UserSetupRoute = UserSetupImport.update({
   path: '/user/setup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const UserProfileRoute = UserProfileImport.update({
+  path: '/user/profile',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -205,6 +211,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/create'
       preLoaderRoute: typeof ProjectsCreateImport
       parentRoute: typeof ProjectsImport
+    }
+    '/user/profile': {
+      id: '/user/profile'
+      path: '/user/profile'
+      fullPath: '/user/profile'
+      preLoaderRoute: typeof UserProfileImport
+      parentRoute: typeof rootRoute
     }
     '/user/setup': {
       id: '/user/setup'
@@ -386,6 +399,7 @@ export const routeTree = rootRoute.addChildren({
     ProjectsCreateRoute,
     ProjectsIndexRoute,
   }),
+  UserProfileRoute,
   UserSetupRoute,
   UserIndexRoute,
 })
@@ -400,6 +414,7 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/",
         "/projects",
+        "/user/profile",
         "/user/setup",
         "/user/"
       ]
@@ -429,6 +444,9 @@ export const routeTree = rootRoute.addChildren({
     "/projects/create": {
       "filePath": "projects/create.tsx",
       "parent": "/projects"
+    },
+    "/user/profile": {
+      "filePath": "user/profile.tsx"
     },
     "/user/setup": {
       "filePath": "user/setup.tsx"
