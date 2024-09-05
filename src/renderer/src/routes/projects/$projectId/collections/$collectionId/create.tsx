@@ -212,7 +212,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
   // };
 
   function Title(): string {
-    return `Create a new ${context.translate(
+    return `Create a new ${context.translateContent(
       'currentCollection.name',
       context.currentCollection.name.singular
     )}`;
@@ -221,7 +221,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
   function Description(): ReactElement {
     return (
       <>
-        {context.translate(
+        {context.translateContent(
           'currentCollection.description',
           context.currentCollection.description
         )}
@@ -238,7 +238,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
         >
           <Check className="h-4 w-4 mr-2"></Check>
           Create{' '}
-          {context.translate(
+          {context.translateContent(
             'currentCollection.name.singular',
             context.currentCollection.name.singular
           )}
@@ -266,7 +266,7 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
                 return FormFieldFromDefinition(
                   fieldDefinition,
                   `values.${index}.content.${context.project.settings.language.default}`,
-                  context.translate
+                  context.translateContent
                 );
               }
             )}

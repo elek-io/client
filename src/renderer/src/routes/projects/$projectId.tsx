@@ -46,7 +46,7 @@ export const Route = createFileRoute('/projects/$projectId')({
      * If this is also not available, show the key instead along with a note,
      * that a translation should be added.
      */
-    function translate(key: string, record: TranslatableString): string {
+    function translateContent(key: string, record: TranslatableString): string {
       const toUserLanguage = record[context.user.language];
       if (toUserLanguage) {
         return toUserLanguage;
@@ -85,7 +85,7 @@ export const Route = createFileRoute('/projects/$projectId')({
       project,
       projectRemoteOriginUrl,
       collections,
-      translate,
+      translateContent,
     };
   },
   component: ProjectLayout,
@@ -140,7 +140,10 @@ function ProjectLayout(): JSX.Element {
       useStore.setState((prev) => ({
         breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
           collection.id,
-          context.translate('collection.name.plural', collection.name.plural)
+          context.translateContent(
+            'collection.name.plural',
+            collection.name.plural
+          )
         ),
       }));
     });

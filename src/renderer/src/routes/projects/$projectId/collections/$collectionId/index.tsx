@@ -99,7 +99,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
   });
 
   function Title(): string {
-    return context.translate(
+    return context.translateContent(
       'currentCollection.name.plural',
       context.currentCollection.name.plural
     );
@@ -108,7 +108,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
   function Description(): ReactElement {
     return (
       <>
-        {context.translate(
+        {context.translateContent(
           'currentCollection.description',
           context.currentCollection.description
         )}
@@ -131,7 +131,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
           }
         >
           <Plus className="w-4 h-4 mr-2"></Plus>
-          {`Create ${context.translate(
+          {`Create ${context.translateContent(
             'currentCollection.name.singular',
             context.currentCollection.name.singular
           )}`}
@@ -161,7 +161,10 @@ function ProjectCollectionIndexPage(): JSX.Element {
       context.currentCollection.fieldDefinitions.map((definition) => {
         return {
           accessorKey: definition.id,
-          header: context.translate('definition.label', definition.label),
+          header: context.translateContent(
+            'definition.label',
+            definition.label
+          ),
         };
       });
 
@@ -205,7 +208,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
     >
       <div className="flex justify-end items-center p-6">
         <Input
-          placeholder={`Filter ${context.translate(
+          placeholder={`Filter ${context.translateContent(
             'currentCollection.name.plural',
             context.currentCollection.name.plural
           )}...`}
@@ -298,7 +301,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
             .rows.length.toLocaleString(context.currentUser.language)}{' '}
           of {table.getRowCount().toLocaleString(context.currentUser.language)}{' '}
           total{' '}
-          {context.translate(
+          {context.translateContent(
             'currentCollection.name.plural',
             context.currentCollection.name.plural
           )}{' '}

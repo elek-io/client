@@ -41,7 +41,7 @@ function ProjectCollectionUpdate(): JSX.Element {
   });
 
   function Title(): string {
-    return `Configure ${context.translate(
+    return `Configure ${context.translateContent(
       'currentCollection.name.plural',
       context.currentCollection.name.plural
     )}`;

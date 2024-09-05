@@ -121,7 +121,7 @@ function ProjectCollectionEntryUpdatePage(): JSX.Element {
                   return FormFieldFromDefinition(
                     definition,
                     `values.${definitionIndex}.content.${context.project.settings.language.default}`,
-                    context.translate
+                    context.translateContent
                   );
                 }
               )}

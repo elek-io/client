@@ -34,7 +34,7 @@ function ProjectCollectionsLayout(): JSX.Element {
               >
                 <Layers className="h-6 w-6" aria-hidden="true"></Layers>
                 <span className="ml-4">
-                  {context.translate(
+                  {context.translateContent(
                     'collection.name.plural',
                     collection.name.plural
                   )}
