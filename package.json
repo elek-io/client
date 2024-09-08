@@ -65,7 +65,7 @@
     "date-fns": "3.6.0",
     "dugite": "2.7.1",
     "electron-updater": "6.2.1",
-    "lucide-react": "0.408.0",
+    "lucide-react": "0.439.0",
     "react-day-picker": "8.10.1",
     "react-hook-form": "7.52.1",
     "sonner": "1.5.0",
