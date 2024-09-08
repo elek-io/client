@@ -21,6 +21,7 @@ import { Route as ProjectsCreateImport } from './routes/projects/create'
 import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
 import { Route as ProjectsProjectIdIndexImport } from './routes/projects/$projectId/index'
 import { Route as ProjectsProjectIdSettingsImport } from './routes/projects/$projectId/settings'
+import { Route as ProjectsProjectIdHistoryImport } from './routes/projects/$projectId/history'
 import { Route as ProjectsProjectIdDashboardImport } from './routes/projects/$projectId/dashboard'
 import { Route as ProjectsProjectIdCollectionsImport } from './routes/projects/$projectId/collections'
 import { Route as ProjectsProjectIdSettingsIndexImport } from './routes/projects/$projectId/settings/index'
@@ -28,6 +29,7 @@ import { Route as ProjectsProjectIdCollectionsIndexImport } from './routes/proje
 import { Route as ProjectsProjectIdAssetsIndexImport } from './routes/projects/$projectId/assets/index'
 import { Route as ProjectsProjectIdSettingsVersionControlImport } from './routes/projects/$projectId/settings/version-control'
 import { Route as ProjectsProjectIdSettingsGeneralImport } from './routes/projects/$projectId/settings/general'
+import { Route as ProjectsProjectIdHistoryCommitHashImport } from './routes/projects/$projectId/history/$commitHash'
 import { Route as ProjectsProjectIdCollectionsCreateImport } from './routes/projects/$projectId/collections/create'
 import { Route as ProjectsProjectIdCollectionsCollectionIdImport } from './routes/projects/$projectId/collections/$collectionId'
 import { Route as ProjectsProjectIdCollectionsCollectionIdIndexImport } from './routes/projects/$projectId/collections/$collectionId/index'
@@ -89,6 +91,11 @@ const ProjectsProjectIdSettingsRoute = ProjectsProjectIdSettingsImport.update({
   getParentRoute: () => ProjectsProjectIdRoute,
 } as any)
 
+const ProjectsProjectIdHistoryRoute = ProjectsProjectIdHistoryImport.update({
+  path: '/history',
+  getParentRoute: () => ProjectsProjectIdRoute,
+} as any)
+
 const ProjectsProjectIdDashboardRoute = ProjectsProjectIdDashboardImport.update(
   {
     path: '/dashboard',
@@ -130,6 +137,12 @@ const ProjectsProjectIdSettingsGeneralRoute =
   ProjectsProjectIdSettingsGeneralImport.update({
     path: '/general',
     getParentRoute: () => ProjectsProjectIdSettingsRoute,
+  } as any)
+
+const ProjectsProjectIdHistoryCommitHashRoute =
+  ProjectsProjectIdHistoryCommitHashImport.update({
+    path: '/$commitHash',
+    getParentRoute: () => ProjectsProjectIdHistoryRoute,
   } as any)
 
 const ProjectsProjectIdCollectionsCreateRoute =
@@ -254,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdDashboardImport
       parentRoute: typeof ProjectsProjectIdImport
     }
+    '/projects/$projectId/history': {
+      id: '/projects/$projectId/history'
+      path: '/history'
+      fullPath: '/projects/$projectId/history'
+      preLoaderRoute: typeof ProjectsProjectIdHistoryImport
+      parentRoute: typeof ProjectsProjectIdImport
+    }
     '/projects/$projectId/settings': {
       id: '/projects/$projectId/settings'
       path: '/settings'
@@ -281,6 +301,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projects/$projectId/collections/create'
       preLoaderRoute: typeof ProjectsProjectIdCollectionsCreateImport
       parentRoute: typeof ProjectsProjectIdCollectionsImport
+    }
+    '/projects/$projectId/history/$commitHash': {
+      id: '/projects/$projectId/history/$commitHash'
+      path: '/$commitHash'
+      fullPath: '/projects/$projectId/history/$commitHash'
+      preLoaderRoute: typeof ProjectsProjectIdHistoryCommitHashImport
+      parentRoute: typeof ProjectsProjectIdHistoryImport
     }
     '/projects/$projectId/settings/general': {
       id: '/projects/$projectId/settings/general'
@@ -387,6 +414,9 @@ export const routeTree = rootRoute.addChildren({
           ProjectsProjectIdCollectionsIndexRoute,
         }),
       ProjectsProjectIdDashboardRoute,
+      ProjectsProjectIdHistoryRoute: ProjectsProjectIdHistoryRoute.addChildren({
+        ProjectsProjectIdHistoryCommitHashRoute,
+      }),
       ProjectsProjectIdSettingsRoute:
         ProjectsProjectIdSettingsRoute.addChildren({
           ProjectsProjectIdSettingsGeneralRoute,
@@ -436,6 +466,7 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/projects/$projectId/collections",
         "/projects/$projectId/dashboard",
+        "/projects/$projectId/history",
         "/projects/$projectId/settings",
         "/projects/$projectId/",
         "/projects/$projectId/assets/"
@@ -471,6 +502,13 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "projects/$projectId/dashboard.tsx",
       "parent": "/projects/$projectId"
     },
+    "/projects/$projectId/history": {
+      "filePath": "projects/$projectId/history.tsx",
+      "parent": "/projects/$projectId",
+      "children": [
+        "/projects/$projectId/history/$commitHash"
+      ]
+    },
     "/projects/$projectId/settings": {
       "filePath": "projects/$projectId/settings.tsx",
       "parent": "/projects/$projectId",
@@ -497,6 +535,10 @@ export const routeTree = rootRoute.addChildren({
     "/projects/$projectId/collections/create": {
       "filePath": "projects/$projectId/collections/create.tsx",
       "parent": "/projects/$projectId/collections"
+    },
+    "/projects/$projectId/history/$commitHash": {
+      "filePath": "projects/$projectId/history/$commitHash.tsx",
+      "parent": "/projects/$projectId/history"
     },
     "/projects/$projectId/settings/general": {
       "filePath": "projects/$projectId/settings/general.tsx",

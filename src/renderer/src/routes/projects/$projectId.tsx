@@ -25,6 +25,7 @@ import {
   DownloadCloud,
   FolderGit2,
   FolderOutput,
+  History,
   Image,
   Layers,
   LayoutDashboard,
@@ -120,6 +121,11 @@ function ProjectLayout(): JSX.Element {
       icon: Layers,
     },
     {
+      name: 'History',
+      to: '/projects/$projectId/history',
+      icon: History,
+    },
+    {
       name: 'Settings',
       to: '/projects/$projectId/settings',
       icon: Settings,
@@ -150,6 +156,7 @@ function ProjectLayout(): JSX.Element {
   }, [context.collections]);
 
   const projectChangesQuery = useQuery({
+    enabled: context.projectRemoteOriginUrl !== null,
     queryKey: ['projectChanges', context.project.id],
     queryFn: async () => {
       const changes = await context.core.projects.getChanges({
@@ -258,7 +265,7 @@ function ProjectLayout(): JSX.Element {
                     projectChangesQuery.data.ahead.map((commit) => (
                       <Commit
                         key={commit.hash}
-                        {...commit}
+                        commit={commit}
                         language={context.user.language}
                       />
                     ))}
