@@ -66,13 +66,15 @@ class Main {
   }
 
   /**
-   * Initializes Core, registers custom file protocol
+   * Initializes Core, registers custom file protocol,
    * creates the first window and registers IPC handlers
    *
    * Needs to be called once Electron has finished initializing
    */
   private async onAppReady(): Promise<void> {
-    this.core = new ElekIoCore();
+    this.core = new ElekIoCore({
+      log: { level: app.isPackaged ? 'info' : 'debug' },
+    });
 
     this.registerCustomFileProtocol();
 
@@ -353,6 +355,21 @@ class Main {
     ipcMain.handle('electron:dialog:showSaveDialog', async (_event, args) => {
       return await dialog.showSaveDialog(window, args);
     });
+    ipcMain.handle('core:logger:debug', async (_event, args) => {
+      return await core.logger.debug(args[0]);
+    });
+    ipcMain.handle('core:logger:info', async (_event, args) => {
+      return await core.logger.info(args[0]);
+    });
+    ipcMain.handle('core:logger:warn', async (_event, args) => {
+      return await core.logger.warn(args[0]);
+    });
+    ipcMain.handle('core:logger:error', async (_event, args) => {
+      return await core.logger.error(args[0]);
+    });
+    ipcMain.handle('core:logger:read', async (_event, args) => {
+      return await core.logger.read(args[0]);
+    });
     ipcMain.handle('core:user:get', async () => {
       return await core.user.get();
     });
@@ -383,18 +400,9 @@ class Main {
     ipcMain.handle('core:projects:synchronize', async (_event, args) => {
       return await core.projects.synchronize(args[0]);
     });
-    ipcMain.handle(
-      'core:projects:remotes:getOriginUrl',
-      async (_event, args) => {
-        return await core.projects.remotes.getOriginUrl(args[0]);
-      }
-    );
-    ipcMain.handle(
-      'core:projects:remotes:setOriginUrl',
-      async (_event, args) => {
-        return await core.projects.remotes.setOriginUrl(args[0]);
-      }
-    );
+    ipcMain.handle('core:projects:setRemoteOriginUrl', async (_event, args) => {
+      return await core.projects.setRemoteOriginUrl(args[0]);
+    });
     ipcMain.handle('core:projects:delete', async (_event, args) => {
       return await core.projects.delete(args[0]);
     });
@@ -403,6 +411,12 @@ class Main {
     });
     ipcMain.handle('core:assets:create', async (_event, args) => {
       return await core.assets.create(args[0]);
+    });
+    ipcMain.handle('core:assets:read', async (_event, args) => {
+      return await core.assets.read(args[0]);
+    });
+    ipcMain.handle('core:assets:update', async (_event, args) => {
+      return await core.assets.update(args[0]);
     });
     ipcMain.handle('core:assets:delete', async (_event, args) => {
       return await core.assets.delete(args[0]);

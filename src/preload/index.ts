@@ -13,6 +13,13 @@ export interface ContextBridgeApi {
     };
   };
   core: {
+    logger: {
+      debug: ElekIoCore['logger']['debug'];
+      info: ElekIoCore['logger']['info'];
+      warn: ElekIoCore['logger']['warn'];
+      error: ElekIoCore['logger']['error'];
+      read: ElekIoCore['logger']['read'];
+    };
     user: {
       get: ElekIoCore['user']['get'];
       set: ElekIoCore['user']['set'];
@@ -26,15 +33,14 @@ export interface ContextBridgeApi {
       getChanges: ElekIoCore['projects']['getChanges'];
       synchronize: ElekIoCore['projects']['synchronize'];
       clone: ElekIoCore['projects']['clone'];
-      remotes: {
-        getOriginUrl: ElekIoCore['projects']['remotes']['getOriginUrl'];
-        setOriginUrl: ElekIoCore['projects']['remotes']['setOriginUrl'];
-      };
+      setRemoteOriginUrl: ElekIoCore['projects']['setRemoteOriginUrl'];
       delete: ElekIoCore['projects']['delete'];
     };
     assets: {
       list: ElekIoCore['assets']['list'];
       create: ElekIoCore['assets']['create'];
+      read: ElekIoCore['assets']['read'];
+      update: ElekIoCore['assets']['update'];
       delete: ElekIoCore['assets']['delete'];
       save: ElekIoCore['assets']['save'];
     };
@@ -67,6 +73,13 @@ const ipc: ContextBridgeApi = {
     },
   },
   core: {
+    logger: {
+      debug: (...args) => ipcRenderer.invoke('core:logger:debug', args),
+      info: (...args) => ipcRenderer.invoke('core:logger:info', args),
+      warn: (...args) => ipcRenderer.invoke('core:logger:warn', args),
+      error: (...args) => ipcRenderer.invoke('core:logger:error', args),
+      read: (...args) => ipcRenderer.invoke('core:logger:read', args),
+    },
     user: {
       get: (...args) => ipcRenderer.invoke('core:user:get', args),
       set: (...args) => ipcRenderer.invoke('core:user:set', args),
@@ -82,17 +95,15 @@ const ipc: ContextBridgeApi = {
       synchronize: (...args) =>
         ipcRenderer.invoke('core:projects:synchronize', args),
       clone: (...args) => ipcRenderer.invoke('core:projects:clone', args),
-      remotes: {
-        getOriginUrl: (...args) =>
-          ipcRenderer.invoke('core:projects:remotes:getOriginUrl', args),
-        setOriginUrl: (...args) =>
-          ipcRenderer.invoke('core:projects:remotes:setOriginUrl', args),
-      },
+      setRemoteOriginUrl: (...args) =>
+        ipcRenderer.invoke('core:projects:setRemoteOriginUrl', args),
       delete: (...args) => ipcRenderer.invoke('core:projects:delete', args),
     },
     assets: {
       list: (...args) => ipcRenderer.invoke('core:assets:list', args),
       create: (...args) => ipcRenderer.invoke('core:assets:create', args),
+      read: (...args) => ipcRenderer.invoke('core:assets:read', args),
+      update: (...args) => ipcRenderer.invoke('core:assets:update', args),
       delete: (...args) => ipcRenderer.invoke('core:assets:delete', args),
       save: (...args) => ipcRenderer.invoke('core:assets:save', args),
     },
