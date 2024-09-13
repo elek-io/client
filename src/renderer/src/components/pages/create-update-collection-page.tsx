@@ -92,7 +92,7 @@ export interface CreateUpdateCollectionPageProps extends PageProps {
   onCollectionDelete?: SubmitHandler<DeleteCollectionProps>;
   context: {
     project: Project;
-    translate: (key: string, record: TranslatableString) => string;
+    translateContent: (key: string, record: TranslatableString) => string;
   };
 }
 
@@ -312,35 +312,35 @@ export const CreateUpdateCollectionPage = ({
           numberFieldDefinitionFormState.getValues(),
           // @ts-expect-error It's just an example
           'exampleFields.number.content',
-          context.translate
+          context.translateContent
         );
       case 'range':
         return FormFieldFromDefinition<RangeFieldDefinition>(
           rangeFieldDefinitionFormState.getValues(),
           // @ts-expect-error It's just an example
           'exampleFields.range.content',
-          context.translate
+          context.translateContent
         );
       case 'text':
         return FormFieldFromDefinition<TextFieldDefinition>(
           textFieldDefinitionFormState.getValues(),
           // @ts-expect-error It's just an example
           'exampleFields.text.content',
-          context.translate
+          context.translateContent
         );
       case 'textarea':
         return FormFieldFromDefinition<TextareaFieldDefinition>(
           textareaFieldDefinitionFormState.getValues(),
           // @ts-expect-error It's just an example
           'exampleFields.textarea.content',
-          context.translate
+          context.translateContent
         );
       case 'toggle':
         return FormFieldFromDefinition<ToggleFieldDefinition>(
           toggleFieldDefinitionFormState.getValues(),
           // @ts-expect-error It's just an example
           'exampleFields.toggle.content',
-          context.translate
+          context.translateContent
         );
       default:
         throw new Error(
@@ -403,8 +403,8 @@ export const CreateUpdateCollectionPage = ({
 
   return (
     <Page {...props}>
-      {JSON.stringify(context.project.settings)}
-      {JSON.stringify(collectionForm.watch())}
+      {/* {JSON.stringify(context.project.settings)}
+      {JSON.stringify(collectionForm.watch())} */}
       {/* <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
         <SelectTrigger>
           <SelectValue />
@@ -786,7 +786,7 @@ export const CreateUpdateCollectionPage = ({
                 return FormFieldFromDefinition(
                   fieldDefinition,
                   `currentFields.field-${index}.content`,
-                  context.translate
+                  context.translateContent
                 );
               })}
             </div>

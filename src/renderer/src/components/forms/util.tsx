@@ -55,7 +55,7 @@ export function translatableDefaultArray(props: {
 export function FormFieldFromDefinition<T extends FieldValues>(
   fieldDefinition: FieldDefinition,
   name: Path<T>,
-  translate: (key: string, record: TranslatableString) => string
+  translateContent: (key: string, record: TranslatableString) => string
 ): JSX.Element {
   return (
     <FormField
@@ -72,14 +72,14 @@ export function FormFieldFromDefinition<T extends FieldValues>(
                 : false
             }
           >
-            {translate('fieldDefinition.label', fieldDefinition.label)}
+            {translateContent('fieldDefinition.label', fieldDefinition.label)}
           </FormLabel>
           <FormControl>
             {/* @todo add styling for toggle switches */}
             {InputFromDefinition<T>(fieldDefinition, field)}
           </FormControl>
           <FormDescription>
-            {translate(
+            {translateContent(
               'fieldDefinition.description',
               fieldDefinition.description
             )}
