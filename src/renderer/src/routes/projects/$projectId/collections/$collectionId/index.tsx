@@ -71,9 +71,9 @@ function ProjectCollectionIndexPage(): JSX.Element {
       dataQuery.data?.list.map((entry) => {
         const row: { [x: string]: unknown } = {
           id: entry.id,
-          created: formatDatetime(entry.created, context.currentUser.language)
+          created: formatDatetime(entry.created, context.user.language)
             .relative,
-          updated: formatDatetime(entry.updated, context.currentUser.language)
+          updated: formatDatetime(entry.updated, context.user.language)
             .relative,
         };
 
@@ -298,9 +298,8 @@ function ProjectCollectionIndexPage(): JSX.Element {
           Showing{' '}
           {table
             .getFilteredRowModel()
-            .rows.length.toLocaleString(context.currentUser.language)}{' '}
-          of {table.getRowCount().toLocaleString(context.currentUser.language)}{' '}
-          total{' '}
+            .rows.length.toLocaleString(context.user.language)}{' '}
+          of {table.getRowCount().toLocaleString(context.user.language)} total{' '}
           {context.translateContent(
             'currentCollection.name.plural',
             context.currentCollection.name.plural
@@ -308,7 +307,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
           (
           {table
             .getFilteredSelectedRowModel()
-            .rows.length.toLocaleString(context.currentUser.language)}{' '}
+            .rows.length.toLocaleString(context.user.language)}{' '}
           selected)
         </div>
         <Pagination>
