@@ -72,11 +72,6 @@ export const Route = createFileRoute('/projects/$projectId')({
       id: params.projectId,
     });
 
-    const projectRemoteOriginUrl =
-      await context.core.projects.remotes.getOriginUrl({
-        id: params.projectId,
-      });
-
     const collections = await context.core.collections.list({
       projectId: params.projectId,
       limit: 0,
@@ -84,7 +79,6 @@ export const Route = createFileRoute('/projects/$projectId')({
 
     return {
       project,
-      projectRemoteOriginUrl,
       collections,
       translateContent,
     };
@@ -156,7 +150,7 @@ function ProjectLayout(): JSX.Element {
   }, [context.collections]);
 
   const projectChangesQuery = useQuery({
-    enabled: context.projectRemoteOriginUrl !== null,
+    enabled: context.project.remoteOriginUrl !== null,
     queryKey: ['projectChanges', context.project.id],
     queryFn: async () => {
       const changes = await context.core.projects.getChanges({
@@ -218,7 +212,7 @@ function ProjectLayout(): JSX.Element {
                 </Link>
               </div>
             </div>
-            {context.projectRemoteOriginUrl && (
+            {context.project.remoteOriginUrl && (
               <>
                 <div className="p-4 pt-0 flex flex-col">
                   <div className="flex">

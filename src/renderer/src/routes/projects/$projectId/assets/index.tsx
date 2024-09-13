@@ -1,4 +1,4 @@
-import { Asset, supportedAssetExtensionSchema } from '@elek-io/core';
+import { Asset } from '@elek-io/core';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,12 +96,6 @@ function ProjectAssetsPage(): JSX.Element {
         title: 'Select Assets to add',
         buttonLabel: 'Add to Assets',
         properties: ['openFile', 'multiSelections'],
-        filters: [
-          {
-            name: 'Supported files',
-            extensions: [...supportedAssetExtensionSchema.options],
-          },
-        ],
       });
 
       if (result.canceled === true) {

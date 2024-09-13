@@ -123,17 +123,6 @@ export function formatBytes(bytes: number): string {
   );
 }
 
-export function parseGitCommitMessage(message: string) {
-  const messageArray = message.split(' ');
-
-  return {
-    icon: messageArray[0],
-    method: messageArray[1],
-    objectType: messageArray[2],
-    message,
-  };
-}
-
 /**
  * Often used by tailwind components to join multiple strings of classes
  *

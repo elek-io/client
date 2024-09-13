@@ -1,11 +1,7 @@
 'use client';
 
-import {
-  GitCommit,
-  gitCommitIconSchema,
-  SupportedLanguage,
-} from '@elek-io/core';
-import { cn, formatDatetime, parseGitCommitMessage } from '@renderer/util';
+import { GitCommit, SupportedLanguage } from '@elek-io/core';
+import { cn, formatDatetime } from '@renderer/util';
 import { Link, LinkProps } from '@tanstack/react-router';
 import {
   CircleFadingArrowUp,
@@ -28,26 +24,35 @@ export function Commit({
   activeProps,
   ...props
 }: CommitProps): JSX.Element {
-  const { icon, method, objectType } = parseGitCommitMessage(commit.message);
-  const iconComponent =
-    icon === gitCommitIconSchema.enum.INIT ? (
-      <PartyPopper className="w-5 h-5" />
-    ) : icon === gitCommitIconSchema.enum.CREATE ? (
-      <Plus className="w-5 h-5" />
-    ) : icon === gitCommitIconSchema.enum.UPDATE ? (
-      <Pencil className="w-5 h-5" />
-    ) : icon === gitCommitIconSchema.enum.DELETE ? (
-      <Minus className="w-5 h-5" />
-    ) : icon === ':arrow_up:' ? (
-      <CircleFadingArrowUp className="w-5 h-5" />
-    ) : (
-      <FileQuestion className="w-5 h-5" />
-    );
+  let iconComponent: JSX.Element;
+
+  switch (commit.message.method) {
+    case 'create':
+      iconComponent =
+        commit.message.reference.objectType === 'project' ? (
+          <PartyPopper className="w-5 h-5" />
+        ) : (
+          <Plus className="w-5 h-5" />
+        );
+      break;
+    case 'update':
+      iconComponent = <Pencil className="w-5 h-5" />;
+      break;
+    case 'delete':
+      iconComponent = <Minus className="w-5 h-5" />;
+      break;
+    case 'upgrade':
+      iconComponent = <CircleFadingArrowUp className="w-5 h-5" />;
+      break;
+    default:
+      iconComponent = <FileQuestion className="w-5 h-5" />;
+      break;
+  }
 
   return (
     <Link
       className={
-        'relative flex items-center space-x-4 px-3 py-1 no-underline text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-md'
+        'relative flex items-center space-x-4 px-3 py-1 no-underline transition-colors text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-md'
       }
       activeProps={{
         className: cn(
@@ -63,7 +68,7 @@ export function Commit({
       </div>
       <div>
         <div className="flex items-center text-sm">
-          {method} {objectType}
+          {commit.message.method} {commit.message.reference.objectType}
         </div>
         <div className="text-xs font-medium text-zinc-400">
           {commit.author.name} -{' '}
