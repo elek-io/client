@@ -56,7 +56,7 @@ function ProjectDashboardPage(): JSX.Element {
             >
               <CommitHistory
                 projectId={context.project.id}
-                commits={context.project.fullHistory.slice(0, 10)}
+                commits={context.project.fullHistory.slice(0, 5)}
                 language={context.user.language}
               />
             </PageSection>
