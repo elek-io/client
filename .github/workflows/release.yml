@@ -1,9 +1,9 @@
-name: CD
+name: Release
+
 on:
   push:
-    branches:
-      - main
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+    tags:
+      - v*.*.*
 
 jobs:
   release:
@@ -32,13 +32,21 @@ jobs:
       #   run: npm run lint
       - name: Build
         run: npm run build
-      - name: Create pull request or publish to GitHub
-        uses: changesets/action@v1
+      - name: Release
+        uses: softprops/action-gh-release@v2
         with:
-          title: 'WIP: Release x.x.x'
-          commit: Release new version
-          publish: npm run release
+          draft: true
+          body_path: ${{ github.workspace }}/CHANGELOG.md
+          files: |
+            dist/*.exe
+            dist/*.zip
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/*.yml
+            dist/*.blockmap
         env:
-          # See https://github.com/changesets/action/issues/147
-          HOME: ${{ github.workspace }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
