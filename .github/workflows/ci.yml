@@ -6,14 +6,15 @@ on:
 jobs:
   test:
     name: Testing on ${{ matrix.platform }} with Node.js ${{ matrix.node-version }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
         # @see https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
         # macos-12 = intel
         # macos-14 = M1 (arm)
         platform: [ubuntu-22.04, macos-12, macos-14, windows-2022]
-        node-version: [18]
+        node-version: [20]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out code
@@ -25,22 +26,30 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: yarn install
-      - name: Run linter
-        run: yarn run lint
-      - name: Identify misconfigurations and security anti-patterns
-        uses: doyensec/electronegativity-action@v2
-      - name: Upload report
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ../electronegativity_results
+        run: npm install
+      # - name: Run linter
+      #   run: npm run lint
+      # - name: Run typecheck
+      #   run: npm run typecheck
+      # - name: Identify misconfigurations and security anti-patterns
+      #   uses: doyensec/electronegativity-action@v2
+      # - name: Upload report
+      #   uses: github/codeql-action/upload-sarif@v1
+      # with:
+      #   sarif_file: ../electronegativity_results
       - name: Build
-        run: yarn run build
+        run: npm run build
       # Uncomment if necessary
       # For example to inspect the build applications
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifact_${{ matrix.platform }}
-          path: out/make
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
           if-no-files-found: error

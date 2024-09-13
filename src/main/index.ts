@@ -12,8 +12,16 @@ import {
   shell,
 } from 'electron';
 import Path from 'path';
-import { updateElectronApp } from 'update-electron-app';
-import { SecurityError } from '../util';
+import icon from '../../resources/icon.png?asset';
+// import { updateElectronApp } from 'update-electron-app';
+
+export class SecurityError extends Error {
+  constructor(message: string) {
+    super(message);
+
+    this.name = 'SecurityError';
+  }
+}
 
 Sentry.init({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
@@ -21,78 +29,75 @@ Sentry.init({
 });
 
 class Main {
+  public readonly customFileProtocol: string = 'elek-io-local-file';
   private allowedOriginsToLoadInternal: string[] = [];
   private allowedOriginsToLoadExternal: string[] = [
+    this.customFileProtocol,
     'https://elek.io',
     'https://api.elek.io',
+    'https://github.com',
   ];
+  private core: ElekIoCore | null = null;
 
   constructor() {
     // Allow the vite dev server to do HMR in development
-    if (app.isPackaged === false) {
-      this.allowedOriginsToLoadInternal.push(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    if (app.isPackaged === false && process.env['ELECTRON_RENDERER_URL']) {
+      this.allowedOriginsToLoadInternal.push(
+        process.env['ELECTRON_RENDERER_URL']
+      );
     }
-
-    // Overwrite dugites resolved path to the embedded git directory
-    // @see https://github.com/desktop/dugite/blob/0f5a4f11300fbfa8d2dd272b8ee9b771e5b34cd4/lib/git-environment.ts#L25
-    // This seems to be necessary, since it resolves to `elek.io Client.app/Contents/Resources/app/git` instead of dugites git inside node_modules `elek.io Client.app/Contents/Resources/app/node_modules/dugite/git`
-    process.env.LOCAL_GIT_DIRECTORY = Path.resolve(
-      __dirname,
-      '../../',
-      'node_modules',
-      'dugite',
-      'git'
-    );
 
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-    if (require('electron-squirrel-startup')) {
-      app.quit();
-    }
+    // if (require('electron-squirrel-startup')) {
+    //   app.quit();
+    // }
 
     // Register app events
-    app.on('ready', this.onReady.bind(this));
-    app.on('activate', this.onActivate.bind(this));
-    app.on('window-all-closed', this.onWindowAllClosed.bind(this));
-    app.on('web-contents-created', this.onWebContentsCreated.bind(this));
+    app.on('ready', () => this.onAppReady());
+    app.on('activate', () => this.onAppActivate());
+    app.on('window-all-closed', () => this.onAppAllWindowsClosed());
+    app.on('web-contents-created', (event, webContents) =>
+      this.onAppWebContentsCreated(event, webContents)
+    );
 
     // Enable auto-updates
     // @see https://github.com/electron/update-electron-app
-    updateElectronApp();
+    // updateElectronApp();
   }
 
-  private onWebContentsCreated(
-    event: {
-      preventDefault: () => void;
-      readonly defaultPrevented: boolean;
-    },
-    contents: Electron.WebContents
-  ) {
-    // Disable the creation of new windows e.g. by using target="_blank"
-    // Instead, let the operating system handle this event's url if it's in the whitelist
-    // and open external links inside the default browser
-    // @see https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
-    // @todo in the future we can also allow mailto: URL's etc.
-    contents.setWindowOpenHandler(({ url }) => {
-      const parsedUrl = new URL(url);
-
-      if (
-        this.allowedOriginsToLoadExternal.includes(parsedUrl.origin) === false
-      ) {
-        Sentry.captureException(
-          new SecurityError(
-            `Prevented navigation to untrusted, external origin "${parsedUrl}" from "${contents.getURL()}"`
-          )
-        );
-        return { action: 'deny' };
-      }
-
-      setImmediate(() => {
-        shell.openExternal(url);
-      });
+  /**
+   * Initializes Core, registers custom file protocol,
+   * creates the first window and registers IPC handlers
+   *
+   * Needs to be called once Electron has finished initializing
+   */
+  private async onAppReady(): Promise<void> {
+    this.core = new ElekIoCore({
+      log: { level: app.isPackaged ? 'info' : 'debug' },
     });
+
+    this.registerCustomFileProtocol();
+
+    const window = await this.createWindow();
+    this.registerIpcMain(window, this.core);
   }
 
-  private onWindowAllClosed() {
+  /**
+   * Creates a new window when the app is activated
+   *
+   * Triggered when launching the application for the first time,
+   * attempting to re-launch the application when it's already running,
+   * or clicking on the application's dock or taskbar icon.
+   */
+  private async onAppActivate(): Promise<void> {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+      await this.createWindow();
+    }
+  }
+
+  private onAppAllWindowsClosed(): void {
     // Quit when all windows are closed, except on macOS. There, it's common
     // for applications and their menu bar to stay active until the user quits
     // explicitly with Cmd + Q.
@@ -101,193 +106,323 @@ class Main {
     }
   }
 
-  private onActivate() {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) {
-      this.createWindow('/projects');
-    }
-  }
+  private onAppWebContentsCreated(
+    _event: {
+      preventDefault: () => void;
+      readonly defaultPrevented: boolean;
+    },
+    webContents: Electron.WebContents
+  ): void {
+    // Disable the creation of new windows e.g. by using target="_blank"
+    // Instead, let the operating system handle this event's url if it's in the whitelist
+    // and open external links inside the default browser
+    // @see https://www.electronjs.org/docs/latest/tutorial/security#14-disable-or-limit-creation-of-new-windows
+    // @todo in the future we can also allow mailto: URL's etc.
+    webContents.setWindowOpenHandler(({ url }) => {
+      const parsedUrl = new URL(url);
 
-  private onReady() {
-    // Register a protocol that is able to load files from local FS
-    protocol.handle('elek-io-local-file', (request) => {
-      const filePath = request.url.replace(
-        /^elek-io-local-file:\/\//,
-        'file://'
-      );
+      if (
+        this.allowedOriginsToLoadExternal.includes(parsedUrl.origin) === false
+      ) {
+        Sentry.captureException(
+          new SecurityError(
+            `Prevented navigation to untrusted, external origin "${parsedUrl}" from "${webContents.getURL()}"`
+          )
+        );
+        return { action: 'deny' };
+      }
 
-      return net.fetch(filePath);
+      setImmediate(() => {
+        shell.openExternal(url);
+      });
+      return { action: 'deny' };
     });
-
-    // Check in Core if either local or cloud user is set
-    // If no, show the user the /user/create page
-    // If yes use this to init core and show /projects
-
-    const core = new ElekIoCore({
-      environment: app.isPackaged ? 'production' : 'development',
-    });
-    this.registerIpcMain(core);
-
-    // const user = await core.user.get();
-    // let mainWindow: BrowserWindow;
-    this.createWindow('/');
-
-    // if (user) {
-    //   mainWindow = await this.createWindow('/projects');
-    // } else {
-    //   mainWindow = await this.createWindow('/user/create');
-    // }
   }
 
   /**
-   * Figures out where and how to display the window
-   *
-   * @todo only do this on first start. After that, the user will have adjusted it to his liking.
-   * The size, monitor and maybe position should be saved locally in the users configuration and then applied on each start.
-   * If the setup changes (display not available anymore or different resolution), default back to this.
+   * Creates a new window with security in mind and loads the frontend
    */
-  private getWindowSize() {
-    const display = screen.getPrimaryDisplay();
-    const displaySize = display.workAreaSize;
-    const aspectRatioFactor = 16 / 9;
-
-    const windowSize = {
-      width: 0,
-      height: 0,
-    };
-
-    if (displaySize.width >= displaySize.height) {
-      // Use 80% of possible height and set width to match 16/9
-      windowSize.height = Math.round(displaySize.height * 0.8);
-      windowSize.width = Math.round(windowSize.height * aspectRatioFactor);
-    } else {
-      // Use 80% of possible width and set height to match 16/9
-      windowSize.width = Math.round(displaySize.width * 0.8);
-      windowSize.height = Math.round(windowSize.width * aspectRatioFactor);
+  private async createWindow(): Promise<BrowserWindow> {
+    if (!this.core) {
+      throw new Error(
+        'Trying to create a new window but Core is not initialized.'
+      );
     }
 
-    return windowSize;
-  }
+    const initialWindowSize = this.getInitialWindowSize();
+    const user = await this.core.user.get();
 
-  private createWindow(
-    path: string,
-    options?: BrowserWindowConstructorOptions
-  ) {
-    const { width, height } = this.getWindowSize();
-
-    // Set defaults if missing
-    const defaults: BrowserWindowConstructorOptions = {
-      height,
-      width,
+    const options: BrowserWindowConstructorOptions = {
+      width: initialWindowSize.width,
+      height: initialWindowSize.height,
     };
-    options = Object.assign({}, defaults, options);
+
+    if (user?.window) {
+      options.width = user.window.width;
+      options.height = user.window.height;
+      options.x = user.window.position.x;
+      options.y = user.window.position.y;
+    }
 
     // Overwrite webPreferences to always load the correct preload script
     // and explicitly enable security features - although Electron > v28 should set these by default
     options.webPreferences = {
-      preload: Path.join(__dirname, 'preload.js'),
+      preload: Path.join(__dirname, '../preload/index.cjs'),
       disableBlinkFeatures: 'Auxclick', // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
       nodeIntegration: false,
       contextIsolation: true, // @see https://github.com/doyensec/electronegativity/wiki/CONTEXT_ISOLATION_JS_CHECK
       sandbox: true, // @see https://github.com/doyensec/electronegativity/wiki/SANDBOX_JS_CHECK
     };
-    options.icon = 'icons/icon.png';
+    if (process.platform === 'linux') {
+      options.icon = icon;
+    }
     options.frame = false;
     options.titleBarStyle = 'hidden';
     options.titleBarOverlay = true;
 
     const window = new BrowserWindow(options);
 
-    // Prevent loading untrusted origins internally / inside elek.io Client
-    // @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
-    window.webContents.on('will-navigate', (event, urlToLoad) => {
-      const parsedUrl = new URL(urlToLoad);
+    window.webContents.on('will-navigate', (event, urlToLoad) =>
+      this.onWindowWebContentsWillNavigate(window, event, urlToLoad)
+    );
 
-      if (
-        this.allowedOriginsToLoadInternal.includes(parsedUrl.origin) === false
-      ) {
-        event.preventDefault();
-        Sentry.captureException(
-          new SecurityError(
-            `Prevented navigation to untrusted, internal origin "${urlToLoad}" from "${window.webContents.getURL()}"`
-          )
-        );
-      }
-    });
+    window.on('close', (event) => this.onWindowClose(window, event));
 
     if (app.isPackaged) {
-      // Uncomment to debug a production build
-      window.webContents.openDevTools();
-      // installExtension(REACT_DEVELOPER_TOOLS)
-      //   .then((name) => console.log(`Added Chrome extension:  ${name}`))
-      //   .catch((err) =>
-      //     console.log('An error occurred adding Chrome extension: ', err)
-      //   );
-
       // Client is in production
       // Load the static index.html directly
-      window.loadFile(
-        Path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
-      );
+      window.loadFile(Path.join(__dirname, `../renderer/index.html`));
+      // Uncomment to debug a production build
+      // window.webContents.openDevTools();
     } else {
       // Client is in development
+      const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
+      if (!rendererUrl) {
+        throw new Error(`"process.env['ELECTRON_RENDERER_URL']" is empty`);
+      }
+      console.log('Loading frontend in development by URL:', rendererUrl);
+      window.loadURL(rendererUrl);
       window.webContents.openDevTools();
-      // installExtension(REACT_DEVELOPER_TOOLS)
-      //   .then((name) => console.log(`Added Chrome extension:  ${name}`))
-      //   .catch((err) =>
-      //     console.log('An error occurred adding Chrome extension: ', err)
-      //   );
-
-      console.log(
-        'Loading frontend in development by URL:',
-        MAIN_WINDOW_VITE_DEV_SERVER_URL
-      );
-      window.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     }
 
     return window;
   }
 
-  private registerIpcMain(core: ElekIoCore) {
-    ipcMain.handle('electron:dialog:showOpenDialog', async (event, args) => {
-      return await dialog.showOpenDialog(args[0], args[1]);
+  /**
+   * Returns the initial window size based on the primary display
+   */
+  private getInitialWindowSize(): {
+    width: number;
+    height: number;
+  } {
+    const display = screen.getPrimaryDisplay();
+    const displaySize = display.workAreaSize;
+    const aspectRatioFactor = 16 / 9;
+
+    const windowProps = {
+      width: 0,
+      height: 0,
+    };
+
+    if (displaySize.width >= displaySize.height) {
+      // Use 80% of possible height and set width to match 16/9
+      windowProps.height = Math.round(displaySize.height * 0.8);
+      windowProps.width = Math.round(windowProps.height * aspectRatioFactor);
+    } else {
+      // Use 80% of possible width and set height to match 16/9
+      windowProps.width = Math.round(displaySize.width * 0.8);
+      windowProps.height = Math.round(windowProps.width * aspectRatioFactor);
+    }
+
+    return windowProps;
+  }
+
+  /**
+   * Prevents loading untrusted origins internally / inside elek.io Client
+   *
+   * @see https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
+   */
+  private onWindowWebContentsWillNavigate(
+    window: BrowserWindow,
+    event: Electron.Event<Electron.WebContentsWillNavigateEventParams>,
+    urlToLoad: string
+  ): void {
+    const parsedUrl = new URL(urlToLoad);
+
+    if (
+      this.allowedOriginsToLoadInternal.includes(parsedUrl.origin) === false
+    ) {
+      event.preventDefault();
+      Sentry.captureException(
+        new SecurityError(
+          `Prevented navigation to untrusted, internal origin "${urlToLoad}" from "${window.webContents.getURL()}"`
+        )
+      );
+    }
+  }
+
+  /**
+   * Saves the window size and position inside the users file before the window is closed
+   */
+  private async onWindowClose(
+    window: BrowserWindow,
+    event: Electron.Event
+  ): Promise<void> {
+    event.preventDefault();
+
+    if (!this.core) {
+      Sentry.captureException(
+        new Error('Trying to close the window but Core is not initialized.')
+      );
+      window.destroy();
+      return;
+    }
+
+    const user = await this.core.user.get();
+    const width = window.getSize()[0];
+    const height = window.getSize()[1];
+    const x = window.getPosition()[0];
+    const y = window.getPosition()[1];
+
+    if (!user || !width || !height || !x || !y) {
+      window.destroy();
+      return;
+    }
+
+    await this.core.user.set({
+      ...user,
+      window: {
+        width,
+        height,
+        position: {
+          x,
+          y,
+        },
+      },
+    });
+
+    window.destroy();
+    return;
+  }
+
+  /**
+   * Registers a custom file protocol to load files from the local file system
+   */
+  private registerCustomFileProtocol(): void {
+    protocol.handle(this.customFileProtocol, async (request) => {
+      const absoluteFilePath = request.url.replace(
+        `${this.customFileProtocol}://`,
+        ''
+      );
+
+      if (!this.core) {
+        Sentry.captureException(
+          new Error(
+            'Trying to handle custom file protocol but Core is not initialized.'
+          )
+        );
+        return new Response('Internal Server Error', { status: 500 });
+      }
+
+      if (
+        absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false
+      ) {
+        Sentry.captureException(
+          new SecurityError(
+            `Tried to load file "${absoluteFilePath}" outside of Projects directory.`
+          )
+        );
+        return new Response(
+          'Forbidden: Tried to load a file from outside of elek.io Projects directory',
+          { status: 403 }
+        );
+      }
+
+      return await net.fetch(`file://${absoluteFilePath}`);
+    });
+  }
+
+  /**
+   * Registers IPC handlers for the main process
+   */
+  private registerIpcMain(
+    window: Electron.BrowserWindow,
+    core: ElekIoCore
+  ): void {
+    ipcMain.handle('electron:dialog:showOpenDialog', async (_event, args) => {
+      return await dialog.showOpenDialog(window, args);
+    });
+    ipcMain.handle('electron:dialog:showSaveDialog', async (_event, args) => {
+      return await dialog.showSaveDialog(window, args);
+    });
+    ipcMain.handle('core:logger:debug', async (_event, args) => {
+      return await core.logger.debug(args[0]);
+    });
+    ipcMain.handle('core:logger:info', async (_event, args) => {
+      return await core.logger.info(args[0]);
+    });
+    ipcMain.handle('core:logger:warn', async (_event, args) => {
+      return await core.logger.warn(args[0]);
+    });
+    ipcMain.handle('core:logger:error', async (_event, args) => {
+      return await core.logger.error(args[0]);
+    });
+    ipcMain.handle('core:logger:read', async (_event, args) => {
+      return await core.logger.read(args[0]);
     });
     ipcMain.handle('core:user:get', async () => {
       return await core.user.get();
     });
-    ipcMain.handle('core:user:set', async (event, args) => {
+    ipcMain.handle('core:user:set', async (_event, args) => {
       return await core.user.set(args[0]);
     });
     ipcMain.handle('core:projects:count', async () => {
       return await core.projects.count();
     });
-    ipcMain.handle('core:projects:create', async (event, args) => {
+    ipcMain.handle('core:projects:create', async (_event, args) => {
       return await core.projects.create(args[0]);
     });
-    ipcMain.handle('core:projects:list', async (event, args) => {
+    ipcMain.handle('core:projects:list', async (_event, args) => {
       return await core.projects.list(args[0]);
     });
-    ipcMain.handle('core:projects:read', async (event, args) => {
+    ipcMain.handle('core:projects:read', async (_event, args) => {
       return await core.projects.read(args[0]);
     });
-    ipcMain.handle('core:projects:update', async (event, args) => {
+    ipcMain.handle('core:projects:update', async (_event, args) => {
       return await core.projects.update(args[0]);
     });
-    ipcMain.handle('core:projects:delete', async (event, args) => {
+    ipcMain.handle('core:projects:getChanges', async (_event, args) => {
+      return await core.projects.getChanges(args[0]);
+    });
+    ipcMain.handle('core:projects:clone', async (_event, args) => {
+      return await core.projects.clone(args[0]);
+    });
+    ipcMain.handle('core:projects:synchronize', async (_event, args) => {
+      return await core.projects.synchronize(args[0]);
+    });
+    ipcMain.handle('core:projects:setRemoteOriginUrl', async (_event, args) => {
+      return await core.projects.setRemoteOriginUrl(args[0]);
+    });
+    ipcMain.handle('core:projects:delete', async (_event, args) => {
       return await core.projects.delete(args[0]);
     });
-    ipcMain.handle('core:projects:search', async (event, args) => {
-      return await core.projects.search(args[0], args[1], args[2]);
-    });
-    ipcMain.handle('core:assets:list', async (event, args) => {
+    ipcMain.handle('core:assets:list', async (_event, args) => {
       return await core.assets.list(args[0]);
     });
-    ipcMain.handle('core:assets:create', async (event, args) => {
+    ipcMain.handle('core:assets:create', async (_event, args) => {
       return await core.assets.create(args[0]);
     });
-    ipcMain.handle('core:assets:delete', async (event, args) => {
+    ipcMain.handle('core:assets:read', async (_event, args) => {
+      return await core.assets.read(args[0]);
+    });
+    ipcMain.handle('core:assets:update', async (_event, args) => {
+      return await core.assets.update(args[0]);
+    });
+    ipcMain.handle('core:assets:delete', async (_event, args) => {
       return await core.assets.delete(args[0]);
+    });
+    ipcMain.handle('core:assets:save', async (_event, args) => {
+      return await core.assets.save(args[0]);
     });
     // ipcMain.handle('core:snapshots:list', async (event, args) => {
     //   return await core.snapshots.list(
@@ -301,34 +436,34 @@ class Main {
     // ipcMain.handle('core:snapshots:commitHistory', async (event, args) => {
     //   return await core.snapshots.commitHistory(args[0]);
     // });
-    ipcMain.handle('core:collections:list', async (event, args) => {
+    ipcMain.handle('core:collections:list', async (_event, args) => {
       return await core.collections.list(args[0]);
     });
-    ipcMain.handle('core:collections:create', async (event, args) => {
+    ipcMain.handle('core:collections:create', async (_event, args) => {
       return await core.collections.create(args[0]);
     });
-    ipcMain.handle('core:collections:read', async (event, args) => {
+    ipcMain.handle('core:collections:read', async (_event, args) => {
       return await core.collections.read(args[0]);
     });
-    ipcMain.handle('core:collections:update', async (event, args) => {
+    ipcMain.handle('core:collections:update', async (_event, args) => {
       return await core.collections.update(args[0]);
     });
-    ipcMain.handle('core:collections:delete', async (event, args) => {
+    ipcMain.handle('core:collections:delete', async (_event, args) => {
       return await core.collections.delete(args[0]);
     });
-    ipcMain.handle('core:entries:list', async (event, args) => {
+    ipcMain.handle('core:entries:list', async (_event, args) => {
       return await core.entries.list(args[0]);
     });
-    ipcMain.handle('core:entries:create', async (event, args) => {
+    ipcMain.handle('core:entries:create', async (_event, args) => {
       return await core.entries.create(args[0]);
     });
-    ipcMain.handle('core:entries:read', async (event, args) => {
+    ipcMain.handle('core:entries:read', async (_event, args) => {
       return await core.entries.read(args[0]);
     });
-    ipcMain.handle('core:entries:update', async (event, args) => {
+    ipcMain.handle('core:entries:update', async (_event, args) => {
       return await core.entries.update(args[0]);
     });
-    ipcMain.handle('core:entries:delete', async (event, args) => {
+    ipcMain.handle('core:entries:delete', async (_event, args) => {
       return await core.entries.delete(args[0]);
     });
     // this.handleIpcMain<Parameters<AssetService['list']>>('core:assets:list', async (event, args) => {

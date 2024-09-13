@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add default styling to some elements */
+@layer base {
+  html {
+    font-family: 'Roboto', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Montserrat Variable', sans-serif;
+  }
+
+  a {
+    color: theme('colors.brand.600');
+    text-decoration: underline;
+  }
+}
+
+/*
+  By default, the frameless window is non-draggable. 
+  Apps need to specify -webkit-app-region: drag in CSS to tell Electron 
+  which regions are draggable (like the OS's standard titlebar)
+  @see https://www.electronjs.org/de/docs/latest/tutorial/window-customization#set-custom-draggable-region
+*/
+.window-draggable-area {
+  -webkit-app-region: drag;
+  /* When creating a draggable region, the dragging behavior may conflict with text selection */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/*
+  Make all buttons and links in titlebar non-draggable
+  otherwise it would be impossible for users to click them 
+*/
+.window-draggable-area button,
+.window-draggable-area a {
+  -webkit-app-region: no-drag;
+}
+/*
+  Overwrite class used for elemtents overlaying the draggable area like the Sheet component
+*/
+.window-not-draggable-area {
+  -webkit-app-region: no-drag;
+}

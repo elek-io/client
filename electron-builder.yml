@@ -1,0 +1,43 @@
+appId: io.elek.client
+productName: 'elek.io Client'
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+extraMetadata:
+  name: 'elek-io-client' # Overwrites package.json name, since it cannot handle special characters
+asarUnpack:
+  - resources/**
+win:
+  executableName: 'elek.io Client'
+nsis:
+  artifactName: elek-io-client-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: false
+dmg:
+  artifactName: elek-io-client-${version}.${ext}
+linux:
+  target:
+    - AppImage
+    - snap
+    - deb
+  category: Office
+appImage:
+  artifactName: elek-io-client-${version}.${ext}
+npmRebuild: false
+publish:
+  provider: github
