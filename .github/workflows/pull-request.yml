@@ -1,0 +1,29 @@
+name: Create / update pull request
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  pull-request:
+    name: Creating / updating the pull request
+    timeout-minutes: 5
+    runs-on: 'ubuntu-22.04'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Setup Node.js 20 environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Create / update pull request
+        uses: changesets/action@v1
+        with:
+          title: 'WIP: Release x.x.x'
+          commit: Release new version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
