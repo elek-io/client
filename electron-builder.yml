@@ -39,5 +39,3 @@ linux:
 appImage:
   artifactName: elek-io-client-${version}.${ext}
 npmRebuild: false
-publish:
-  provider: github
