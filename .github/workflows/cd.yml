@@ -30,8 +30,8 @@ jobs:
         run: npm install
       # - name: Run linter
       #   run: npm run lint
-      - name: Build
-        run: npm run build
+      # - name: Build
+      #   run: npm run build
       - name: Create pull request or publish to GitHub
         uses: changesets/action@v1
         with:
@@ -39,6 +39,4 @@ jobs:
           commit: Release new version
           publish: npm run release
         env:
-          # See https://github.com/changesets/action/issues/147
-          HOME: ${{ github.workspace }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
