@@ -30,22 +30,22 @@ export function Commit({
     case 'create':
       iconComponent =
         commit.message.reference.objectType === 'project' ? (
-          <PartyPopper className="w-5 h-5" />
+          <PartyPopper className="w-4 h-4" />
         ) : (
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
         );
       break;
     case 'update':
-      iconComponent = <Pencil className="w-5 h-5" />;
+      iconComponent = <Pencil className="w-4 h-4" />;
       break;
     case 'delete':
-      iconComponent = <Minus className="w-5 h-5" />;
+      iconComponent = <Minus className="w-4 h-4" />;
       break;
     case 'upgrade':
-      iconComponent = <CircleFadingArrowUp className="w-5 h-5" />;
+      iconComponent = <CircleFadingArrowUp className="w-4 h-4" />;
       break;
     default:
-      iconComponent = <FileQuestion className="w-5 h-5" />;
+      iconComponent = <FileQuestion className="w-4 h-4" />;
       break;
   }
 

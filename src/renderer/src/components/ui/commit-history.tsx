@@ -20,7 +20,7 @@ export function CommitHistory({
 }: CommitHistoryProps): JSX.Element {
   return (
     <div className={cn('relative', className)} {...props}>
-      <div className="before:absolute before:h-full before:border-l-2 before:border-brand-600 before:ml-[30px]"></div>
+      <div className="before:absolute before:h-full before:border-l-2 before:border-brand-600 before:ml-7"></div>
       <div className="grid gap-2 py-2">
         {commits.map((commit) => (
           <Commit
