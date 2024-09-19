@@ -325,7 +325,8 @@ class Main {
       }
 
       if (
-        absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false
+        absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false &&
+        absoluteFilePath.startsWith(this.core.util.pathTo.tmp) === false
       ) {
         Sentry.captureException(
           new SecurityError(
