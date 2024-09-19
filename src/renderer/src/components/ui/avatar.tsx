@@ -31,7 +31,7 @@ const Avatar = forwardRef<
   }
 
   return (
-    <AvatarBase ref={ref} className={cn(className)} {...props}>
+    <AvatarBase ref={ref} className={cn('w-8 h-8', className)} {...props}>
       {props.src && <AvatarImage src={props.src}></AvatarImage>}
       <AvatarFallback>{initials(props.name)}</AvatarFallback>
     </AvatarBase>
@@ -73,7 +73,7 @@ const AvatarFallback = forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      'flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800',
+      'flex h-full w-full items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200',
       className
     )}
     {...props}
