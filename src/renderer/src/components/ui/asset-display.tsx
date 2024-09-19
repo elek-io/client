@@ -1,51 +1,54 @@
 import { Asset } from '@elek-io/core';
-import { FolderArchive } from 'lucide-react';
+import { FileQuestion, FolderArchive } from 'lucide-react';
 
 export interface AssetDisplayProps extends Asset {
   preview?: boolean;
 }
 
 export function AssetDisplay(props: AssetDisplayProps): JSX.Element {
-  switch (props.mimeType) {
-    case 'image/avif':
-    case 'image/gif':
-    case 'image/jpeg':
-    case 'image/png':
-    case 'image/svg+xml':
-    case 'image/webp':
-      return (
-        <img
-          src={props.absolutePath}
-          alt={`Asset "${props.name}"`}
-          className="max-w-full max-h-full object-contain"
-        />
-      );
-    case 'application/pdf':
-      return (
-        <embed
-          src={props.absolutePath}
-          type={props.mimeType}
-          className="w-full h-full object-contain overflow-hidden"
-        ></embed>
-      );
-    case 'application/zip':
-      return <FolderArchive className="w-10 h-10"></FolderArchive>;
-    case 'video/mp4':
-    case 'video/webm':
-      return (
-        <video muted controls={props.preview} autoPlay={props.preview}>
-          <source src={props.absolutePath} type={props.mimeType}></source>
-        </video>
-      );
-    case 'audio/webm':
-    case 'audio/flac':
-      return (
-        <audio muted controls={props.preview} autoPlay={props.preview}>
-          <source src={props.absolutePath} type={props.mimeType}></source>
-        </audio>
-      );
+  const absolutePath = 'elek-io-local-file://' + props.absolutePath;
 
-    default:
-      throw new Error(`Mime type "${props.mimeType}" not supported`);
+  if (props.mimeType.startsWith('image/')) {
+    return (
+      <img
+        src={absolutePath}
+        alt={`Asset "${props.name}"`}
+        className="max-w-full max-h-full object-contain"
+      />
+    );
   }
+
+  if (props.mimeType.startsWith('video/')) {
+    return (
+      <video muted controls={props.preview} autoPlay={props.preview}>
+        <source src={absolutePath} type={props.mimeType}></source>
+      </video>
+    );
+  }
+
+  if (props.mimeType.startsWith('audio/')) {
+    return (
+      <audio muted controls={props.preview} autoPlay={props.preview}>
+        <source src={absolutePath} type={props.mimeType}></source>
+      </audio>
+    );
+  }
+
+  if (props.mimeType === 'application/pdf') {
+    return (
+      <embed
+        src={absolutePath}
+        type={props.mimeType}
+        className="w-full h-full object-contain overflow-hidden"
+      ></embed>
+    );
+  }
+
+  if (props.mimeType === 'application/zip') {
+    return <FolderArchive className="w-10 h-10" />;
+  }
+
+  // return <span className="text-xs">{props.mimeType}</span>;
+
+  return <FileQuestion className="w-10 h-10" />;
 }

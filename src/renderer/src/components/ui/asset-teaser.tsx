@@ -21,7 +21,9 @@ export function AssetTeaser(props: AssetTeaserProps): JSX.Element {
           <AssetDisplay {...props} preview={false}></AssetDisplay>
         </div>
         <p className="mt-2 truncate text-sm">{props.name}</p>
-        <p className="text-sm">{formatBytes(props.size)}</p>
+        <p className="text-sm">
+          {formatBytes(props.size)} - {props.extension.toUpperCase()}
+        </p>
       </div>
     </a>
   );
