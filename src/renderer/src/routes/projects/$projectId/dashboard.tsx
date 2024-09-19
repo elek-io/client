@@ -52,7 +52,7 @@ function ProjectDashboardPage(): JSX.Element {
             <PageSection
               title="Latest changes"
               actions={<LatestChangesActions />}
-              className="border-none"
+              className="border-none pb-0"
             >
               <CommitHistory
                 projectId={context.project.id}
