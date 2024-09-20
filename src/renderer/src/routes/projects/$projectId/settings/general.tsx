@@ -215,7 +215,7 @@ function ProjectSettingsGeneralPage(): JSX.Element {
                           {field.value.map((language, index) => {
                             return (
                               <li key={language} className="mr-2 mb-2">
-                                <Chip>
+                                <Chip className="pr-0 py-0">
                                   {language}
                                   <Button
                                     variant="ghost"

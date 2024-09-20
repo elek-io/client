@@ -1,8 +1,9 @@
-import { Asset } from '@elek-io/core';
+import { Asset, Project } from '@elek-io/core';
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { Avatar } from '@renderer/components/ui/avatar';
 import { Badge } from '@renderer/components/ui/badge';
 import { Page } from '@renderer/components/ui/page';
+import { ProjectDiff } from '@renderer/components/ui/project-diff';
 import { formatDatetime } from '@renderer/util';
 import { createFileRoute } from '@tanstack/react-router';
 import { Tag } from 'lucide-react';
@@ -20,8 +21,13 @@ export const Route = createFileRoute(
     }
 
     const resolvedObject: {
+      project: { before: Project | undefined; after: Project | undefined };
       asset: { before: Asset | undefined; after: Asset | undefined };
     } = {
+      project: {
+        before: undefined,
+        after: undefined,
+      },
       asset: {
         before: undefined,
         after: undefined,
@@ -29,6 +35,33 @@ export const Route = createFileRoute(
     };
 
     switch (commit.message.reference.objectType) {
+      case 'project': {
+        if (
+          commit.message.method === 'update' ||
+          commit.message.method === 'delete'
+        ) {
+          const projectCommitHistory = context.project.fullHistory.filter(
+            (commit) =>
+              commit.message.reference.objectType === 'asset' &&
+              commit.message.reference.id === commit.message.reference.id
+          );
+          const currentCommitIndex = projectCommitHistory.findIndex(
+            (commit) => commit.hash === params.commitHash
+          );
+          resolvedObject.project.before = await context.core.projects.read({
+            id: context.project.id,
+            commitHash: projectCommitHistory.at(currentCommitIndex + 1)?.hash,
+          });
+        }
+
+        if (commit.message.method !== 'delete') {
+          resolvedObject.project.after = await context.core.projects.read({
+            id: context.project.id,
+            commitHash: commit.hash,
+          });
+        }
+        break;
+      }
       case 'asset': {
         // When updating or deleting an Asset, we need to find the previous commit to show the before state
         if (
@@ -65,7 +98,7 @@ export const Route = createFileRoute(
         break;
     }
 
-    return { commit, ...resolvedObject };
+    return { commit, resolvedObject };
   },
   component: ProjectHistoryCommitPage,
 });
@@ -75,42 +108,88 @@ function ProjectHistoryCommitPage(): JSX.Element {
 
   function DisplayChanges(): ReactElement {
     switch (context.commit.message.reference.objectType) {
-      case 'asset': {
+      case 'project': {
         return (
           <>
-            <div className="grid grid-cols-12 gap-6">
-              {!context.asset.before && (
-                <div className="col-span-6 col-start-3">
-                  {context.asset.after && (
-                    <AssetInfo
-                      projectId={context.project.id}
-                      asset={context.asset.after}
-                      language={context.user.language}
-                    />
-                  )}
-                </div>
-              )}
+            {!context.resolvedObject.project.before && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.project.after && (
+                  <ProjectDiff project={context.resolvedObject.project.after} />
+                )}
+              </div>
+            )}
 
-              {!context.asset.after && (
-                <div className="col-span-6 col-start-3">
-                  {context.asset.before && (
-                    <AssetInfo
-                      projectId={context.project.id}
-                      asset={context.asset.before}
-                      language={context.user.language}
-                    />
-                  )}
-                </div>
-              )}
+            {!context.resolvedObject.project.after && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.project.before && (
+                  <ProjectDiff
+                    project={context.resolvedObject.project.before}
+                  />
+                )}
+              </div>
+            )}
 
-              {context.asset.before && context.asset.after && (
+            {context.resolvedObject.project.before &&
+              context.resolvedObject.project.after && (
                 <>
                   <div className="col-span-6">
                     <h3 className="text-center text-white mb-4">Before</h3>
-                    {context.asset.before && (
+                    {context.resolvedObject.project.before && (
+                      <ProjectDiff
+                        project={context.resolvedObject.project.before}
+                      />
+                    )}
+                  </div>
+
+                  <div className="col-span-6">
+                    <h3 className="text-center text-white mb-4">After</h3>
+                    {context.resolvedObject.project.after && (
+                      <ProjectDiff
+                        project={context.resolvedObject.project.after}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+          </>
+        );
+      }
+      case 'asset': {
+        return (
+          <>
+            {!context.resolvedObject.asset.before && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.asset.after && (
+                  <AssetInfo
+                    projectId={context.project.id}
+                    asset={context.resolvedObject.asset.after}
+                    language={context.user.language}
+                  />
+                )}
+              </div>
+            )}
+
+            {!context.resolvedObject.asset.after && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.asset.before && (
+                  <AssetInfo
+                    projectId={context.project.id}
+                    asset={context.resolvedObject.asset.before}
+                    language={context.user.language}
+                  />
+                )}
+              </div>
+            )}
+
+            {context.resolvedObject.asset.before &&
+              context.resolvedObject.asset.after && (
+                <>
+                  <div className="col-span-6">
+                    <h3 className="text-center text-white mb-4">Before</h3>
+                    {context.resolvedObject.asset.before && (
                       <AssetInfo
                         projectId={context.project.id}
-                        asset={context.asset.before}
+                        asset={context.resolvedObject.asset.before}
                         language={context.user.language}
                       />
                     )}
@@ -118,17 +197,16 @@ function ProjectHistoryCommitPage(): JSX.Element {
 
                   <div className="col-span-6">
                     <h3 className="text-center text-white mb-4">After</h3>
-                    {context.asset.after && (
+                    {context.resolvedObject.asset.after && (
                       <AssetInfo
                         projectId={context.project.id}
-                        asset={context.asset.after}
+                        asset={context.resolvedObject.asset.after}
                         language={context.user.language}
                       />
                     )}
                   </div>
                 </>
               )}
-            </div>
           </>
         );
       }
@@ -172,7 +250,9 @@ function ProjectHistoryCommitPage(): JSX.Element {
       layout="bare"
     >
       {/* {JSON.stringify(context.commit)} */}
-      <DisplayChanges />
+      <div className="grid grid-cols-12 gap-6">
+        <DisplayChanges />
+      </div>
     </Page>
   );
 }
