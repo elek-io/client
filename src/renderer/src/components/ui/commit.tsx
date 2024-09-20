@@ -6,11 +6,11 @@ import { Link, LinkProps } from '@tanstack/react-router';
 import {
   CircleFadingArrowUp,
   FileQuestion,
-  Minus,
   PartyPopper,
   Pencil,
   Plus,
   Tag,
+  Trash2,
 } from 'lucide-react';
 
 export interface CommitProps extends LinkProps {
@@ -39,7 +39,7 @@ export function Commit({
       iconComponent = <Pencil className="w-4 h-4" />;
       break;
     case 'delete':
-      iconComponent = <Minus className="w-4 h-4" />;
+      iconComponent = <Trash2 className="w-4 h-4" />;
       break;
     case 'upgrade':
       iconComponent = <CircleFadingArrowUp className="w-4 h-4" />;
