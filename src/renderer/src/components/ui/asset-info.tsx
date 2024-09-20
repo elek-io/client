@@ -188,12 +188,12 @@ export function AssetInfo({
 
   return (
     <div className="text-sm flex flex-col items-start justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
-      <div className="p-4 pb-0 w-full">
+      <div className="p-6 pb-0 w-full">
         <div className="aspect-4/3 flex items-center justify-center">
           <AssetDisplay {...asset} preview={true}></AssetDisplay>
         </div>
       </div>
-      <div className="p-4">
+      <div className="p-6">
         {/* {JSON.stringify(asset.history)} */}
         <h2 className="text-lg break-all">{asset.name}</h2>
         <p className="text-zinc-400">{asset.description}</p>
@@ -202,7 +202,7 @@ export function AssetInfo({
         <dl className="divide-y divide-zinc-200 dark:divide-zinc-800 border-t border-b border-zinc-200 dark:border-zinc-800">
           {information.map((info) => {
             return (
-              <div key={info.key} className="flex justify-between py-2 px-4">
+              <div key={info.key} className="flex justify-between py-2 px-6">
                 <dt className="">{info.key}</dt>
                 <dd className="whitespace-nowrap">
                   {info.tooltip && (

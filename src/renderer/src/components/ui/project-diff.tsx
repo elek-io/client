@@ -18,18 +18,18 @@ export interface ProjectDiffProps {
 
 export function ProjectDiff({ project }: ProjectDiffProps): JSX.Element {
   return (
-    <div className="text-sm p-4 bg-white flex flex-col gap-6 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
+    <div className="text-sm p-6 bg-white flex flex-col gap-6 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
       <FormItem>
         <Label isRequired={true}>Project name</Label>
         <Input value={project.name} disabled={true} />
       </FormItem>
 
-      <FormItem className="col-span-12">
+      <FormItem>
         <Label isRequired={false}>Project description</Label>
         <Textarea value={project.description} disabled={true} />
       </FormItem>
 
-      <FormItem className="col-span-6">
+      <FormItem>
         <Label isRequired={true}>Supported languages</Label>
         <ul className="flex flex-wrap">
           {project.settings.language.supported.map((language) => {

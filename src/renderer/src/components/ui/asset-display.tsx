@@ -48,7 +48,5 @@ export function AssetDisplay(props: AssetDisplayProps): JSX.Element {
     return <FolderArchive className="w-10 h-10" />;
   }
 
-  // return <span className="text-xs">{props.mimeType}</span>;
-
   return <FileQuestion className="w-10 h-10" />;
 }
