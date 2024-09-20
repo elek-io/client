@@ -1,8 +1,9 @@
-import { Asset, Collection, Project } from '@elek-io/core';
+import { Asset, Collection, Entry, Project } from '@elek-io/core';
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { Avatar } from '@renderer/components/ui/avatar';
 import { Badge } from '@renderer/components/ui/badge';
 import { CollectionDiff } from '@renderer/components/ui/collection-diff';
+import { EntryDiff } from '@renderer/components/ui/entry-diff';
 import { Page } from '@renderer/components/ui/page';
 import { ProjectDiff } from '@renderer/components/ui/project-diff';
 import { formatDatetime } from '@renderer/util';
@@ -28,6 +29,11 @@ export const Route = createFileRoute(
         before: Collection | undefined;
         after: Collection | undefined;
       };
+      entry: {
+        collection: Collection | undefined;
+        before: Entry | undefined;
+        after: Entry | undefined;
+      };
     } = {
       project: {
         before: undefined,
@@ -38,6 +44,11 @@ export const Route = createFileRoute(
         after: undefined,
       },
       collection: {
+        before: undefined,
+        after: undefined,
+      },
+      entry: {
+        collection: undefined,
         before: undefined,
         after: undefined,
       },
@@ -130,6 +141,49 @@ export const Route = createFileRoute(
               commitHash: commit.hash,
             }
           );
+        }
+        break;
+      }
+      case 'entry': {
+        if (!commit.message.reference.collectionId) {
+          throw new Error('Commit for Entry does not contain a collectionId');
+        }
+        const collection = await context.core.collections.read({
+          projectId: context.project.id,
+          id: commit.message.reference.collectionId,
+        });
+        resolvedObject.entry.collection = collection;
+
+        if (
+          commit.message.method === 'update' ||
+          commit.message.method === 'delete'
+        ) {
+          const entryCommitHistory = context.project.fullHistory.filter(
+            (commit) =>
+              commit.message.reference.objectType === 'entry' &&
+              commit.message.reference.id === commit.message.reference.id
+          );
+          const currentCommitIndex = entryCommitHistory.findIndex(
+            (commit) => commit.hash === params.commitHash
+          );
+          resolvedObject.entry.before = await context.core.entries.read({
+            projectId: context.project.id,
+            collectionId: commit.message.reference.collectionId,
+            id: commit.message.reference.id,
+            commitHash: entryCommitHistory.at(currentCommitIndex + 1)?.hash,
+          });
+        }
+
+        if (commit.message.method !== 'delete') {
+          if (!commit.message.reference.collectionId) {
+            throw new Error('Commit for Entry does not contain a collectionId');
+          }
+          resolvedObject.entry.after = await context.core.entries.read({
+            projectId: context.project.id,
+            collectionId: commit.message.reference.collectionId,
+            id: commit.message.reference.id,
+            commitHash: commit.hash,
+          });
         }
         break;
       }
@@ -300,6 +354,70 @@ function ProjectHistoryCommitPage(): JSX.Element {
                         translateContent={context.translateContent}
                       />
                     )}
+                  </div>
+                </>
+              )}
+          </>
+        );
+      }
+      case 'entry': {
+        return (
+          <>
+            {!context.resolvedObject.entry.before && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.entry.after &&
+                  context.resolvedObject.entry.collection && (
+                    <EntryDiff
+                      collection={context.resolvedObject.entry.collection}
+                      entry={context.resolvedObject.entry.after}
+                      language={context.user.language}
+                      translateContent={context.translateContent}
+                    />
+                  )}
+              </div>
+            )}
+
+            {!context.resolvedObject.entry.after && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.entry.before &&
+                  context.resolvedObject.entry.collection && (
+                    <EntryDiff
+                      collection={context.resolvedObject.entry.collection}
+                      entry={context.resolvedObject.entry.before}
+                      language={context.user.language}
+                      translateContent={context.translateContent}
+                    />
+                  )}
+              </div>
+            )}
+
+            {context.resolvedObject.entry.before &&
+              context.resolvedObject.entry.after && (
+                <>
+                  <div className="col-span-6">
+                    <h3 className="text-center text-white mb-4">Before</h3>
+                    {context.resolvedObject.entry.before &&
+                      context.resolvedObject.entry.collection && (
+                        <EntryDiff
+                          collection={context.resolvedObject.entry.collection}
+                          entry={context.resolvedObject.entry.before}
+                          language={context.user.language}
+                          translateContent={context.translateContent}
+                        />
+                      )}
+                  </div>
+
+                  <div className="col-span-6">
+                    <h3 className="text-center text-white mb-4">After</h3>
+                    {context.resolvedObject.entry.after &&
+                      context.resolvedObject.entry.collection && (
+                        <EntryDiff
+                          collection={context.resolvedObject.entry.collection}
+                          entry={context.resolvedObject.entry.after}
+                          language={context.user.language}
+                          translateContent={context.translateContent}
+                        />
+                      )}
                   </div>
                 </>
               )}

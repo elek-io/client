@@ -177,7 +177,8 @@ function FormInputFromDefinition<T extends FieldValues>(
  */
 export function FieldFromDefinition(
   fieldDefinition: FieldDefinition,
-  translateContent: (key: string, record: TranslatableString) => string
+  translateContent: (key: string, record: TranslatableString) => string,
+  value?: any
 ): JSX.Element {
   return (
     <FormItem
@@ -190,7 +191,7 @@ export function FieldFromDefinition(
       >
         {translateContent('fieldDefinition.label', fieldDefinition.label)}
       </Label>
-      {InputFromDefinition(fieldDefinition)}
+      {InputFromDefinition(fieldDefinition, value)}
       <p className={'text-[0.8rem] text-zinc-500 dark:text-zinc-400'}>
         {translateContent(
           'fieldDefinition.description',
@@ -201,7 +202,10 @@ export function FieldFromDefinition(
   );
 }
 
-function InputFromDefinition(fieldDefinition: FieldDefinition): JSX.Element {
+function InputFromDefinition(
+  fieldDefinition: FieldDefinition,
+  value?: any
+): JSX.Element {
   switch (fieldDefinition.fieldType) {
     case 'text':
       return (
@@ -210,6 +214,7 @@ function InputFromDefinition(fieldDefinition: FieldDefinition): JSX.Element {
           minLength={fieldDefinition.min || undefined}
           maxLength={fieldDefinition.max || undefined}
           defaultValue={fieldDefinition.defaultValue || undefined}
+          value={value}
           required={fieldDefinition.isRequired}
           disabled={true}
         />
@@ -220,6 +225,7 @@ function InputFromDefinition(fieldDefinition: FieldDefinition): JSX.Element {
           minLength={fieldDefinition.min || undefined}
           maxLength={fieldDefinition.max || undefined}
           defaultValue={fieldDefinition.defaultValue || undefined}
+          value={value}
           required={fieldDefinition.isRequired}
           disabled={true}
         />
@@ -231,6 +237,7 @@ function InputFromDefinition(fieldDefinition: FieldDefinition): JSX.Element {
           min={fieldDefinition.min || undefined}
           max={fieldDefinition.max || undefined}
           defaultValue={fieldDefinition.defaultValue || undefined}
+          value={value}
           required={fieldDefinition.isRequired}
           disabled={true}
         />
@@ -239,6 +246,7 @@ function InputFromDefinition(fieldDefinition: FieldDefinition): JSX.Element {
       return (
         <Slider
           defaultValue={[fieldDefinition.defaultValue]}
+          value={[value]}
           min={fieldDefinition.min}
           max={fieldDefinition.max}
           step={1} // @todo Core needs to support this too
@@ -249,7 +257,7 @@ function InputFromDefinition(fieldDefinition: FieldDefinition): JSX.Element {
       return (
         <Switch
           defaultChecked={fieldDefinition.defaultValue}
-          checked={fieldDefinition.defaultValue}
+          checked={value || fieldDefinition.defaultValue}
           required={fieldDefinition.isRequired}
           disabled={true}
         />
