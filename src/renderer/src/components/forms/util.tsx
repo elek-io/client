@@ -15,8 +15,11 @@ import {
 } from '../ui/form';
 import { FormInput } from '../ui/form-input';
 import { FormTextarea } from '../ui/form-textarea';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Switch } from '../ui/switch';
+import { Textarea } from '../ui/textarea';
 
 export function translatableDefaultNull(props: {
   supportedLanguages: SupportedLanguage[];
@@ -52,6 +55,12 @@ export function translatableDefaultArray(props: {
     });
 }
 
+/**
+ * Used to render a Field based on a FieldDefinition and attaches it to a form context
+ *
+ * If you only want to render the field without it being connected to a form context,
+ * use FieldFromDefinition instead.
+ */
 export function FormFieldFromDefinition<T extends FieldValues>(
   fieldDefinition: FieldDefinition,
   name: Path<T>,
@@ -76,7 +85,7 @@ export function FormFieldFromDefinition<T extends FieldValues>(
           </FormLabel>
           <FormControl>
             {/* @todo add styling for toggle switches */}
-            {InputFromDefinition<T>(fieldDefinition, field)}
+            {FormInputFromDefinition<T>(fieldDefinition, field)}
           </FormControl>
           <FormDescription>
             {translateContent(
@@ -91,7 +100,7 @@ export function FormFieldFromDefinition<T extends FieldValues>(
   );
 }
 
-export function InputFromDefinition<T extends FieldValues>(
+function FormInputFromDefinition<T extends FieldValues>(
   fieldDefinition: FieldDefinition,
   field: ControllerRenderProps<FieldValues, Path<T>>
 ): JSX.Element {
@@ -150,6 +159,99 @@ export function InputFromDefinition<T extends FieldValues>(
           checked={fieldDefinition.defaultValue}
           required={fieldDefinition.isRequired}
           disabled={fieldDefinition.isDisabled}
+        />
+      );
+    default:
+      throw new Error(
+        `Unsupported Entry definition FieldType "${fieldDefinition.fieldType}"`
+      );
+  }
+}
+
+/**
+ * Used to render a Field based on a FieldDefinition
+ *
+ * Only renders an input based on given definition and does not
+ * connect to a form context. If you need a usable form field,
+ * use FormFieldFromDefinition instead.
+ */
+export function FieldFromDefinition(
+  fieldDefinition: FieldDefinition,
+  translateContent: (key: string, record: TranslatableString) => string
+): JSX.Element {
+  return (
+    <FormItem
+      className={`col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`}
+    >
+      <Label
+        isRequired={
+          'isRequired' in fieldDefinition ? fieldDefinition.isRequired : false
+        }
+      >
+        {translateContent('fieldDefinition.label', fieldDefinition.label)}
+      </Label>
+      {InputFromDefinition(fieldDefinition)}
+      <p className={'text-[0.8rem] text-zinc-500 dark:text-zinc-400'}>
+        {translateContent(
+          'fieldDefinition.description',
+          fieldDefinition.description
+        )}
+      </p>
+    </FormItem>
+  );
+}
+
+function InputFromDefinition(fieldDefinition: FieldDefinition): JSX.Element {
+  switch (fieldDefinition.fieldType) {
+    case 'text':
+      return (
+        <Input
+          type="text"
+          minLength={fieldDefinition.min || undefined}
+          maxLength={fieldDefinition.max || undefined}
+          defaultValue={fieldDefinition.defaultValue || undefined}
+          required={fieldDefinition.isRequired}
+          disabled={true}
+        />
+      );
+    case 'textarea':
+      return (
+        <Textarea
+          minLength={fieldDefinition.min || undefined}
+          maxLength={fieldDefinition.max || undefined}
+          defaultValue={fieldDefinition.defaultValue || undefined}
+          required={fieldDefinition.isRequired}
+          disabled={true}
+        />
+      );
+    case 'number':
+      return (
+        <Input
+          type="number"
+          min={fieldDefinition.min || undefined}
+          max={fieldDefinition.max || undefined}
+          defaultValue={fieldDefinition.defaultValue || undefined}
+          required={fieldDefinition.isRequired}
+          disabled={true}
+        />
+      );
+    case 'range':
+      return (
+        <Slider
+          defaultValue={[fieldDefinition.defaultValue]}
+          min={fieldDefinition.min}
+          max={fieldDefinition.max}
+          step={1} // @todo Core needs to support this too
+          disabled={true}
+        />
+      );
+    case 'toggle':
+      return (
+        <Switch
+          defaultChecked={fieldDefinition.defaultValue}
+          checked={fieldDefinition.defaultValue}
+          required={fieldDefinition.isRequired}
+          disabled={true}
         />
       );
     default:

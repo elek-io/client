@@ -1,7 +1,8 @@
-import { Asset, Project } from '@elek-io/core';
+import { Asset, Collection, Project } from '@elek-io/core';
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { Avatar } from '@renderer/components/ui/avatar';
 import { Badge } from '@renderer/components/ui/badge';
+import { CollectionDiff } from '@renderer/components/ui/collection-diff';
 import { Page } from '@renderer/components/ui/page';
 import { ProjectDiff } from '@renderer/components/ui/project-diff';
 import { formatDatetime } from '@renderer/util';
@@ -23,12 +24,20 @@ export const Route = createFileRoute(
     const resolvedObject: {
       project: { before: Project | undefined; after: Project | undefined };
       asset: { before: Asset | undefined; after: Asset | undefined };
+      collection: {
+        before: Collection | undefined;
+        after: Collection | undefined;
+      };
     } = {
       project: {
         before: undefined,
         after: undefined,
       },
       asset: {
+        before: undefined,
+        after: undefined,
+      },
+      collection: {
         before: undefined,
         after: undefined,
       },
@@ -42,7 +51,7 @@ export const Route = createFileRoute(
         ) {
           const projectCommitHistory = context.project.fullHistory.filter(
             (commit) =>
-              commit.message.reference.objectType === 'asset' &&
+              commit.message.reference.objectType === 'project' &&
               commit.message.reference.id === commit.message.reference.id
           );
           const currentCommitIndex = projectCommitHistory.findIndex(
@@ -63,7 +72,6 @@ export const Route = createFileRoute(
         break;
       }
       case 'asset': {
-        // When updating or deleting an Asset, we need to find the previous commit to show the before state
         if (
           commit.message.method === 'update' ||
           commit.message.method === 'delete'
@@ -83,13 +91,45 @@ export const Route = createFileRoute(
           });
         }
 
-        // Delete commits don't have an after state
         if (commit.message.method !== 'delete') {
           resolvedObject.asset.after = await context.core.assets.read({
             projectId: context.project.id,
             id: commit.message.reference.id,
             commitHash: commit.hash,
           });
+        }
+        break;
+      }
+      case 'collection': {
+        if (
+          commit.message.method === 'update' ||
+          commit.message.method === 'delete'
+        ) {
+          const collectionCommitHistory = context.project.fullHistory.filter(
+            (commit) =>
+              commit.message.reference.objectType === 'collection' &&
+              commit.message.reference.id === commit.message.reference.id
+          );
+          const currentCommitIndex = collectionCommitHistory.findIndex(
+            (commit) => commit.hash === params.commitHash
+          );
+          resolvedObject.collection.before =
+            await context.core.collections.read({
+              projectId: context.project.id,
+              id: commit.message.reference.id,
+              commitHash: collectionCommitHistory.at(currentCommitIndex + 1)
+                ?.hash,
+            });
+        }
+
+        if (commit.message.method !== 'delete') {
+          resolvedObject.collection.after = await context.core.collections.read(
+            {
+              projectId: context.project.id,
+              id: commit.message.reference.id,
+              commitHash: commit.hash,
+            }
+          );
         }
         break;
       }
@@ -202,6 +242,62 @@ function ProjectHistoryCommitPage(): JSX.Element {
                         projectId={context.project.id}
                         asset={context.resolvedObject.asset.after}
                         language={context.user.language}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+          </>
+        );
+      }
+      case 'collection': {
+        return (
+          <>
+            {!context.resolvedObject.collection.before && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.collection.after && (
+                  <CollectionDiff
+                    collection={context.resolvedObject.collection.after}
+                    language={context.user.language}
+                    translateContent={context.translateContent}
+                  />
+                )}
+              </div>
+            )}
+
+            {!context.resolvedObject.collection.after && (
+              <div className="col-span-6 col-start-3">
+                {context.resolvedObject.collection.before && (
+                  <CollectionDiff
+                    collection={context.resolvedObject.collection.before}
+                    language={context.user.language}
+                    translateContent={context.translateContent}
+                  />
+                )}
+              </div>
+            )}
+
+            {context.resolvedObject.collection.before &&
+              context.resolvedObject.collection.after && (
+                <>
+                  <div className="col-span-6">
+                    <h3 className="text-center text-white mb-4">Before</h3>
+                    {context.resolvedObject.collection.before && (
+                      <CollectionDiff
+                        collection={context.resolvedObject.collection.before}
+                        language={context.user.language}
+                        translateContent={context.translateContent}
+                      />
+                    )}
+                  </div>
+
+                  <div className="col-span-6">
+                    <h3 className="text-center text-white mb-4">After</h3>
+                    {context.resolvedObject.collection.after && (
+                      <CollectionDiff
+                        collection={context.resolvedObject.collection.after}
+                        language={context.user.language}
+                        translateContent={context.translateContent}
                       />
                     )}
                   </div>
