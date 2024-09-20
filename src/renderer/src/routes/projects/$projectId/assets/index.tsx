@@ -23,7 +23,6 @@ function ProjectAssetsPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
-  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   function Description(): ReactElement {
@@ -88,64 +87,16 @@ function ProjectAssetsPage(): JSX.Element {
     console.log('Asset create results: ', results);
   }
 
-  function onDragOver(event: React.DragEvent<HTMLElement>): void {
-    event.preventDefault();
-    event.stopPropagation();
-    console.log('onDragOver');
-  }
-
-  function onDragEnter(event: React.DragEvent<HTMLElement>): void {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDraggingOver(true);
-    console.log('onDragEnter');
-  }
-
-  function onDragLeave(event: React.DragEvent<HTMLElement>): void {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDraggingOver(false);
-    console.log('onDragLeave');
-  }
-
-  /**
-   * @todo This creates one commit for all instead on one per uploaded file, how is this possible?
-   */
-  async function onAssetsDropped(
-    event: React.DragEvent<HTMLElement>
-  ): Promise<void> {
-    event.preventDefault();
-    event.stopPropagation();
-
-    console.log('Dropped: ', event);
-
-    const paths = [...event.dataTransfer.items].map((item) => {
-      const file = item.getAsFile();
-      if (file) {
-        return file.path;
-      }
-      return '';
-    });
-    await createAssetsFromPaths(paths);
-    Route.update({});
-  }
-
   return (
     <Page
       title="Assets"
       description={<Description></Description>}
       actions={<Actions></Actions>}
       layout="bare"
-      className={isDraggingOver ? 'ring-4 ring-inset border-brand-600' : ''}
-      onDragOver={onDragOver}
-      onDrop={onAssetsDropped}
-      onDragEnter={onDragEnter}
-      onDragLeave={onDragLeave}
     >
       <div className="flex">
         <div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5 xl:gap-6">
-            {isDraggingOver ? 'dragging' : 'not dragging'}
             {context.currentAssets.list.map((asset) => (
               <AssetTeaser
                 key={asset.id}
