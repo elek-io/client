@@ -190,7 +190,7 @@ export function AssetInfo({
     <div className="text-sm flex flex-col items-start justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
       <div className="p-6 pb-0 w-full">
         <div className="aspect-4/3 flex items-center justify-center">
-          <AssetDisplay {...asset} preview={true}></AssetDisplay>
+          <AssetDisplay {...asset} static={false}></AssetDisplay>
         </div>
       </div>
       <div className="p-6">
