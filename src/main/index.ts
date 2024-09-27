@@ -1,4 +1,4 @@
-import ElekIoCore from '@elek-io/core';
+import ElekIoCore, { User } from '@elek-io/core';
 import * as Sentry from '@sentry/electron/main';
 import {
   app,
@@ -75,8 +75,13 @@ class Main {
     this.core = new ElekIoCore({
       log: { level: app.isPackaged ? 'info' : 'debug' },
     });
+    const user = await this.core.user.get();
 
     this.registerCustomFileProtocol();
+
+    if (user && user.localApi.isEnabled) {
+      this.core.api.start(user.localApi.port);
+    }
 
     const window = await this.createWindow();
     this.registerIpcMain(window, this.core);
@@ -142,7 +147,7 @@ class Main {
   /**
    * Creates a new window with security in mind and loads the frontend
    */
-  private async createWindow(): Promise<BrowserWindow> {
+  private async createWindow(user?: User): Promise<BrowserWindow> {
     if (!this.core) {
       throw new Error(
         'Trying to create a new window but Core is not initialized.'
@@ -150,7 +155,6 @@ class Main {
     }
 
     const initialWindowSize = this.getInitialWindowSize();
-    const user = await this.core.user.get();
 
     const options: BrowserWindowConstructorOptions = {
       width: initialWindowSize.width,
