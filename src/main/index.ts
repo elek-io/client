@@ -13,7 +13,6 @@ import {
 } from 'electron';
 import Path from 'path';
 import icon from '../../resources/icon.png?asset';
-import { Api } from './api/index.js';
 // import { updateElectronApp } from 'update-electron-app';
 
 export class SecurityError extends Error {
@@ -39,7 +38,6 @@ class Main {
     'https://github.com',
   ];
   private core: ElekIoCore | null = null;
-  private api: Api | null = null;
 
   constructor() {
     // Allow the vite dev server to do HMR in development
@@ -77,7 +75,6 @@ class Main {
     this.core = new ElekIoCore({
       log: { level: app.isPackaged ? 'info' : 'debug' },
     });
-    this.api = new Api(this.core);
 
     this.registerCustomFileProtocol();
 
