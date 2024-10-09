@@ -19,7 +19,6 @@ import {
 import { FormInput } from '@renderer/components/ui/form-input';
 import { Page } from '@renderer/components/ui/page';
 import { PageSection } from '@renderer/components/ui/page-section';
-import { ProjectHeader } from '@renderer/components/ui/project-header';
 import {
   Select,
   SelectContent,
@@ -28,6 +27,7 @@ import {
   SelectValue,
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
+import { UserHeader } from '@renderer/components/ui/user-header';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
@@ -170,7 +170,7 @@ function UserProfilePage(): JSX.Element {
 
   return (
     <>
-      {context.user && <ProjectHeader user={context.user} />}
+      {context.user && <UserHeader user={context.user} />}
       <Page
         title={
           context.user === null ? 'Welcome to elek.io Client' : 'User profile'

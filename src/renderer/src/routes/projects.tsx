@@ -1,4 +1,4 @@
-import { ProjectHeader } from '@renderer/components/ui/project-header';
+import { UserHeader } from '@renderer/components/ui/user-header';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/projects')({
@@ -20,7 +20,7 @@ function ProjectsLayout(): JSX.Element {
 
   return (
     <>
-      <ProjectHeader user={user} />
+      <UserHeader user={user} />
       <Outlet></Outlet>
     </>
   );
