@@ -78,11 +78,11 @@ class Main {
     });
     const user = await this.core.user.get();
 
-    this.registerCustomFileProtocol();
-
     if (user && user.localApi.isEnabled) {
       this.core.api.start(user.localApi.port);
     }
+
+    this.registerCustomFileProtocol();
 
     const window = await this.createWindow();
     this.registerIpcMain(window, this.core);
@@ -299,14 +299,14 @@ class Main {
     ipcMain.handle('electron:dialog:showSaveDialog', async (_event, args) => {
       return await dialog.showSaveDialog(window, args);
     });
-    ipcMain.handle('core:api:start', (_event, args) => {
-      return core.api.start(args[0]);
+    ipcMain.handle('core:api:start', async (_event, args) => {
+      return await core.api.start(args[0]);
     });
-    ipcMain.handle('core:api:isRunning', () => {
-      return core.api.isRunning();
+    ipcMain.handle('core:api:isRunning', async () => {
+      return await core.api.isRunning();
     });
-    ipcMain.handle('core:api:stop', () => {
-      return core.api.stop();
+    ipcMain.handle('core:api:stop', async () => {
+      return await core.api.stop();
     });
     ipcMain.handle('core:logger:debug', (_event, args) => {
       return core.logger.debug(args[0]);
