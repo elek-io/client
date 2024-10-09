@@ -9,6 +9,7 @@ export interface CommitHistoryProps extends HTMLAttributes<HTMLDivElement> {
   commits: GitCommit[];
   language: SupportedLanguage;
   projectId: string;
+  disabled?: boolean;
 }
 
 export function CommitHistory({
@@ -16,6 +17,7 @@ export function CommitHistory({
   commits,
   language,
   projectId,
+  disabled,
   ...props
 }: CommitHistoryProps): JSX.Element {
   return (
@@ -27,6 +29,7 @@ export function CommitHistory({
             key={commit.hash}
             language={language}
             commit={commit}
+            disabled={disabled || false}
             to="/projects/$projectId/history/$commitHash"
             params={{ projectId, commitHash: commit.hash }}
           />

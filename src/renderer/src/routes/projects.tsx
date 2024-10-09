@@ -6,7 +6,7 @@ export const Route = createFileRoute('/projects')({
     const user = await context.core.user.get();
     if (!user) {
       throw redirect({
-        to: '/user/setup',
+        to: '/user/profile',
       });
     }
 
