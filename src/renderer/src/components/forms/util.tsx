@@ -55,6 +55,12 @@ export function translatableDefaultArray(props: {
     });
 }
 
+export interface FormFieldFromDefinitionProps<T extends FieldValues> {
+  fieldDefinition: FieldDefinition;
+  name: Path<T>;
+  translateContent: (key: string, record: TranslatableString) => string;
+}
+
 /**
  * Used to render a Field based on a FieldDefinition and attaches it to a form context
  *
@@ -62,35 +68,39 @@ export function translatableDefaultArray(props: {
  * use FieldFromDefinition instead.
  */
 export function FormFieldFromDefinition<T extends FieldValues>(
-  fieldDefinition: FieldDefinition,
-  name: Path<T>,
-  translateContent: (key: string, record: TranslatableString) => string
+  props: FormFieldFromDefinitionProps<T>
 ): JSX.Element {
   return (
     <FormField
-      key={fieldDefinition.id}
-      name={name}
+      key={props.fieldDefinition.id}
+      name={props.name}
       render={({ field }) => (
         <FormItem
-          className={`col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`}
+          className={`col-span-12 ${fieldWidth(props.fieldDefinition.inputWidth)}`}
         >
           <FormLabel
             isRequired={
-              'isRequired' in fieldDefinition
-                ? fieldDefinition.isRequired
+              'isRequired' in props.fieldDefinition
+                ? props.fieldDefinition.isRequired
                 : false
             }
           >
-            {translateContent('fieldDefinition.label', fieldDefinition.label)}
+            {props.translateContent(
+              'fieldDefinition.label',
+              props.fieldDefinition.label
+            )}
           </FormLabel>
           <FormControl>
             {/* @todo add styling for toggle switches */}
-            {FormInputFromDefinition<T>(fieldDefinition, field)}
+            <FormInputFromDefinition
+              fieldDefinition={props.fieldDefinition}
+              field={field}
+            />
           </FormControl>
           <FormDescription>
-            {translateContent(
+            {props.translateContent(
               'fieldDefinition.description',
-              fieldDefinition.description
+              props.fieldDefinition.description
             )}
           </FormDescription>
           <FormMessage />
@@ -100,72 +110,82 @@ export function FormFieldFromDefinition<T extends FieldValues>(
   );
 }
 
+export interface FormInputFromDefinitionProps<T extends FieldValues> {
+  fieldDefinition: FieldDefinition;
+  field: ControllerRenderProps<FieldValues, Path<T>>;
+}
+
 function FormInputFromDefinition<T extends FieldValues>(
-  fieldDefinition: FieldDefinition,
-  field: ControllerRenderProps<FieldValues, Path<T>>
+  props: FormInputFromDefinitionProps<T>
 ): JSX.Element {
-  switch (fieldDefinition.fieldType) {
+  switch (props.fieldDefinition.fieldType) {
     case 'text':
       return (
         <FormInput
-          field={field}
+          field={props.field}
           type="text"
-          minLength={fieldDefinition.min || undefined}
-          maxLength={fieldDefinition.max || undefined}
-          defaultValue={fieldDefinition.defaultValue || undefined}
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
+          minLength={props.fieldDefinition.min || undefined}
+          maxLength={props.fieldDefinition.max || undefined}
+          defaultValue={props.fieldDefinition.defaultValue || undefined}
+          required={props.fieldDefinition.isRequired}
+          disabled={props.fieldDefinition.isDisabled}
         />
       );
     case 'textarea':
       return (
         <FormTextarea
-          field={field}
-          minLength={fieldDefinition.min || undefined}
-          maxLength={fieldDefinition.max || undefined}
-          defaultValue={fieldDefinition.defaultValue || undefined}
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
+          field={props.field}
+          minLength={props.fieldDefinition.min || undefined}
+          maxLength={props.fieldDefinition.max || undefined}
+          defaultValue={props.fieldDefinition.defaultValue || undefined}
+          required={props.fieldDefinition.isRequired}
+          disabled={props.fieldDefinition.isDisabled}
         />
       );
     case 'number':
       return (
         <FormInput
-          field={field}
+          field={props.field}
           type="number"
-          min={fieldDefinition.min || undefined}
-          max={fieldDefinition.max || undefined}
-          defaultValue={fieldDefinition.defaultValue || undefined}
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
+          min={props.fieldDefinition.min || undefined}
+          max={props.fieldDefinition.max || undefined}
+          defaultValue={props.fieldDefinition.defaultValue || undefined}
+          required={props.fieldDefinition.isRequired}
+          disabled={props.fieldDefinition.isDisabled}
         />
       );
     case 'range':
       return (
         <Slider
-          {...field}
-          defaultValue={[fieldDefinition.defaultValue]}
-          min={fieldDefinition.min}
-          max={fieldDefinition.max}
+          {...props.field}
+          defaultValue={[props.fieldDefinition.defaultValue]}
+          min={props.fieldDefinition.min}
+          max={props.fieldDefinition.max}
           step={1} // @todo Core needs to support this too
-          disabled={fieldDefinition.isDisabled}
+          disabled={props.fieldDefinition.isDisabled}
         />
       );
     case 'toggle':
       return (
         <Switch
-          {...field}
-          defaultChecked={fieldDefinition.defaultValue}
-          checked={fieldDefinition.defaultValue}
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
+          {...props.field}
+          defaultChecked={props.fieldDefinition.defaultValue}
+          checked={props.fieldDefinition.defaultValue}
+          required={props.fieldDefinition.isRequired}
+          disabled={props.fieldDefinition.isDisabled}
         />
       );
     default:
       throw new Error(
-        `Unsupported Entry definition FieldType "${fieldDefinition.fieldType}"`
+        `Unsupported Entry definition FieldType "${props.fieldDefinition.fieldType}"`
       );
   }
+}
+
+export interface FieldFromDefinitionProps {
+  fieldDefinition: FieldDefinition;
+  translateContent: (key: string, record: TranslatableString) => string;
+  value?: any;
 }
 
 /**
@@ -176,57 +196,65 @@ function FormInputFromDefinition<T extends FieldValues>(
  * use FormFieldFromDefinition instead.
  */
 export function FieldFromDefinition(
-  fieldDefinition: FieldDefinition,
-  translateContent: (key: string, record: TranslatableString) => string,
-  value?: any
+  props: FieldFromDefinitionProps
 ): JSX.Element {
   return (
     <FormItem
-      className={`col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`}
+      className={`col-span-12 ${fieldWidth(props.fieldDefinition.inputWidth)}`}
     >
       <Label
         isRequired={
-          'isRequired' in fieldDefinition ? fieldDefinition.isRequired : false
+          'isRequired' in props.fieldDefinition
+            ? props.fieldDefinition.isRequired
+            : false
         }
       >
-        {translateContent('fieldDefinition.label', fieldDefinition.label)}
+        {props.translateContent(
+          'fieldDefinition.label',
+          props.fieldDefinition.label
+        )}
       </Label>
-      {InputFromDefinition(fieldDefinition, value)}
+      <InputFromDefinition
+        fieldDefinition={props.fieldDefinition}
+        value={props.value}
+      />
       <p className={'text-[0.8rem] text-zinc-500 dark:text-zinc-400'}>
-        {translateContent(
+        {props.translateContent(
           'fieldDefinition.description',
-          fieldDefinition.description
+          props.fieldDefinition.description
         )}
       </p>
     </FormItem>
   );
 }
 
-function InputFromDefinition(
-  fieldDefinition: FieldDefinition,
-  value?: any
-): JSX.Element {
-  switch (fieldDefinition.fieldType) {
+export interface InputFromDefinitionProps {
+  fieldDefinition: FieldDefinition;
+  value?: any;
+}
+
+function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
+  switch (props.fieldDefinition.fieldType) {
     case 'text':
       return (
         <Input
           type="text"
-          minLength={fieldDefinition.min || undefined}
-          maxLength={fieldDefinition.max || undefined}
-          defaultValue={fieldDefinition.defaultValue || undefined}
-          value={value}
-          required={fieldDefinition.isRequired}
+          minLength={props.fieldDefinition.min || undefined}
+          maxLength={props.fieldDefinition.max || undefined}
+          defaultValue={props.fieldDefinition.defaultValue || undefined}
+          value={props.value}
+          required={props.fieldDefinition.isRequired}
           disabled={true}
         />
       );
     case 'textarea':
       return (
         <Textarea
-          minLength={fieldDefinition.min || undefined}
-          maxLength={fieldDefinition.max || undefined}
-          defaultValue={fieldDefinition.defaultValue || undefined}
-          value={value}
-          required={fieldDefinition.isRequired}
+          minLength={props.fieldDefinition.min || undefined}
+          maxLength={props.fieldDefinition.max || undefined}
+          defaultValue={props.fieldDefinition.defaultValue || undefined}
+          value={props.value}
+          required={props.fieldDefinition.isRequired}
           disabled={true}
         />
       );
@@ -234,21 +262,21 @@ function InputFromDefinition(
       return (
         <Input
           type="number"
-          min={fieldDefinition.min || undefined}
-          max={fieldDefinition.max || undefined}
-          defaultValue={fieldDefinition.defaultValue || undefined}
-          value={value}
-          required={fieldDefinition.isRequired}
+          min={props.fieldDefinition.min || undefined}
+          max={props.fieldDefinition.max || undefined}
+          defaultValue={props.fieldDefinition.defaultValue || undefined}
+          value={props.value}
+          required={props.fieldDefinition.isRequired}
           disabled={true}
         />
       );
     case 'range':
       return (
         <Slider
-          defaultValue={[fieldDefinition.defaultValue]}
-          value={[value]}
-          min={fieldDefinition.min}
-          max={fieldDefinition.max}
+          defaultValue={[props.fieldDefinition.defaultValue]}
+          value={[props.value]}
+          min={props.fieldDefinition.min}
+          max={props.fieldDefinition.max}
           step={1} // @todo Core needs to support this too
           disabled={true}
         />
@@ -256,15 +284,15 @@ function InputFromDefinition(
     case 'toggle':
       return (
         <Switch
-          defaultChecked={fieldDefinition.defaultValue}
-          checked={value || fieldDefinition.defaultValue}
-          required={fieldDefinition.isRequired}
+          defaultChecked={props.fieldDefinition.defaultValue}
+          checked={props.value || props.fieldDefinition.defaultValue}
+          required={props.fieldDefinition.isRequired}
           disabled={true}
         />
       );
     default:
       throw new Error(
-        `Unsupported Entry definition FieldType "${fieldDefinition.fieldType}"`
+        `Unsupported Entry definition FieldType "${props.fieldDefinition.fieldType}"`
       );
   }
 }

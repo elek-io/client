@@ -42,9 +42,13 @@ export function CollectionDiff({
       <section className="p-6 border-t border-zinc-200 dark:border-zinc-800">
         <h2 className="text-base font-semibold leading-6">Fields</h2>
         <div className="mt-6 flex flex-col gap-6">
-          {collection.fieldDefinitions.map((definition) =>
-            FieldFromDefinition(definition, translateContent)
-          )}
+          {collection.fieldDefinitions.map((definition) => (
+            <FieldFromDefinition
+              key={definition.id}
+              fieldDefinition={definition}
+              translateContent={translateContent}
+            />
+          ))}
         </div>
       </section>
     </div>

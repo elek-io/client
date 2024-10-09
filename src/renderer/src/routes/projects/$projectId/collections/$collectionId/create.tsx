@@ -263,10 +263,13 @@ function ProjectCollectionEntryCreatePage(): JSX.Element {
             {context.currentCollection.fieldDefinitions.map(
               (fieldDefinition, index) => {
                 // return <p>{JSON.stringify(fieldDefinition)}</p>;
-                return FormFieldFromDefinition(
-                  fieldDefinition,
-                  `values.${index}.content.${context.project.settings.language.default}`,
-                  context.translateContent
+                return (
+                  <FormFieldFromDefinition
+                    key={fieldDefinition.id}
+                    fieldDefinition={fieldDefinition}
+                    name={`values.${index}.content.${context.project.settings.language.default}`}
+                    translateContent={context.translateContent}
+                  />
                 );
               }
             )}
