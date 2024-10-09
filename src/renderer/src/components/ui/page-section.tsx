@@ -9,7 +9,7 @@ export interface PageSectionProps
     VariantProps<typeof styles> {
   children?: ReactNode;
   title?: string;
-  description?: string;
+  description?: string | ReactElement;
   actions?: ReactElement;
 }
 

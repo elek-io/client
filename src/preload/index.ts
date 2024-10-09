@@ -13,6 +13,11 @@ export interface ContextBridgeApi {
     };
   };
   core: {
+    api: {
+      start: ElekIoCore['api']['start'];
+      isRunning: ElekIoCore['api']['isRunning'];
+      stop: ElekIoCore['api']['stop'];
+    };
     logger: {
       debug: ElekIoCore['logger']['debug'];
       info: ElekIoCore['logger']['info'];
@@ -73,6 +78,11 @@ const ipc: ContextBridgeApi = {
     },
   },
   core: {
+    api: {
+      start: (...args) => ipcRenderer.invoke('core:api:start', args),
+      isRunning: (...args) => ipcRenderer.invoke('core:api:isRunning', args),
+      stop: (...args) => ipcRenderer.invoke('core:api:stop', args),
+    },
     logger: {
       debug: (...args) => ipcRenderer.invoke('core:logger:debug', args),
       info: (...args) => ipcRenderer.invoke('core:logger:info', args),

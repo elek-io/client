@@ -38,11 +38,11 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 
-export interface ProjectHeaderProps extends HTMLAttributes<HTMLDivElement> {
+export interface UserHeaderProps extends HTMLAttributes<HTMLDivElement> {
   user: User;
 }
 
-const ProjectHeader = forwardRef<HTMLInputElement, ProjectHeaderProps>(
+const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
   ({ user }, ref) => {
     const router = useRouter();
     const routerState = useRouterState();
@@ -268,6 +268,6 @@ const ProjectHeader = forwardRef<HTMLInputElement, ProjectHeaderProps>(
     );
   }
 );
-ProjectHeader.displayName = 'ProjectHeader';
+UserHeader.displayName = 'ProjectHeader';
 
-export { ProjectHeader };
+export { UserHeader };

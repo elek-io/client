@@ -15,7 +15,6 @@ import { Route as ProjectsImport } from './routes/projects'
 import { Route as IndexImport } from './routes/index'
 import { Route as UserIndexImport } from './routes/user/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
-import { Route as UserSetupImport } from './routes/user/setup'
 import { Route as UserProfileImport } from './routes/user/profile'
 import { Route as ProjectsCreateImport } from './routes/projects/create'
 import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
@@ -59,11 +58,6 @@ const UserIndexRoute = UserIndexImport.update({
 const ProjectsIndexRoute = ProjectsIndexImport.update({
   path: '/',
   getParentRoute: () => ProjectsRoute,
-} as any)
-
-const UserSetupRoute = UserSetupImport.update({
-  path: '/user/setup',
-  getParentRoute: () => rootRoute,
 } as any)
 
 const UserProfileRoute = UserProfileImport.update({
@@ -230,13 +224,6 @@ declare module '@tanstack/react-router' {
       path: '/user/profile'
       fullPath: '/user/profile'
       preLoaderRoute: typeof UserProfileImport
-      parentRoute: typeof rootRoute
-    }
-    '/user/setup': {
-      id: '/user/setup'
-      path: '/user/setup'
-      fullPath: '/user/setup'
-      preLoaderRoute: typeof UserSetupImport
       parentRoute: typeof rootRoute
     }
     '/projects/': {
@@ -430,7 +417,6 @@ export const routeTree = rootRoute.addChildren({
     ProjectsIndexRoute,
   }),
   UserProfileRoute,
-  UserSetupRoute,
   UserIndexRoute,
 })
 
@@ -445,7 +431,6 @@ export const routeTree = rootRoute.addChildren({
         "/",
         "/projects",
         "/user/profile",
-        "/user/setup",
         "/user/"
       ]
     },
@@ -478,9 +463,6 @@ export const routeTree = rootRoute.addChildren({
     },
     "/user/profile": {
       "filePath": "user/profile.tsx"
-    },
-    "/user/setup": {
-      "filePath": "user/setup.tsx"
     },
     "/projects/": {
       "filePath": "projects/index.tsx",
