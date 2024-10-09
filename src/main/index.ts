@@ -30,19 +30,20 @@ Sentry.init({
 
 class Main {
   public readonly customFileProtocol: string = 'elek-io-local-file';
-  private allowedOriginsToLoadInternal: string[] = [];
-  private allowedOriginsToLoadExternal: string[] = [
+  private allowedHostnamesToLoadInternal: string[] = [];
+  private allowedHostnamesToLoadExternal: string[] = [
     this.customFileProtocol,
-    'https://elek.io',
-    'https://api.elek.io',
-    'https://github.com',
+    'localhost',
+    'elek.io',
+    'api.elek.io',
+    'github.com',
   ];
   private core: ElekIoCore | null = null;
 
   constructor() {
     // Allow the vite dev server to do HMR in development
     if (app.isPackaged === false && process.env['ELECTRON_RENDERER_URL']) {
-      this.allowedOriginsToLoadInternal.push(
+      this.allowedHostnamesToLoadInternal.push(
         process.env['ELECTRON_RENDERER_URL']
       );
     }
@@ -75,6 +76,11 @@ class Main {
     this.core = new ElekIoCore({
       log: { level: app.isPackaged ? 'info' : 'debug' },
     });
+    const user = await this.core.user.get();
+
+    if (user && user.localApi.isEnabled) {
+      this.core.api.start(user.localApi.port);
+    }
 
     this.registerCustomFileProtocol();
 
@@ -122,13 +128,13 @@ class Main {
       const parsedUrl = new URL(url);
 
       if (
-        this.allowedOriginsToLoadExternal.includes(parsedUrl.origin) === false
+        this.allowedHostnamesToLoadExternal.includes(parsedUrl.hostname) ===
+        false
       ) {
-        Sentry.captureException(
-          new SecurityError(
-            `Prevented navigation to untrusted, external origin "${parsedUrl}" from "${webContents.getURL()}"`
-          )
-        );
+        const errorMessage = `Prevented navigation to untrusted, external URL "${parsedUrl.toString()}" from "${webContents.getURL()}"`;
+        Sentry.captureException(new SecurityError(errorMessage));
+        this.core?.logger.error(errorMessage);
+
         return { action: 'deny' };
       }
 
@@ -143,26 +149,12 @@ class Main {
    * Creates a new window with security in mind and loads the frontend
    */
   private async createWindow(): Promise<BrowserWindow> {
-    if (!this.core) {
-      throw new Error(
-        'Trying to create a new window but Core is not initialized.'
-      );
-    }
-
     const initialWindowSize = this.getInitialWindowSize();
-    const user = await this.core.user.get();
 
     const options: BrowserWindowConstructorOptions = {
       width: initialWindowSize.width,
       height: initialWindowSize.height,
     };
-
-    if (user?.window) {
-      options.width = user.window.width;
-      options.height = user.window.height;
-      options.x = user.window.position.x;
-      options.y = user.window.position.y;
-    }
 
     // Overwrite webPreferences to always load the correct preload script
     // and explicitly enable security features - although Electron > v28 should set these by default
@@ -185,8 +177,6 @@ class Main {
     window.webContents.on('will-navigate', (event, urlToLoad) =>
       this.onWindowWebContentsWillNavigate(window, event, urlToLoad)
     );
-
-    window.on('close', (event) => this.onWindowClose(window, event));
 
     if (app.isPackaged) {
       // Client is in production
@@ -250,59 +240,13 @@ class Main {
     const parsedUrl = new URL(urlToLoad);
 
     if (
-      this.allowedOriginsToLoadInternal.includes(parsedUrl.origin) === false
+      this.allowedHostnamesToLoadInternal.includes(parsedUrl.origin) === false
     ) {
       event.preventDefault();
-      Sentry.captureException(
-        new SecurityError(
-          `Prevented navigation to untrusted, internal origin "${urlToLoad}" from "${window.webContents.getURL()}"`
-        )
-      );
+      const errorMessage = `Prevented navigation to untrusted, internal URL "${parsedUrl.toString()}" from "${window.webContents.getURL()}"`;
+      Sentry.captureException(new SecurityError(errorMessage));
+      this.core?.logger.error(errorMessage);
     }
-  }
-
-  /**
-   * Saves the window size and position inside the users file before the window is closed
-   */
-  private async onWindowClose(
-    window: BrowserWindow,
-    event: Electron.Event
-  ): Promise<void> {
-    event.preventDefault();
-
-    if (!this.core) {
-      Sentry.captureException(
-        new Error('Trying to close the window but Core is not initialized.')
-      );
-      window.destroy();
-      return;
-    }
-
-    const user = await this.core.user.get();
-    const width = window.getSize()[0];
-    const height = window.getSize()[1];
-    const x = window.getPosition()[0];
-    const y = window.getPosition()[1];
-
-    if (!user || !width || !height || !x || !y) {
-      window.destroy();
-      return;
-    }
-
-    await this.core.user.set({
-      ...user,
-      window: {
-        width,
-        height,
-        position: {
-          x,
-          y,
-        },
-      },
-    });
-
-    window.destroy();
-    return;
   }
 
   /**
@@ -355,17 +299,26 @@ class Main {
     ipcMain.handle('electron:dialog:showSaveDialog', async (_event, args) => {
       return await dialog.showSaveDialog(window, args);
     });
-    ipcMain.handle('core:logger:debug', async (_event, args) => {
-      return await core.logger.debug(args[0]);
+    ipcMain.handle('core:api:start', async (_event, args) => {
+      return await core.api.start(args[0]);
     });
-    ipcMain.handle('core:logger:info', async (_event, args) => {
-      return await core.logger.info(args[0]);
+    ipcMain.handle('core:api:isRunning', async () => {
+      return await core.api.isRunning();
     });
-    ipcMain.handle('core:logger:warn', async (_event, args) => {
-      return await core.logger.warn(args[0]);
+    ipcMain.handle('core:api:stop', async () => {
+      return await core.api.stop();
     });
-    ipcMain.handle('core:logger:error', async (_event, args) => {
-      return await core.logger.error(args[0]);
+    ipcMain.handle('core:logger:debug', (_event, args) => {
+      return core.logger.debug(args[0]);
+    });
+    ipcMain.handle('core:logger:info', (_event, args) => {
+      return core.logger.info(args[0]);
+    });
+    ipcMain.handle('core:logger:warn', (_event, args) => {
+      return core.logger.warn(args[0]);
+    });
+    ipcMain.handle('core:logger:error', (_event, args) => {
+      return core.logger.error(args[0]);
     });
     ipcMain.handle('core:logger:read', async (_event, args) => {
       return await core.logger.read(args[0]);
