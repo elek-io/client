@@ -137,16 +137,14 @@ function UserProfilePage(): JSX.Element {
   const onSetUser: SubmitHandler<SetUserProps> = async (props) => {
     setIsSettingUser(true);
     try {
-      await context.core.user.set(props);
+      const user = await context.core.user.set(props);
       const isLocalApiRunning = await context.core.api.isRunning();
 
-      console.log('Local API is running:', isLocalApiRunning);
-
-      if (props.localApi.isEnabled === true && isLocalApiRunning === false) {
-        context.core.api.start(props.localApi.port);
+      if (user.localApi.isEnabled === true && isLocalApiRunning === false) {
+        context.core.api.start(user.localApi.port);
       }
 
-      if (props.localApi.isEnabled === false && isLocalApiRunning === true) {
+      if (user.localApi.isEnabled === false && isLocalApiRunning === true) {
         context.core.api.stop();
       }
 

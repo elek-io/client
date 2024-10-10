@@ -185,7 +185,7 @@ function FormInputFromDefinition<T extends FieldValues>(
 export interface FieldFromDefinitionProps {
   fieldDefinition: FieldDefinition;
   translateContent: (key: string, record: TranslatableString) => string;
-  value?: any;
+  value?: string | number | boolean;
 }
 
 /**
@@ -230,12 +230,17 @@ export function FieldFromDefinition(
 
 export interface InputFromDefinitionProps {
   fieldDefinition: FieldDefinition;
-  value?: any;
+  value?: string | number | boolean | undefined;
 }
 
 function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
   switch (props.fieldDefinition.fieldType) {
     case 'text':
+      if (typeof props.value !== 'string') {
+        throw new Error(
+          `Expected value to be a string, but got "${typeof props.value}"`
+        );
+      }
       return (
         <Input
           type="text"
@@ -248,6 +253,11 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'textarea':
+      if (typeof props.value !== 'string') {
+        throw new Error(
+          `Expected value to be a string, but got "${typeof props.value}"`
+        );
+      }
       return (
         <Textarea
           minLength={props.fieldDefinition.min || undefined}
@@ -259,6 +269,11 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'number':
+      if (typeof props.value !== 'number') {
+        throw new Error(
+          `Expected value to be a number, but got "${typeof props.value}"`
+        );
+      }
       return (
         <Input
           type="number"
@@ -271,6 +286,11 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'range':
+      if (typeof props.value !== 'number') {
+        throw new Error(
+          `Expected value to be a number, but got "${typeof props.value}"`
+        );
+      }
       return (
         <Slider
           defaultValue={[props.fieldDefinition.defaultValue]}
@@ -282,6 +302,11 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'toggle':
+      if (typeof props.value !== 'boolean') {
+        throw new Error(
+          `Expected value to be a boolean, but got "${typeof props.value}"`
+        );
+      }
       return (
         <Switch
           defaultChecked={props.fieldDefinition.defaultValue}
