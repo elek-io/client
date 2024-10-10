@@ -53,7 +53,7 @@ function ProjectSettingsVersionControlPage(): JSX.Element {
     },
     defaultValues: {
       id: context.project.id,
-      url: context.projectRemoteOriginUrl || '',
+      url: context.project.remoteOriginUrl || '',
     },
   });
 
@@ -70,7 +70,7 @@ function ProjectSettingsVersionControlPage(): JSX.Element {
   > = async (props) => {
     try {
       setIsSettingRemoteOriginUrl(true);
-      await context.core.projects.remotes.setOriginUrl(props);
+      await context.core.projects.setRemoteOriginUrl(props);
       setIsSettingRemoteOriginUrl(false);
       addNotification({
         intent: NotificationIntent.SUCCESS,

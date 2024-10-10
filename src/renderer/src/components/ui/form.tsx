@@ -19,7 +19,7 @@ import {
   FormProvider,
   useFormContext,
 } from 'react-hook-form';
-import { Label } from './label';
+import { Label, LabelProps } from './label';
 
 const Form = FormProvider;
 
@@ -103,13 +103,12 @@ const FormItem = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 FormItem.displayName = 'FormItem';
 
 export interface FormLabelProps
-  extends ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {
-  isRequired: boolean;
-}
+  extends ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
+    LabelProps {}
 const FormLabel = forwardRef<
   ElementRef<typeof LabelPrimitive.Root>,
   FormLabelProps
->(({ className, isRequired, ...props }, ref) => {
+>(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField();
 
   return (
@@ -120,12 +119,6 @@ const FormLabel = forwardRef<
       {...props}
     >
       {props.children}
-      {isRequired === false && (
-        <span className="text-[0.8rem] text-zinc-500 dark:text-zinc-400">
-          {' '}
-          - optional
-        </span>
-      )}
     </Label>
   );
 });

@@ -118,10 +118,13 @@ function ProjectCollectionEntryUpdatePage(): JSX.Element {
             <div className="grid grid-cols-12 gap-6">
               {context.currentCollection.fieldDefinitions.map(
                 (definition, definitionIndex) => {
-                  return FormFieldFromDefinition(
-                    definition,
-                    `values.${definitionIndex}.content.${context.project.settings.language.default}`,
-                    context.translateContent
+                  return (
+                    <FormFieldFromDefinition
+                      key={definition.id}
+                      fieldDefinition={definition}
+                      name={`values.${definitionIndex}.content.${context.project.settings.language.default}`}
+                      translateContent={context.translateContent}
+                    />
                   );
                 }
               )}
