@@ -2,7 +2,7 @@
   "name": "@elek-io/client",
   "productName": "elek.io Client",
   "description": "The elek.io Client is a desktop application for Windows, macOS and Linux that allows you to manage content.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "main": "./out/main/index.js",
   "homepage": "https://elek.io",
