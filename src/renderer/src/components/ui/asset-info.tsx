@@ -188,13 +188,12 @@ export function AssetInfo({
 
   return (
     <>
-      <div className="p-6 pb-0 w-full">
+      <div className="p-2 pb-0 w-full">
         <div className="aspect-4/3 flex items-center justify-center">
           <AssetDisplay {...asset} static={false}></AssetDisplay>
         </div>
       </div>
       <div className="p-6">
-        {/* {JSON.stringify(asset.history)} */}
         <h2 className="text-lg break-all">{asset.name}</h2>
         <p className="text-zinc-400">{asset.description}</p>
       </div>
