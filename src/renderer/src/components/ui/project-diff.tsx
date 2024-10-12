@@ -18,7 +18,7 @@ export interface ProjectDiffProps {
 
 export function ProjectDiff({ project }: ProjectDiffProps): JSX.Element {
   return (
-    <div className="text-sm p-6 bg-white flex flex-col gap-6 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
+    <>
       <FormItem>
         <Label isRequired={true}>Project name</Label>
         <Input value={project.name} disabled={true} />
@@ -58,6 +58,6 @@ export function ProjectDiff({ project }: ProjectDiffProps): JSX.Element {
           </SelectContent>
         </Select>
       </FormItem>
-    </div>
+    </>
   );
 }

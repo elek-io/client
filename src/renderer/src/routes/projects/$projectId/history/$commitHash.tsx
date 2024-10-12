@@ -1,12 +1,11 @@
-import { Asset, Collection, Entry, Project } from '@elek-io/core';
+import { Asset, Collection, Entry, GitCommit, Project } from '@elek-io/core';
 import { AssetInfo } from '@renderer/components/ui/asset-info';
-import { Avatar } from '@renderer/components/ui/avatar';
 import { Badge } from '@renderer/components/ui/badge';
 import { CollectionDiff } from '@renderer/components/ui/collection-diff';
+import { DiffContainer } from '@renderer/components/ui/diff-container';
 import { EntryDiff } from '@renderer/components/ui/entry-diff';
 import { Page } from '@renderer/components/ui/page';
 import { ProjectDiff } from '@renderer/components/ui/project-diff';
-import { formatDatetime } from '@renderer/util';
 import { createFileRoute } from '@tanstack/react-router';
 import { Tag } from 'lucide-react';
 import { ReactElement } from 'react';
@@ -23,16 +22,22 @@ export const Route = createFileRoute(
     }
 
     const resolvedObject: {
-      project: { before: Project | undefined; after: Project | undefined };
-      asset: { before: Asset | undefined; after: Asset | undefined };
+      project: {
+        before: (Project & { commit: GitCommit }) | undefined;
+        after: (Project & { commit: GitCommit }) | undefined;
+      };
+      asset: {
+        before: (Asset & { commit: GitCommit }) | undefined;
+        after: (Asset & { commit: GitCommit }) | undefined;
+      };
       collection: {
-        before: Collection | undefined;
-        after: Collection | undefined;
+        before: (Collection & { commit: GitCommit }) | undefined;
+        after: (Collection & { commit: GitCommit }) | undefined;
       };
       entry: {
         collection: Collection | undefined;
-        before: Entry | undefined;
-        after: Entry | undefined;
+        before: (Entry & { commit: GitCommit }) | undefined;
+        after: (Entry & { commit: GitCommit }) | undefined;
       };
     } = {
       project: {
@@ -68,17 +73,29 @@ export const Route = createFileRoute(
           const currentCommitIndex = projectCommitHistory.findIndex(
             (commit) => commit.hash === params.commitHash
           );
-          resolvedObject.project.before = await context.core.projects.read({
+          const commitBefore = projectCommitHistory.at(currentCommitIndex + 1);
+          if (!commitBefore) {
+            throw new Error('Commit not found in Project history');
+          }
+          const projectBefore = await context.core.projects.read({
             id: context.project.id,
-            commitHash: projectCommitHistory.at(currentCommitIndex + 1)?.hash,
+            commitHash: commitBefore.hash,
           });
+          resolvedObject.project.before = {
+            ...projectBefore,
+            commit: commitBefore,
+          };
         }
 
         if (commit.message.method !== 'delete') {
-          resolvedObject.project.after = await context.core.projects.read({
+          const project = await context.core.projects.read({
             id: context.project.id,
             commitHash: commit.hash,
           });
+          resolvedObject.project.after = {
+            ...project,
+            commit: commit,
+          };
         }
         break;
       }
@@ -95,19 +112,31 @@ export const Route = createFileRoute(
           const currentCommitIndex = assetCommitHistory.findIndex(
             (commit) => commit.hash === params.commitHash
           );
-          resolvedObject.asset.before = await context.core.assets.read({
+          const commitBefore = assetCommitHistory.at(currentCommitIndex + 1);
+          if (!commitBefore) {
+            throw new Error('Commit not found in Asset history');
+          }
+          const assetBefore = await context.core.assets.read({
             projectId: context.project.id,
             id: commit.message.reference.id,
             commitHash: assetCommitHistory.at(currentCommitIndex + 1)?.hash,
           });
+          resolvedObject.asset.before = {
+            ...assetBefore,
+            commit: commitBefore,
+          };
         }
 
         if (commit.message.method !== 'delete') {
-          resolvedObject.asset.after = await context.core.assets.read({
+          const asset = await context.core.assets.read({
             projectId: context.project.id,
             id: commit.message.reference.id,
             commitHash: commit.hash,
           });
+          resolvedObject.asset.after = {
+            ...asset,
+            commit: commit,
+          };
         }
         break;
       }
@@ -124,23 +153,34 @@ export const Route = createFileRoute(
           const currentCommitIndex = collectionCommitHistory.findIndex(
             (commit) => commit.hash === params.commitHash
           );
-          resolvedObject.collection.before =
-            await context.core.collections.read({
-              projectId: context.project.id,
-              id: commit.message.reference.id,
-              commitHash: collectionCommitHistory.at(currentCommitIndex + 1)
-                ?.hash,
-            });
+          const commitBefore = collectionCommitHistory.at(
+            currentCommitIndex + 1
+          );
+          if (!commitBefore) {
+            throw new Error('Commit not found in Collection history');
+          }
+          const collectionBefore = await context.core.collections.read({
+            projectId: context.project.id,
+            id: commit.message.reference.id,
+            commitHash: collectionCommitHistory.at(currentCommitIndex + 1)
+              ?.hash,
+          });
+          resolvedObject.collection.before = {
+            ...collectionBefore,
+            commit: commitBefore,
+          };
         }
 
         if (commit.message.method !== 'delete') {
-          resolvedObject.collection.after = await context.core.collections.read(
-            {
-              projectId: context.project.id,
-              id: commit.message.reference.id,
-              commitHash: commit.hash,
-            }
-          );
+          const collection = await context.core.collections.read({
+            projectId: context.project.id,
+            id: commit.message.reference.id,
+            commitHash: commit.hash,
+          });
+          resolvedObject.collection.after = {
+            ...collection,
+            commit: commit,
+          };
         }
         break;
       }
@@ -152,6 +192,11 @@ export const Route = createFileRoute(
           projectId: context.project.id,
           id: commit.message.reference.collectionId,
         });
+        if (!collection) {
+          throw new Error(
+            `No Collection with ID "${commit.message.reference.collectionId}" found`
+          );
+        }
         resolvedObject.entry.collection = collection;
 
         if (
@@ -166,24 +211,36 @@ export const Route = createFileRoute(
           const currentCommitIndex = entryCommitHistory.findIndex(
             (commit) => commit.hash === params.commitHash
           );
-          resolvedObject.entry.before = await context.core.entries.read({
+          const commitBefore = entryCommitHistory.at(currentCommitIndex + 1);
+          if (!commitBefore) {
+            throw new Error('Commit not found in Entry history');
+          }
+          const entryBefore = await context.core.entries.read({
             projectId: context.project.id,
             collectionId: commit.message.reference.collectionId,
             id: commit.message.reference.id,
             commitHash: entryCommitHistory.at(currentCommitIndex + 1)?.hash,
           });
+          resolvedObject.entry.before = {
+            ...entryBefore,
+            commit: commitBefore,
+          };
         }
 
         if (commit.message.method !== 'delete') {
           if (!commit.message.reference.collectionId) {
             throw new Error('Commit for Entry does not contain a collectionId');
           }
-          resolvedObject.entry.after = await context.core.entries.read({
+          const entry = await context.core.entries.read({
             projectId: context.project.id,
             collectionId: commit.message.reference.collectionId,
             id: commit.message.reference.id,
             commitHash: commit.hash,
           });
+          resolvedObject.entry.after = {
+            ...entry,
+            commit: commit,
+          };
         }
         break;
       }
@@ -205,44 +262,52 @@ function ProjectHistoryCommitPage(): JSX.Element {
       case 'project': {
         return (
           <>
-            {!context.resolvedObject.project.before && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.project.after && (
+            {!context.resolvedObject.project.before &&
+              context.resolvedObject.project.after && (
+                <DiffContainer
+                  type="create"
+                  commit={context.resolvedObject.project.after.commit}
+                  language={context.user.language}
+                >
                   <ProjectDiff project={context.resolvedObject.project.after} />
-                )}
-              </div>
-            )}
+                </DiffContainer>
+              )}
 
-            {!context.resolvedObject.project.after && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.project.before && (
+            {!context.resolvedObject.project.after &&
+              context.resolvedObject.project.before && (
+                <DiffContainer
+                  type="delete"
+                  commit={context.resolvedObject.project.before.commit}
+                  language={context.user.language}
+                >
                   <ProjectDiff
                     project={context.resolvedObject.project.before}
                   />
-                )}
-              </div>
-            )}
+                </DiffContainer>
+              )}
 
             {context.resolvedObject.project.before &&
               context.resolvedObject.project.after && (
                 <>
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">Before</h3>
-                    {context.resolvedObject.project.before && (
-                      <ProjectDiff
-                        project={context.resolvedObject.project.before}
-                      />
-                    )}
-                  </div>
+                  <DiffContainer
+                    type="before"
+                    commit={context.resolvedObject.project.before.commit}
+                    language={context.user.language}
+                  >
+                    <ProjectDiff
+                      project={context.resolvedObject.project.before}
+                    />
+                  </DiffContainer>
 
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">After</h3>
-                    {context.resolvedObject.project.after && (
-                      <ProjectDiff
-                        project={context.resolvedObject.project.after}
-                      />
-                    )}
-                  </div>
+                  <DiffContainer
+                    type="after"
+                    commit={context.resolvedObject.project.after.commit}
+                    language={context.user.language}
+                  >
+                    <ProjectDiff
+                      project={context.resolvedObject.project.after}
+                    />
+                  </DiffContainer>
                 </>
               )}
           </>
@@ -251,54 +316,62 @@ function ProjectHistoryCommitPage(): JSX.Element {
       case 'asset': {
         return (
           <>
-            {!context.resolvedObject.asset.before && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.asset.after && (
+            {!context.resolvedObject.asset.before &&
+              context.resolvedObject.asset.after && (
+                <DiffContainer
+                  type="create"
+                  commit={context.resolvedObject.asset.after.commit}
+                  language={context.user.language}
+                >
                   <AssetInfo
                     projectId={context.project.id}
+                    language={context.user.language}
                     asset={context.resolvedObject.asset.after}
-                    language={context.user.language}
                   />
-                )}
-              </div>
-            )}
+                </DiffContainer>
+              )}
 
-            {!context.resolvedObject.asset.after && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.asset.before && (
+            {!context.resolvedObject.asset.after &&
+              context.resolvedObject.asset.before && (
+                <DiffContainer
+                  type="delete"
+                  commit={context.resolvedObject.asset.before.commit}
+                  language={context.user.language}
+                >
                   <AssetInfo
                     projectId={context.project.id}
-                    asset={context.resolvedObject.asset.before}
                     language={context.user.language}
+                    asset={context.resolvedObject.asset.before}
                   />
-                )}
-              </div>
-            )}
+                </DiffContainer>
+              )}
 
             {context.resolvedObject.asset.before &&
               context.resolvedObject.asset.after && (
                 <>
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">Before</h3>
-                    {context.resolvedObject.asset.before && (
-                      <AssetInfo
-                        projectId={context.project.id}
-                        asset={context.resolvedObject.asset.before}
-                        language={context.user.language}
-                      />
-                    )}
-                  </div>
+                  <DiffContainer
+                    type="before"
+                    commit={context.resolvedObject.asset.before.commit}
+                    language={context.user.language}
+                  >
+                    <AssetInfo
+                      projectId={context.project.id}
+                      language={context.user.language}
+                      asset={context.resolvedObject.asset.before}
+                    />
+                  </DiffContainer>
 
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">After</h3>
-                    {context.resolvedObject.asset.after && (
-                      <AssetInfo
-                        projectId={context.project.id}
-                        asset={context.resolvedObject.asset.after}
-                        language={context.user.language}
-                      />
-                    )}
-                  </div>
+                  <DiffContainer
+                    type="after"
+                    commit={context.resolvedObject.asset.after.commit}
+                    language={context.user.language}
+                  >
+                    <AssetInfo
+                      projectId={context.project.id}
+                      language={context.user.language}
+                      asset={context.resolvedObject.asset.after}
+                    />
+                  </DiffContainer>
                 </>
               )}
           </>
@@ -307,54 +380,62 @@ function ProjectHistoryCommitPage(): JSX.Element {
       case 'collection': {
         return (
           <>
-            {!context.resolvedObject.collection.before && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.collection.after && (
+            {!context.resolvedObject.collection.before &&
+              context.resolvedObject.collection.after && (
+                <DiffContainer
+                  type="create"
+                  commit={context.resolvedObject.collection.after.commit}
+                  language={context.user.language}
+                >
                   <CollectionDiff
                     collection={context.resolvedObject.collection.after}
                     language={context.user.language}
                     translateContent={context.translateContent}
                   />
-                )}
-              </div>
-            )}
+                </DiffContainer>
+              )}
 
-            {!context.resolvedObject.collection.after && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.collection.before && (
+            {!context.resolvedObject.collection.after &&
+              context.resolvedObject.collection.before && (
+                <DiffContainer
+                  type="delete"
+                  commit={context.resolvedObject.collection.before.commit}
+                  language={context.user.language}
+                >
                   <CollectionDiff
                     collection={context.resolvedObject.collection.before}
                     language={context.user.language}
                     translateContent={context.translateContent}
                   />
-                )}
-              </div>
-            )}
+                </DiffContainer>
+              )}
 
             {context.resolvedObject.collection.before &&
               context.resolvedObject.collection.after && (
                 <>
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">Before</h3>
-                    {context.resolvedObject.collection.before && (
-                      <CollectionDiff
-                        collection={context.resolvedObject.collection.before}
-                        language={context.user.language}
-                        translateContent={context.translateContent}
-                      />
-                    )}
-                  </div>
+                  <DiffContainer
+                    type="before"
+                    commit={context.resolvedObject.collection.before.commit}
+                    language={context.user.language}
+                  >
+                    <CollectionDiff
+                      collection={context.resolvedObject.collection.before}
+                      language={context.user.language}
+                      translateContent={context.translateContent}
+                    />
+                  </DiffContainer>
 
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">After</h3>
-                    {context.resolvedObject.collection.after && (
-                      <CollectionDiff
-                        collection={context.resolvedObject.collection.after}
-                        language={context.user.language}
-                        translateContent={context.translateContent}
-                      />
-                    )}
-                  </div>
+                  <DiffContainer
+                    type="after"
+                    commit={context.resolvedObject.collection.after.commit}
+                    language={context.user.language}
+                  >
+                    <CollectionDiff
+                      collection={context.resolvedObject.collection.after}
+                      language={context.user.language}
+                      translateContent={context.translateContent}
+                    />
+                  </DiffContainer>
                 </>
               )}
           </>
@@ -363,62 +444,66 @@ function ProjectHistoryCommitPage(): JSX.Element {
       case 'entry': {
         return (
           <>
-            {!context.resolvedObject.entry.before && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.entry.after &&
-                  context.resolvedObject.entry.collection && (
-                    <EntryDiff
-                      collection={context.resolvedObject.entry.collection}
-                      entry={context.resolvedObject.entry.after}
-                      language={context.user.language}
-                      translateContent={context.translateContent}
-                    />
-                  )}
-              </div>
-            )}
+            {!context.resolvedObject.entry.before &&
+              context.resolvedObject.entry.after && (
+                <DiffContainer
+                  type="create"
+                  commit={context.resolvedObject.entry.after.commit}
+                  language={context.user.language}
+                >
+                  <EntryDiff
+                    collection={context.resolvedObject.entry.collection!}
+                    entry={context.resolvedObject.entry.after}
+                    language={context.user.language}
+                    translateContent={context.translateContent}
+                  />
+                </DiffContainer>
+              )}
 
-            {!context.resolvedObject.entry.after && (
-              <div className="col-span-6 col-start-3">
-                {context.resolvedObject.entry.before &&
-                  context.resolvedObject.entry.collection && (
-                    <EntryDiff
-                      collection={context.resolvedObject.entry.collection}
-                      entry={context.resolvedObject.entry.before}
-                      language={context.user.language}
-                      translateContent={context.translateContent}
-                    />
-                  )}
-              </div>
-            )}
+            {!context.resolvedObject.entry.after &&
+              context.resolvedObject.entry.before && (
+                <DiffContainer
+                  type="delete"
+                  commit={context.resolvedObject.entry.before.commit}
+                  language={context.user.language}
+                >
+                  <EntryDiff
+                    collection={context.resolvedObject.entry.collection!}
+                    entry={context.resolvedObject.entry.before}
+                    language={context.user.language}
+                    translateContent={context.translateContent}
+                  />
+                </DiffContainer>
+              )}
 
             {context.resolvedObject.entry.before &&
               context.resolvedObject.entry.after && (
                 <>
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">Before</h3>
-                    {context.resolvedObject.entry.before &&
-                      context.resolvedObject.entry.collection && (
-                        <EntryDiff
-                          collection={context.resolvedObject.entry.collection}
-                          entry={context.resolvedObject.entry.before}
-                          language={context.user.language}
-                          translateContent={context.translateContent}
-                        />
-                      )}
-                  </div>
+                  <DiffContainer
+                    type="before"
+                    commit={context.resolvedObject.entry.before.commit}
+                    language={context.user.language}
+                  >
+                    <EntryDiff
+                      collection={context.resolvedObject.entry.collection!}
+                      entry={context.resolvedObject.entry.before}
+                      language={context.user.language}
+                      translateContent={context.translateContent}
+                    />
+                  </DiffContainer>
 
-                  <div className="col-span-6">
-                    <h3 className="text-center text-white mb-4">After</h3>
-                    {context.resolvedObject.entry.after &&
-                      context.resolvedObject.entry.collection && (
-                        <EntryDiff
-                          collection={context.resolvedObject.entry.collection}
-                          entry={context.resolvedObject.entry.after}
-                          language={context.user.language}
-                          translateContent={context.translateContent}
-                        />
-                      )}
-                  </div>
+                  <DiffContainer
+                    type="after"
+                    commit={context.resolvedObject.entry.after.commit}
+                    language={context.user.language}
+                  >
+                    <EntryDiff
+                      collection={context.resolvedObject.entry.collection!}
+                      entry={context.resolvedObject.entry.after}
+                      language={context.user.language}
+                      translateContent={context.translateContent}
+                    />
+                  </DiffContainer>
                 </>
               )}
           </>
@@ -432,18 +517,6 @@ function ProjectHistoryCommitPage(): JSX.Element {
   function Description(): ReactElement {
     return (
       <>
-        <div className="flex items-center">
-          <Avatar name={context.commit.author.name} className="mr-2" />
-          <div className="leading-4">
-            <div>{context.commit.author.name}</div>
-            <div>
-              {
-                formatDatetime(context.commit.datetime, context.user.language)
-                  .relative
-              }
-            </div>
-          </div>
-        </div>
         {context.commit.tag && (
           <>
             <br />

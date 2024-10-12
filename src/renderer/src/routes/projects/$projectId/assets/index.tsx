@@ -108,17 +108,19 @@ function ProjectAssetsPage(): JSX.Element {
         </div>
         <div className="w-72 flex-shrink-0 ml-8">
           {selectedAsset && (
-            <AssetInfo
-              projectId={context.project.id}
-              asset={selectedAsset}
-              language={context.user.language}
-              showUpdateButton={true}
-              showDeleteButton={true}
-              onAssetDeleted={() => {
-                setSelectedAsset(null);
-                router.invalidate();
-              }}
-            />
+            <div className="text-sm flex flex-col items-start justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
+              <AssetInfo
+                projectId={context.project.id}
+                asset={selectedAsset}
+                language={context.user.language}
+                showUpdateButton={true}
+                showDeleteButton={true}
+                onAssetDeleted={() => {
+                  setSelectedAsset(null);
+                  router.invalidate();
+                }}
+              />
+            </div>
           )}
         </div>
       </div>

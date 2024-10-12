@@ -21,7 +21,7 @@ export function CollectionDiff({
   translateContent,
 }: CollectionDiffProps): JSX.Element {
   return (
-    <div className="text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
+    <>
       <div className="p-6 flex flex-col gap-6">
         <FormItem>
           <Label isRequired={true}>Collection name (Plural)</Label>
@@ -40,7 +40,7 @@ export function CollectionDiff({
       </div>
 
       <section className="p-6 border-t border-zinc-200 dark:border-zinc-800">
-        <h2 className="text-base font-semibold leading-6">Fields</h2>
+        <h3 className="text-sm font-semibold leading-6">Fields</h3>
         <div className="mt-6 flex flex-col gap-6">
           {collection.fieldDefinitions.map((definition) => (
             <FieldFromDefinition
@@ -51,6 +51,6 @@ export function CollectionDiff({
           ))}
         </div>
       </section>
-    </div>
+    </>
   );
 }
