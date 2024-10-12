@@ -305,49 +305,54 @@ export const CreateUpdateCollectionPage = ({
     }
   }
 
-  const ExampleFormField = (): JSX.Element => {
+  function ExampleFormField(): JSX.Element {
     switch (selectedFieldType) {
       case 'number':
-        return FormFieldFromDefinition<NumberFieldDefinition>(
-          numberFieldDefinitionFormState.getValues(),
-          // @ts-expect-error It's just an example
-          'exampleFields.number.content',
-          context.translateContent
+        return (
+          <FormFieldFromDefinition
+            fieldDefinition={numberFieldDefinitionFormState.getValues()}
+            name="exampleFields.number.content"
+            translateContent={context.translateContent}
+          />
         );
       case 'range':
-        return FormFieldFromDefinition<RangeFieldDefinition>(
-          rangeFieldDefinitionFormState.getValues(),
-          // @ts-expect-error It's just an example
-          'exampleFields.range.content',
-          context.translateContent
+        return (
+          <FormFieldFromDefinition
+            fieldDefinition={rangeFieldDefinitionFormState.getValues()}
+            name="exampleFields.range.content"
+            translateContent={context.translateContent}
+          />
         );
       case 'text':
-        return FormFieldFromDefinition<TextFieldDefinition>(
-          textFieldDefinitionFormState.getValues(),
-          // @ts-expect-error It's just an example
-          'exampleFields.text.content',
-          context.translateContent
+        return (
+          <FormFieldFromDefinition
+            fieldDefinition={textFieldDefinitionFormState.getValues()}
+            name="exampleFields.text.content"
+            translateContent={context.translateContent}
+          />
         );
       case 'textarea':
-        return FormFieldFromDefinition<TextareaFieldDefinition>(
-          textareaFieldDefinitionFormState.getValues(),
-          // @ts-expect-error It's just an example
-          'exampleFields.textarea.content',
-          context.translateContent
+        return (
+          <FormFieldFromDefinition
+            fieldDefinition={textareaFieldDefinitionFormState.getValues()}
+            name="exampleFields.textarea.content"
+            translateContent={context.translateContent}
+          />
         );
       case 'toggle':
-        return FormFieldFromDefinition<ToggleFieldDefinition>(
-          toggleFieldDefinitionFormState.getValues(),
-          // @ts-expect-error It's just an example
-          'exampleFields.toggle.content',
-          context.translateContent
+        return (
+          <FormFieldFromDefinition
+            fieldDefinition={toggleFieldDefinitionFormState.getValues()}
+            name="exampleFields.toggle.content"
+            translateContent={context.translateContent}
+          />
         );
       default:
         throw new Error(
           `Unsupported example form Field "${selectedFieldType}"`
         );
     }
-  };
+  }
 
   const FieldDefinitionForm = (): JSX.Element => {
     switch (selectedFieldType) {
@@ -721,7 +726,7 @@ export const CreateUpdateCollectionPage = ({
                   //   console.log(event);
                   //   event.preventDefault();
                   // }}
-                  overlayChildren={<ExampleFormField></ExampleFormField>}
+                  overlayChildren={<ExampleFormField />}
                 >
                   <SheetHeader>
                     <SheetTitle>Add a Field to this Collection</SheetTitle>
@@ -783,10 +788,13 @@ export const CreateUpdateCollectionPage = ({
           >
             <div className="grid grid-cols-12 gap-6 mt-6">
               {fieldDefinitions.fields.map((fieldDefinition, index) => {
-                return FormFieldFromDefinition(
-                  fieldDefinition,
-                  `currentFields.field-${index}.content`,
-                  context.translateContent
+                return (
+                  <FormFieldFromDefinition
+                    key={fieldDefinition.id}
+                    fieldDefinition={fieldDefinition}
+                    name={`currentFields.field-${index}.content`}
+                    translateContent={context.translateContent}
+                  />
                 );
               })}
             </div>

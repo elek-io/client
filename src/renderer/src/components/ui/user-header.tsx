@@ -179,7 +179,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost">
                     <Avatar
-                      className="w-8 h-8 mr-2"
+                      className="mr-2"
                       name={user.name}
                       src="https://github.com/shadcn.png"
                     ></Avatar>

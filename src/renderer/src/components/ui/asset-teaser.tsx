@@ -18,10 +18,12 @@ export function AssetTeaser(props: AssetTeaserProps): JSX.Element {
     >
       <div>
         <div className="aspect-4/3 flex items-center justify-center">
-          <AssetDisplay {...props} preview={false}></AssetDisplay>
+          <AssetDisplay {...props} static={true}></AssetDisplay>
         </div>
         <p className="mt-2 truncate text-sm">{props.name}</p>
-        <p className="text-sm">{formatBytes(props.size)}</p>
+        <p className="text-sm">
+          {formatBytes(props.size)} - {props.extension.toUpperCase()}
+        </p>
       </div>
     </a>
   );
