@@ -236,7 +236,7 @@ export interface InputFromDefinitionProps {
 function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
   switch (props.fieldDefinition.fieldType) {
     case 'text':
-      if (typeof props.value !== 'string') {
+      if (typeof props.value !== 'string' && props.value !== undefined) {
         throw new Error(
           `Expected value to be a string, but got "${typeof props.value}"`
         );
@@ -253,7 +253,7 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'textarea':
-      if (typeof props.value !== 'string') {
+      if (typeof props.value !== 'string' && props.value !== undefined) {
         throw new Error(
           `Expected value to be a string, but got "${typeof props.value}"`
         );
@@ -269,7 +269,7 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'number':
-      if (typeof props.value !== 'number') {
+      if (typeof props.value !== 'number' && props.value !== undefined) {
         throw new Error(
           `Expected value to be a number, but got "${typeof props.value}"`
         );
@@ -286,7 +286,7 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'range':
-      if (typeof props.value !== 'number') {
+      if (typeof props.value !== 'number' && props.value !== undefined) {
         throw new Error(
           `Expected value to be a number, but got "${typeof props.value}"`
         );
@@ -294,7 +294,7 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
       return (
         <Slider
           defaultValue={[props.fieldDefinition.defaultValue]}
-          value={[props.value]}
+          value={props.value ? [props.value] : []}
           min={props.fieldDefinition.min}
           max={props.fieldDefinition.max}
           step={1} // @todo Core needs to support this too
@@ -302,7 +302,7 @@ function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
         />
       );
     case 'toggle':
-      if (typeof props.value !== 'boolean') {
+      if (typeof props.value !== 'boolean' && props.value !== undefined) {
         throw new Error(
           `Expected value to be a boolean, but got "${typeof props.value}"`
         );
