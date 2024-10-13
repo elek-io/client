@@ -378,47 +378,323 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren({
-  IndexRoute,
-  ProjectsRoute: ProjectsRoute.addChildren({
-    ProjectsProjectIdRoute: ProjectsProjectIdRoute.addChildren({
-      ProjectsProjectIdCollectionsRoute:
-        ProjectsProjectIdCollectionsRoute.addChildren({
-          ProjectsProjectIdCollectionsCollectionIdRoute:
-            ProjectsProjectIdCollectionsCollectionIdRoute.addChildren({
-              ProjectsProjectIdCollectionsCollectionIdEntryIdRoute:
-                ProjectsProjectIdCollectionsCollectionIdEntryIdRoute.addChildren(
-                  {
-                    ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute,
-                    ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
-                  },
-                ),
-              ProjectsProjectIdCollectionsCollectionIdCreateRoute,
-              ProjectsProjectIdCollectionsCollectionIdUpdateRoute,
-              ProjectsProjectIdCollectionsCollectionIdIndexRoute,
-            }),
-          ProjectsProjectIdCollectionsCreateRoute,
-          ProjectsProjectIdCollectionsIndexRoute,
-        }),
-      ProjectsProjectIdDashboardRoute,
-      ProjectsProjectIdHistoryRoute: ProjectsProjectIdHistoryRoute.addChildren({
-        ProjectsProjectIdHistoryCommitHashRoute,
-      }),
-      ProjectsProjectIdSettingsRoute:
-        ProjectsProjectIdSettingsRoute.addChildren({
-          ProjectsProjectIdSettingsGeneralRoute,
-          ProjectsProjectIdSettingsVersionControlRoute,
-          ProjectsProjectIdSettingsIndexRoute,
-        }),
-      ProjectsProjectIdIndexRoute,
-      ProjectsProjectIdAssetsIndexRoute,
-    }),
-    ProjectsCreateRoute,
-    ProjectsIndexRoute,
-  }),
-  UserProfileRoute,
-  UserIndexRoute,
-})
+interface ProjectsProjectIdCollectionsCollectionIdEntryIdRouteChildren {
+  ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute
+  ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute
+}
+
+const ProjectsProjectIdCollectionsCollectionIdEntryIdRouteChildren: ProjectsProjectIdCollectionsCollectionIdEntryIdRouteChildren =
+  {
+    ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute:
+      ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute,
+    ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute:
+      ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute,
+  }
+
+const ProjectsProjectIdCollectionsCollectionIdEntryIdRouteWithChildren =
+  ProjectsProjectIdCollectionsCollectionIdEntryIdRoute._addFileChildren(
+    ProjectsProjectIdCollectionsCollectionIdEntryIdRouteChildren,
+  )
+
+interface ProjectsProjectIdCollectionsCollectionIdRouteChildren {
+  ProjectsProjectIdCollectionsCollectionIdEntryIdRoute: typeof ProjectsProjectIdCollectionsCollectionIdEntryIdRouteWithChildren
+  ProjectsProjectIdCollectionsCollectionIdCreateRoute: typeof ProjectsProjectIdCollectionsCollectionIdCreateRoute
+  ProjectsProjectIdCollectionsCollectionIdUpdateRoute: typeof ProjectsProjectIdCollectionsCollectionIdUpdateRoute
+  ProjectsProjectIdCollectionsCollectionIdIndexRoute: typeof ProjectsProjectIdCollectionsCollectionIdIndexRoute
+}
+
+const ProjectsProjectIdCollectionsCollectionIdRouteChildren: ProjectsProjectIdCollectionsCollectionIdRouteChildren =
+  {
+    ProjectsProjectIdCollectionsCollectionIdEntryIdRoute:
+      ProjectsProjectIdCollectionsCollectionIdEntryIdRouteWithChildren,
+    ProjectsProjectIdCollectionsCollectionIdCreateRoute:
+      ProjectsProjectIdCollectionsCollectionIdCreateRoute,
+    ProjectsProjectIdCollectionsCollectionIdUpdateRoute:
+      ProjectsProjectIdCollectionsCollectionIdUpdateRoute,
+    ProjectsProjectIdCollectionsCollectionIdIndexRoute:
+      ProjectsProjectIdCollectionsCollectionIdIndexRoute,
+  }
+
+const ProjectsProjectIdCollectionsCollectionIdRouteWithChildren =
+  ProjectsProjectIdCollectionsCollectionIdRoute._addFileChildren(
+    ProjectsProjectIdCollectionsCollectionIdRouteChildren,
+  )
+
+interface ProjectsProjectIdCollectionsRouteChildren {
+  ProjectsProjectIdCollectionsCollectionIdRoute: typeof ProjectsProjectIdCollectionsCollectionIdRouteWithChildren
+  ProjectsProjectIdCollectionsCreateRoute: typeof ProjectsProjectIdCollectionsCreateRoute
+  ProjectsProjectIdCollectionsIndexRoute: typeof ProjectsProjectIdCollectionsIndexRoute
+}
+
+const ProjectsProjectIdCollectionsRouteChildren: ProjectsProjectIdCollectionsRouteChildren =
+  {
+    ProjectsProjectIdCollectionsCollectionIdRoute:
+      ProjectsProjectIdCollectionsCollectionIdRouteWithChildren,
+    ProjectsProjectIdCollectionsCreateRoute:
+      ProjectsProjectIdCollectionsCreateRoute,
+    ProjectsProjectIdCollectionsIndexRoute:
+      ProjectsProjectIdCollectionsIndexRoute,
+  }
+
+const ProjectsProjectIdCollectionsRouteWithChildren =
+  ProjectsProjectIdCollectionsRoute._addFileChildren(
+    ProjectsProjectIdCollectionsRouteChildren,
+  )
+
+interface ProjectsProjectIdHistoryRouteChildren {
+  ProjectsProjectIdHistoryCommitHashRoute: typeof ProjectsProjectIdHistoryCommitHashRoute
+}
+
+const ProjectsProjectIdHistoryRouteChildren: ProjectsProjectIdHistoryRouteChildren =
+  {
+    ProjectsProjectIdHistoryCommitHashRoute:
+      ProjectsProjectIdHistoryCommitHashRoute,
+  }
+
+const ProjectsProjectIdHistoryRouteWithChildren =
+  ProjectsProjectIdHistoryRoute._addFileChildren(
+    ProjectsProjectIdHistoryRouteChildren,
+  )
+
+interface ProjectsProjectIdSettingsRouteChildren {
+  ProjectsProjectIdSettingsGeneralRoute: typeof ProjectsProjectIdSettingsGeneralRoute
+  ProjectsProjectIdSettingsVersionControlRoute: typeof ProjectsProjectIdSettingsVersionControlRoute
+  ProjectsProjectIdSettingsIndexRoute: typeof ProjectsProjectIdSettingsIndexRoute
+}
+
+const ProjectsProjectIdSettingsRouteChildren: ProjectsProjectIdSettingsRouteChildren =
+  {
+    ProjectsProjectIdSettingsGeneralRoute:
+      ProjectsProjectIdSettingsGeneralRoute,
+    ProjectsProjectIdSettingsVersionControlRoute:
+      ProjectsProjectIdSettingsVersionControlRoute,
+    ProjectsProjectIdSettingsIndexRoute: ProjectsProjectIdSettingsIndexRoute,
+  }
+
+const ProjectsProjectIdSettingsRouteWithChildren =
+  ProjectsProjectIdSettingsRoute._addFileChildren(
+    ProjectsProjectIdSettingsRouteChildren,
+  )
+
+interface ProjectsProjectIdRouteChildren {
+  ProjectsProjectIdCollectionsRoute: typeof ProjectsProjectIdCollectionsRouteWithChildren
+  ProjectsProjectIdDashboardRoute: typeof ProjectsProjectIdDashboardRoute
+  ProjectsProjectIdHistoryRoute: typeof ProjectsProjectIdHistoryRouteWithChildren
+  ProjectsProjectIdSettingsRoute: typeof ProjectsProjectIdSettingsRouteWithChildren
+  ProjectsProjectIdIndexRoute: typeof ProjectsProjectIdIndexRoute
+  ProjectsProjectIdAssetsIndexRoute: typeof ProjectsProjectIdAssetsIndexRoute
+}
+
+const ProjectsProjectIdRouteChildren: ProjectsProjectIdRouteChildren = {
+  ProjectsProjectIdCollectionsRoute:
+    ProjectsProjectIdCollectionsRouteWithChildren,
+  ProjectsProjectIdDashboardRoute: ProjectsProjectIdDashboardRoute,
+  ProjectsProjectIdHistoryRoute: ProjectsProjectIdHistoryRouteWithChildren,
+  ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRouteWithChildren,
+  ProjectsProjectIdIndexRoute: ProjectsProjectIdIndexRoute,
+  ProjectsProjectIdAssetsIndexRoute: ProjectsProjectIdAssetsIndexRoute,
+}
+
+const ProjectsProjectIdRouteWithChildren =
+  ProjectsProjectIdRoute._addFileChildren(ProjectsProjectIdRouteChildren)
+
+interface ProjectsRouteChildren {
+  ProjectsProjectIdRoute: typeof ProjectsProjectIdRouteWithChildren
+  ProjectsCreateRoute: typeof ProjectsCreateRoute
+  ProjectsIndexRoute: typeof ProjectsIndexRoute
+}
+
+const ProjectsRouteChildren: ProjectsRouteChildren = {
+  ProjectsProjectIdRoute: ProjectsProjectIdRouteWithChildren,
+  ProjectsCreateRoute: ProjectsCreateRoute,
+  ProjectsIndexRoute: ProjectsIndexRoute,
+}
+
+const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
+  ProjectsRouteChildren,
+)
+
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
+  '/projects/create': typeof ProjectsCreateRoute
+  '/user/profile': typeof UserProfileRoute
+  '/projects/': typeof ProjectsIndexRoute
+  '/user': typeof UserIndexRoute
+  '/projects/$projectId/collections': typeof ProjectsProjectIdCollectionsRouteWithChildren
+  '/projects/$projectId/dashboard': typeof ProjectsProjectIdDashboardRoute
+  '/projects/$projectId/history': typeof ProjectsProjectIdHistoryRouteWithChildren
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRouteWithChildren
+  '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
+  '/projects/$projectId/collections/$collectionId': typeof ProjectsProjectIdCollectionsCollectionIdRouteWithChildren
+  '/projects/$projectId/collections/create': typeof ProjectsProjectIdCollectionsCreateRoute
+  '/projects/$projectId/history/$commitHash': typeof ProjectsProjectIdHistoryCommitHashRoute
+  '/projects/$projectId/settings/general': typeof ProjectsProjectIdSettingsGeneralRoute
+  '/projects/$projectId/settings/version-control': typeof ProjectsProjectIdSettingsVersionControlRoute
+  '/projects/$projectId/assets': typeof ProjectsProjectIdAssetsIndexRoute
+  '/projects/$projectId/collections/': typeof ProjectsProjectIdCollectionsIndexRoute
+  '/projects/$projectId/settings/': typeof ProjectsProjectIdSettingsIndexRoute
+  '/projects/$projectId/collections/$collectionId/$entryId': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdRouteWithChildren
+  '/projects/$projectId/collections/$collectionId/create': typeof ProjectsProjectIdCollectionsCollectionIdCreateRoute
+  '/projects/$projectId/collections/$collectionId/update': typeof ProjectsProjectIdCollectionsCollectionIdUpdateRoute
+  '/projects/$projectId/collections/$collectionId/': typeof ProjectsProjectIdCollectionsCollectionIdIndexRoute
+  '/projects/$projectId/collections/$collectionId/$entryId/update': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute
+  '/projects/$projectId/collections/$collectionId/$entryId/': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute
+}
+
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/projects/create': typeof ProjectsCreateRoute
+  '/user/profile': typeof UserProfileRoute
+  '/projects': typeof ProjectsIndexRoute
+  '/user': typeof UserIndexRoute
+  '/projects/$projectId/dashboard': typeof ProjectsProjectIdDashboardRoute
+  '/projects/$projectId/history': typeof ProjectsProjectIdHistoryRouteWithChildren
+  '/projects/$projectId': typeof ProjectsProjectIdIndexRoute
+  '/projects/$projectId/collections/create': typeof ProjectsProjectIdCollectionsCreateRoute
+  '/projects/$projectId/history/$commitHash': typeof ProjectsProjectIdHistoryCommitHashRoute
+  '/projects/$projectId/settings/general': typeof ProjectsProjectIdSettingsGeneralRoute
+  '/projects/$projectId/settings/version-control': typeof ProjectsProjectIdSettingsVersionControlRoute
+  '/projects/$projectId/assets': typeof ProjectsProjectIdAssetsIndexRoute
+  '/projects/$projectId/collections': typeof ProjectsProjectIdCollectionsIndexRoute
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsIndexRoute
+  '/projects/$projectId/collections/$collectionId/create': typeof ProjectsProjectIdCollectionsCollectionIdCreateRoute
+  '/projects/$projectId/collections/$collectionId/update': typeof ProjectsProjectIdCollectionsCollectionIdUpdateRoute
+  '/projects/$projectId/collections/$collectionId': typeof ProjectsProjectIdCollectionsCollectionIdIndexRoute
+  '/projects/$projectId/collections/$collectionId/$entryId/update': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute
+  '/projects/$projectId/collections/$collectionId/$entryId': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute
+}
+
+export interface FileRoutesById {
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/projects': typeof ProjectsRouteWithChildren
+  '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
+  '/projects/create': typeof ProjectsCreateRoute
+  '/user/profile': typeof UserProfileRoute
+  '/projects/': typeof ProjectsIndexRoute
+  '/user/': typeof UserIndexRoute
+  '/projects/$projectId/collections': typeof ProjectsProjectIdCollectionsRouteWithChildren
+  '/projects/$projectId/dashboard': typeof ProjectsProjectIdDashboardRoute
+  '/projects/$projectId/history': typeof ProjectsProjectIdHistoryRouteWithChildren
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRouteWithChildren
+  '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
+  '/projects/$projectId/collections/$collectionId': typeof ProjectsProjectIdCollectionsCollectionIdRouteWithChildren
+  '/projects/$projectId/collections/create': typeof ProjectsProjectIdCollectionsCreateRoute
+  '/projects/$projectId/history/$commitHash': typeof ProjectsProjectIdHistoryCommitHashRoute
+  '/projects/$projectId/settings/general': typeof ProjectsProjectIdSettingsGeneralRoute
+  '/projects/$projectId/settings/version-control': typeof ProjectsProjectIdSettingsVersionControlRoute
+  '/projects/$projectId/assets/': typeof ProjectsProjectIdAssetsIndexRoute
+  '/projects/$projectId/collections/': typeof ProjectsProjectIdCollectionsIndexRoute
+  '/projects/$projectId/settings/': typeof ProjectsProjectIdSettingsIndexRoute
+  '/projects/$projectId/collections/$collectionId/$entryId': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdRouteWithChildren
+  '/projects/$projectId/collections/$collectionId/create': typeof ProjectsProjectIdCollectionsCollectionIdCreateRoute
+  '/projects/$projectId/collections/$collectionId/update': typeof ProjectsProjectIdCollectionsCollectionIdUpdateRoute
+  '/projects/$projectId/collections/$collectionId/': typeof ProjectsProjectIdCollectionsCollectionIdIndexRoute
+  '/projects/$projectId/collections/$collectionId/$entryId/update': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute
+  '/projects/$projectId/collections/$collectionId/$entryId/': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRoute
+}
+
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/projects'
+    | '/projects/$projectId'
+    | '/projects/create'
+    | '/user/profile'
+    | '/projects/'
+    | '/user'
+    | '/projects/$projectId/collections'
+    | '/projects/$projectId/dashboard'
+    | '/projects/$projectId/history'
+    | '/projects/$projectId/settings'
+    | '/projects/$projectId/'
+    | '/projects/$projectId/collections/$collectionId'
+    | '/projects/$projectId/collections/create'
+    | '/projects/$projectId/history/$commitHash'
+    | '/projects/$projectId/settings/general'
+    | '/projects/$projectId/settings/version-control'
+    | '/projects/$projectId/assets'
+    | '/projects/$projectId/collections/'
+    | '/projects/$projectId/settings/'
+    | '/projects/$projectId/collections/$collectionId/$entryId'
+    | '/projects/$projectId/collections/$collectionId/create'
+    | '/projects/$projectId/collections/$collectionId/update'
+    | '/projects/$projectId/collections/$collectionId/'
+    | '/projects/$projectId/collections/$collectionId/$entryId/update'
+    | '/projects/$projectId/collections/$collectionId/$entryId/'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/projects/create'
+    | '/user/profile'
+    | '/projects'
+    | '/user'
+    | '/projects/$projectId/dashboard'
+    | '/projects/$projectId/history'
+    | '/projects/$projectId'
+    | '/projects/$projectId/collections/create'
+    | '/projects/$projectId/history/$commitHash'
+    | '/projects/$projectId/settings/general'
+    | '/projects/$projectId/settings/version-control'
+    | '/projects/$projectId/assets'
+    | '/projects/$projectId/collections'
+    | '/projects/$projectId/settings'
+    | '/projects/$projectId/collections/$collectionId/create'
+    | '/projects/$projectId/collections/$collectionId/update'
+    | '/projects/$projectId/collections/$collectionId'
+    | '/projects/$projectId/collections/$collectionId/$entryId/update'
+    | '/projects/$projectId/collections/$collectionId/$entryId'
+  id:
+    | '__root__'
+    | '/'
+    | '/projects'
+    | '/projects/$projectId'
+    | '/projects/create'
+    | '/user/profile'
+    | '/projects/'
+    | '/user/'
+    | '/projects/$projectId/collections'
+    | '/projects/$projectId/dashboard'
+    | '/projects/$projectId/history'
+    | '/projects/$projectId/settings'
+    | '/projects/$projectId/'
+    | '/projects/$projectId/collections/$collectionId'
+    | '/projects/$projectId/collections/create'
+    | '/projects/$projectId/history/$commitHash'
+    | '/projects/$projectId/settings/general'
+    | '/projects/$projectId/settings/version-control'
+    | '/projects/$projectId/assets/'
+    | '/projects/$projectId/collections/'
+    | '/projects/$projectId/settings/'
+    | '/projects/$projectId/collections/$collectionId/$entryId'
+    | '/projects/$projectId/collections/$collectionId/create'
+    | '/projects/$projectId/collections/$collectionId/update'
+    | '/projects/$projectId/collections/$collectionId/'
+    | '/projects/$projectId/collections/$collectionId/$entryId/update'
+    | '/projects/$projectId/collections/$collectionId/$entryId/'
+  fileRoutesById: FileRoutesById
+}
+
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  ProjectsRoute: typeof ProjectsRouteWithChildren
+  UserProfileRoute: typeof UserProfileRoute
+  UserIndexRoute: typeof UserIndexRoute
+}
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  ProjectsRoute: ProjectsRouteWithChildren,
+  UserProfileRoute: UserProfileRoute,
+  UserIndexRoute: UserIndexRoute,
+}
+
+export const routeTree = rootRoute
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* prettier-ignore-end */
 
