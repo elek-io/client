@@ -1,5 +1,11 @@
 # @elek-io/client
 
+## 0.3.2
+
+### Patch Changes
+
+- 9493e23: Fix CD pipeline
+
 ## 0.3.1
 
 ### Patch Changes
