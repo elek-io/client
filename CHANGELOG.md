@@ -1,5 +1,11 @@
 # @elek-io/client
 
+## 0.3.1
+
+### Patch Changes
+
+- 2ff6e9b: Fixed CD pipeline
+
 ## 0.3.0
 
 ### Minor Changes
