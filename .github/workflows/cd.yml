@@ -31,7 +31,8 @@ jobs:
       # - name: Run linter
       #   run: npm run lint
       - name: Create or update pull request
-        if: job.runs-on == 'ubuntu-22.04'
+        id: changesets
+        if: runner.os == 'Linux'
         uses: changesets/action@v1
         with:
           title: 'WIP: Release x.x.x'
