@@ -26,24 +26,27 @@ import {
 } from '@renderer/components/ui/form';
 import { FormInput } from '@renderer/components/ui/form-input';
 import { Page } from '@renderer/components/ui/page';
+import { ipc } from '@renderer/ipc';
+import { useProjects } from '@renderer/queries';
 import { NotificationIntent, useStore } from '@renderer/store';
+import { useMutation } from '@tanstack/react-query';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import { DownloadCloud, Plus } from 'lucide-react';
 import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/')({
-  beforeLoad: async ({ context }) => {
-    const projects = await context.core.projects.list({ limit: 0 });
-
-    return { projects };
-  },
   component: ListProjectsPage,
 });
 
 function ListProjectsPage(): JSX.Element {
   const router = useRouter();
-  const context = Route.useRouteContext();
+  const {
+    data: projects,
+    isPending: isLoadingProjects,
+    isError: isLoadingProjectsFailed,
+    refetch: reloadProjects,
+  } = useProjects({ limit: 0 });
   const addNotification = useStore((state) => state.addNotification);
   const cloneProjectForm = useForm<CloneProjectProps>({
     defaultValues: {
@@ -51,30 +54,26 @@ function ListProjectsPage(): JSX.Element {
     },
   });
   const [isCloningDialogOpen, setIsCloningDialogOpen] = useState(false);
-  const [isCloning, setIsCloning] = useState(false);
-
-  const onCloneProject: SubmitHandler<CloneProjectProps> = async (props) => {
-    setIsCloning(true);
-    try {
-      await context.core.projects.clone(props);
-      setIsCloning(false);
-      setIsCloningDialogOpen(false);
-      await router.invalidate();
-      addNotification({
-        intent: NotificationIntent.SUCCESS,
-        title: 'Successfully cloned Project',
-        description: 'The Project was successfully cloned.',
-      });
-    } catch (error) {
-      setIsCloning(false);
+  const { mutate: cloneProject, isPending: isCloningProject } = useMutation({
+    mutationFn: (props: CloneProjectProps) => ipc.core.projects.clone(props),
+    onError: (error) => {
       console.error(error);
       addNotification({
         intent: NotificationIntent.DANGER,
         title: 'Failed to clone Project',
         description: 'There was an error cloning the Project.',
       });
-    }
-  };
+    },
+    onSuccess: () => {
+      setIsCloningDialogOpen(false);
+      reloadProjects();
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully cloned Project',
+        description: 'The Project was successfully cloned.',
+      });
+    },
+  });
 
   function Description(): ReactElement {
     return (
@@ -118,7 +117,11 @@ function ListProjectsPage(): JSX.Element {
 
             <div className="space-y-2 py-6">
               <Form {...cloneProjectForm}>
-                <form onSubmit={cloneProjectForm.handleSubmit(onCloneProject)}>
+                <form
+                  onSubmit={cloneProjectForm.handleSubmit((props) =>
+                    cloneProject(props)
+                  )}
+                >
                   <FormField
                     control={cloneProjectForm.control}
                     name="url"
@@ -139,8 +142,10 @@ function ListProjectsPage(): JSX.Element {
 
             <DialogFooter>
               <Button
-                onClick={cloneProjectForm.handleSubmit(onCloneProject)}
-                isLoading={isCloning}
+                onClick={cloneProjectForm.handleSubmit((props) =>
+                  cloneProject(props)
+                )}
+                isLoading={isCloningProject}
               >
                 <DownloadCloud className="w-4 h-4 mr-2" /> Clone
               </Button>
@@ -151,15 +156,23 @@ function ListProjectsPage(): JSX.Element {
     );
   }
 
+  if (isLoadingProjects) {
+    return <p>Loading...</p>;
+  }
+
+  if (isLoadingProjectsFailed) {
+    return <p>Error!</p>;
+  }
+
   return (
     <Page
       title="Projects"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      description={<Description />}
+      actions={<Actions />}
       layout="bare"
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {context.projects.list.map((project) => {
+        {projects.list.map((project) => {
           return (
             <Link
               key={project.id}

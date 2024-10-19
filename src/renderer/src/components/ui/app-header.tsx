@@ -1,4 +1,4 @@
-import { RouterContext } from '@renderer/routes/__root';
+import { Ipc } from '@renderer/ipc';
 import { cn } from '@renderer/util';
 import { ChevronDown, ExternalLink } from 'lucide-react';
 import { forwardRef, HTMLAttributes, useState } from 'react';
@@ -18,7 +18,7 @@ import {
 } from './dropdown-menu';
 
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {
-  electron: RouterContext['electron'];
+  electron: Ipc['electron'];
 }
 
 const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
