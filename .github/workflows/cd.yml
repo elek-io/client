@@ -32,7 +32,6 @@ jobs:
       #   run: npm run lint
       - name: Create or update pull request
         id: changesets
-        if: runner.os == 'Linux'
         uses: changesets/action@v1
         with:
           title: 'WIP: Release x.x.x'
