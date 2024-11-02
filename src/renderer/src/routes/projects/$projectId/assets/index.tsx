@@ -3,25 +3,22 @@ import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { AssetTeaser } from '@renderer/components/ui/asset-teaser';
 import { Button } from '@renderer/components/ui/button';
 import { Page } from '@renderer/components/ui/page';
+import { assetsQueryOptions } from '@renderer/queries';
 import { NotificationIntent, useStore } from '@renderer/store';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/assets/')({
-  beforeLoad: async ({ context, params }) => {
-    const currentAssets = await context.core.assets.list({
-      projectId: params.projectId,
-    });
-
-    return { currentAssets };
-  },
   component: ProjectAssetsPage,
 });
 
 function ProjectAssetsPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
+  const { projectId } = Route.useParams();
+  const assetsQuery = useQuery(assetsQueryOptions({ projectId }));
   const addNotification = useStore((state) => state.addNotification);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
@@ -97,7 +94,7 @@ function ProjectAssetsPage(): JSX.Element {
       <div className="flex">
         <div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5 xl:gap-6">
-            {context.currentAssets.list.map((asset) => (
+            {assetsQuery.data?.list.map((asset) => (
               <AssetTeaser
                 key={asset.id}
                 {...asset}

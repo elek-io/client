@@ -6,6 +6,8 @@ import { DiffContainer } from '@renderer/components/ui/diff-container';
 import { EntryDiff } from '@renderer/components/ui/entry-diff';
 import { Page } from '@renderer/components/ui/page';
 import { ProjectDiff } from '@renderer/components/ui/project-diff';
+import { projectQueryOptions } from '@renderer/queries';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Tag } from 'lucide-react';
 import { ReactElement } from 'react';
@@ -256,6 +258,8 @@ export const Route = createFileRoute(
 
 function ProjectHistoryCommitPage(): JSX.Element {
   const context = Route.useRouteContext();
+  const { projectId, commitHash } = Route.useParams();
+  const projectQuery = useQuery(projectQueryOptions({ id: projectId }));
 
   function DisplayChanges(): ReactElement {
     switch (context.commit.message.reference.objectType) {

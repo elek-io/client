@@ -294,6 +294,10 @@ class Main {
     window: Electron.BrowserWindow,
     core: ElekIoCore
   ): void {
+    function wait(milliseconds: number): Promise<unknown> {
+      return new Promise((resolve) => setTimeout(resolve, milliseconds));
+    }
+
     ipcMain.handle('electron:dialog:showOpenDialog', async (_event, args) => {
       return await dialog.showOpenDialog(window, args);
     });
@@ -301,12 +305,15 @@ class Main {
       return await dialog.showSaveDialog(window, args);
     });
     ipcMain.handle('core:api:start', async (_event, args) => {
+      await wait(3000);
       return await core.api.start(args[0]);
     });
     ipcMain.handle('core:api:isRunning', async () => {
+      await wait(3000);
       return await core.api.isRunning();
     });
     ipcMain.handle('core:api:stop', async () => {
+      await wait(3000);
       return await core.api.stop();
     });
     ipcMain.handle('core:logger:debug', (_event, args) => {
@@ -325,57 +332,75 @@ class Main {
       return await core.logger.read(args[0]);
     });
     ipcMain.handle('core:user:get', async () => {
+      await wait(3000);
       return await core.user.get();
     });
     ipcMain.handle('core:user:set', async (_event, args) => {
+      await wait(3000);
       return await core.user.set(args[0]);
     });
     ipcMain.handle('core:projects:count', async () => {
+      await wait(3000);
       return await core.projects.count();
     });
     ipcMain.handle('core:projects:create', async (_event, args) => {
+      await wait(3000);
       return await core.projects.create(args[0]);
     });
     ipcMain.handle('core:projects:list', async (_event, args) => {
+      await wait(3000);
       return await core.projects.list(args[0]);
     });
     ipcMain.handle('core:projects:read', async (_event, args) => {
+      await wait(3000);
       return await core.projects.read(args[0]);
     });
     ipcMain.handle('core:projects:update', async (_event, args) => {
+      await wait(3000);
       return await core.projects.update(args[0]);
     });
     ipcMain.handle('core:projects:getChanges', async (_event, args) => {
+      await wait(3000);
       return await core.projects.getChanges(args[0]);
     });
     ipcMain.handle('core:projects:clone', async (_event, args) => {
+      await wait(3000);
       return await core.projects.clone(args[0]);
     });
     ipcMain.handle('core:projects:synchronize', async (_event, args) => {
+      await wait(3000);
       return await core.projects.synchronize(args[0]);
     });
     ipcMain.handle('core:projects:setRemoteOriginUrl', async (_event, args) => {
+      await wait(3000);
       return await core.projects.setRemoteOriginUrl(args[0]);
     });
     ipcMain.handle('core:projects:delete', async (_event, args) => {
+      await wait(3000);
       return await core.projects.delete(args[0]);
     });
     ipcMain.handle('core:assets:list', async (_event, args) => {
+      await wait(3000);
       return await core.assets.list(args[0]);
     });
     ipcMain.handle('core:assets:create', async (_event, args) => {
+      await wait(3000);
       return await core.assets.create(args[0]);
     });
     ipcMain.handle('core:assets:read', async (_event, args) => {
+      await wait(3000);
       return await core.assets.read(args[0]);
     });
     ipcMain.handle('core:assets:update', async (_event, args) => {
+      await wait(3000);
       return await core.assets.update(args[0]);
     });
     ipcMain.handle('core:assets:delete', async (_event, args) => {
+      await wait(3000);
       return await core.assets.delete(args[0]);
     });
     ipcMain.handle('core:assets:save', async (_event, args) => {
+      await wait(3000);
       return await core.assets.save(args[0]);
     });
     // ipcMain.handle('core:snapshots:list', async (event, args) => {
@@ -391,33 +416,43 @@ class Main {
     //   return await core.snapshots.commitHistory(args[0]);
     // });
     ipcMain.handle('core:collections:list', async (_event, args) => {
+      await wait(3000);
       return await core.collections.list(args[0]);
     });
     ipcMain.handle('core:collections:create', async (_event, args) => {
+      await wait(3000);
       return await core.collections.create(args[0]);
     });
     ipcMain.handle('core:collections:read', async (_event, args) => {
+      await wait(3000);
       return await core.collections.read(args[0]);
     });
     ipcMain.handle('core:collections:update', async (_event, args) => {
+      await wait(3000);
       return await core.collections.update(args[0]);
     });
     ipcMain.handle('core:collections:delete', async (_event, args) => {
+      await wait(3000);
       return await core.collections.delete(args[0]);
     });
     ipcMain.handle('core:entries:list', async (_event, args) => {
+      await wait(3000);
       return await core.entries.list(args[0]);
     });
     ipcMain.handle('core:entries:create', async (_event, args) => {
+      await wait(3000);
       return await core.entries.create(args[0]);
     });
     ipcMain.handle('core:entries:read', async (_event, args) => {
+      await wait(3000);
       return await core.entries.read(args[0]);
     });
     ipcMain.handle('core:entries:update', async (_event, args) => {
+      await wait(3000);
       return await core.entries.update(args[0]);
     });
     ipcMain.handle('core:entries:delete', async (_event, args) => {
+      await wait(3000);
       return await core.entries.delete(args[0]);
     });
     // this.handleIpcMain<Parameters<AssetService['list']>>('core:assets:list', async (event, args) => {

@@ -39,7 +39,7 @@ import {
 } from './dropdown-menu';
 
 export interface UserHeaderProps extends HTMLAttributes<HTMLDivElement> {
-  user: User;
+  user: User | null;
 }
 
 const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
@@ -175,92 +175,87 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
               </Breadcrumb>
             </div>
             <div className="flex">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">
-                    <Avatar
-                      className="mr-2"
-                      name={user.name}
-                      src="https://github.com/shadcn.png"
-                    ></Avatar>
-                    {user.name}
-                    <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 mt-4 mr-2">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem
-                      onClick={() => router.navigate({ to: '/user/profile' })}
-                    >
-                      Profile
-                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
+              {user !== null && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost">
+                      <Avatar
+                        className="mr-2"
+                        name={user.name}
+                        src="https://github.com/shadcn.png"
+                      ></Avatar>
+                      {user.name}
+                      <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 mt-4 mr-2">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        onClick={() => router.navigate({ to: '/user/profile' })}
+                      >
+                        Profile
+                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        Billing
+                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        Settings
+                        <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        Keyboard shortcuts
+                        <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem>Team</DropdownMenuItem>
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup
+                              value={theme}
+                              onValueChange={(theme) =>
+                                setTheme(theme as Theme)
+                              }
+                            >
+                              <DropdownMenuRadioItem value="system">
+                                System
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="light">
+                                <Sun className="h-4 w-4 mr-2" />
+                                Light
+                              </DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="dark">
+                                <Moon className="h-4 w-4 mr-2" />
+                                Dark
+                              </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+                      <DropdownMenuItem>
+                        New Team
+                        <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>GitHub</DropdownMenuItem>
+                    <DropdownMenuItem>Support</DropdownMenuItem>
+                    <DropdownMenuItem disabled>API</DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem>
-                      Billing
-                      <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                      Log out
+                      <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Settings
-                      <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Keyboard shortcuts
-                      <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem>Team</DropdownMenuItem>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuRadioGroup
-                            value={theme}
-                            onValueChange={(theme) => setTheme(theme as Theme)}
-                          >
-                            <DropdownMenuRadioItem value="system">
-                              System
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="light">
-                              <Sun className="h-4 w-4 mr-2" />
-                              Light
-                            </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="dark">
-                              <Moon className="h-4 w-4 mr-2" />
-                              Dark
-                            </DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
-                    <DropdownMenuItem>
-                      New Team
-                      <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>GitHub</DropdownMenuItem>
-                  <DropdownMenuItem>Support</DropdownMenuItem>
-                  <DropdownMenuItem disabled>API</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    Log out
-                    <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* <Dropdown itemGroups={dropdownItemGroupsExample}>
-                <Button intent="avatar" appendIcon={ChevronDownIcon}>
-                  <Avatar name={context.currentUser.name}></Avatar>
-                  <span className="ml-2 hidden lg:block">
-                    {context.currentUser.name}
-                  </span>
-                </Button>
-              </Dropdown> */}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ import {
   ErrorComponentProps,
   Outlet,
   createRootRouteWithContext,
+  redirect,
   useRouter,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
@@ -23,8 +24,14 @@ export interface RouterContext {
 
 // Use the routerContext to create your root route
 export const Route = createRootRouteWithContext<RouterContext>()({
-  beforeLoad: async ({ context: { queryClient } }) => {
-    const user = await queryClient.fetchQuery(userQueryOptions);
+  beforeLoad: async ({ context, location }) => {
+    const user = await context.queryClient.ensureQueryData(userQueryOptions);
+
+    if (!user) {
+      throw redirect({
+        to: '/user/profile',
+      });
+    }
 
     return { user };
   },
@@ -128,12 +135,11 @@ function NotFoundComponent(): JSX.Element {
 
 function RootComponent(): JSX.Element {
   const { user } = Route.useRouteContext();
-  const { electron } = ipc;
 
   return (
     <>
-      <AppHeader electron={electron} />
-      {user && <UserHeader user={user} />}
+      <AppHeader electron={ipc.electron} />
+      <UserHeader user={user} />
       <Outlet></Outlet>
       <Toaster />
       <TanStackRouterDevtools />

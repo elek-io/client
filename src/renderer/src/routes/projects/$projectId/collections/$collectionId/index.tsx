@@ -24,8 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from '@renderer/components/ui/table';
+import { entriesQueryOptions } from '@renderer/queries';
 import { formatDatetime } from '@renderer/util';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import {
   ColumnDef,
@@ -52,23 +53,20 @@ function ProjectCollectionIndexPage(): JSX.Element {
   });
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [filter, setFilter] = useState('');
-  const dataQuery = useQuery({
-    queryKey: ['entries', context.currentCollection.id, pagination, filter],
-    queryFn: () =>
-      context.core.entries.list({
-        projectId: context.project.id,
-        collectionId: context.currentCollection.id,
-        limit: pagination.pageSize,
-        offset:
-          pagination.pageIndex === 0
-            ? 0
-            : pagination.pageSize * pagination.pageIndex,
-      }),
-    placeholderData: keepPreviousData, // don't have 0 rows flash while changing pages/loading next page
-  });
+  const entriesQuery = useQuery(
+    entriesQueryOptions({
+      projectId: context.project.id,
+      collectionId: context.collection.id,
+      limit: pagination.pageSize,
+      offset:
+        pagination.pageIndex === 0
+          ? 0
+          : pagination.pageSize * pagination.pageIndex,
+    })
+  );
   const table = useReactTable({
     data:
-      dataQuery.data?.list.map((entry) => {
+      entriesQuery.data?.list.map((entry) => {
         const row: { [x: string]: unknown } = {
           id: entry.id,
           created: formatDatetime(entry.created, context.user.language)
@@ -86,7 +84,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
     columns: columns(),
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    rowCount: dataQuery.data?.total,
+    rowCount: entriesQuery.data?.total,
     onPaginationChange: setPagination, // update the pagination state when internal APIs mutate the pagination state
     onColumnVisibilityChange: setColumnVisibility,
     // getFilteredRowModel: getFilteredRowModel(),
@@ -101,7 +99,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
   function Title(): string {
     return context.translateContent(
       'currentCollection.name.plural',
-      context.currentCollection.name.plural
+      context.collection.name.plural
     );
   }
 
@@ -110,7 +108,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
       <>
         {context.translateContent(
           'currentCollection.description',
-          context.currentCollection.description
+          context.collection.description
         )}
       </>
     );
@@ -125,7 +123,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
               to: '/projects/$projectId/collections/$collectionId/create',
               params: {
                 projectId: context.project.id,
-                collectionId: context.currentCollection.id,
+                collectionId: context.collection.id,
               },
             })
           }
@@ -133,7 +131,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
           <Plus className="w-4 h-4 mr-2"></Plus>
           {`Create ${context.translateContent(
             'currentCollection.name.singular',
-            context.currentCollection.name.singular
+            context.collection.name.singular
           )}`}
         </Button>
 
@@ -144,7 +142,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
               to: '/projects/$projectId/collections/$collectionId/update',
               params: {
                 projectId: context.project.id,
-                collectionId: context.currentCollection.id,
+                collectionId: context.collection.id,
               },
             })
           }
@@ -157,8 +155,8 @@ function ProjectCollectionIndexPage(): JSX.Element {
   }
 
   function columns(): ColumnDef<Entry>[] {
-    const columns: ColumnDef<Entry>[] =
-      context.currentCollection.fieldDefinitions.map((definition) => {
+    const columns: ColumnDef<Entry>[] = context.collection.fieldDefinitions.map(
+      (definition) => {
         return {
           accessorKey: definition.id,
           header: context.translateContent(
@@ -166,7 +164,8 @@ function ProjectCollectionIndexPage(): JSX.Element {
             definition.label
           ),
         };
-      });
+      }
+    );
 
     columns.push(
       {
@@ -194,7 +193,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
       to: '/projects/$projectId/collections/$collectionId/$entryId/update',
       params: {
         projectId: context.project.id,
-        collectionId: context.currentCollection.id,
+        collectionId: context.collection.id,
         entryId: id,
       },
     });
@@ -210,7 +209,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
         <Input
           placeholder={`Filter ${context.translateContent(
             'currentCollection.name.plural',
-            context.currentCollection.name.plural
+            context.collection.name.plural
           )}...`}
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
@@ -302,7 +301,7 @@ function ProjectCollectionIndexPage(): JSX.Element {
           of {table.getRowCount().toLocaleString(context.user.language)} total{' '}
           {context.translateContent(
             'currentCollection.name.plural',
-            context.currentCollection.name.plural
+            context.collection.name.plural
           )}{' '}
           (
           {table

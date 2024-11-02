@@ -4,6 +4,7 @@ import { ThemeProvider } from '@renderer/components/theme-provider';
 import '@renderer/index.css';
 import { ipc } from '@renderer/ipc';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   RouterProvider,
   createHashHistory,
@@ -47,6 +48,7 @@ if (!rootElement.innerHTML) {
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>

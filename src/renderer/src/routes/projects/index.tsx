@@ -26,27 +26,26 @@ import {
 } from '@renderer/components/ui/form';
 import { FormInput } from '@renderer/components/ui/form-input';
 import { Page } from '@renderer/components/ui/page';
+import { Skeleton } from '@renderer/components/ui/skeleton';
 import { ipc } from '@renderer/ipc';
-import { useProjects } from '@renderer/queries';
+import { projectsQueryOptions } from '@renderer/queries';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import { DownloadCloud, Plus } from 'lucide-react';
 import { ReactElement, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/')({
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(projectsQueryOptions({ limit: 0 }));
+  },
   component: ListProjectsPage,
 });
 
 function ListProjectsPage(): JSX.Element {
   const router = useRouter();
-  const {
-    data: projects,
-    isPending: isLoadingProjects,
-    isError: isLoadingProjectsFailed,
-    refetch: reloadProjects,
-  } = useProjects({ limit: 0 });
+  const projectsQuery = useQuery(projectsQueryOptions({ limit: 0 }));
   const addNotification = useStore((state) => state.addNotification);
   const cloneProjectForm = useForm<CloneProjectProps>({
     defaultValues: {
@@ -54,7 +53,7 @@ function ListProjectsPage(): JSX.Element {
     },
   });
   const [isCloningDialogOpen, setIsCloningDialogOpen] = useState(false);
-  const { mutate: cloneProject, isPending: isCloningProject } = useMutation({
+  const cloneProjectMutation = useMutation({
     mutationFn: (props: CloneProjectProps) => ipc.core.projects.clone(props),
     onError: (error) => {
       console.error(error);
@@ -66,7 +65,7 @@ function ListProjectsPage(): JSX.Element {
     },
     onSuccess: () => {
       setIsCloningDialogOpen(false);
-      reloadProjects();
+      projectsQuery.refetch();
       addNotification({
         intent: NotificationIntent.SUCCESS,
         title: 'Successfully cloned Project',
@@ -119,7 +118,7 @@ function ListProjectsPage(): JSX.Element {
               <Form {...cloneProjectForm}>
                 <form
                   onSubmit={cloneProjectForm.handleSubmit((props) =>
-                    cloneProject(props)
+                    cloneProjectMutation.mutate(props)
                   )}
                 >
                   <FormField
@@ -143,9 +142,9 @@ function ListProjectsPage(): JSX.Element {
             <DialogFooter>
               <Button
                 onClick={cloneProjectForm.handleSubmit((props) =>
-                  cloneProject(props)
+                  cloneProjectMutation.mutate(props)
                 )}
-                isLoading={isCloningProject}
+                isLoading={cloneProjectMutation.isPending}
               >
                 <DownloadCloud className="w-4 h-4 mr-2" /> Clone
               </Button>
@@ -156,14 +155,6 @@ function ListProjectsPage(): JSX.Element {
     );
   }
 
-  if (isLoadingProjects) {
-    return <p>Loading...</p>;
-  }
-
-  if (isLoadingProjectsFailed) {
-    return <p>Error!</p>;
-  }
-
   return (
     <Page
       title="Projects"
@@ -172,7 +163,26 @@ function ListProjectsPage(): JSX.Element {
       layout="bare"
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {projects.list.map((project) => {
+        {projectsQuery.isPending &&
+          Array.from({ length: 3 }).map((_, i) => {
+            return (
+              <Card
+                key={i}
+                className="transition hover:shadow-lg hover:dark:border-zinc-200"
+              >
+                <CardHeader>
+                  <CardTitle>
+                    <Skeleton className="h-4 w-[200px]" />
+                  </CardTitle>
+                  <CardDescription>
+                    <Skeleton className="h-4 w-[250px]" />
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            );
+          })}
+
+        {projectsQuery.data?.list.map((project) => {
           return (
             <Link
               key={project.id}
