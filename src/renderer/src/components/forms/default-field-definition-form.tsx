@@ -1,6 +1,10 @@
-import { FieldDefinition, FieldType, SupportedLanguage } from '@elek-io/core';
-import { Fragment, HTMLAttributes } from 'react';
-import { FieldValues, UseFormReturn } from 'react-hook-form';
+import {
+  type FieldDefinition,
+  type FieldType,
+  type SupportedLanguage,
+} from '@elek-io/core';
+import { Fragment, type HTMLAttributes } from 'react';
+import { type FieldValues, type UseFormReturn } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
   Dialog,

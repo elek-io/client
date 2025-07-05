@@ -2,8 +2,12 @@ import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Sidebar } from '@renderer/components/ui/sidebar';
 import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
 import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
-import { Outlet, ToPathOption, createFileRoute } from '@tanstack/react-router';
-import { GitBranch, LucideIcon, Settings } from 'lucide-react';
+import {
+  Outlet,
+  type ToPathOption,
+  createFileRoute,
+} from '@tanstack/react-router';
+import { GitBranch, type LucideIcon, Settings } from 'lucide-react';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectCollectionsLayout,

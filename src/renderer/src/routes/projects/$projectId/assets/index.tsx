@@ -1,4 +1,4 @@
-import { Asset } from '@elek-io/core';
+import { type Asset } from '@elek-io/core';
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { AssetTeaser } from '@renderer/components/ui/asset-teaser';
 import { Button } from '@renderer/components/ui/button';
@@ -6,7 +6,7 @@ import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
-import { ReactElement, useState } from 'react';
+import { type ReactElement, useState } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/assets/')({
   beforeLoad: async ({ context, params }) => {

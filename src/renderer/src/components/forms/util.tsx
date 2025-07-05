@@ -1,10 +1,14 @@
 import {
-  FieldDefinition,
-  SupportedLanguage,
-  TranslatableString,
+  type FieldDefinition,
+  type SupportedLanguage,
+  type TranslatableString,
 } from '@elek-io/core';
 import { fieldWidth } from '@renderer/util';
-import { ControllerRenderProps, FieldValues, Path } from 'react-hook-form';
+import {
+  type ControllerRenderProps,
+  type FieldValues,
+  type Path,
+} from 'react-hook-form';
 import {
   FormControl,
   FormDescription,

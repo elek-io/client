@@ -3,7 +3,7 @@ import { CommitHistory } from '@renderer/components/ui/commit-history';
 import { Page } from '@renderer/components/ui/page';
 import { PageSection } from '@renderer/components/ui/page-section';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { ReactElement } from 'react';
+import { type JSX, type ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,

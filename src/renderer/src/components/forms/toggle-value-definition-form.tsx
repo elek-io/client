@@ -1,4 +1,4 @@
-import { ToggleFieldDefinition } from '@elek-io/core';
+import { type ToggleFieldDefinition } from '@elek-io/core';
 import {
   Form,
   FormControl,
@@ -11,7 +11,7 @@ import {
 import { Switch } from '../ui/switch';
 import {
   DefaultFieldDefinitionForm,
-  DefaultFieldDefinitionFormProps,
+  type DefaultFieldDefinitionFormProps,
 } from './default-field-definition-form';
 
 export type ToggleFieldDefinitionFormProps =

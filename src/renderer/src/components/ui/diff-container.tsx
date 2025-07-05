@@ -1,4 +1,4 @@
-import { GitCommit, SupportedLanguage } from '@elek-io/core';
+import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 import { CommitAuthor } from './commit-author';
 
 export interface DiffContainerProps {

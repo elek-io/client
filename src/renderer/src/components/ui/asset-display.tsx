@@ -1,4 +1,4 @@
-import { Asset } from '@elek-io/core';
+import { type Asset } from '@elek-io/core';
 import { FileQuestion, FolderArchive } from 'lucide-react';
 import { forwardRef, useEffect, useRef } from 'react';
 

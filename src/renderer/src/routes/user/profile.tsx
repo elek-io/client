@@ -1,6 +1,6 @@
 import {
-  GitCommit,
-  SetUserProps,
+  type GitCommit,
+  type SetUserProps,
   setUserSchema,
   supportedLanguageSchema,
 } from '@elek-io/core';
@@ -31,8 +31,8 @@ import { UserHeader } from '@renderer/components/ui/user-header';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/user/profile')({
   beforeLoad: async ({ context }) => {

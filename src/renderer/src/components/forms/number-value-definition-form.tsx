@@ -1,4 +1,4 @@
-import { NumberFieldDefinition } from '@elek-io/core';
+import { type NumberFieldDefinition } from '@elek-io/core';
 import {
   Form,
   FormControl,
@@ -11,7 +11,7 @@ import {
 import { FormInput } from '../ui/form-input';
 import {
   DefaultFieldDefinitionForm,
-  DefaultFieldDefinitionFormProps,
+  type DefaultFieldDefinitionFormProps,
 } from './default-field-definition-form';
 
 export type NumberFieldDefinitionFormProps =

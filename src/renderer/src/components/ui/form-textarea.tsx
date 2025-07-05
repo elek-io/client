@@ -1,5 +1,9 @@
-import { ForwardedRef, forwardRef, TextareaHTMLAttributes } from 'react';
-import { ControllerRenderProps, FieldValues } from 'react-hook-form';
+import {
+  type ForwardedRef,
+  forwardRef,
+  type TextareaHTMLAttributes,
+} from 'react';
+import { type ControllerRenderProps, type FieldValues } from 'react-hook-form';
 import { Textarea } from './textarea';
 
 export interface FormTextareaProps<T extends FieldValues>

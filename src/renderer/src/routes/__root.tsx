@@ -1,20 +1,20 @@
-import { ElectronAPI } from '@electron-toolkit/preload';
-import { ElekIoCore } from '@elek-io/core';
+import { type ElectronAPI } from '@electron-toolkit/preload';
+import { type ElekIoCore } from '@elek-io/core';
 import { AppHeader } from '@renderer/components/ui/app-header';
 import { Button } from '@renderer/components/ui/button';
 import { Page } from '@renderer/components/ui/page';
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/toast';
 import {
-  ErrorComponentProps,
+  type ErrorComponentProps,
   Outlet,
   createRootRouteWithContext,
   useRouter,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
-import { Dialog as ElectronDialog } from 'electron';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { type Dialog as ElectronDialog } from 'electron';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
-import { ReactElement } from 'react';
+import { type ReactElement } from 'react';
 
 export interface RouterContext {
   electron: {

@@ -1,5 +1,5 @@
 import { cn } from '@renderer/util';
-import { Link, LinkProps } from '@tanstack/react-router';
+import { Link, type LinkProps } from '@tanstack/react-router';
 
 export interface SidebarNavigationItemProps extends LinkProps {}
 

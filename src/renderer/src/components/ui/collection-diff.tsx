@@ -1,7 +1,7 @@
 import {
-  Collection,
-  SupportedLanguage,
-  TranslatableString,
+  type Collection,
+  type SupportedLanguage,
+  type TranslatableString,
 } from '@elek-io/core';
 import { FieldFromDefinition } from '../forms/util';
 import { FormItem } from './form';

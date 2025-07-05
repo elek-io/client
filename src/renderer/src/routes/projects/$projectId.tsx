@@ -1,4 +1,4 @@
-import { TranslatableString } from '@elek-io/core';
+import { type TranslatableString } from '@elek-io/core';
 import { Button } from '@renderer/components/ui/button';
 import { Commit } from '@renderer/components/ui/commit';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Link,
   Outlet,
-  ToPathOption,
+  type ToPathOption,
   createFileRoute,
   useRouter,
 } from '@tanstack/react-router';
@@ -29,7 +29,7 @@ import {
   Image,
   Layers,
   LayoutDashboard,
-  LucideIcon,
+  type LucideIcon,
   RefreshCw,
   Settings,
   UploadCloud,

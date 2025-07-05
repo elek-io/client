@@ -1,8 +1,8 @@
 'use client';
 
-import { GitCommit, SupportedLanguage } from '@elek-io/core';
+import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 import { cn, formatDatetime } from '@renderer/util';
-import { Link, LinkProps } from '@tanstack/react-router';
+import { Link, type LinkProps } from '@tanstack/react-router';
 import {
   CircleFadingArrowUp,
   FileQuestion,

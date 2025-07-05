@@ -1,4 +1,4 @@
-import { TextareaFieldDefinition } from '@elek-io/core';
+import { type TextareaFieldDefinition } from '@elek-io/core';
 import {
   Form,
   FormControl,
@@ -12,7 +12,7 @@ import { FormInput } from '../ui/form-input';
 import { FormTextarea } from '../ui/form-textarea';
 import {
   DefaultFieldDefinitionForm,
-  DefaultFieldDefinitionFormProps,
+  type DefaultFieldDefinitionFormProps,
 } from './default-field-definition-form';
 
 export type TextareaFieldDefinitionFormProps =

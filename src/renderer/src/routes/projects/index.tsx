@@ -1,4 +1,4 @@
-import { CloneProjectProps } from '@elek-io/core';
+import { type CloneProjectProps } from '@elek-io/core';
 import { Button } from '@renderer/components/ui/button';
 import {
   Card,
@@ -29,8 +29,8 @@ import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import { DownloadCloud, Plus } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/')({
   beforeLoad: async ({ context }) => {

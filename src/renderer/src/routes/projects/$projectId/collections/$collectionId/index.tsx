@@ -1,4 +1,4 @@
-import { Entry } from '@elek-io/core';
+import { type Entry } from '@elek-io/core';
 import { Button } from '@renderer/components/ui/button';
 import {
   DropdownMenu,
@@ -28,14 +28,14 @@ import { formatDatetime } from '@renderer/util';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import {
-  ColumnDef,
-  VisibilityState,
+  type ColumnDef,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import { ChevronDown, Plus, Settings } from 'lucide-react';
-import { ReactElement, useState } from 'react';
+import { type ReactElement, useState } from 'react';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/'

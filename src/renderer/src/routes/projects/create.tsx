@@ -1,4 +1,4 @@
-import { CreateProjectProps, createProjectSchema } from '@elek-io/core';
+import { type CreateProjectProps, createProjectSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@renderer/components/ui/button';
 import {
@@ -16,8 +16,8 @@ import { Textarea } from '@renderer/components/ui/textarea';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/create')({
   component: CreateProjectPage,

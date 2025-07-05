@@ -1,8 +1,8 @@
 'use client';
 
-import { GitCommit, SupportedLanguage } from '@elek-io/core';
+import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 import { cn } from '@renderer/util';
-import { HTMLAttributes } from 'react';
+import { type HTMLAttributes } from 'react';
 import { Commit } from './commit';
 
 export interface CommitHistoryProps extends HTMLAttributes<HTMLDivElement> {

@@ -1,4 +1,4 @@
-import { Asset } from '@elek-io/core';
+import { type Asset } from '@elek-io/core';
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { MouseEventHandler } from 'react';
 import { formatBytes } from '../../util';

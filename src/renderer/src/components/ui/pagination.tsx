@@ -1,7 +1,7 @@
 import { cn } from '@renderer/util';
 import { ChevronLeftIcon, ChevronRightIcon, Ellipsis } from 'lucide-react';
-import { ComponentProps, forwardRef } from 'react';
-import { Button, ButtonProps } from './button';
+import { type ComponentProps, forwardRef } from 'react';
+import { Button, type ButtonProps } from './button';
 
 const Pagination = ({
   className,

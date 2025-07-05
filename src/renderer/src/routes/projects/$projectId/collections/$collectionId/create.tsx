@@ -1,4 +1,4 @@
-import { CreateEntryProps, createEntrySchema } from '@elek-io/core';
+import { type CreateEntryProps, createEntrySchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   FormFieldFromDefinition,
@@ -11,8 +11,8 @@ import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/create'

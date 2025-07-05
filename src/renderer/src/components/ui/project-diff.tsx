@@ -1,4 +1,4 @@
-import { Project } from '@elek-io/core';
+import { type Project } from '@elek-io/core';
 import { Chip } from './chip';
 import { FormItem } from './form';
 import { Input } from './input';

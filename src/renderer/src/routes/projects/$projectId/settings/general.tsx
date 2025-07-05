@@ -1,7 +1,7 @@
 import {
-  DeleteProjectProps,
-  SupportedLanguage,
-  UpdateProjectProps,
+  type DeleteProjectProps,
+  type SupportedLanguage,
+  type UpdateProjectProps,
   supportedLanguageSchema,
   updateProjectSchema,
 } from '@elek-io/core';
@@ -55,8 +55,8 @@ import { Textarea } from '@renderer/components/ui/textarea';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Plus, Trash } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsGeneralPage,

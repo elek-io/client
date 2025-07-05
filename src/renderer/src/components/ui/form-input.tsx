@@ -1,10 +1,10 @@
 import {
-  ForwardedRef,
+  type ForwardedRef,
   forwardRef,
-  HTMLInputTypeAttribute,
-  InputHTMLAttributes,
+  type HTMLInputTypeAttribute,
+  type InputHTMLAttributes,
 } from 'react';
-import { ControllerRenderProps, FieldValues } from 'react-hook-form';
+import { type ControllerRenderProps, type FieldValues } from 'react-hook-form';
 import { Input } from './input';
 
 export interface FormInputProps<T extends FieldValues>

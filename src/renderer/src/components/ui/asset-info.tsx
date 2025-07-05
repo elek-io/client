@@ -1,4 +1,4 @@
-import { Asset, SupportedLanguage } from '@elek-io/core';
+import { type Asset, type SupportedLanguage } from '@elek-io/core';
 import { ipc } from '@renderer/ipc';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { Download, Edit2, Trash } from 'lucide-react';

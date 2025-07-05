@@ -1,18 +1,18 @@
 import {
-  CreateCollectionProps,
-  DateFieldDefinition,
-  DeleteCollectionProps,
-  FieldDefinitionBase,
-  FieldType,
+  type CreateCollectionProps,
+  type DateFieldDefinition,
+  type DeleteCollectionProps,
+  type FieldDefinitionBase,
+  type FieldType,
   FieldTypeSchema,
-  NumberFieldDefinition,
-  Project,
-  RangeFieldDefinition,
-  TextFieldDefinition,
-  TextareaFieldDefinition,
-  ToggleFieldDefinition,
-  TranslatableString,
-  UpdateCollectionProps,
+  type NumberFieldDefinition,
+  type Project,
+  type RangeFieldDefinition,
+  type TextFieldDefinition,
+  type TextareaFieldDefinition,
+  type ToggleFieldDefinition,
+  type TranslatableString,
+  type UpdateCollectionProps,
   dateFieldDefinitionSchema,
   numberFieldDefinitionSchema,
   rangeFieldDefinitionSchema,
@@ -27,8 +27,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
 import {
-  SubmitHandler,
-  UseFormReturn,
+  type SubmitHandler,
+  type UseFormReturn,
   useFieldArray,
   useForm,
 } from 'react-hook-form';
@@ -63,7 +63,7 @@ import {
 } from '../ui/form';
 import { FormInput } from '../ui/form-input';
 import { FormTextarea } from '../ui/form-textarea';
-import { Page, PageProps } from '../ui/page';
+import { Page, type PageProps } from '../ui/page';
 import { PageSection } from '../ui/page-section';
 import { ScrollArea } from '../ui/scroll-area';
 import {

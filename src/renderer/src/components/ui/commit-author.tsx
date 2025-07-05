@@ -1,6 +1,6 @@
 'use client';
 
-import { GitCommit, SupportedLanguage } from '@elek-io/core';
+import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 import { formatDatetime } from '@renderer/util';
 import { Avatar } from './avatar';
 

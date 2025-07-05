@@ -1,4 +1,4 @@
-import { User } from '@elek-io/core';
+import { type User } from '@elek-io/core';
 import { useStore } from '@renderer/store';
 import { cn } from '@renderer/util';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
@@ -10,8 +10,8 @@ import {
   Moon,
   Sun,
 } from 'lucide-react';
-import { forwardRef, Fragment, HTMLAttributes } from 'react';
-import { Theme, useTheme } from '../theme-provider';
+import { forwardRef, Fragment, type HTMLAttributes } from 'react';
+import { type Theme, useTheme } from '../theme-provider';
 import { Avatar } from './avatar';
 import {
   Breadcrumb,
