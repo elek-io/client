@@ -1,6 +1,5 @@
 import { ElectronAPI } from '@electron-toolkit/preload';
 import { ElekIoCore } from '@elek-io/core';
-import { AppHeader } from '@renderer/components/ui/app-header';
 import { Button } from '@renderer/components/ui/button';
 import { Page } from '@renderer/components/ui/page';
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
@@ -68,7 +67,6 @@ function ErrorComponent(props: ErrorComponentProps): JSX.Element {
 
   return (
     <>
-      <AppHeader electron={electron} />
       <Page title="Error" description={<Description />} actions={<Actions />}>
         <div className="p-6">
           <p>{props.error.message}</p>
@@ -112,7 +110,6 @@ function NotFoundComponent(): JSX.Element {
 
   return (
     <>
-      <AppHeader electron={electron} />
       <Page
         title="Not Found"
         description={<Description />}
@@ -128,14 +125,11 @@ function NotFoundComponent(): JSX.Element {
 }
 
 function RootComponent(): JSX.Element {
-  const { electron } = Route.useRouteContext();
-
   return (
     <>
-      <AppHeader electron={electron} />
       <Outlet></Outlet>
       <Toaster />
-      <TanStackRouterDevtools />
+      <TanStackRouterDevtools position="bottom-right" />
     </>
   );
 }

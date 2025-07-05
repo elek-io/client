@@ -1,20 +1,17 @@
-import { ScrollArea } from '@renderer/components/ui/scroll-area';
-import { Sidebar } from '@renderer/components/ui/sidebar';
-import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
+import { useSidebar } from '@renderer/components/ui/sidebar';
 import { Outlet, createFileRoute } from '@tanstack/react-router';
-import { Layers, Plus } from 'lucide-react';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   component: ProjectCollectionsLayout,
 });
 
 function ProjectCollectionsLayout(): JSX.Element {
+  const { open } = useSidebar();
   const context = Route.useRouteContext();
 
   return (
-    <div className="flex h-full">
-      <Sidebar>
+    <div className="flex">
+      {/* <Sidebar>
         <ScrollArea>
           <SidebarNavigation>
             <SidebarNavigationItem to="/projects/$projectId/collections/create">
@@ -46,10 +43,8 @@ function ProjectCollectionsLayout(): JSX.Element {
             )}
           </SidebarNavigation>
         </ScrollArea>
-      </Sidebar>
-      <div className="flex flex-1 flex-col overflow-y-auto">
-        <Outlet></Outlet>
-      </div>
+      </Sidebar> */}
+      <Outlet />
     </div>
   );
 }

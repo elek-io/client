@@ -1,4 +1,3 @@
-import { UserHeader } from '@renderer/components/ui/user-header';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/projects')({
@@ -16,11 +15,8 @@ export const Route = createFileRoute('/projects')({
 });
 
 function ProjectsLayout(): JSX.Element {
-  const { user } = Route.useRouteContext();
-
   return (
     <>
-      <UserHeader user={user} />
       <Outlet></Outlet>
     </>
   );

@@ -1,4 +1,5 @@
 import { Button } from '@renderer/components/ui/button';
+import { Card } from '@renderer/components/ui/card';
 import { CommitHistory } from '@renderer/components/ui/commit-history';
 import { Page } from '@renderer/components/ui/page';
 import { PageSection } from '@renderer/components/ui/page-section';
@@ -43,12 +44,17 @@ function ProjectDashboardPage(): JSX.Element {
     >
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
         <div className="grid grid-cols-1 gap-4 lg:col-span-2">
-          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow p-4">
-            Current Project: {JSON.stringify(context.project)}
-          </div>
+          <Card>
+            <PageSection
+              title="Current Project debug JSON"
+              className="border-none"
+            >
+              <pre>{JSON.stringify(context.project, null, 2)}</pre>
+            </PageSection>
+          </Card>
         </div>
         <div className="grid grid-cols-1 gap-4">
-          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow">
+          <Card>
             <PageSection
               title="Latest changes"
               actions={<LatestChangesActions />}
@@ -60,7 +66,7 @@ function ProjectDashboardPage(): JSX.Element {
                 language={context.user.language}
               />
             </PageSection>
-          </div>
+          </Card>
         </div>
       </div>
     </Page>

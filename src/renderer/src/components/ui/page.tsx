@@ -6,7 +6,8 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { ScrollArea } from './scroll-area';
+import { Header } from './header';
+import { SidebarInset } from './sidebar';
 
 export interface PageProps extends HTMLAttributes<HTMLElement> {
   title: string;
@@ -22,8 +23,9 @@ export interface PageProps extends HTMLAttributes<HTMLElement> {
 
 export const Page = forwardRef<HTMLElement, PageProps>(
   ({ className, ...props }, ref) => (
-    <ScrollArea>
-      <main
+    <SidebarInset>
+      <Header />
+      <div
         ref={ref}
         className={cn('relative flex-1', className)}
         onDragOver={props.onDragOver}
@@ -31,7 +33,7 @@ export const Page = forwardRef<HTMLElement, PageProps>(
         onDragEnter={props.onDragEnter}
         onDrop={props.onDrop}
       >
-        <div className="relative bg-brand-950 text-white pb-32">
+        <div className="relative bg-gradient-to-br from-brand-950 to-50% text-white pb-32">
           <div className="relative container mx-auto">
             <div className="md:flex md:items-center px-4 sm:px-6 lg:px-8 py-10">
               <div className="md:flex-auto">
@@ -62,8 +64,8 @@ export const Page = forwardRef<HTMLElement, PageProps>(
             </div>
           </div>
         </div>
-      </main>
-    </ScrollArea>
+      </div>
+    </SidebarInset>
   )
 );
 Page.displayName = 'Page';

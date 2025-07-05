@@ -14,6 +14,7 @@ import ReactDOM from 'react-dom/client';
 
 // Import the generated route tree
 import { routeTree } from '@renderer/routeTree.gen';
+import { SidebarProvider } from './components/ui/sidebar';
 
 // Create a new router instance
 const hashHistory = createHashHistory(); // Use hash based routing since in production electron just loads the index.html via the file protocol
@@ -46,7 +47,9 @@ if (!rootElement.innerHTML) {
     <StrictMode>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <SidebarProvider>
+            <RouterProvider router={router} />
+          </SidebarProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>
