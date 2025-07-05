@@ -1,34 +1,40 @@
-import { ElectronAPI } from '@electron-toolkit/preload';
-import { ElekIoCore } from '@elek-io/core';
 import { AppHeader } from '@renderer/components/ui/app-header';
 import { Button } from '@renderer/components/ui/button';
 import { Page } from '@renderer/components/ui/page';
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/toast';
+import { UserHeader } from '@renderer/components/ui/user-header';
+import { ipc } from '@renderer/ipc';
+import { userQueryOptions } from '@renderer/queries';
+import { QueryClient } from '@tanstack/react-query';
 import {
   ErrorComponentProps,
   Outlet,
   createRootRouteWithContext,
+  redirect,
   useRouter,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
-import { Dialog as ElectronDialog } from 'electron';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { ReactElement } from 'react';
 
 export interface RouterContext {
-  electron: {
-    process: ElectronAPI['process'];
-    dialog: {
-      showOpenDialog: ElectronDialog['showOpenDialog'];
-      showSaveDialog: ElectronDialog['showSaveDialog'];
-    };
-  };
-  core: ElekIoCore;
+  queryClient: QueryClient;
 }
 
 // Use the routerContext to create your root route
 export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async ({ context, location }) => {
+    const user = await context.queryClient.ensureQueryData(userQueryOptions);
+
+    if (!user) {
+      throw redirect({
+        to: '/user/profile',
+      });
+    }
+
+    return { user };
+  },
   component: RootComponent,
   errorComponent: ErrorComponent,
   notFoundComponent: NotFoundComponent,
@@ -36,7 +42,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function ErrorComponent(props: ErrorComponentProps): JSX.Element {
   const router = useRouter();
-  const { electron } = Route.useRouteContext();
+  const { electron } = ipc;
 
   function Description(): ReactElement {
     return (
@@ -86,7 +92,7 @@ function ErrorComponent(props: ErrorComponentProps): JSX.Element {
 
 function NotFoundComponent(): JSX.Element {
   const router = useRouter();
-  const { electron } = Route.useRouteContext();
+  const { electron } = ipc;
 
   function Description(): ReactElement {
     return <>You've tried accessing a route that could not be found.</>;
@@ -128,11 +134,12 @@ function NotFoundComponent(): JSX.Element {
 }
 
 function RootComponent(): JSX.Element {
-  const { electron } = Route.useRouteContext();
+  const { user } = Route.useRouteContext();
 
   return (
     <>
-      <AppHeader electron={electron} />
+      <AppHeader electron={ipc.electron} />
+      <UserHeader user={user} />
       <Outlet></Outlet>
       <Toaster />
       <TanStackRouterDevtools />

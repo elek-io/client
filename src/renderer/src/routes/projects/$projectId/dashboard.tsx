@@ -12,6 +12,7 @@ export const Route = createFileRoute('/projects/$projectId/dashboard')({
 function ProjectDashboardPage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
+  const { projectId } = Route.useParams();
 
   function Description(): ReactElement {
     return <>The Dashboard gives you an overview of your project.</>;
@@ -24,7 +25,7 @@ function ProjectDashboardPage(): JSX.Element {
           onClick={() =>
             router.navigate({
               to: '/projects/$projectId/history',
-              params: { projectId: context.project.id },
+              params: { projectId },
             })
           }
         >

@@ -1,4 +1,4 @@
-import { TranslatableString } from '@elek-io/core';
+import { SynchronizeProjectProps, TranslatableString } from '@elek-io/core';
 import { Button } from '@renderer/components/ui/button';
 import { Commit } from '@renderer/components/ui/commit';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
@@ -11,8 +11,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
+import { ipc } from '@renderer/ipc';
+import {
+  projectChangesQueryOptions,
+  projectQueryOptions,
+} from '@renderer/queries';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Link,
   Outlet,
@@ -34,27 +39,30 @@ import {
   Settings,
   UploadCloud,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
+    const project = await context.queryClient.fetchQuery(
+      projectQueryOptions({ id: params.projectId })
+    );
+
     /**
-     * Returns given TranslatableString in the language of the current user
+     * Returns given TranslatableString into the language of the current user
      *
      * If the current users translation is not available,
      * it shows it in the default language of the project.
      * If this is not available either, show the 'en' value.
-     * If this is also not available, show the key instead along with a note,
-     * that a translation should be added.
+     * If this is also not available, show the key instead
      */
     function translateContent(key: string, record: TranslatableString): string {
-      const toUserLanguage = record[context.user.language];
-      if (toUserLanguage) {
-        return toUserLanguage;
+      if (context.user) {
+        const toUserLanguage = record[context.user.language];
+        if (toUserLanguage) {
+          return toUserLanguage;
+        }
       }
 
       const toProjectsDefaultLanguage =
-        project.settings.language.default &&
         record[project.settings.language.default];
       if (toProjectsDefaultLanguage) {
         return toProjectsDefaultLanguage;
@@ -65,23 +73,10 @@ export const Route = createFileRoute('/projects/$projectId')({
         return toEnglish;
       }
 
-      return `(Missing translation for key "${key}")`;
+      return key;
     }
 
-    const project = await context.core.projects.read({
-      id: params.projectId,
-    });
-
-    const collections = await context.core.collections.list({
-      projectId: params.projectId,
-      limit: 0,
-    });
-
-    return {
-      project,
-      collections,
-      translateContent,
-    };
+    return { project, translateContent };
   },
   component: ProjectLayout,
 });
@@ -89,11 +84,36 @@ export const Route = createFileRoute('/projects/$projectId')({
 function ProjectLayout(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
+  const { projectId } = Route.useParams();
+  const projectQuery = useQuery(projectQueryOptions({ id: projectId }));
+  const projectChangesQuery = useQuery(
+    projectChangesQueryOptions(context.project)
+  );
+  const synchronizeProjectMutation = useMutation({
+    mutationFn: (props: SynchronizeProjectProps) =>
+      ipc.core.projects.synchronize(props),
+    onError: (error) => {
+      console.error(error);
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to synchronize Project',
+        description: 'There was an error synchronizing the Project.',
+      });
+    },
+    onSuccess: () => {
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully synchronized Project',
+        description: 'The Project was successfully synchronized.',
+      });
+      projectQuery.refetch();
+      projectChangesQuery.refetch();
+    },
+  });
   const addNotification = useStore((state) => state.addNotification);
   const isProjectSidebarNarrow = useStore(
     (state) => state.isProjectSidebarNarrow
   );
-  const [isSynchronizing, setIsSynchronizing] = useState(false);
   const projectNavigation: {
     name: string;
     to: ToPathOption;
@@ -126,66 +146,28 @@ function ProjectLayout(): JSX.Element {
     },
   ];
 
-  useEffect(() => {
-    useStore.setState((prev) => ({
-      breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
-        context.project.id,
-        context.project.name
-      ),
-    }));
-  }, [context.project]);
+  // useEffect(() => {
+  //   useStore.setState((prev) => ({
+  //     breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
+  //       context.project.id,
+  //       context.project.name
+  //     ),
+  //   }));
+  // }, [context.project]);
 
-  useEffect(() => {
-    context.collections.list.map((collection) => {
-      useStore.setState((prev) => ({
-        breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
-          collection.id,
-          context.translateContent(
-            'collection.name.plural',
-            collection.name.plural
-          )
-        ),
-      }));
-    });
-  }, [context.collections]);
-
-  const projectChangesQuery = useQuery({
-    enabled: context.project.remoteOriginUrl !== null,
-    queryKey: ['projectChanges', context.project.id],
-    queryFn: async () => {
-      const changes = await context.core.projects.getChanges({
-        id: context.project.id,
-      });
-      return changes;
-    },
-    // Refetch the data every 3 minutes
-    refetchInterval: 180000,
-  });
-
-  async function onSynchronize(): Promise<void> {
-    setIsSynchronizing(true);
-    try {
-      await context.core.projects.synchronize({
-        id: context.project.id,
-      });
-      setIsSynchronizing(false);
-      addNotification({
-        intent: NotificationIntent.SUCCESS,
-        title: 'Successfully synchronized Project',
-        description: 'The Project was successfully synchronized.',
-      });
-      await projectChangesQuery.refetch();
-      // router.invalidate();
-    } catch (error) {
-      setIsSynchronizing(false);
-      console.error(error);
-      addNotification({
-        intent: NotificationIntent.DANGER,
-        title: 'Failed to synchronize Project',
-        description: 'There was an error synchronizing the Project.',
-      });
-    }
-  }
+  // useEffect(() => {
+  //   context.collections.list.map((collection) => {
+  //     useStore.setState((prev) => ({
+  //       breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
+  //         collection.id,
+  //         context.translateContent(
+  //           'collection.name.plural',
+  //           collection.name.plural
+  //         )
+  //       ),
+  //     }));
+  //   });
+  // }, [context.collections]);
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -212,60 +194,61 @@ function ProjectLayout(): JSX.Element {
                 </Link>
               </div>
             </div>
-            {context.project.remoteOriginUrl && (
-              <>
-                <div className="p-4 pt-0 flex flex-col">
-                  <div className="flex">
-                    <Button
-                      className="flex-1 rounded-r-none"
-                      onClick={onSynchronize}
-                      isLoading={isSynchronizing}
-                      disabled={
-                        projectChangesQuery.isFetching ||
-                        isSynchronizing ||
-                        projectChangesQuery.data === undefined ||
-                        (projectChangesQuery.data.ahead.length === 0 &&
-                          projectChangesQuery.data.behind.length === 0)
-                      }
-                    >
-                      <ArrowDownUp className="w-4 h-4 mr-2" />
-                      Synchronize
-                    </Button>
-                    <Button
-                      className="rounded-l-none ml-0.5"
-                      onClick={() => projectChangesQuery.refetch()}
-                      disabled={
-                        projectChangesQuery.isFetching || isSynchronizing
-                      }
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </Button>
-                  </div>
+            <div className="p-4 pt-0 flex flex-col">
+              <div className="flex">
+                <Button
+                  className="flex-1 rounded-r-none"
+                  onClick={() =>
+                    synchronizeProjectMutation.mutate({ id: projectId })
+                  }
+                  isLoading={synchronizeProjectMutation.isPending}
+                  disabled={
+                    projectQuery.data?.remoteOriginUrl === null ||
+                    projectChangesQuery.isLoading ||
+                    synchronizeProjectMutation.isPending ||
+                    projectChangesQuery.data === undefined ||
+                    (projectChangesQuery.data.ahead.length === 0 &&
+                      projectChangesQuery.data.behind.length === 0)
+                  }
+                >
+                  <ArrowDownUp className="w-4 h-4 mr-2" />
+                  Synchronize
+                </Button>
+                <Button
+                  className="rounded-l-none ml-0.5"
+                  onClick={() => projectChangesQuery.refetch()}
+                  disabled={
+                    projectQuery.data?.remoteOriginUrl === null ||
+                    projectChangesQuery.isLoading ||
+                    synchronizeProjectMutation.isPending
+                  }
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+              </div>
 
-                  <p className="mt-2 text-center text-xs font-medium text-zinc-400">
-                    {projectChangesQuery.isFetching ? (
-                      'Loading'
-                    ) : (
-                      <span className="flex items-center justify-center">
-                        <DownloadCloud className="w-4 h-4 mr-1" />
-                        {projectChangesQuery.data?.behind.length}
-                        <UploadCloud className="w-4 h-4 ml-4 mr-1" />
-                        {projectChangesQuery.data?.ahead.length}
-                      </span>
-                    )}
-                  </p>
+              <p className="mt-2 text-center text-xs font-medium text-zinc-400">
+                {projectChangesQuery.isLoading ? (
+                  'Loading'
+                ) : (
+                  <span className="flex items-center justify-center">
+                    <DownloadCloud className="w-4 h-4 mr-1" />
+                    {projectChangesQuery.data?.behind.length}
+                    <UploadCloud className="w-4 h-4 ml-4 mr-1" />
+                    {projectChangesQuery.data?.ahead.length}
+                  </span>
+                )}
+              </p>
 
-                  {projectChangesQuery.data &&
-                    projectChangesQuery.data.ahead.map((commit) => (
-                      <Commit
-                        key={commit.hash}
-                        commit={commit}
-                        language={context.user.language}
-                      />
-                    ))}
-                </div>
-              </>
-            )}
+              {projectChangesQuery.data &&
+                projectChangesQuery.data.ahead.map((commit) => (
+                  <Commit
+                    key={commit.hash}
+                    commit={commit}
+                    language={context.user.language}
+                  />
+                ))}
+            </div>
           </>
         )}
 

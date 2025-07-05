@@ -4,6 +4,7 @@ import { ThemeProvider } from '@renderer/components/theme-provider';
 import '@renderer/index.css';
 import { ipc } from '@renderer/ipc';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   RouterProvider,
   createHashHistory,
@@ -15,12 +16,15 @@ import ReactDOM from 'react-dom/client';
 // Import the generated route tree
 import { routeTree } from '@renderer/routeTree.gen';
 
+// Initialize TanStack Query
+const queryClient = new QueryClient();
+
 // Create a new router instance
 const hashHistory = createHashHistory(); // Use hash based routing since in production electron just loads the index.html via the file protocol
 const router = createRouter({
   routeTree,
   history: hashHistory,
-  context: { electron: ipc.electron, core: ipc.core },
+  context: { queryClient },
 });
 router.subscribe('onBeforeLoad', (event) => {
   ipc.core.logger.info(
@@ -35,9 +39,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Initialize TanStack Query
-export const queryClient = new QueryClient();
-
 // Render the app
 const rootElement = document.getElementById('app')!;
 if (!rootElement.innerHTML) {
@@ -47,6 +48,7 @@ if (!rootElement.innerHTML) {
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>

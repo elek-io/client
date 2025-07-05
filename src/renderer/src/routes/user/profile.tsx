@@ -27,31 +27,98 @@ import {
   SelectValue,
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
-import { UserHeader } from '@renderer/components/ui/user-header';
+import { ipc } from '@renderer/ipc';
+import { isApiRunningQueryOptions, userQueryOptions } from '@renderer/queries';
 import { NotificationIntent, useStore } from '@renderer/store';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { ReactElement } from 'react';
+import { useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/user/profile')({
-  beforeLoad: async ({ context }) => {
-    const user = await context.core.user.get();
-
-    return { user };
-  },
   component: UserProfilePage,
 });
 
 function UserProfilePage(): JSX.Element {
   const router = useRouter();
   const context = Route.useRouteContext();
-  const addNotification = useStore((state) => state.addNotification);
-  const [isSettingUser, setIsSettingUser] = useState(false);
-  const setUserForm = useForm<SetUserProps>({
-    resolver: async (data, context, options) => {
-      return zodResolver(setUserSchema)(data, context, options);
+
+  const startApiMutation = useMutation({
+    mutationFn: (port: number) => ipc.core.api.start(port),
+    onError: (error) => {
+      console.error(error);
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to start local API',
+        description: 'There was an error starting the local API.',
+      });
     },
+    onSuccess: () => {
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully started local API',
+        description: 'The local API was successfully started.',
+      });
+    },
+  });
+
+  const stopApiMutation = useMutation({
+    mutationFn: () => ipc.core.api.stop(),
+    onError: (error) => {
+      console.error(error);
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to stop local API',
+        description: 'There was an error stopping the local API.',
+      });
+    },
+    onSuccess: () => {
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully stopped local API',
+        description: 'The local API was successfully stopped.',
+      });
+    },
+  });
+
+  const setUserMutation = useMutation({
+    mutationFn: (props: SetUserProps) => ipc.core.user.set(props),
+    onError: (error) => {
+      console.error(error);
+      addNotification({
+        intent: NotificationIntent.DANGER,
+        title: 'Failed to setup User',
+        description: 'There was an error setting up the User.',
+      });
+    },
+    onSuccess: async (user) => {
+      context.queryClient.invalidateQueries(userQueryOptions);
+      addNotification({
+        intent: NotificationIntent.SUCCESS,
+        title: 'Successfully setup User',
+        description: 'The User was successfully setup.',
+      });
+      await router.navigate({ to: '/projects' });
+
+      const isLocalApiRunning = await context.queryClient.fetchQuery(
+        isApiRunningQueryOptions
+      );
+
+      if (user.localApi.isEnabled === true && isLocalApiRunning === false) {
+        startApiMutation.mutate(user.localApi.port);
+      }
+
+      if (user.localApi.isEnabled === false && isLocalApiRunning === true) {
+        stopApiMutation.mutate();
+      }
+    },
+  });
+
+  const addNotification = useStore((state) => state.addNotification);
+
+  const setUserForm = useForm<SetUserProps>({
+    resolver: zodResolver(setUserSchema),
     defaultValues: {
       userType: 'local',
       name: context.user?.name || '',
@@ -63,6 +130,7 @@ function UserProfilePage(): JSX.Element {
       },
     },
   });
+
   const exampleCommit: GitCommit = {
     hash: '1234567890',
     author: {
@@ -79,7 +147,12 @@ function UserProfilePage(): JSX.Element {
       },
     },
   };
+
   const localApiUrl = `http://localhost:${setUserForm.watch('localApi.port')}/v1/ui`;
+
+  function onSetUser(user: SetUserProps): void {
+    setUserMutation.mutate(user);
+  }
 
   function Description(): ReactElement {
     if (context.user === null) {
@@ -111,8 +184,10 @@ function UserProfilePage(): JSX.Element {
     return (
       <>
         <Button
-          onClick={setUserForm.handleSubmit(onSetUser)}
-          isLoading={isSettingUser}
+          onClick={setUserForm.handleSubmit(onSetUser, (err) => {
+            console.error(err);
+          })}
+          isLoading={setUserMutation.isPending}
         >
           <Check className="w-4 h-4 mr-2"></Check>
           Save local User
@@ -134,41 +209,8 @@ function UserProfilePage(): JSX.Element {
     );
   }
 
-  const onSetUser: SubmitHandler<SetUserProps> = async (props) => {
-    setIsSettingUser(true);
-    try {
-      const user = await context.core.user.set(props);
-      const isLocalApiRunning = await context.core.api.isRunning();
-
-      if (user.localApi.isEnabled === true && isLocalApiRunning === false) {
-        context.core.api.start(user.localApi.port);
-      }
-
-      if (user.localApi.isEnabled === false && isLocalApiRunning === true) {
-        context.core.api.stop();
-      }
-
-      setIsSettingUser(false);
-      await router.navigate({ to: '/projects' });
-      addNotification({
-        intent: NotificationIntent.SUCCESS,
-        title: 'Successfully setup User',
-        description: 'The User was successfully setup.',
-      });
-    } catch (error) {
-      setIsSettingUser(false);
-      console.error(error);
-      addNotification({
-        intent: NotificationIntent.DANGER,
-        title: 'Failed to setup User',
-        description: 'There was an error setting up the User.',
-      });
-    }
-  };
-
   return (
     <>
-      {context.user && <UserHeader user={context.user} />}
       <Page
         title={
           context.user === null ? 'Welcome to elek.io Client' : 'User profile'
@@ -181,7 +223,7 @@ function UserProfilePage(): JSX.Element {
           <main className="grid-cols-1 gap-4 lg:col-span-2">
             <div className="rounded-lg bg-white dark:bg-zinc-900 shadow">
               <Form {...setUserForm}>
-                <form>
+                <form onSubmit={setUserForm.handleSubmit(onSetUser)}>
                   <PageSection
                     className="border-none space-y-6"
                     title="Local User"
