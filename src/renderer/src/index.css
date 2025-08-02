@@ -21,6 +21,11 @@
   }
 }
 
+@theme {
+  --color-brand-600: var(--color-cyan-600);
+  --color-brand-950: var(--color-cyan-950);
+}
+
 /*
   By default, the frameless window is non-draggable. 
   Apps need to specify -webkit-app-region: drag in CSS to tell Electron 
