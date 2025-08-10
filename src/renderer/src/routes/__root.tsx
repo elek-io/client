@@ -1,5 +1,3 @@
-import { type ElectronAPI } from '@electron-toolkit/preload';
-import { type ElekIoCore } from '@elek-io/core';
 import { AppHeader } from '@renderer/components/ui/app-header';
 import { Button } from '@renderer/components/ui/button';
 import { Page } from '@renderer/components/ui/page';
@@ -12,20 +10,10 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-import { type Dialog as ElectronDialog } from 'electron';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { type ReactElement } from 'react';
 
-export interface RouterContext {
-  electron: {
-    process: ElectronAPI['process'];
-    dialog: {
-      showOpenDialog: ElectronDialog['showOpenDialog'];
-      showSaveDialog: ElectronDialog['showSaveDialog'];
-    };
-  };
-  core: ElekIoCore;
-}
+export interface RouterContext extends ContextBridgeApi {}
 
 // Use the routerContext to create your root route
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -34,16 +22,17 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: NotFoundComponent,
 });
 
-function ErrorComponent(props: ErrorComponentProps): JSX.Element {
+function ErrorComponent(props: ErrorComponentProps): ReactElement {
   const router = useRouter();
   const { electron } = Route.useRouteContext();
 
   function Description(): ReactElement {
     return (
       <>
-        Unfortunately you've encountered an error. But don't worry, if you have
-        allowed us to send error reports we know about and will take care of it
-        soon. If you need additional help, please contact our support.
+        Unfortunately you&apos;ve encountered an error. But don&apos;t worry, if
+        you have allowed us to send error reports we know about and will take
+        care of it soon. If you need additional help, please contact our
+        support.
       </>
     );
   }
@@ -84,12 +73,12 @@ function ErrorComponent(props: ErrorComponentProps): JSX.Element {
   );
 }
 
-function NotFoundComponent(): JSX.Element {
+function NotFoundComponent(): ReactElement {
   const router = useRouter();
   const { electron } = Route.useRouteContext();
 
   function Description(): ReactElement {
-    return <>You've tried accessing a route that could not be found.</>;
+    return <>You&apos;ve tried accessing a route that could not be found.</>;
   }
 
   function Actions(): ReactElement {
@@ -119,15 +108,16 @@ function NotFoundComponent(): JSX.Element {
         actions={<Actions />}
       >
         <p className="p-6">
-          You tried to access "{location.href}" but it does not exist. Use the
-          buttons above to navigate back or try to reload the page.
+          You&apos;ve tried to access &quot;{location.href}&quot; but it does
+          not exist. Use the buttons above to navigate back or try to reload the
+          page.
         </p>
       </Page>
     </>
   );
 }
 
-function RootComponent(): JSX.Element {
+function RootComponent(): ReactElement {
   const { electron } = Route.useRouteContext();
 
   return (
