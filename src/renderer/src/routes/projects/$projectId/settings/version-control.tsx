@@ -1,5 +1,5 @@
 import {
-  SetRemoteOriginUrlProjectProps,
+  type SetRemoteOriginUrlProjectProps,
   setRemoteOriginUrlProjectSchema,
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,8 +19,8 @@ import { PageSection } from '@renderer/components/ui/page-section';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute(
   '/projects/$projectId/settings/version-control'
@@ -28,7 +28,7 @@ export const Route = createFileRoute(
   component: ProjectSettingsVersionControlPage,
 });
 
-function ProjectSettingsVersionControlPage(): JSX.Element {
+function ProjectSettingsVersionControlPage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);

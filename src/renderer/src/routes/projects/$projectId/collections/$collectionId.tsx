@@ -1,4 +1,5 @@
 import { Outlet, createFileRoute } from '@tanstack/react-router';
+import type { ReactElement } from 'react';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId'
@@ -20,6 +21,6 @@ export const Route = createFileRoute(
   component: ProjectCollectionLayout,
 });
 
-function ProjectCollectionLayout(): JSX.Element {
+function ProjectCollectionLayout(): ReactElement {
   return <Outlet></Outlet>;
 }

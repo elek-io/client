@@ -1,7 +1,7 @@
-import { RouterContext } from '@renderer/routes/__root';
+import { type RouterContext } from '@renderer/routes/__root';
 import { cn } from '@renderer/util';
 import { ChevronDown, ExternalLink } from 'lucide-react';
-import { forwardRef, HTMLAttributes, useState } from 'react';
+import { forwardRef, type HTMLAttributes, useState } from 'react';
 import {
   version as clientVersion,
   dependencies,

@@ -1,10 +1,11 @@
 import {
-  ForwardedRef,
+  type ForwardedRef,
   forwardRef,
-  HTMLInputTypeAttribute,
-  InputHTMLAttributes,
+  type HTMLInputTypeAttribute,
+  type InputHTMLAttributes,
+  type ReactElement,
 } from 'react';
-import { ControllerRenderProps, FieldValues } from 'react-hook-form';
+import { type ControllerRenderProps, type FieldValues } from 'react-hook-form';
 import { Input } from './input';
 
 export interface FormInputProps<T extends FieldValues>
@@ -23,7 +24,7 @@ export interface FormInputProps<T extends FieldValues>
 function _FormInput<T extends FieldValues>(
   { field, ...props }: FormInputProps<T>,
   ref: ForwardedRef<HTMLInputElement>
-): JSX.Element {
+): ReactElement {
   function transform(value: string): string | number | null {
     if (value.trim() === '') {
       return null;

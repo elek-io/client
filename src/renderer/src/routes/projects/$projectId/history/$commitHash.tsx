@@ -1,4 +1,10 @@
-import { Asset, Collection, Entry, GitCommit, Project } from '@elek-io/core';
+import {
+  type Asset,
+  type Collection,
+  type Entry,
+  type GitCommit,
+  type Project,
+} from '@elek-io/core';
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { Badge } from '@renderer/components/ui/badge';
 import { CollectionDiff } from '@renderer/components/ui/collection-diff';
@@ -8,7 +14,7 @@ import { Page } from '@renderer/components/ui/page';
 import { ProjectDiff } from '@renderer/components/ui/project-diff';
 import { createFileRoute } from '@tanstack/react-router';
 import { Tag } from 'lucide-react';
-import { ReactElement } from 'react';
+import { type ReactElement } from 'react';
 
 export const Route = createFileRoute(
   '/projects/$projectId/history/$commitHash'
@@ -254,7 +260,7 @@ export const Route = createFileRoute(
   component: ProjectHistoryCommitPage,
 });
 
-function ProjectHistoryCommitPage(): JSX.Element {
+function ProjectHistoryCommitPage(): ReactElement {
   const context = Route.useRouteContext();
 
   function DisplayChanges(): ReactElement {

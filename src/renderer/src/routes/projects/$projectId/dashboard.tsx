@@ -3,13 +3,13 @@ import { CommitHistory } from '@renderer/components/ui/commit-history';
 import { Page } from '@renderer/components/ui/page';
 import { PageSection } from '@renderer/components/ui/page-section';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { ReactElement } from 'react';
+import { type ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,
 });
 
-function ProjectDashboardPage(): JSX.Element {
+function ProjectDashboardPage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
 
@@ -43,12 +43,12 @@ function ProjectDashboardPage(): JSX.Element {
     >
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
         <div className="grid grid-cols-1 gap-4 lg:col-span-2">
-          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow p-4">
+          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow-sm p-4">
             Current Project: {JSON.stringify(context.project)}
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4">
-          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow">
+          <div className="rounded-lg bg-white dark:bg-zinc-900 shadow-sm">
             <PageSection
               title="Latest changes"
               actions={<LatestChangesActions />}

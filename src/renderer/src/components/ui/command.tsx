@@ -5,15 +5,16 @@ import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { cn } from '@renderer/util';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
-  ComponentPropsWithoutRef,
-  ElementRef,
+  type ComponentPropsWithoutRef,
+  type ComponentRef,
   forwardRef,
-  HTMLAttributes,
+  type HTMLAttributes,
+  type ReactElement,
 } from 'react';
 import { Dialog, DialogContent } from './dialog';
 
 const Command = forwardRef<
-  ElementRef<typeof CommandPrimitive>,
+  ComponentRef<typeof CommandPrimitive>,
   ComponentPropsWithoutRef<typeof CommandPrimitive>
 >(({ className, ...props }, ref) => (
   <CommandPrimitive
@@ -32,7 +33,7 @@ type CommandDialogProps = DialogProps;
 const CommandDialog = ({
   children,
   ...props
-}: CommandDialogProps): JSX.Element => {
+}: CommandDialogProps): ReactElement => {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0">
@@ -45,7 +46,7 @@ const CommandDialog = ({
 };
 
 const CommandInput = forwardRef<
-  ElementRef<typeof CommandPrimitive.Input>,
+  ComponentRef<typeof CommandPrimitive.Input>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
   // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk @see https://github.com/shadcn-ui/ui/issues/3366
@@ -54,7 +55,7 @@ const CommandInput = forwardRef<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-zinc-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-zinc-400',
+        'flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-zinc-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-zinc-400',
         className
       )}
       {...props}
@@ -65,7 +66,7 @@ const CommandInput = forwardRef<
 CommandInput.displayName = CommandPrimitive.Input.displayName;
 
 const CommandList = forwardRef<
-  ElementRef<typeof CommandPrimitive.List>,
+  ComponentRef<typeof CommandPrimitive.List>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.List>
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
@@ -78,7 +79,7 @@ const CommandList = forwardRef<
 CommandList.displayName = CommandPrimitive.List.displayName;
 
 const CommandEmpty = forwardRef<
-  ElementRef<typeof CommandPrimitive.Empty>,
+  ComponentRef<typeof CommandPrimitive.Empty>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
 >((props, ref) => (
   <CommandPrimitive.Empty
@@ -91,7 +92,7 @@ const CommandEmpty = forwardRef<
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
 const CommandGroup = forwardRef<
-  ElementRef<typeof CommandPrimitive.Group>,
+  ComponentRef<typeof CommandPrimitive.Group>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Group
@@ -107,7 +108,7 @@ const CommandGroup = forwardRef<
 CommandGroup.displayName = CommandPrimitive.Group.displayName;
 
 const CommandSeparator = forwardRef<
-  ElementRef<typeof CommandPrimitive.Separator>,
+  ComponentRef<typeof CommandPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Separator
@@ -119,13 +120,13 @@ const CommandSeparator = forwardRef<
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 const CommandItem = forwardRef<
-  ElementRef<typeof CommandPrimitive.Item>,
+  ComponentRef<typeof CommandPrimitive.Item>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-zinc-100 aria-selected:text-zinc-900 data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50 dark:aria-selected:bg-zinc-800 dark:aria-selected:text-zinc-50",
+      "relative flex cursor-default select-none items-center rounded-xs px-2 py-1.5 text-sm outline-hidden aria-selected:bg-zinc-100 aria-selected:text-zinc-900 data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50 dark:aria-selected:bg-zinc-800 dark:aria-selected:text-zinc-50",
       className
     )}
     {...props}
@@ -137,7 +138,7 @@ CommandItem.displayName = CommandPrimitive.Item.displayName;
 const CommandShortcut = ({
   className,
   ...props
-}: HTMLAttributes<HTMLSpanElement>): JSX.Element => {
+}: HTMLAttributes<HTMLSpanElement>): ReactElement => {
   return (
     <span
       className={cn(

@@ -3,7 +3,7 @@
 import { cn } from '@renderer/util';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { Dispatch, SetStateAction } from 'react';
+import { type Dispatch, type ReactElement, type SetStateAction } from 'react';
 import { Button } from './button';
 import { Calendar } from './calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -13,7 +13,7 @@ interface DatePickerProps {
   setDate: Dispatch<SetStateAction<Date>>;
 }
 
-const DatePicker = ({ date, setDate }: DatePickerProps): JSX.Element => {
+const DatePicker = ({ date, setDate }: DatePickerProps): ReactElement => {
   return (
     <Popover>
       <PopoverTrigger asChild>

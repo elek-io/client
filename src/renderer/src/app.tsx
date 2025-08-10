@@ -1,4 +1,6 @@
+// @ts-ignore see: https://github.com/fontsource/fontsource/issues/1038
 import '@fontsource-variable/montserrat';
+// @ts-ignore see: https://github.com/fontsource/fontsource/issues/1038
 import '@fontsource/roboto';
 import { ThemeProvider } from '@renderer/components/theme-provider';
 import '@renderer/index.css';
@@ -24,7 +26,7 @@ const router = createRouter({
 });
 router.subscribe('onBeforeLoad', (event) => {
   ipc.core.logger.info(
-    `Client navigating from "${event.fromLocation.href}" to "${event.toLocation.href}"`
+    `Client navigating from "${event?.fromLocation?.href}" to "${event.toLocation.href}"`
   );
 });
 

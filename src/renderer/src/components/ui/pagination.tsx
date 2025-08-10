@@ -1,12 +1,12 @@
 import { cn } from '@renderer/util';
 import { ChevronLeftIcon, ChevronRightIcon, Ellipsis } from 'lucide-react';
-import { ComponentProps, forwardRef } from 'react';
-import { Button, ButtonProps } from './button';
+import { type ComponentProps, forwardRef, type ReactElement } from 'react';
+import { Button, type ButtonProps } from './button';
 
 const Pagination = ({
   className,
   ...props
-}: ComponentProps<'nav'>): JSX.Element => (
+}: ComponentProps<'nav'>): ReactElement => (
   <nav
     role="navigation"
     aria-label="pagination"
@@ -41,7 +41,7 @@ type PaginationLinkProps = {
 const PaginationLink = ({
   isActive,
   ...props
-}: PaginationLinkProps): JSX.Element => (
+}: PaginationLinkProps): ReactElement => (
   <Button
     variant={isActive ? 'outline' : 'ghost'}
     size={'icon'}
@@ -54,7 +54,7 @@ PaginationLink.displayName = 'PaginationLink';
 const PaginationPrevious = ({
   className,
   ...props
-}: ComponentProps<typeof PaginationLink>): JSX.Element => (
+}: ComponentProps<typeof PaginationLink>): ReactElement => (
   <PaginationLink
     aria-label="Go to previous page"
     size="default"
@@ -70,7 +70,7 @@ PaginationPrevious.displayName = 'PaginationPrevious';
 const PaginationNext = ({
   className,
   ...props
-}: ComponentProps<typeof PaginationLink>): JSX.Element => (
+}: ComponentProps<typeof PaginationLink>): ReactElement => (
   <PaginationLink
     aria-label="Go to next page"
     size="default"
@@ -86,7 +86,7 @@ PaginationNext.displayName = 'PaginationNext';
 const PaginationEllipsis = ({
   className,
   ...props
-}: ComponentProps<'span'>): JSX.Element => (
+}: ComponentProps<'span'>): ReactElement => (
   <span
     aria-hidden
     className={cn('flex h-9 w-9 items-center justify-center', className)}

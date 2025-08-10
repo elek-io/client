@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 /* Add default styling to some elements */
 @layer base {
@@ -18,9 +16,14 @@
   }
 
   a {
-    color: theme('colors.brand.600');
+    color: var(--color-brand-600);
     text-decoration: underline;
   }
+}
+
+@theme {
+  --color-brand-600: var(--color-cyan-600);
+  --color-brand-950: var(--color-cyan-950);
 }
 
 /*

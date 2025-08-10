@@ -4,12 +4,13 @@ import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
 import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
 import { Outlet, createFileRoute } from '@tanstack/react-router';
 import { Layers, Plus } from 'lucide-react';
+import type { ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   component: ProjectCollectionsLayout,
 });
 
-function ProjectCollectionsLayout(): JSX.Element {
+function ProjectCollectionsLayout(): ReactElement {
   const context = Route.useRouteContext();
 
   return (

@@ -3,11 +3,11 @@
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { cn } from '@renderer/util';
 import {
-  ComponentPropsWithoutRef,
-  ElementRef,
+  type ComponentPropsWithoutRef,
+  type ComponentRef,
   forwardRef,
-  ForwardRefExoticComponent,
-  RefAttributes,
+  type ForwardRefExoticComponent,
+  type RefAttributes,
 } from 'react';
 
 interface AvatarProps extends AvatarPrimitive.AvatarProps {
@@ -16,17 +16,18 @@ interface AvatarProps extends AvatarPrimitive.AvatarProps {
 }
 
 const Avatar = forwardRef<
-  ElementRef<typeof AvatarBase>,
+  ComponentRef<typeof AvatarBase>,
   ComponentPropsWithoutRef<
     ForwardRefExoticComponent<AvatarProps & RefAttributes<HTMLSpanElement>>
   >
 >(({ className, ...props }, ref) => {
   function initials(name: string): string {
-    const rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
-    const initials = [...name.matchAll(rgx)] || [];
+    const parts = name.split(' ');
+    const firstPart = parts.shift();
+    const lastPart = parts.pop();
 
     return (
-      (initials.shift()?.[1] || '') + (initials.pop()?.[1] || '')
+      (firstPart?.substring(0, 1) || '') + (lastPart?.substring(0, 1) || '')
     ).toUpperCase();
   }
 
@@ -40,7 +41,7 @@ const Avatar = forwardRef<
 Avatar.displayName = AvatarPrimitive.Root.displayName;
 
 const AvatarBase = forwardRef<
-  ElementRef<typeof AvatarPrimitive.Root>,
+  ComponentRef<typeof AvatarPrimitive.Root>,
   ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Root
@@ -55,7 +56,7 @@ const AvatarBase = forwardRef<
 AvatarBase.displayName = AvatarPrimitive.Root.displayName;
 
 const AvatarImage = forwardRef<
-  ElementRef<typeof AvatarPrimitive.Image>,
+  ComponentRef<typeof AvatarPrimitive.Image>,
   ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Image
@@ -67,7 +68,7 @@ const AvatarImage = forwardRef<
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
 const AvatarFallback = forwardRef<
-  ElementRef<typeof AvatarPrimitive.Fallback>,
+  ComponentRef<typeof AvatarPrimitive.Fallback>,
   ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Fallback

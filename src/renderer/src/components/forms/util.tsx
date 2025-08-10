@@ -1,10 +1,15 @@
 import {
-  FieldDefinition,
-  SupportedLanguage,
-  TranslatableString,
+  type FieldDefinition,
+  type SupportedLanguage,
+  type TranslatableString,
 } from '@elek-io/core';
 import { fieldWidth } from '@renderer/util';
-import { ControllerRenderProps, FieldValues, Path } from 'react-hook-form';
+import type { ReactElement } from 'react';
+import {
+  type ControllerRenderProps,
+  type FieldValues,
+  type Path,
+} from 'react-hook-form';
 import {
   FormControl,
   FormDescription,
@@ -69,7 +74,7 @@ export interface FormFieldFromDefinitionProps<T extends FieldValues> {
  */
 export function FormFieldFromDefinition<T extends FieldValues>(
   props: FormFieldFromDefinitionProps<T>
-): JSX.Element {
+): ReactElement {
   return (
     <FormField
       key={props.fieldDefinition.id}
@@ -117,7 +122,7 @@ export interface FormInputFromDefinitionProps<T extends FieldValues> {
 
 function FormInputFromDefinition<T extends FieldValues>(
   props: FormInputFromDefinitionProps<T>
-): JSX.Element {
+): ReactElement {
   switch (props.fieldDefinition.fieldType) {
     case 'text':
       return (
@@ -197,7 +202,7 @@ export interface FieldFromDefinitionProps {
  */
 export function FieldFromDefinition(
   props: FieldFromDefinitionProps
-): JSX.Element {
+): ReactElement {
   return (
     <FormItem
       className={`col-span-12 ${fieldWidth(props.fieldDefinition.inputWidth)}`}
@@ -233,7 +238,7 @@ export interface InputFromDefinitionProps {
   value?: string | number | boolean | undefined;
 }
 
-function InputFromDefinition(props: InputFromDefinitionProps): JSX.Element {
+function InputFromDefinition(props: InputFromDefinitionProps): ReactElement {
   switch (props.fieldDefinition.fieldType) {
     case 'text':
       if (typeof props.value !== 'string' && props.value !== undefined) {

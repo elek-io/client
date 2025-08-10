@@ -1,6 +1,6 @@
 import {
-  GitCommit,
-  SetUserProps,
+  type GitCommit,
+  type SetUserProps,
   setUserSchema,
   supportedLanguageSchema,
 } from '@elek-io/core';
@@ -31,8 +31,8 @@ import { UserHeader } from '@renderer/components/ui/user-header';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/user/profile')({
   beforeLoad: async ({ context }) => {
@@ -43,7 +43,7 @@ export const Route = createFileRoute('/user/profile')({
   component: UserProfilePage,
 });
 
-function UserProfilePage(): JSX.Element {
+function UserProfilePage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -85,9 +85,9 @@ function UserProfilePage(): JSX.Element {
     if (context.user === null) {
       return (
         <>
-          Before we start you need to set up a local User first. Don't worry,
-          you are not creating an account and this information is only saved
-          locally on this device! Read more about{' '}
+          Before we start you need to set up a local User first. Don&apos;t
+          worry, you are not creating an account and this information is only
+          saved locally on this device! Read more about{' '}
           <a href="#" className="text-brand-600 hover:underline">
             local Users in our documentation
           </a>{' '}
@@ -179,7 +179,7 @@ function UserProfilePage(): JSX.Element {
       >
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
           <main className="grid-cols-1 gap-4 lg:col-span-2">
-            <div className="rounded-lg bg-white dark:bg-zinc-900 shadow">
+            <div className="rounded-lg bg-white dark:bg-zinc-900 shadow-sm">
               <Form {...setUserForm}>
                 <form>
                   <PageSection
@@ -295,7 +295,7 @@ function UserProfilePage(): JSX.Element {
                       control={setUserForm.control}
                       name={`localApi.isEnabled`}
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
                           <div className="mr-4">
                             <FormLabel isRequired={true}>Enabled</FormLabel>
                             <FormDescription>
@@ -319,7 +319,7 @@ function UserProfilePage(): JSX.Element {
             </div>
           </main>
           <aside className="grid grid-cols-1 gap-4">
-            <div className="rounded-lg bg-white dark:bg-zinc-900 shadow">
+            <div className="rounded-lg bg-white dark:bg-zinc-900 shadow-sm">
               <PageSection
                 className="border-none"
                 title="Example change"

@@ -1,5 +1,10 @@
-import { ForwardedRef, forwardRef, TextareaHTMLAttributes } from 'react';
-import { ControllerRenderProps, FieldValues } from 'react-hook-form';
+import {
+  type ForwardedRef,
+  forwardRef,
+  type ReactElement,
+  type TextareaHTMLAttributes,
+} from 'react';
+import { type ControllerRenderProps, type FieldValues } from 'react-hook-form';
 import { Textarea } from './textarea';
 
 export interface FormTextareaProps<T extends FieldValues>
@@ -15,7 +20,7 @@ export interface FormTextareaProps<T extends FieldValues>
 function _FormTextarea<T extends FieldValues>(
   { field, ...props }: FormTextareaProps<T>,
   ref: ForwardedRef<HTMLTextAreaElement>
-): JSX.Element {
+): ReactElement {
   function transform(value: string): string | null {
     if (value.trim() === '') {
       return null;

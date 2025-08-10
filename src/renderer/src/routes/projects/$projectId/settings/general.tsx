@@ -1,7 +1,7 @@
 import {
-  DeleteProjectProps,
-  SupportedLanguage,
-  UpdateProjectProps,
+  type DeleteProjectProps,
+  type SupportedLanguage,
+  type UpdateProjectProps,
   supportedLanguageSchema,
   updateProjectSchema,
 } from '@elek-io/core';
@@ -55,14 +55,14 @@ import { Textarea } from '@renderer/components/ui/textarea';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Plus, Trash } from 'lucide-react';
-import { ReactElement, useState } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsGeneralPage,
 });
 
-function ProjectSettingsGeneralPage(): JSX.Element {
+function ProjectSettingsGeneralPage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -375,8 +375,9 @@ function ProjectSettingsGeneralPage(): JSX.Element {
                 <DialogHeader>
                   <DialogTitle>Deleting the default language</DialogTitle>
                   <DialogDescription>
-                    The default language can't be deleted. Please select another
-                    language as the default and then delete this language.
+                    The default language can&apos;t be deleted. Please select
+                    another language as the default and then delete this
+                    language.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -423,7 +424,7 @@ function ProjectSettingsGeneralPage(): JSX.Element {
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button type="button" variant="secondary">
-                      No, I've changed my mind
+                      No, I&apos;ve changed my mind
                     </Button>
                   </DialogClose>
                   <Button

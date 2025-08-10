@@ -1,8 +1,8 @@
 import { cn } from '@renderer/util';
 import {
-  DragEventHandler,
+  type DragEventHandler,
   forwardRef,
-  HTMLAttributes,
+  type HTMLAttributes,
   type ReactElement,
   type ReactNode,
 } from 'react';
@@ -55,7 +55,7 @@ export const Page = forwardRef<HTMLElement, PageProps>(
               {props.layout === 'bare' ? (
                 <>{props.children}</>
               ) : (
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow">
+                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
                   {props.children}
                 </div>
               )}

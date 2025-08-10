@@ -1,12 +1,7 @@
 import { cn } from '@renderer/util';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { HTMLAttributes, type ReactElement, type ReactNode } from 'react';
+import { type HTMLAttributes, type ReactElement, type ReactNode } from 'react';
 
-const styles = cva('');
-
-export interface PageSectionProps
-  extends HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof styles> {
+export interface PageSectionProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   title?: string;
   description?: string | ReactElement;
@@ -16,7 +11,7 @@ export interface PageSectionProps
 export function PageSection({
   className,
   ...props
-}: PageSectionProps): JSX.Element {
+}: PageSectionProps): ReactElement {
   return (
     <section
       className={cn(

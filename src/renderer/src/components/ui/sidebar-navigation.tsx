@@ -1,5 +1,9 @@
 import { cn } from '@renderer/util';
-import { DetailedHTMLProps, HTMLAttributes } from 'react';
+import {
+  type DetailedHTMLProps,
+  type HTMLAttributes,
+  type ReactElement,
+} from 'react';
 
 export type SidebarNavigationProps = DetailedHTMLProps<
   HTMLAttributes<HTMLElement>,
@@ -9,7 +13,7 @@ export type SidebarNavigationProps = DetailedHTMLProps<
 function SidebarNavigation({
   className,
   ...props
-}: SidebarNavigationProps): JSX.Element {
+}: SidebarNavigationProps): ReactElement {
   return (
     <div className="group flex flex-col gap-4 py-2">
       <nav className={cn('grid gap-1 px-3', className)} {...props}></nav>

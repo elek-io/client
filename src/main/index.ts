@@ -294,135 +294,70 @@ class Main {
     window: Electron.BrowserWindow,
     core: ElekIoCore
   ): void {
-    ipcMain.handle('electron:dialog:showOpenDialog', async (_event, args) => {
-      return await dialog.showOpenDialog(window, args);
+    const channelToHandlerMap = {
+      'electron:dialog:showOpenDialog': dialog.showOpenDialog,
+      'electron:dialog:showSaveDialog': dialog.showSaveDialog,
+      'core:api:start': core.api.start.bind(core.api),
+      'core:api:isRunning': core.api.isRunning.bind(core.api),
+      'core:api:stop': core.api.stop.bind(core.api),
+      'core:logger:debug': core.logger.debug.bind(core.logger),
+      'core:logger:info': core.logger.info.bind(core.logger),
+      'core:logger:warn': core.logger.warn.bind(core.logger),
+      'core:logger:error': core.logger.error.bind(core.logger),
+      'core:logger:read': core.logger.read.bind(core.logger),
+      'core:user:get': core.user.get.bind(core.user),
+      'core:user:set': core.user.set.bind(core.user),
+      'core:projects:count': core.projects.count.bind(core.projects),
+      'core:projects:create': core.projects.create.bind(core.projects),
+      'core:projects:list': core.projects.list.bind(core.projects),
+      'core:projects:read': core.projects.read.bind(core.projects),
+      'core:projects:update': core.projects.update.bind(core.projects),
+      'core:projects:getChanges': core.projects.getChanges.bind(core.projects),
+      'core:projects:clone': core.projects.clone.bind(core.projects),
+      'core:projects:synchronize': core.projects.synchronize.bind(
+        core.projects
+      ),
+      'core:projects:setRemoteOriginUrl': core.projects.setRemoteOriginUrl.bind(
+        core.projects
+      ),
+      'core:projects:delete': core.projects.delete.bind(core.projects),
+      'core:assets:list': core.assets.list.bind(core.assets),
+      'core:assets:create': core.assets.create.bind(core.assets),
+      'core:assets:read': core.assets.read.bind(core.assets),
+      'core:assets:update': core.assets.update.bind(core.assets),
+      'core:assets:delete': core.assets.delete.bind(core.assets),
+      'core:assets:save': core.assets.save.bind(core.assets),
+      'core:collections:list': core.collections.list.bind(core.collections),
+      'core:collections:create': core.collections.create.bind(core.collections),
+      'core:collections:read': core.collections.read.bind(core.collections),
+      'core:collections:update': core.collections.update.bind(core.collections),
+      'core:collections:delete': core.collections.delete.bind(core.collections),
+      'core:entries:list': core.entries.list.bind(core.entries),
+      'core:entries:create': core.entries.create.bind(core.entries),
+      'core:entries:read': core.entries.read.bind(core.entries),
+      'core:entries:update': core.entries.update.bind(core.entries),
+      'core:entries:delete': core.entries.delete.bind(core.entries),
+    } as const;
+
+    type Channel = keyof typeof channelToHandlerMap;
+
+    (Object.keys(channelToHandlerMap) as Channel[]).forEach((channel) => {
+      const handler = channelToHandlerMap[channel] as (
+        ...args: unknown[]
+      ) => unknown;
+
+      ipcMain.handle(channel, async (_event, ...args: unknown[]) => {
+        // Prepend window argument for dialog calls
+        if (
+          channel === 'electron:dialog:showOpenDialog' ||
+          channel === 'electron:dialog:showSaveDialog'
+        ) {
+          return await handler(window, ...args);
+        }
+
+        return await handler(...args);
+      });
     });
-    ipcMain.handle('electron:dialog:showSaveDialog', async (_event, args) => {
-      return await dialog.showSaveDialog(window, args);
-    });
-    ipcMain.handle('core:api:start', async (_event, args) => {
-      return await core.api.start(args[0]);
-    });
-    ipcMain.handle('core:api:isRunning', async () => {
-      return await core.api.isRunning();
-    });
-    ipcMain.handle('core:api:stop', async () => {
-      return await core.api.stop();
-    });
-    ipcMain.handle('core:logger:debug', (_event, args) => {
-      return core.logger.debug(args[0]);
-    });
-    ipcMain.handle('core:logger:info', (_event, args) => {
-      return core.logger.info(args[0]);
-    });
-    ipcMain.handle('core:logger:warn', (_event, args) => {
-      return core.logger.warn(args[0]);
-    });
-    ipcMain.handle('core:logger:error', (_event, args) => {
-      return core.logger.error(args[0]);
-    });
-    ipcMain.handle('core:logger:read', async (_event, args) => {
-      return await core.logger.read(args[0]);
-    });
-    ipcMain.handle('core:user:get', async () => {
-      return await core.user.get();
-    });
-    ipcMain.handle('core:user:set', async (_event, args) => {
-      return await core.user.set(args[0]);
-    });
-    ipcMain.handle('core:projects:count', async () => {
-      return await core.projects.count();
-    });
-    ipcMain.handle('core:projects:create', async (_event, args) => {
-      return await core.projects.create(args[0]);
-    });
-    ipcMain.handle('core:projects:list', async (_event, args) => {
-      return await core.projects.list(args[0]);
-    });
-    ipcMain.handle('core:projects:read', async (_event, args) => {
-      return await core.projects.read(args[0]);
-    });
-    ipcMain.handle('core:projects:update', async (_event, args) => {
-      return await core.projects.update(args[0]);
-    });
-    ipcMain.handle('core:projects:getChanges', async (_event, args) => {
-      return await core.projects.getChanges(args[0]);
-    });
-    ipcMain.handle('core:projects:clone', async (_event, args) => {
-      return await core.projects.clone(args[0]);
-    });
-    ipcMain.handle('core:projects:synchronize', async (_event, args) => {
-      return await core.projects.synchronize(args[0]);
-    });
-    ipcMain.handle('core:projects:setRemoteOriginUrl', async (_event, args) => {
-      return await core.projects.setRemoteOriginUrl(args[0]);
-    });
-    ipcMain.handle('core:projects:delete', async (_event, args) => {
-      return await core.projects.delete(args[0]);
-    });
-    ipcMain.handle('core:assets:list', async (_event, args) => {
-      return await core.assets.list(args[0]);
-    });
-    ipcMain.handle('core:assets:create', async (_event, args) => {
-      return await core.assets.create(args[0]);
-    });
-    ipcMain.handle('core:assets:read', async (_event, args) => {
-      return await core.assets.read(args[0]);
-    });
-    ipcMain.handle('core:assets:update', async (_event, args) => {
-      return await core.assets.update(args[0]);
-    });
-    ipcMain.handle('core:assets:delete', async (_event, args) => {
-      return await core.assets.delete(args[0]);
-    });
-    ipcMain.handle('core:assets:save', async (_event, args) => {
-      return await core.assets.save(args[0]);
-    });
-    // ipcMain.handle('core:snapshots:list', async (event, args) => {
-    //   return await core.snapshots.list(
-    //     args[0],
-    //     args[1],
-    //     args[2],
-    //     args[3],
-    //     args[4]
-    //   );
-    // });
-    // ipcMain.handle('core:snapshots:commitHistory', async (event, args) => {
-    //   return await core.snapshots.commitHistory(args[0]);
-    // });
-    ipcMain.handle('core:collections:list', async (_event, args) => {
-      return await core.collections.list(args[0]);
-    });
-    ipcMain.handle('core:collections:create', async (_event, args) => {
-      return await core.collections.create(args[0]);
-    });
-    ipcMain.handle('core:collections:read', async (_event, args) => {
-      return await core.collections.read(args[0]);
-    });
-    ipcMain.handle('core:collections:update', async (_event, args) => {
-      return await core.collections.update(args[0]);
-    });
-    ipcMain.handle('core:collections:delete', async (_event, args) => {
-      return await core.collections.delete(args[0]);
-    });
-    ipcMain.handle('core:entries:list', async (_event, args) => {
-      return await core.entries.list(args[0]);
-    });
-    ipcMain.handle('core:entries:create', async (_event, args) => {
-      return await core.entries.create(args[0]);
-    });
-    ipcMain.handle('core:entries:read', async (_event, args) => {
-      return await core.entries.read(args[0]);
-    });
-    ipcMain.handle('core:entries:update', async (_event, args) => {
-      return await core.entries.update(args[0]);
-    });
-    ipcMain.handle('core:entries:delete', async (_event, args) => {
-      return await core.entries.delete(args[0]);
-    });
-    // this.handleIpcMain<Parameters<AssetService['list']>>('core:assets:list', async (event, args) => {
-    //   return await core.assets.list(args.projectId);
-    // })
   }
 }
 

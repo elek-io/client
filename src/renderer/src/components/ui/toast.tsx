@@ -1,12 +1,12 @@
 'use client';
 
-import { ComponentProps } from 'react';
+import { type ComponentProps, type ReactElement } from 'react';
 import { Toaster as Sonner, toast } from 'sonner';
 import { useTheme } from '../theme-provider';
 
 type ToasterProps = ComponentProps<typeof Sonner>;
 
-const Toaster = ({ ...props }: ToasterProps): JSX.Element => {
+const Toaster = ({ ...props }: ToasterProps): ReactElement => {
   const { theme } = useTheme();
 
   return (

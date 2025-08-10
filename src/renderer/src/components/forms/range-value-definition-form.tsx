@@ -1,4 +1,5 @@
-import { RangeFieldDefinition } from '@elek-io/core';
+import { type RangeFieldDefinition } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import {
   Form,
   FormControl,
@@ -11,7 +12,7 @@ import {
 import { FormInput } from '../ui/form-input';
 import {
   DefaultFieldDefinitionForm,
-  DefaultFieldDefinitionFormProps,
+  type DefaultFieldDefinitionFormProps,
 } from './default-field-definition-form';
 
 export type RangeFieldDefinitionFormProps =
@@ -20,7 +21,7 @@ export type RangeFieldDefinitionFormProps =
 const RangeFieldDefinitionForm = ({
   form,
   ...props
-}: RangeFieldDefinitionFormProps): JSX.Element => {
+}: RangeFieldDefinitionFormProps): ReactElement => {
   return (
     <Form {...form}>
       <form className="space-y-6">

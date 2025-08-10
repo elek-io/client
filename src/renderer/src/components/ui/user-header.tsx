@@ -1,17 +1,9 @@
-import { User } from '@elek-io/core';
+import { type User } from '@elek-io/core';
 import { useStore } from '@renderer/store';
-import { cn } from '@renderer/util';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
-import {
-  ArrowLeft,
-  ArrowLeftToLine,
-  ArrowRight,
-  ChevronDown,
-  Moon,
-  Sun,
-} from 'lucide-react';
-import { forwardRef, Fragment, HTMLAttributes } from 'react';
-import { Theme, useTheme } from '../theme-provider';
+import { ArrowLeft, ArrowRight, ChevronDown, Moon, Sun } from 'lucide-react';
+import { forwardRef, Fragment, type HTMLAttributes } from 'react';
+import { type Theme, useTheme } from '../theme-provider';
 import { Avatar } from './avatar';
 import {
   Breadcrumb,
@@ -47,12 +39,13 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
     const router = useRouter();
     const routerState = useRouterState();
     const { theme, setTheme } = useTheme();
-    const [isProjectSidebarNarrow, setIsProjectSidebarNarrow] = useStore(
-      (storeState) => [
-        storeState.isProjectSidebarNarrow,
-        storeState.setIsProjectSidebarNarrow,
-      ]
-    );
+    // @todo causes "Maximum update depth exceeded" error
+    // const [isProjectSidebarNarrow, setIsProjectSidebarNarrow] = useStore(
+    //   (storeState) => [
+    //     storeState.isProjectSidebarNarrow,
+    //     storeState.setIsProjectSidebarNarrow,
+    //   ]
+    // );
     const breadcrumbLookupMap = useStore(
       (storeState) => storeState.breadcrumbLookupMap
     );
@@ -114,8 +107,8 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
           id="navigation-bar"
           className="flex border-b border-zinc-200 dark:border-zinc-800"
         >
-          <div className="p-2 w-60 flex flex-shrink-0 border-r border-zinc-200 dark:border-zinc-800">
-            <Button
+          <div className="p-2 w-60 flex shrink-0 border-r border-zinc-200 dark:border-zinc-800">
+            {/* <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsProjectSidebarNarrow(!isProjectSidebarNarrow)}
@@ -131,7 +124,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                   ? '__root.buttonSetSidebarToWide'
                   : '__root.buttonSetSidebarToNarrow'}
               </span>
-            </Button>
+            </Button> */}
           </div>
           <div className="p-2 flex-auto flex justify-between items-center">
             <div className="flex">

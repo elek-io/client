@@ -2,24 +2,25 @@ import * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@renderer/util';
 import {
-  ComponentPropsWithoutRef,
+  type ComponentPropsWithoutRef,
+  type ComponentRef,
   createContext,
-  ElementRef,
   forwardRef,
-  HTMLAttributes,
+  type HTMLAttributes,
+  type ReactElement,
   useContext,
   useId,
 } from 'react';
 import {
   Controller,
-  ControllerProps,
-  FieldError,
-  FieldPath,
-  FieldValues,
+  type ControllerProps,
+  type FieldError,
+  type FieldPath,
+  type FieldValues,
   FormProvider,
   useFormContext,
 } from 'react-hook-form';
-import { Label, LabelProps } from './label';
+import { Label, type LabelProps } from './label';
 
 const Form = FormProvider;
 
@@ -39,7 +40,7 @@ const FormField = <
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   ...props
-}: ControllerProps<TFieldValues, TName>): JSX.Element => {
+}: ControllerProps<TFieldValues, TName>): ReactElement => {
   return (
     <FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />
@@ -106,7 +107,7 @@ export interface FormLabelProps
   extends ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
     LabelProps {}
 const FormLabel = forwardRef<
-  ElementRef<typeof LabelPrimitive.Root>,
+  ComponentRef<typeof LabelPrimitive.Root>,
   FormLabelProps
 >(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField();
@@ -125,7 +126,7 @@ const FormLabel = forwardRef<
 FormLabel.displayName = 'FormLabel';
 
 const FormControl = forwardRef<
-  ElementRef<typeof Slot>,
+  ComponentRef<typeof Slot>,
   ComponentPropsWithoutRef<typeof Slot>
 >(({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } =

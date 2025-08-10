@@ -1,18 +1,18 @@
 import {
-  CreateCollectionProps,
-  DateFieldDefinition,
-  DeleteCollectionProps,
-  FieldDefinitionBase,
-  FieldType,
+  type CreateCollectionProps,
+  type DateFieldDefinition,
+  type DeleteCollectionProps,
+  type FieldDefinitionBase,
+  type FieldType,
   FieldTypeSchema,
-  NumberFieldDefinition,
-  Project,
-  RangeFieldDefinition,
-  TextFieldDefinition,
-  TextareaFieldDefinition,
-  ToggleFieldDefinition,
-  TranslatableString,
-  UpdateCollectionProps,
+  type NumberFieldDefinition,
+  type Project,
+  type RangeFieldDefinition,
+  type TextFieldDefinition,
+  type TextareaFieldDefinition,
+  type ToggleFieldDefinition,
+  type TranslatableString,
+  type UpdateCollectionProps,
   dateFieldDefinitionSchema,
   numberFieldDefinitionSchema,
   rangeFieldDefinitionSchema,
@@ -25,10 +25,10 @@ import {
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { type ReactElement, useState } from 'react';
 import {
-  SubmitHandler,
-  UseFormReturn,
+  type SubmitHandler,
+  type UseFormReturn,
   useFieldArray,
   useForm,
 } from 'react-hook-form';
@@ -63,7 +63,7 @@ import {
 } from '../ui/form';
 import { FormInput } from '../ui/form-input';
 import { FormTextarea } from '../ui/form-textarea';
-import { Page, PageProps } from '../ui/page';
+import { Page, type PageProps } from '../ui/page';
 import { PageSection } from '../ui/page-section';
 import { ScrollArea } from '../ui/scroll-area';
 import {
@@ -101,7 +101,7 @@ export const CreateUpdateCollectionPage = ({
   collectionForm,
   onCollectionSubmit,
   ...props
-}: CreateUpdateCollectionPageProps): JSX.Element => {
+}: CreateUpdateCollectionPageProps): ReactElement => {
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
@@ -305,7 +305,7 @@ export const CreateUpdateCollectionPage = ({
     }
   }
 
-  function ExampleFormField(): JSX.Element {
+  function ExampleFormField(): ReactElement {
     switch (selectedFieldType) {
       case 'number':
         return (
@@ -354,7 +354,7 @@ export const CreateUpdateCollectionPage = ({
     }
   }
 
-  const FieldDefinitionForm = (): JSX.Element => {
+  const FieldDefinitionForm = (): ReactElement => {
     switch (selectedFieldType) {
       case 'number':
         return (
@@ -476,7 +476,7 @@ export const CreateUpdateCollectionPage = ({
                             <DialogDescription>
                               The name of your new collection. Choose a short
                               name in plural that explains the content of the
-                              collection - e.g. "Blogposts".
+                              collection - e.g. &quot;Blogposts&quot;.
                             </DialogDescription>
                           </DialogHeader>
 
@@ -521,7 +521,7 @@ export const CreateUpdateCollectionPage = ({
                     <FormDescription>
                       The name of your new collection. Choose a short name in
                       plural that explains the content of the collection - e.g.
-                      "Blogposts".
+                      &quot;Blogposts&quot;.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -546,7 +546,8 @@ export const CreateUpdateCollectionPage = ({
                             <DialogTitle>Entry name (Singular)</DialogTitle>
                             <DialogDescription>
                               The name of each Entry inside your new Collection.
-                              Choose a short name in singluar - e.g. "Blogpost".
+                              Choose a short name in singluar - e.g.
+                              &quot;Blogpost&quot;.
                             </DialogDescription>
                           </DialogHeader>
 
@@ -590,7 +591,7 @@ export const CreateUpdateCollectionPage = ({
                     </FormControl>
                     <FormDescription>
                       The name of each Entry inside your new Collection. Choose
-                      a short name in singluar - e.g. "Blogpost".
+                      a short name in singluar - e.g. &quot;Blogpost&quot;.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -732,7 +733,7 @@ export const CreateUpdateCollectionPage = ({
                     <SheetTitle>Add a Field to this Collection</SheetTitle>
                     <SheetDescription>
                       Adding Fields to your Collection will enable users to
-                      enter data that follows the boundries you've set.
+                      enter data that follows the boundries you&apos;ve set.
                     </SheetDescription>
                     <FormItem>
                       <FormLabel isRequired={true}>Input type</FormLabel>
@@ -827,7 +828,7 @@ export const CreateUpdateCollectionPage = ({
                       <DialogFooter>
                         <DialogClose asChild>
                           <Button type="button" variant="secondary">
-                            No, I've changed my mind
+                            No, I&apos;ve changed my mind
                           </Button>
                         </DialogClose>
                         <Button
