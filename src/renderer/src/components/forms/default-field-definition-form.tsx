@@ -3,7 +3,7 @@ import {
   type FieldType,
   type SupportedLanguage,
 } from '@elek-io/core';
-import { Fragment, type HTMLAttributes } from 'react';
+import { Fragment, type HTMLAttributes, type ReactElement } from 'react';
 import { type FieldValues, type UseFormReturn } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
@@ -43,7 +43,7 @@ const DefaultFieldDefinitionForm = ({
   supportedLanguages,
   children,
   fieldType,
-}: DefaultFieldDefinitionFormProps<FieldDefinition>): JSX.Element => {
+}: DefaultFieldDefinitionFormProps<FieldDefinition>): ReactElement => {
   return (
     <Fragment>
       <FormField
@@ -63,7 +63,8 @@ const DefaultFieldDefinitionForm = ({
                     <DialogDescription>
                       The label is displayed above the input Field and should
                       indicate what the user is supposed to enter. For example
-                      "Title", "Date of birth" or "Summary".
+                      &quot;Title&quot;, &quot;Date of birth&quot; or
+                      &quot;Summary&quot;.
                     </DialogDescription>
                   </DialogHeader>
 
@@ -102,8 +103,8 @@ const DefaultFieldDefinitionForm = ({
             </FormControl>
             <FormDescription>
               The label is displayed above the input Field and should indicate
-              what the user is supposed to enter. For example "Title", "Date of
-              birth" or "Summary".
+              what the user is supposed to enter. For example &quot;Title&quot;,
+              &quot;Date of birth&quot; or &quot;Summary&quot;.
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -127,7 +128,8 @@ const DefaultFieldDefinitionForm = ({
                     <DialogDescription>
                       The label is displayed above the input Field and should
                       indicate what the user is supposed to enter. For example
-                      "Title", "Date of birth" or "Summary".
+                      &quot;Title&quot;, &quot;Date of birth&quot; or
+                      &quot;Summary&quot;.
                     </DialogDescription>
                   </DialogHeader>
 
@@ -179,7 +181,7 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isRequired`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
             <div className="mr-4">
               <FormLabel isRequired={true}>Required</FormLabel>
               <FormDescription>
@@ -212,12 +214,12 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isUnique`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
             <div className="mr-4">
               <FormLabel isRequired={true}>Unique</FormLabel>
               <FormDescription>
-                You won't be able to create an Entry if there is an existing
-                Entry with identical content.
+                You won&apos;t be able to create an Entry if there is an
+                existing Entry with identical content.
                 {fieldType === 'toggle' && (
                   <>
                     <Separator className="my-2" />
@@ -244,11 +246,11 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isDisabled`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
             <div className="mr-4">
               <FormLabel isRequired={true}>Disabled</FormLabel>
               <FormDescription>
-                You won't be able to change the Value if this is active.
+                You won&apos;t be able to change the Value if this is active.
               </FormDescription>
               <FormMessage />
             </div>

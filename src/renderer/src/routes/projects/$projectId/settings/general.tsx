@@ -62,7 +62,7 @@ export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsGeneralPage,
 });
 
-function ProjectSettingsGeneralPage(): JSX.Element {
+function ProjectSettingsGeneralPage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -375,8 +375,9 @@ function ProjectSettingsGeneralPage(): JSX.Element {
                 <DialogHeader>
                   <DialogTitle>Deleting the default language</DialogTitle>
                   <DialogDescription>
-                    The default language can't be deleted. Please select another
-                    language as the default and then delete this language.
+                    The default language can&apos;t be deleted. Please select
+                    another language as the default and then delete this
+                    language.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -423,7 +424,7 @@ function ProjectSettingsGeneralPage(): JSX.Element {
                 <DialogFooter>
                   <DialogClose asChild>
                     <Button type="button" variant="secondary">
-                      No, I've changed my mind
+                      No, I&apos;ve changed my mind
                     </Button>
                   </DialogClose>
                   <Button

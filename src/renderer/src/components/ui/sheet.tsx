@@ -5,10 +5,10 @@ import { Cross2Icon } from '@radix-ui/react-icons';
 import { cn } from '@renderer/util';
 import { cva, type VariantProps } from 'class-variance-authority';
 import {
-  ComponentPropsWithoutRef,
-  ElementRef,
+  type ComponentPropsWithoutRef,
+  type ComponentRef,
   forwardRef,
-  HTMLAttributes,
+  type HTMLAttributes,
 } from 'react';
 
 const Sheet = SheetPrimitive.Root;
@@ -24,12 +24,12 @@ type SheetOverlayProps = ComponentPropsWithoutRef<
 >;
 
 const SheetOverlay = forwardRef<
-  ElementRef<typeof SheetPrimitive.Overlay>,
+  ComponentRef<typeof SheetPrimitive.Overlay>,
   SheetOverlayProps
 >(({ className, children, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      'window-not-draggable-area fixed inset-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'window-not-draggable-area fixed inset-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className
     )}
     {...props}
@@ -64,11 +64,11 @@ const sheetVariants = cva(
 interface SheetContentProps
   extends ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {
-  overlayChildren?: JSX.Element;
+  overlayChildren?: ReactElement;
 }
 
 const SheetContent = forwardRef<
-  ElementRef<typeof SheetPrimitive.Content>,
+  ComponentRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = 'right', className, children, overlayChildren, ...props }, ref) => (
   <SheetPortal>
@@ -80,7 +80,7 @@ const SheetContent = forwardRef<
     >
       <div className="h-full flex flex-col">{children}</div>
 
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-zinc-100 dark:ring-offset-zinc-950 dark:focus:ring-zinc-300 dark:data-[state=open]:bg-zinc-800">
+      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-xs opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-zinc-100 dark:ring-offset-zinc-950 dark:focus:ring-zinc-300 dark:data-[state=open]:bg-zinc-800">
         <Cross2Icon className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
@@ -92,7 +92,7 @@ SheetContent.displayName = SheetPrimitive.Content.displayName;
 const SheetHeader = ({
   className,
   ...props
-}: HTMLAttributes<HTMLDivElement>): JSX.Element => (
+}: HTMLAttributes<HTMLDivElement>): ReactElement => (
   <div
     className={cn(
       'flex flex-col p-6 space-y-2 text-center sm:text-left border-b border-zinc-200 dark:border-zinc-800',
@@ -106,9 +106,9 @@ SheetHeader.displayName = 'SheetHeader';
 const SheetBody = ({
   className,
   ...props
-}: HTMLAttributes<HTMLDivElement>): JSX.Element => (
+}: HTMLAttributes<HTMLDivElement>): ReactElement => (
   <div
-    className={cn('min-h-0 flex flex-col flex-auto shadow-inner', className)}
+    className={cn('min-h-0 flex flex-col flex-auto shadow-sm-inner', className)}
     {...props}
   />
 );
@@ -117,7 +117,7 @@ SheetBody.displayName = 'SheetBody';
 const SheetFooter = ({
   className,
   ...props
-}: HTMLAttributes<HTMLDivElement>): JSX.Element => (
+}: HTMLAttributes<HTMLDivElement>): ReactElement => (
   <div
     className={cn(
       'flex flex-col-reverse p-6 sm:flex-row sm:justify-end sm:space-x-2 border-t border-zinc-200 dark:border-zinc-800',
@@ -129,7 +129,7 @@ const SheetFooter = ({
 SheetFooter.displayName = 'SheetFooter';
 
 const SheetTitle = forwardRef<
-  ElementRef<typeof SheetPrimitive.Title>,
+  ComponentRef<typeof SheetPrimitive.Title>,
   ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Title
@@ -144,7 +144,7 @@ const SheetTitle = forwardRef<
 SheetTitle.displayName = SheetPrimitive.Title.displayName;
 
 const SheetDescription = forwardRef<
-  ElementRef<typeof SheetPrimitive.Description>,
+  ComponentRef<typeof SheetPrimitive.Description>,
   ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Description

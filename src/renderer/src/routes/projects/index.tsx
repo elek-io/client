@@ -41,7 +41,7 @@ export const Route = createFileRoute('/projects/')({
   component: ListProjectsPage,
 });
 
-function ListProjectsPage(): JSX.Element {
+function ListProjectsPage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);

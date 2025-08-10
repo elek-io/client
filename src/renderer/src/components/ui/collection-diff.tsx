@@ -3,6 +3,7 @@ import {
   type SupportedLanguage,
   type TranslatableString,
 } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import { FieldFromDefinition } from '../forms/util';
 import { FormItem } from './form';
 import { Input } from './input';
@@ -19,7 +20,7 @@ export function CollectionDiff({
   collection,
   language,
   translateContent,
-}: CollectionDiffProps): JSX.Element {
+}: CollectionDiffProps): ReactElement {
   return (
     <>
       <div className="p-6 flex flex-col gap-6">

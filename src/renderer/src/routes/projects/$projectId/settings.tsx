@@ -8,12 +8,13 @@ import {
   createFileRoute,
 } from '@tanstack/react-router';
 import { GitBranch, type LucideIcon, Settings } from 'lucide-react';
+import type { ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectCollectionsLayout,
 });
 
-function ProjectCollectionsLayout(): JSX.Element {
+function ProjectCollectionsLayout(): ReactElement {
   const settingsNavigation: {
     name: string;
     to: ToPathOption;

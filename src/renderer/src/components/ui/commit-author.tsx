@@ -2,6 +2,7 @@
 
 import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 import { formatDatetime } from '@renderer/util';
+import type { ReactElement } from 'react';
 import { Avatar } from './avatar';
 
 export interface CommitAuthorProps {
@@ -12,7 +13,7 @@ export interface CommitAuthorProps {
 export function CommitAuthor({
   commit,
   language,
-}: CommitAuthorProps): JSX.Element {
+}: CommitAuthorProps): ReactElement {
   return (
     <div
       className={

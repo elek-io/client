@@ -19,7 +19,7 @@ export const Route = createFileRoute('/projects/$projectId/assets/')({
   component: ProjectAssetsPage,
 });
 
-function ProjectAssetsPage(): JSX.Element {
+function ProjectAssetsPage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -106,7 +106,7 @@ function ProjectAssetsPage(): JSX.Element {
             ))}
           </div>
         </div>
-        <div className="w-72 flex-shrink-0 ml-8">
+        <div className="w-72 shrink-0 ml-8">
           {selectedAsset && (
             <div className="text-sm flex flex-col items-start justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
               <AssetInfo

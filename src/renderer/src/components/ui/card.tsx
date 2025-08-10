@@ -1,12 +1,12 @@
 import { cn } from '@renderer/util';
-import { forwardRef, HTMLAttributes } from 'react';
+import { forwardRef, type HTMLAttributes } from 'react';
 
 const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border border-zinc-200 bg-white text-zinc-950 shadow dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50',
+        'rounded-xl border border-zinc-200 bg-white text-zinc-950 shadow-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50',
         className
       )}
       {...props}

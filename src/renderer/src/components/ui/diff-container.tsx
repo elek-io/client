@@ -1,4 +1,5 @@
 import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import { CommitAuthor } from './commit-author';
 
 export interface DiffContainerProps {
@@ -13,7 +14,7 @@ export function DiffContainer({
   commit,
   language,
   children,
-}: DiffContainerProps): JSX.Element {
+}: DiffContainerProps): ReactElement {
   return (
     <div
       className={`col-span-6 ${type === 'create' || type === 'delete' ? 'col-start-3' : ''}`}

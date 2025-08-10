@@ -4,6 +4,7 @@ import {
   type SupportedLanguage,
   type TranslatableString,
 } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import { FieldFromDefinition } from '../forms/util';
 
 export interface EntryDiffProps {
@@ -18,7 +19,7 @@ export function EntryDiff({
   entry,
   language,
   translateContent,
-}: EntryDiffProps): JSX.Element {
+}: EntryDiffProps): ReactElement {
   return (
     <>
       {collection.fieldDefinitions.map((definition, definitionIndex) => {

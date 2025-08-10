@@ -1,4 +1,5 @@
 import { type NumberFieldDefinition } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import {
   Form,
   FormControl,
@@ -20,7 +21,7 @@ export type NumberFieldDefinitionFormProps =
 const NumberFieldDefinitionForm = ({
   form,
   ...props
-}: NumberFieldDefinitionFormProps): JSX.Element => {
+}: NumberFieldDefinitionFormProps): ReactElement => {
   return (
     <Form {...form}>
       <form className="space-y-6">

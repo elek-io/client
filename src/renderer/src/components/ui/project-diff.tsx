@@ -1,4 +1,5 @@
 import { type Project } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import { Chip } from './chip';
 import { FormItem } from './form';
 import { Input } from './input';
@@ -16,7 +17,7 @@ export interface ProjectDiffProps {
   project: Project;
 }
 
-export function ProjectDiff({ project }: ProjectDiffProps): JSX.Element {
+export function ProjectDiff({ project }: ProjectDiffProps): ReactElement {
   return (
     <>
       <FormItem>

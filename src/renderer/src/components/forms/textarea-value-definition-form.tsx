@@ -1,4 +1,5 @@
 import { type TextareaFieldDefinition } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import {
   Form,
   FormControl,
@@ -21,7 +22,7 @@ export type TextareaFieldDefinitionFormProps =
 const TextareaFieldDefinitionForm = ({
   form,
   ...props
-}: TextareaFieldDefinitionFormProps): JSX.Element => {
+}: TextareaFieldDefinitionFormProps): ReactElement => {
   return (
     <Form {...form}>
       <form className="space-y-6">

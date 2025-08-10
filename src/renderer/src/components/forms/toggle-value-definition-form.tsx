@@ -1,4 +1,5 @@
 import { type ToggleFieldDefinition } from '@elek-io/core';
+import type { ReactElement } from 'react';
 import {
   Form,
   FormControl,
@@ -20,7 +21,7 @@ export type ToggleFieldDefinitionFormProps =
 const ToggleFieldDefinitionForm = ({
   form,
   ...props
-}: ToggleFieldDefinitionFormProps): JSX.Element => {
+}: ToggleFieldDefinitionFormProps): ReactElement => {
   return (
     <Form {...form}>
       <form className="space-y-6">
@@ -29,7 +30,7 @@ const ToggleFieldDefinitionForm = ({
             control={form.control}
             name={`defaultValue`}
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-sm">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
                 <div>
                   <FormLabel isRequired={true}>Default value</FormLabel>
                   <FormDescription>

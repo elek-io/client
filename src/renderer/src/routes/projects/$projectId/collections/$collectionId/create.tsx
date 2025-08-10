@@ -20,7 +20,7 @@ export const Route = createFileRoute(
   component: ProjectCollectionEntryCreatePage,
 });
 
-function ProjectCollectionEntryCreatePage(): JSX.Element {
+function ProjectCollectionEntryCreatePage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const [isCreatingEntry, setIsCreatingEntry] = useState(false);

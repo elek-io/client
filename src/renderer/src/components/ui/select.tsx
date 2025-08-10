@@ -8,7 +8,11 @@ import {
 } from '@radix-ui/react-icons';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { cn } from '@renderer/util';
-import { ComponentPropsWithoutRef, ElementRef, forwardRef } from 'react';
+import {
+  type ComponentPropsWithoutRef,
+  type ComponentRef,
+  forwardRef,
+} from 'react';
 
 const Select = SelectPrimitive.Root;
 
@@ -17,13 +21,13 @@ const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = forwardRef<
-  ElementRef<typeof SelectPrimitive.Trigger>,
+  ComponentRef<typeof SelectPrimitive.Trigger>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-brand-600 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 dark:border-zinc-800 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400',
+      'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-xs ring-offset-white placeholder:text-zinc-500 focus:outline-hidden focus:ring-1 focus:ring-brand-600 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 dark:border-zinc-800 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400',
       className
     )}
     {...props}
@@ -37,7 +41,7 @@ const SelectTrigger = forwardRef<
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = forwardRef<
-  ElementRef<typeof SelectPrimitive.ScrollUpButton>,
+  ComponentRef<typeof SelectPrimitive.ScrollUpButton>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollUpButton
@@ -54,7 +58,7 @@ const SelectScrollUpButton = forwardRef<
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
 
 const SelectScrollDownButton = forwardRef<
-  ElementRef<typeof SelectPrimitive.ScrollDownButton>,
+  ComponentRef<typeof SelectPrimitive.ScrollDownButton>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollDownButton
@@ -72,7 +76,7 @@ SelectScrollDownButton.displayName =
   SelectPrimitive.ScrollDownButton.displayName;
 
 const SelectContent = forwardRef<
-  ElementRef<typeof SelectPrimitive.Content>,
+  ComponentRef<typeof SelectPrimitive.Content>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = 'popper', ...props }, ref) => (
   <SelectPrimitive.Portal>
@@ -104,7 +108,7 @@ const SelectContent = forwardRef<
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 const SelectLabel = forwardRef<
-  ElementRef<typeof SelectPrimitive.Label>,
+  ComponentRef<typeof SelectPrimitive.Label>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
@@ -116,13 +120,13 @@ const SelectLabel = forwardRef<
 SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 const SelectItem = forwardRef<
-  ElementRef<typeof SelectPrimitive.Item>,
+  ComponentRef<typeof SelectPrimitive.Item>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-zinc-100 focus:text-zinc-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-zinc-800 dark:focus:text-zinc-50',
+      'relative flex w-full cursor-default select-none items-center rounded-xs py-1.5 pl-2 pr-8 text-sm outline-hidden focus:bg-zinc-100 focus:text-zinc-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-zinc-800 dark:focus:text-zinc-50',
       className
     )}
     {...props}
@@ -138,7 +142,7 @@ const SelectItem = forwardRef<
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
 const SelectSeparator = forwardRef<
-  ElementRef<typeof SelectPrimitive.Separator>,
+  ComponentRef<typeof SelectPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator

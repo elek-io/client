@@ -43,7 +43,7 @@ export const Route = createFileRoute(
   component: ProjectCollectionIndexPage,
 });
 
-function ProjectCollectionIndexPage(): JSX.Element {
+function ProjectCollectionIndexPage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const [pagination, setPagination] = useState({

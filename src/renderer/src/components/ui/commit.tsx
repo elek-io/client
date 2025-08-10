@@ -12,6 +12,7 @@ import {
   Tag,
   Trash2,
 } from 'lucide-react';
+import type { ReactElement } from 'react';
 
 export interface CommitProps extends LinkProps {
   language: SupportedLanguage;
@@ -23,8 +24,8 @@ export function Commit({
   language,
   activeProps,
   ...props
-}: CommitProps): JSX.Element {
-  let iconComponent: JSX.Element;
+}: CommitProps): ReactElement {
+  let iconComponent: ReactElement;
 
   switch (commit.message.method) {
     case 'create':
@@ -56,7 +57,7 @@ export function Commit({
       }
       activeProps={{
         className: cn(
-          'bg-zinc-200 dark:bg-zinc-800 after:absolute after:-right-0.5 after:h-3/6 after:border-l-4 after:rounded after:border-zinc-800 dark:after:border-zinc-300',
+          'bg-zinc-200 dark:bg-zinc-800 after:absolute after:-right-0.5 after:h-3/6 after:border-l-4 after:rounded-sm after:border-zinc-800 dark:after:border-zinc-300',
           activeProps
         ),
       }}

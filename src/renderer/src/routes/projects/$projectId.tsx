@@ -34,7 +34,7 @@ import {
   Settings,
   UploadCloud,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
@@ -86,7 +86,7 @@ export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectLayout,
 });
 
-function ProjectLayout(): JSX.Element {
+function ProjectLayout(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
@@ -192,7 +192,7 @@ function ProjectLayout(): JSX.Element {
       <Sidebar isNarrow={isProjectSidebarNarrow}>
         {!isProjectSidebarNarrow && (
           <>
-            <div className="flex flex-shrink-0 flex-col p-4">
+            <div className="flex shrink-0 flex-col p-4">
               <div className="flex items-center">
                 <div className="">
                   <FolderGit2 className="w-8 h-8" />

@@ -16,7 +16,7 @@ export const Route = createFileRoute(
   component: ProjectCollectionEntryUpdatePage,
 });
 
-function ProjectCollectionEntryUpdatePage(): JSX.Element {
+function ProjectCollectionEntryUpdatePage(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);

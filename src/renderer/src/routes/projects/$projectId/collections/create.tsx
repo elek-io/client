@@ -18,7 +18,7 @@ export const Route = createFileRoute('/projects/$projectId/collections/create')(
   }
 );
 
-function ProjectCollectionCreate(): JSX.Element {
+function ProjectCollectionCreate(): ReactElement {
   const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);

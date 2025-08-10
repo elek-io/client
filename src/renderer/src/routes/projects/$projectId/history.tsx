@@ -2,12 +2,13 @@ import { CommitHistory } from '@renderer/components/ui/commit-history';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Sidebar } from '@renderer/components/ui/sidebar';
 import { createFileRoute, Outlet } from '@tanstack/react-router';
+import type { ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/history')({
   component: ProjectHistoryLayout,
 });
 
-function ProjectHistoryLayout(): JSX.Element {
+function ProjectHistoryLayout(): ReactElement {
   const context = Route.useRouteContext();
 
   return (

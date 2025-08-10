@@ -2,7 +2,7 @@
 
 import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 import { cn } from '@renderer/util';
-import { type HTMLAttributes } from 'react';
+import { type HTMLAttributes, type ReactElement } from 'react';
 import { Commit } from './commit';
 
 export interface CommitHistoryProps extends HTMLAttributes<HTMLDivElement> {
@@ -19,7 +19,7 @@ export function CommitHistory({
   projectId,
   disabled,
   ...props
-}: CommitHistoryProps): JSX.Element {
+}: CommitHistoryProps): ReactElement {
   return (
     <div className={cn('relative', className)} {...props}>
       <div className="before:absolute before:h-full before:border-l-2 before:border-brand-600 before:ml-7"></div>

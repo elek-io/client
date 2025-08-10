@@ -2,7 +2,7 @@
 
 import { cn } from '@renderer/util';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { ComponentProps } from 'react';
+import { type ComponentProps, type ReactElement } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { buttonVariants } from './button';
 
@@ -13,7 +13,7 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   ...props
-}: CalendarProps): JSX.Element {
+}: CalendarProps): ReactElement {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}

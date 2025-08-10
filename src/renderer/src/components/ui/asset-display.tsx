@@ -1,6 +1,6 @@
 import { type Asset } from '@elek-io/core';
 import { FileQuestion, FolderArchive } from 'lucide-react';
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useRef, type ReactElement } from 'react';
 
 export interface AssetDisplayProps extends Asset {
   /**
@@ -10,11 +10,11 @@ export interface AssetDisplayProps extends Asset {
   static: boolean;
 }
 
-export function AssetDisplay(props: AssetDisplayProps): JSX.Element {
+export function AssetDisplay(props: AssetDisplayProps): ReactElement {
   const absolutePath = 'elek-io-local-file://' + props.absolutePath;
+  const ref = useRef(null);
 
   if (props.mimeType === 'image/gif' && props.static === true) {
-    const ref = useRef(null);
     const gif = new Image();
     gif.src = absolutePath;
 
@@ -32,7 +32,7 @@ export function AssetDisplay(props: AssetDisplayProps): JSX.Element {
         }
 
         context.drawImage(gif, 0, 0);
-      }, []);
+      }, [ref]);
 
       return (
         <canvas

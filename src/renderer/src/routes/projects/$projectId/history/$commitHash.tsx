@@ -260,7 +260,7 @@ export const Route = createFileRoute(
   component: ProjectHistoryCommitPage,
 });
 
-function ProjectHistoryCommitPage(): JSX.Element {
+function ProjectHistoryCommitPage(): ReactElement {
   const context = Route.useRouteContext();
 
   function DisplayChanges(): ReactElement {

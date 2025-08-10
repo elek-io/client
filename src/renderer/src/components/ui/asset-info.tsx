@@ -2,6 +2,7 @@ import { type Asset, type SupportedLanguage } from '@elek-io/core';
 import { ipc } from '@renderer/ipc';
 import { NotificationIntent, useStore } from '@renderer/store';
 import { Download, Edit2, Trash } from 'lucide-react';
+import type { ReactElement } from 'react';
 import { formatBytes, formatDatetime } from '../../util';
 import {
   AlertDialog,
@@ -41,7 +42,7 @@ export function AssetInfo({
   showDeleteButton,
   onAssetUpdated,
   onAssetDeleted,
-}: AssetInfoProps): JSX.Element {
+}: AssetInfoProps): ReactElement {
   const addNotification = useStore((state) => state.addNotification);
   const createdTime = formatDatetime(asset.created, language);
   const updatedTime = formatDatetime(asset.updated, language);
@@ -249,7 +250,7 @@ export function AssetInfo({
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   This action can be undone later by restoring the Asset via
-                  it's history.
+                  it&apos;s history.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
