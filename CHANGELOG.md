@@ -1,5 +1,12 @@
 # @elek-io/client
 
+## 0.3.3
+
+### Patch Changes
+
+- 3b5ff2c: Small visual improvements
+- 24520ae: Updated to latest Core
+
 ## 0.3.2
 
 ### Patch Changes
@@ -32,7 +39,6 @@
   Also buttons sometimes need two clicks to work.
 
 - a9adf5d: Initial setup - pre GUI
-
   - [x] Debugging main & renderer in VSCode. See https://www.electronforge.io/advanced/debugging
   - [x] CI/CD with lint, test & build
   - [x] Custom file protocol handler to access Assets on disk
