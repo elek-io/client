@@ -167,7 +167,7 @@ function ListProjectsPage(): ReactElement {
               params={{ projectId: project.id }}
               className="no-underline"
             >
-              <Card className="transition hover:shadow-lg hover:dark:border-zinc-200">
+              <Card className="hover:shadow-lg hover:dark:border-zinc-200">
                 <CardHeader>
                   <CardTitle>{project.name}</CardTitle>
                   <CardDescription>{project.description}</CardDescription>
