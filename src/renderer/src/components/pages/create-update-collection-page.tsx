@@ -24,7 +24,8 @@ import {
 } from '@elek-io/core';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash } from 'lucide-react';
+import clsx from 'clsx';
+import { AxeIcon, Plus, Trash } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import {
   type SubmitHandler,
@@ -39,9 +40,11 @@ import { TextareaFieldDefinitionForm } from '../forms/textarea-value-definition-
 import { ToggleFieldDefinitionForm } from '../forms/toggle-value-definition-form';
 import {
   FormFieldFromDefinition,
+  InputFromFieldType,
   translatableDefaultNull,
 } from '../forms/util';
 import { Button } from '../ui/button';
+import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import {
   Dialog,
   DialogClose,
@@ -65,7 +68,7 @@ import { FormInput } from '../ui/form-input';
 import { FormTextarea } from '../ui/form-textarea';
 import { Page, type PageProps } from '../ui/page';
 import { PageSection } from '../ui/page-section';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -83,6 +86,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '../ui/sheet';
+import { StepperForm, StepperIndicator } from '../ui/stepper';
 
 export interface CreateUpdateCollectionPageProps extends PageProps {
   collectionForm: UseFormReturn<CreateCollectionProps | UpdateCollectionProps>;
@@ -95,6 +99,117 @@ export interface CreateUpdateCollectionPageProps extends PageProps {
     translateContent: (key: string, record: TranslatableString) => string;
   };
 }
+
+export type FieldTypeDisplay = {
+  type: FieldType;
+  icon: ReactElement;
+  title: string;
+  description: string;
+  value: string | number | boolean;
+};
+
+const fieldTypesToDisplay: FieldTypeDisplay[] = [
+  {
+    type: 'text',
+    icon: <AxeIcon />,
+    title: 'Text Field',
+    description: 'Single line input field for entering simple, short text',
+    value: 'Lorem Ipsum',
+  },
+  {
+    type: 'textarea',
+    icon: <AxeIcon />,
+    title: 'Text Area Field',
+    description:
+      'Multi-line input field for entering longer text and allows for line breaks',
+    value:
+      'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.',
+  },
+  {
+    type: 'email',
+    icon: <AxeIcon />,
+    title: 'Email Field',
+    description: 'Input field for entering an email address',
+    value: 'user@example.com',
+  },
+  {
+    type: 'url',
+    icon: <AxeIcon />,
+    title: 'URL Field',
+    description: 'Input field for entering a URL',
+    value: 'https://www.example.com',
+  },
+  {
+    type: 'ipv4',
+    icon: <AxeIcon />,
+    title: 'IPv4 Field',
+    description: 'Input field for entering an IPv4 address',
+    value: '192.168.1.1',
+  },
+  {
+    type: 'date',
+    icon: <AxeIcon />,
+    title: 'Date Field',
+    description: 'Input field for entering a date',
+    value: '2023-03-15',
+  },
+  {
+    type: 'time',
+    icon: <AxeIcon />,
+    title: 'Time Field',
+    description: 'Input field for entering a time',
+    value: '12:00 PM',
+  },
+  {
+    type: 'datetime',
+    icon: <AxeIcon />,
+    title: 'Date & Time Field',
+    description: 'Input field for entering a date and time',
+    value: '2023-03-15T12:00:00',
+  },
+  {
+    type: 'telephone',
+    icon: <AxeIcon />,
+    title: 'Telephone Field',
+    description: 'Input field for entering a telephone number',
+    value: '123-456-7890',
+  },
+  {
+    type: 'number',
+    icon: <AxeIcon />,
+    title: 'Number Field',
+    description: 'Input field for entering a number',
+    value: 42,
+  },
+  {
+    type: 'range',
+    icon: <AxeIcon />,
+    title: 'Range Field',
+    description: 'Input field for selecting a value from a range',
+    value: 33,
+  },
+  {
+    type: 'toggle',
+    icon: <AxeIcon />,
+    title: 'Toggle Field',
+    description: 'Input field for toggling between two states',
+    value: true,
+  },
+  {
+    type: 'asset',
+    icon: <AxeIcon />,
+    title: 'Asset Field',
+    description: 'Input field for selecting an Asset',
+    value: 'asset-id-123',
+  },
+  {
+    type: 'entry',
+    icon: <AxeIcon />,
+    title: 'Entry Field',
+    description: 'Input field for selecting an Entry',
+    value: 'entry-id-123',
+  },
+];
 
 export const CreateUpdateCollectionPage = ({
   context,
@@ -111,6 +226,15 @@ export const CreateUpdateCollectionPage = ({
   ): collectionFormProps is UpdateCollectionProps {
     return (collectionFormProps as UpdateCollectionProps).id !== undefined;
   }
+  const [activeStep, setActiveStep] = useState(1);
+
+  const handleNext = (): void => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = (): void => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
 
   const FieldDefinitionBaseDefaults: Omit<FieldDefinitionBase, 'id'> = {
     label: translatableDefaultNull({
@@ -405,6 +529,85 @@ export const CreateUpdateCollectionPage = ({
         throw new Error(`Unsupported definition form "${selectedFieldType}"`);
     }
   };
+
+  type Step1SelectFieldTypeProps = {
+    selectedFieldType: FieldType;
+    setSelectedFieldType: React.Dispatch<React.SetStateAction<FieldType>>;
+  };
+
+  const Step1SelectFieldType = (
+    props: Step1SelectFieldTypeProps
+  ): ReactElement => {
+    return (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {fieldTypesToDisplay.map((fieldType) => {
+          return (
+            <Card
+              key={fieldType.type}
+              className={clsx(
+                'hover:shadow-lg hover:dark:border-zinc-200 cursor-pointer overflow-hidden',
+                props.selectedFieldType === fieldType.type &&
+                  '!border-brand-600'
+              )}
+              onClick={() => props.setSelectedFieldType(fieldType.type)}
+            >
+              <CardHeader>
+                <div className="flex items-center">
+                  <div className="w-[60%] mr-6">
+                    <CardTitle>{fieldType.title}</CardTitle>
+                    <CardDescription>{fieldType.description}</CardDescription>
+                  </div>
+                  <div className="w-48 -mr-24">
+                    <InputFromFieldType
+                      fieldType={fieldType.type}
+                      value={fieldType.value}
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          );
+        })}
+      </div>
+    );
+  };
+
+  type Step2DescribeFieldProps = {
+    selectedFieldType: FieldType;
+  };
+
+  const Step2DescribeField = (props: Step2DescribeFieldProps): ReactElement => {
+    return (
+      <div className="flex">
+        <div>
+          <ExampleFormField />
+        </div>
+        <div>
+          <FieldDefinitionForm />
+        </div>
+      </div>
+    );
+  };
+
+  const steps = [
+    {
+      title: 'Select Field Type',
+      content: (
+        <Step1SelectFieldType
+          selectedFieldType={selectedFieldType}
+          setSelectedFieldType={setSelectedFieldType}
+        />
+      ),
+    },
+    {
+      title: 'Describe Field',
+      content: <Step2DescribeField selectedFieldType={selectedFieldType} />,
+    },
+    {
+      title: 'Set Validations',
+      content: <div>Step 3</div>,
+    },
+  ];
 
   return (
     <Page {...props}>
@@ -705,86 +908,135 @@ export const CreateUpdateCollectionPage = ({
             title="Define this Collections Fields"
             description="Add Fields to structure the Collections content and define how users interact with those Fields."
             actions={
-              <Sheet
-                open={isAddFieldDefinitionSheetOpen}
-                onOpenChange={setIsAddFieldDefinitionSheetOpen}
-              >
-                <SheetTrigger asChild>
-                  <Button
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setIsAddFieldDefinitionSheetOpen(true);
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2"></Plus>
-                    Add Field
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
+              <>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2"></Plus>
+                      Add Field
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-5xl">
+                    <DialogHeader>
+                      <DialogTitle>Add a Field to this Collection</DialogTitle>
+                      <DialogDescription>
+                        Adding Fields to your Collection will enable users to
+                        enter data that follows the boundaries you&apos;ve set.
+                      </DialogDescription>
+                      <StepperIndicator steps={steps} activeStep={activeStep} />
+                    </DialogHeader>
+
+                    <div className="flex h-full overflow-hidden">
+                      <ScrollArea>
+                        <div className="p-6">
+                          <StepperForm
+                            activeStep={activeStep}
+                            setActiveStep={setActiveStep}
+                            steps={steps}
+                          />
+                        </div>
+
+                        <ScrollBar orientation="horizontal" />
+                      </ScrollArea>
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        variant="secondary"
+                        onClick={handleBack}
+                        disabled={activeStep === 1}
+                      >
+                        Back
+                      </Button>
+                      {activeStep === steps.length ? (
+                        <Button onClick={handleSubmit(onSubmit)}>
+                          Add Field
+                        </Button>
+                      ) : (
+                        <Button onClick={handleNext}>Next</Button>
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <Sheet
+                  open={isAddFieldDefinitionSheetOpen}
+                  onOpenChange={setIsAddFieldDefinitionSheetOpen}
+                >
+                  <SheetTrigger asChild>
+                    <Button
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setIsAddFieldDefinitionSheetOpen(true);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2"></Plus>
+                      Add Field
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
                   // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
                   //
                   // onInteractOutside={(event) => {
                   //   console.log(event);
                   //   event.preventDefault();
                   // }}
-                  overlayChildren={<ExampleFormField />}
-                >
-                  <SheetHeader>
-                    <SheetTitle>Add a Field to this Collection</SheetTitle>
-                    <SheetDescription>
-                      Adding Fields to your Collection will enable users to
-                      enter data that follows the boundries you&apos;ve set.
-                    </SheetDescription>
-                    <FormItem>
-                      <FormLabel isRequired={true}>Input type</FormLabel>
-                      <Select
-                        value={selectedFieldType}
-                        onValueChange={(value: FieldType) =>
-                          setSelectedFieldType(value)
-                        }
+                  >
+                    <SheetHeader>
+                      <SheetTitle>Add a Field to this Collection</SheetTitle>
+                      <SheetDescription>
+                        Adding Fields to your Collection will enable users to
+                        enter data that follows the boundries you&apos;ve set.
+                      </SheetDescription>
+                      <FormItem>
+                        <FormLabel isRequired={true}>Input type</FormLabel>
+                        <Select
+                          value={selectedFieldType}
+                          onValueChange={(value: FieldType) =>
+                            setSelectedFieldType(value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FieldTypeSchema.options.map((option) => {
+                              return (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          The type of input the user is able to enter for this
+                          Field.
+                        </FormDescription>
+                      </FormItem>
+                    </SheetHeader>
+
+                    <SheetBody>
+                      <ScrollArea>
+                        <div className="p-6 space-y-6">
+                          <DevTool
+                            placement="bottom-right"
+                            control={textFieldDefinitionFormState.control}
+                          />
+                        </div>
+                      </ScrollArea>
+                    </SheetBody>
+
+                    <SheetFooter>
+                      <Button
+                        className="w-full"
+                        onClick={validateFieldDefinition}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FieldTypeSchema.options.map((option) => {
-                            return (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        The type of input the user is able to enter for this
-                        Field.
-                      </FormDescription>
-                    </FormItem>
-                  </SheetHeader>
-
-                  <SheetBody>
-                    <ScrollArea>
-                      <div className="p-6 space-y-6">
-                        <FieldDefinitionForm></FieldDefinitionForm>
-                        <DevTool
-                          placement="bottom-right"
-                          control={textFieldDefinitionFormState.control}
-                        />
-                      </div>
-                    </ScrollArea>
-                  </SheetBody>
-
-                  <SheetFooter>
-                    <Button
-                      className="w-full"
-                      onClick={validateFieldDefinition}
-                    >
-                      Add definition
-                    </Button>
-                  </SheetFooter>
-                </SheetContent>
-              </Sheet>
+                        Add definition
+                      </Button>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              </>
             }
           >
             <div className="grid grid-cols-12 gap-6 mt-6">

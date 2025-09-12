@@ -1,5 +1,6 @@
 import {
   type FieldDefinition,
+  type FieldType,
   type SupportedLanguage,
   type TranslatableString,
 } from '@elek-io/core';
@@ -238,7 +239,9 @@ export interface InputFromDefinitionProps {
   value?: string | number | boolean | undefined;
 }
 
-function InputFromDefinition(props: InputFromDefinitionProps): ReactElement {
+export function InputFromDefinition(
+  props: InputFromDefinitionProps
+): ReactElement {
   switch (props.fieldDefinition.fieldType) {
     case 'text':
       if (typeof props.value !== 'string' && props.value !== undefined) {
@@ -324,5 +327,60 @@ function InputFromDefinition(props: InputFromDefinitionProps): ReactElement {
       throw new Error(
         `Unsupported Entry definition FieldType "${props.fieldDefinition.fieldType}"`
       );
+  }
+}
+
+export interface InputFromFieldTypeProps {
+  fieldType: FieldType;
+  value?: string | number | boolean | undefined;
+}
+
+export function InputFromFieldType(
+  props: InputFromFieldTypeProps
+): ReactElement {
+  switch (props.fieldType) {
+    case 'text':
+      if (typeof props.value !== 'string' && props.value !== undefined) {
+        throw new Error(
+          `Expected value to be a string, but got "${typeof props.value}"`
+        );
+      }
+      return <Input type="text" value={props.value} disabled={true} />;
+    case 'textarea':
+      if (typeof props.value !== 'string' && props.value !== undefined) {
+        throw new Error(
+          `Expected value to be a string, but got "${typeof props.value}"`
+        );
+      }
+      return <Textarea value={props.value} disabled={true} />;
+    case 'number':
+      if (typeof props.value !== 'number' && props.value !== undefined) {
+        throw new Error(
+          `Expected value to be a number, but got "${typeof props.value}"`
+        );
+      }
+      return <Input type="number" value={props.value} disabled={true} />;
+    case 'range':
+      if (typeof props.value !== 'number' && props.value !== undefined) {
+        throw new Error(
+          `Expected value to be a number, but got "${typeof props.value}"`
+        );
+      }
+      return (
+        <Slider
+          value={props.value ? [props.value] : []}
+          step={1} // @todo Core needs to support this too
+          disabled={true}
+        />
+      );
+    case 'toggle':
+      if (typeof props.value !== 'boolean' || props.value === undefined) {
+        throw new Error(
+          `Expected value to be a boolean, but got "${typeof props.value}"`
+        );
+      }
+      return <Switch disabled={true} checked={props.value} />;
+    default:
+      return <div>Unsupported FieldType</div>;
   }
 }
