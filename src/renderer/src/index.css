@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Add default styling to some elements */
 @layer base {
@@ -22,6 +25,7 @@
 }
 
 @theme {
+  --color-brand-50: var(--color-cyan-50);
   --color-brand-600: var(--color-cyan-600);
   --color-brand-950: var(--color-cyan-950);
 }
