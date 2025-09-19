@@ -101,11 +101,11 @@ function ProjectSettingsGeneralPage(): ReactElement {
     return (
       <>
         <Button
+          Icon={Check}
           onClick={projectForm.handleSubmit(onUpdate)}
           isLoading={isUpdatingProject}
           disabled={projectForm.formState.isDirty === false}
         >
-          <Check className="w-4 h-4 mr-2"></Check>
           Save changes
         </Button>
       </>

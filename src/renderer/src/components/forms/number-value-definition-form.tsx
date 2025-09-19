@@ -25,7 +25,6 @@ const NumberFieldDefinitionForm = ({
   return (
     <Form {...form}>
       <form className="space-y-6">
-        {JSON.stringify(form.watch())}
         <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
             control={form.control}

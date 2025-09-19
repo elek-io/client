@@ -2,36 +2,31 @@
 
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cn } from '@renderer/util';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { ComponentPropsWithoutRef, ElementRef, forwardRef } from 'react';
+import * as React from 'react';
 
-const labelVariants = cva(
-  'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
-);
-
-export interface LabelProps
-  extends ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
-    VariantProps<typeof labelVariants> {
+function Label({
+  className,
+  children,
+  isRequired,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root> & {
   isRequired?: boolean;
-}
-
-const Label = forwardRef<ElementRef<typeof LabelPrimitive.Root>, LabelProps>(
-  ({ className, isRequired, ...props }, ref) => (
+}) {
+  return (
     <LabelPrimitive.Root
-      ref={ref}
-      className={cn(labelVariants(), className)}
+      data-slot="label"
+      className={cn(
+        'flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
+        className
+      )}
       {...props}
     >
-      {props.children}
+      {children}
       {isRequired === false && (
-        <span className="text-[0.8rem] text-zinc-500 dark:text-zinc-400">
-          {' '}
-          - optional
-        </span>
+        <span className="text-zinc-500 dark:text-zinc-400">- optional</span>
       )}
     </LabelPrimitive.Root>
-  )
-);
-Label.displayName = LabelPrimitive.Root.displayName;
+  );
+}
 
 export { Label };

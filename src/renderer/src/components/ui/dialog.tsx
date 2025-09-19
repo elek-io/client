@@ -1,9 +1,11 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { cn } from '@renderer/util';
 import { XIcon } from 'lucide-react';
 import * as React from 'react';
+import { ScrollArea } from './scroll-area';
 
 function Dialog({
   ...props
@@ -96,6 +98,22 @@ function DialogHeader({
   );
 }
 
+function DialogBody({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>): React.ReactElement {
+  return (
+    <ScrollArea
+      data-slot="dialog-body"
+      className={cn('flex flex-col', className)}
+      {...props}
+    >
+      <div className="p-6 space-y-6">{children}</div>
+    </ScrollArea>
+  );
+}
+
 function DialogFooter({
   className,
   ...props
@@ -142,6 +160,7 @@ function DialogDescription({
 
 export {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,

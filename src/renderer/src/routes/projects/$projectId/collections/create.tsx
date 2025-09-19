@@ -74,10 +74,10 @@ function ProjectCollectionCreate(): ReactElement {
     return (
       <>
         <Button
+          Icon={Check}
           isLoading={isCreatingCollection}
           onClick={createCollectionForm.handleSubmit(onCreate)}
         >
-          <Check className="w-4 h-4 mr-2"></Check>
           Create Collection
         </Button>
       </>
