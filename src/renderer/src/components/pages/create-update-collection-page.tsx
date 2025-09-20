@@ -30,6 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
+import { DraggableComponent, SortableFieldArray } from '../ui/drag-and-drop';
 import {
   Form,
   FormControl,
@@ -369,16 +370,23 @@ export const CreateUpdateCollectionPage = ({
             }
           >
             <div className="grid grid-cols-12 gap-6 mt-6">
-              {fieldDefinitions.fields.map((fieldDefinition, index) => {
-                return (
-                  <FormFieldFromDefinition
-                    key={fieldDefinition.id}
-                    fieldDefinition={fieldDefinition}
-                    name={`currentFields.field-${index}.content`}
-                    translateContent={context.translateContent}
-                  />
-                );
-              })}
+              <SortableFieldArray fieldArray={fieldDefinitions}>
+                {fieldDefinitions.fields.map((fieldDefinition, index) => {
+                  return (
+                    <DraggableComponent
+                      key={fieldDefinition.id}
+                      id={fieldDefinition.id}
+                    >
+                      <FormFieldFromDefinition
+                        fieldDefinition={fieldDefinition}
+                        name={`currentFields.field-${index}.content`}
+                        translateContent={context.translateContent}
+                        isDraggable={true}
+                      />
+                    </DraggableComponent>
+                  );
+                })}
+              </SortableFieldArray>
             </div>
             {/* <p>
               Dynamic Field generation. See

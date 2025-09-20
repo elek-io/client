@@ -19,7 +19,7 @@ import {
   type TranslatableString,
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { fieldWidth } from '@renderer/util';
+import { cn, fieldWidth } from '@renderer/util';
 import {
   forwardRef,
   useImperativeHandle,
@@ -33,6 +33,7 @@ import {
   type Path,
   type UseFieldArrayReturn,
 } from 'react-hook-form';
+import { DragHandle } from '../ui/drag-and-drop';
 import {
   FormControl,
   FormDescription,
@@ -409,6 +410,8 @@ export interface FormFieldFromDefinitionProps<T extends FieldValues> {
   fieldDefinition: FieldDefinition;
   name: Path<T>;
   translateContent: (key: string, record: TranslatableString) => string;
+  className?: string;
+  isDraggable?: boolean;
 }
 
 /**
@@ -417,43 +420,52 @@ export interface FormFieldFromDefinitionProps<T extends FieldValues> {
  * If you only want to render the field without it being connected to a form context,
  * use FieldFromDefinition instead.
  */
-export function FormFieldFromDefinition<T extends FieldValues>(
-  props: FormFieldFromDefinitionProps<T>
-): ReactElement {
+export function FormFieldFromDefinition<T extends FieldValues>({
+  fieldDefinition,
+  name,
+  translateContent,
+  isDraggable = false,
+  className,
+  ...props
+}: FormFieldFromDefinitionProps<T>): ReactElement {
   return (
     <FormField
-      key={props.fieldDefinition.id}
-      name={props.name}
+      key={fieldDefinition.id}
+      name={name}
       render={({ field }) => (
         <FormItem
-          className={`col-span-12 ${fieldWidth(props.fieldDefinition.inputWidth)}`}
+          className={cn(
+            `flex items-center col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`,
+            className
+          )}
+          {...props}
         >
-          <FormLabel
-            isRequired={
-              'isRequired' in props.fieldDefinition
-                ? props.fieldDefinition.isRequired
-                : false
-            }
-          >
-            {props.translateContent(
-              'fieldDefinition.label',
-              props.fieldDefinition.label
-            )}
-          </FormLabel>
-          <FormControl>
-            {/* @todo add styling for toggle switches */}
-            <FormInputFromDefinition
-              fieldDefinition={props.fieldDefinition}
-              field={field}
-            />
-          </FormControl>
-          <FormDescription>
-            {props.translateContent(
-              'fieldDefinition.description',
-              props.fieldDefinition.description
-            )}
-          </FormDescription>
-          <FormMessage />
+          {isDraggable && <DragHandle id={fieldDefinition.id} />}
+          <div className="flex flex-col w-full gap-2">
+            <FormLabel
+              isRequired={
+                'isRequired' in fieldDefinition
+                  ? fieldDefinition.isRequired
+                  : false
+              }
+            >
+              {translateContent('fieldDefinition.label', fieldDefinition.label)}
+            </FormLabel>
+            <FormControl>
+              {/* @todo add styling for toggle switches */}
+              <FormInputFromDefinition
+                fieldDefinition={fieldDefinition}
+                field={field}
+              />
+            </FormControl>
+            <FormDescription>
+              {translateContent(
+                'fieldDefinition.description',
+                fieldDefinition.description
+              )}
+            </FormDescription>
+            <FormMessage />
+          </div>
         </FormItem>
       )}
     />

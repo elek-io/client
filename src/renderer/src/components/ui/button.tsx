@@ -1,7 +1,7 @@
 import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@renderer/util';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Loader2, type LucideProps } from 'lucide-react';
+import { LoaderCircleIcon, type LucideProps } from 'lucide-react';
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-brand-600 focus-visible:ring-1 aria-invalid:ring-red-500 aria-invalid:border-red-500",
@@ -50,6 +50,7 @@ function Button({
     Icon?: React.ComponentType<LucideProps>;
   }) {
   const Comp = asChild ? Slot : 'button';
+
   return (
     <Comp
       data-slot="button"
@@ -59,7 +60,7 @@ function Button({
     >
       {isLoading ? (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <LoaderCircleIcon className="w-4 h-4 animate-spin" />
           {children}
         </>
       ) : (
