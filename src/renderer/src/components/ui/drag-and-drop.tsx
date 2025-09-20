@@ -11,7 +11,6 @@ import {
   type DragStartEvent,
   type UniqueIdentifier,
 } from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
   SortableContext,
   useSortable,
@@ -111,7 +110,7 @@ function SortableFieldArray<T extends FieldValues>({
   return (
     <DndContext
       collisionDetection={closestCenter}
-      modifiers={[restrictToVerticalAxis]}
+      // modifiers={[restrictToVerticalAxis]}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       sensors={sensors}

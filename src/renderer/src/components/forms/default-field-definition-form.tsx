@@ -1,4 +1,5 @@
 import {
+  FieldWidthSchema,
   type FieldDefinition,
   type FieldType,
   type SupportedLanguage,
@@ -15,6 +16,13 @@ import {
 } from '../ui/form';
 import { TranslatableFormInput } from '../ui/form-input';
 import { TranslatableFormTextarea } from '../ui/form-textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 
@@ -83,6 +91,36 @@ const DefaultFieldDefinitionForm = ({
             <FormDescription>
               Describe what to input into this field. This text will be
               displayed under the field to guide users.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name={'inputWidth'}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel isRequired={true}>Width</FormLabel>
+            <FormControl>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FieldWidthSchema.options.map((option) => {
+                    return (
+                      <SelectItem key={option} value={option}>
+                        {option} / 12
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormDescription>
+              Defines how wide the input field will be.
             </FormDescription>
             <FormMessage />
           </FormItem>
