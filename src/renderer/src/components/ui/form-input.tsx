@@ -3,6 +3,7 @@ import { cn } from '@renderer/util';
 import { LanguagesIcon } from 'lucide-react';
 import {
   type ControllerRenderProps,
+  type FieldErrors,
   type FieldValues,
   type Path,
 } from 'react-hook-form';
@@ -75,8 +76,14 @@ export interface TranslatableFormInputProps<T extends FieldValues>
   title: string;
   description: string;
   supportedLanguages: SupportedLanguage[];
+  errors: FieldErrors;
 }
 
+/**
+ * Renders a FormInput component with additional button to manage translations
+ *
+ * @todo TranslatableFormInput and TranslatableFormTextarea are almost identical. Consider refactoring to reduce duplication.
+ */
 function TranslatableFormInput<T extends FieldValues>({
   title,
   description,
@@ -84,8 +91,36 @@ function TranslatableFormInput<T extends FieldValues>({
   supportedLanguages,
   className,
   type,
+  errors,
   ...props
 }: TranslatableFormInputProps<T>): React.ReactElement {
+  const currentLanguage = field.name.split('.').pop() as SupportedLanguage;
+  const baseName = field.name.split('.').slice(0, -1).join('.');
+
+  /**
+   * Returns true if there are errors in the translations for the current field
+   * other than the current language.
+   */
+  function hasErrorsInTranslations(): boolean {
+    // Traverse the errors object to reach the base field errors
+    let fieldErrors: any = errors;
+    for (const segment of baseName.split('.')) {
+      if (!fieldErrors || typeof fieldErrors !== 'object') {
+        return false;
+      }
+      fieldErrors = fieldErrors[segment];
+    }
+
+    if (!fieldErrors || typeof fieldErrors !== 'object') {
+      return false;
+    }
+
+    // Check for errors in other languages
+    return supportedLanguages.some(
+      (language) => language !== currentLanguage && !!fieldErrors[language]
+    );
+  }
+
   return (
     <>
       {supportedLanguages.length > 1 ? (
@@ -98,7 +133,11 @@ function TranslatableFormInput<T extends FieldValues>({
           />
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="secondary" className="rounded-l-none border-l-0">
+              <Button
+                variant="secondary"
+                className="rounded-l-none"
+                aria-invalid={hasErrorsInTranslations()}
+              >
                 <LanguagesIcon className="w-4 h-4" />
               </Button>
             </DialogTrigger>
@@ -113,9 +152,7 @@ function TranslatableFormInput<T extends FieldValues>({
                   return (
                     <FormField
                       key={language}
-                      name={
-                        `${field.name.split('.').slice(0, -1).join('.')}.${language}` as Path<T>
-                      }
+                      name={`${baseName}.${language}` as Path<T>}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel isRequired={true}>{language}</FormLabel>

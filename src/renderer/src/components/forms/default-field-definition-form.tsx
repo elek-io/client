@@ -50,7 +50,7 @@ const DefaultFieldDefinitionForm = ({
                       "Summary".'
                 type="text"
                 field={field}
-                form={form}
+                errors={form.formState.errors}
                 supportedLanguages={supportedLanguages}
               />
             </FormControl>
@@ -75,13 +75,15 @@ const DefaultFieldDefinitionForm = ({
                 title="Description"
                 description="Describe what to input into this field. This text will be
               displayed under the field to guide users."
-                type="text"
                 field={field}
-                form={form}
+                errors={form.formState.errors}
                 supportedLanguages={supportedLanguages}
               />
             </FormControl>
-            <FormDescription></FormDescription>
+            <FormDescription>
+              Describe what to input into this field. This text will be
+              displayed under the field to guide users.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

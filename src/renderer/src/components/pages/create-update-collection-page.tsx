@@ -165,7 +165,7 @@ export const CreateUpdateCollectionPage = ({
                         description='The name of your new collection. Choose a short name in plural that explains the content of the collection - e.g. "Blogposts".'
                         type="text"
                         field={field}
-                        form={collectionForm}
+                        errors={collectionForm.formState.errors}
                         supportedLanguages={
                           context.project.settings.language.supported
                         }
@@ -195,7 +195,7 @@ export const CreateUpdateCollectionPage = ({
                         description='The name of each Entry inside your new Collection. Choose a short name in singluar - e.g. "Blogpost".'
                         type="text"
                         field={field}
-                        form={collectionForm}
+                        errors={collectionForm.formState.errors}
                         supportedLanguages={
                           context.project.settings.language.supported
                         }
@@ -220,9 +220,8 @@ export const CreateUpdateCollectionPage = ({
                       <TranslatableFormTextarea
                         title="Description"
                         description="A description of what this new Collection is used for."
-                        type="text"
                         field={field}
-                        form={collectionForm}
+                        errors={collectionForm.formState.errors}
                         supportedLanguages={
                           context.project.settings.language.supported
                         }
@@ -286,12 +285,12 @@ export const CreateUpdateCollectionPage = ({
               >
                 <SheetTrigger asChild>
                   <Button
+                    Icon={Plus}
                     onClick={(event) => {
                       event.preventDefault();
                       setIsAddFieldDefinitionSheetOpen(true);
                     }}
                   >
-                    <Plus className="w-4 h-4 mr-2"></Plus>
                     Add Field
                   </Button>
                 </SheetTrigger>
