@@ -24,7 +24,13 @@ import * as React from 'react';
 import type { FieldValues, UseFieldArrayReturn } from 'react-hook-form';
 import { Button } from './button';
 
-function DragHandle({ id }: { id: string }): React.ReactElement {
+function DragHandle({
+  id,
+  className,
+}: {
+  id: string;
+  className?: string;
+}): React.ReactElement {
   const { attributes, listeners } = useSortable({
     id,
   });
@@ -32,9 +38,9 @@ function DragHandle({ id }: { id: string }): React.ReactElement {
     <Button
       {...attributes}
       {...listeners}
-      variant="ghost"
+      variant="secondary"
       size="icon"
-      className="text-zinc-500 dark:text-zinc-400 size-9 hover:bg-transparent hover:cursor-grab"
+      className={cn('hover:cursor-grab', className)}
     >
       <GripVerticalIcon className="size-4" />
       <span className="sr-only">Drag to reorder</span>

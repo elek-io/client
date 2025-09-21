@@ -20,6 +20,8 @@ import {
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn, fieldWidth } from '@renderer/util';
+import { clsx } from 'clsx';
+import { EditIcon, TrashIcon } from 'lucide-react';
 import {
   forwardRef,
   useImperativeHandle,
@@ -33,6 +35,7 @@ import {
   type Path,
   type UseFieldArrayReturn,
 } from 'react-hook-form';
+import { Button } from '../ui/button';
 import { DragHandle } from '../ui/drag-and-drop';
 import {
   FormControl,
@@ -412,6 +415,8 @@ export interface FormFieldFromDefinitionProps<T extends FieldValues> {
   translateContent: (key: string, record: TranslatableString) => string;
   className?: string;
   isDraggable?: boolean;
+  isEditable?: boolean;
+  onDelete?: (fieldDefinition: FieldDefinition) => void;
 }
 
 /**
@@ -425,6 +430,8 @@ export function FormFieldFromDefinition<T extends FieldValues>({
   name,
   translateContent,
   isDraggable = false,
+  isEditable = false,
+  onDelete,
   className,
   ...props
 }: FormFieldFromDefinitionProps<T>): ReactElement {
@@ -440,7 +447,39 @@ export function FormFieldFromDefinition<T extends FieldValues>({
           )}
           {...props}
         >
-          {isDraggable && <DragHandle id={fieldDefinition.id} />}
+          <div className="flex flex-col">
+            {isDraggable && (
+              <DragHandle
+                id={fieldDefinition.id}
+                className={clsx({ 'rounded-b-none': isEditable || onDelete })}
+              />
+            )}
+            {isEditable && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className={clsx({
+                  'rounded-none': isDraggable && onDelete,
+                  'rounded-t-none': isDraggable,
+                  'rounded-b-none': onDelete,
+                })}
+              >
+                <EditIcon />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => onDelete(fieldDefinition)}
+                className={clsx({
+                  'rounded-t-none': isDraggable || isEditable,
+                })}
+              >
+                <TrashIcon />
+              </Button>
+            )}
+          </div>
           <div className="flex flex-col w-full gap-2">
             <FormLabel
               isRequired={

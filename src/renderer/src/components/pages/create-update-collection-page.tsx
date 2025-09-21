@@ -382,6 +382,13 @@ export const CreateUpdateCollectionPage = ({
                         name={`currentFields.field-${index}.content`}
                         translateContent={context.translateContent}
                         isDraggable={true}
+                        isEditable={true}
+                        onDelete={(fieldDefinition) => {
+                          const index = fieldDefinitions.fields.findIndex(
+                            (field) => field.id === fieldDefinition.id
+                          );
+                          fieldDefinitions.remove(index);
+                        }}
                       />
                     </DraggableComponent>
                   );
