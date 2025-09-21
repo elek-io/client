@@ -6,6 +6,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import { Card, CardContent } from './card';
 import { ScrollArea } from './scroll-area';
 
 export interface PageProps extends HTMLAttributes<HTMLElement> {
@@ -55,9 +56,9 @@ export const Page = forwardRef<HTMLElement, PageProps>(
               {props.layout === 'bare' ? (
                 <>{props.children}</>
               ) : (
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
-                  {props.children}
-                </div>
+                <Card className="py-0">
+                  <CardContent className="px-0">{props.children}</CardContent>
+                </Card>
               )}
             </div>
           </div>

@@ -392,54 +392,46 @@ function ProjectSettingsGeneralPage(): ReactElement {
           </PageSection>
         </form>
       </Form>
-      <PageSection title="Danger Zone">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm font-medium leading-6">
-              Delete this Project from your current device
-            </p>
-            <p className="text-sm text-gray-500">
-              The action does not delete this Project from other devices - just
+      <PageSection
+        title="Delete this Project from this device"
+        description="The action does not delete this Project from other devices - just
               from the device you are currently using. But if this is the only
               device your Project is stored at, you will remove it permanently -
-              there is no going back. Please be certain.
-            </p>
-          </div>
-          <div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash className="w-4 h-4 mr-2"></Trash>
-                  Delete Project
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Are you absolutely sure?</DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone if your Project is not
-                    replicated somewhere else than this device.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary">
-                      No, I&apos;ve changed my mind
-                    </Button>
-                  </DialogClose>
-                  <Button
-                    variant="destructive"
-                    onClick={projectForm.handleSubmit(onDelete)}
-                  >
-                    <Trash className="w-4 h-4 mr-2"></Trash>
-                    Yes, delete this Project
+              there is no going back. Please be certain."
+        actions={
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash className="w-4 h-4 mr-2"></Trash>
+                Delete Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone if your Project is not replicated
+                  somewhere else than this device.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                    No, I&apos;ve changed my mind
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-      </PageSection>
+                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={projectForm.handleSubmit(onDelete)}
+                >
+                  <Trash className="w-4 h-4 mr-2"></Trash>
+                  Yes, delete this Project
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        }
+      ></PageSection>
     </Page>
   );
 }
