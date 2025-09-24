@@ -183,9 +183,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
                 name={'description'}
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={false}>
-                      Project description
-                    </FormLabel>
+                    <FormLabel isRequired={true}>Project description</FormLabel>
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>
@@ -401,8 +399,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
         actions={
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash className="w-4 h-4 mr-2"></Trash>
+              <Button Icon={Trash} variant="destructive">
                 Delete Project
               </Button>
             </DialogTrigger>
@@ -421,10 +418,10 @@ function ProjectSettingsGeneralPage(): ReactElement {
                   </Button>
                 </DialogClose>
                 <Button
+                  Icon={Trash}
                   variant="destructive"
                   onClick={projectForm.handleSubmit(onDelete)}
                 >
-                  <Trash className="w-4 h-4 mr-2"></Trash>
                   Yes, delete this Project
                 </Button>
               </DialogFooter>

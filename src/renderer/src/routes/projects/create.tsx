@@ -61,10 +61,10 @@ function CreateProjectPage(): ReactElement {
     return (
       <>
         <Button
+          Icon={Check}
           isLoading={isCreatingProject}
           onClick={createProjectForm.handleSubmit(onCreate)}
         >
-          <Check className="w-4 h-4 mr-2"></Check>
           Create Project
         </Button>
       </>

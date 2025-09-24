@@ -120,6 +120,7 @@ function ProjectCollectionIndexPage(): ReactElement {
     return (
       <>
         <Button
+          Icon={Plus}
           onClick={() =>
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/create',
@@ -130,7 +131,6 @@ function ProjectCollectionIndexPage(): ReactElement {
             })
           }
         >
-          <Plus className="w-4 h-4 mr-2"></Plus>
           {`Create ${context.translateContent(
             'currentCollection.name.singular',
             context.currentCollection.name.singular
@@ -138,6 +138,7 @@ function ProjectCollectionIndexPage(): ReactElement {
         </Button>
 
         <Button
+          Icon={Settings}
           variant="secondary"
           onClick={() =>
             router.navigate({
@@ -149,7 +150,6 @@ function ProjectCollectionIndexPage(): ReactElement {
             })
           }
         >
-          <Settings className="w-4 h-4 mr-2"></Settings>
           Configure
         </Button>
       </>
