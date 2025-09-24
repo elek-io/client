@@ -9,10 +9,9 @@
     "**/routeTree.gen.ts": true
   },
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit",
-    "source.sortMembers": "explicit"
+    "source.fixAll.eslint": "always"
   },
   "typescript.tsdk": "./node_modules/typescript/lib"
 }
