@@ -52,6 +52,7 @@ function FormInput<T extends FieldValues>({
 
     switch (type) {
       case 'text':
+      case 'email':
         return value;
       case 'number':
         return parseInt(value);

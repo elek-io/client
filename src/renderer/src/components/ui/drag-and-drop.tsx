@@ -38,11 +38,11 @@ function DragHandle({
     <Button
       {...attributes}
       {...listeners}
+      Icon={GripVerticalIcon}
       variant="secondary"
       size="icon"
       className={cn('hover:cursor-grab', className)}
     >
-      <GripVerticalIcon className="size-4" />
       <span className="sr-only">Drag to reorder</span>
     </Button>
   );
