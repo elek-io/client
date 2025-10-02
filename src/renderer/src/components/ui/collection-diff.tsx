@@ -4,7 +4,7 @@ import {
   type TranslatableString,
 } from '@elek-io/core';
 import type { ReactElement } from 'react';
-import { FieldFromDefinition } from '../forms/util';
+import { DisabledFieldFromDefinition } from '../forms/util';
 import { FormItem } from './form';
 import { Input } from './input';
 import { Label } from './label';
@@ -44,7 +44,7 @@ export function CollectionDiff({
         <h3 className="text-sm font-semibold leading-6">Fields</h3>
         <div className="mt-6 flex flex-col gap-6">
           {collection.fieldDefinitions.map((definition) => (
-            <FieldFromDefinition
+            <DisabledFieldFromDefinition
               key={definition.id}
               fieldDefinition={definition}
               translateContent={translateContent}

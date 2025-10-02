@@ -19,36 +19,16 @@ import {
   type TranslatableString,
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { cn, fieldWidth } from '@renderer/util';
-import { clsx } from 'clsx';
-import { EditIcon, TrashIcon } from 'lucide-react';
+import { fieldWidth } from '@renderer/util';
 import {
   forwardRef,
   useImperativeHandle,
   type ReactElement,
   type Ref,
 } from 'react';
-import {
-  useForm,
-  type ControllerRenderProps,
-  type FieldValues,
-  type Path,
-  type UseFieldArrayReturn,
-} from 'react-hook-form';
-import { Button } from '../ui/button';
-import { DragHandle } from '../ui/drag-and-drop';
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../ui/form';
-import { FormInput } from '../ui/form-input';
-import { FormTextarea } from '../ui/form-textarea';
+import { useForm, type UseFieldArrayReturn } from 'react-hook-form';
+import { FormFieldFromDefinition } from '../ui/form';
 import { Input } from '../ui/input';
-import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
@@ -57,40 +37,9 @@ import { RangeFieldDefinitionForm } from './range-value-definition-form';
 import { TextFieldDefinitionForm } from './text-value-definition-form';
 import { TextareaFieldDefinitionForm } from './textarea-value-definition-form';
 import { ToggleFieldDefinitionForm } from './toggle-value-definition-form';
-
-export function translatableDefaultNull(props: {
-  supportedLanguages: SupportedLanguage[];
-}): {
-  [x: string]: null;
-} {
-  return props.supportedLanguages
-    .map((language) => {
-      return { [language]: null };
-    })
-    .reduce((prev, curr) => {
-      return {
-        ...prev,
-        ...curr,
-      };
-    });
-}
-
-export function translatableDefaultArray(props: {
-  supportedLanguages: SupportedLanguage[];
-}): {
-  [x: string]: never[];
-} {
-  return props.supportedLanguages
-    .map((language) => {
-      return { [language]: [] };
-    })
-    .reduce((prev, curr) => {
-      return {
-        ...prev,
-        ...curr,
-      };
-    });
-}
+import { translatableDefaultNull } from '../pages/util';
+import { Label } from '../ui/label';
+import React from 'react';
 
 export interface FieldDefinitionFormProps {
   supportedLanguages: SupportedLanguage[];
@@ -111,12 +60,8 @@ export interface FieldDefinitionFormRef {
 export const FieldDefinitionForm = forwardRef(
   (props: FieldDefinitionFormProps, ref: Ref<FieldDefinitionFormRef>) => {
     const FieldDefinitionBaseDefaults: Omit<FieldDefinitionBase, 'id'> = {
-      label: translatableDefaultNull({
-        supportedLanguages: props.supportedLanguages,
-      }),
-      description: translatableDefaultNull({
-        supportedLanguages: props.supportedLanguages,
-      }),
+      label: translatableDefaultNull(props.supportedLanguages),
+      description: translatableDefaultNull(props.supportedLanguages),
       isRequired: true,
       isDisabled: false,
       isUnique: false,
@@ -306,52 +251,59 @@ export const FieldDefinitionForm = forwardRef(
             );
         }
       },
-      getExampleFormField: () => {
-        switch (props.fieldType) {
+      getExampleFormField: (fieldType: FieldType) => {
+        switch (fieldType) {
           case 'number':
             return (
               <FormFieldFromDefinition
-                fieldDefinition={numberFieldDefinitionFormState.getValues()}
+                form={numberFieldDefinitionFormState}
+                fieldDefinition={numberFieldDefinitionFormState.watch()}
                 name="exampleFields.number.content"
                 translateContent={props.translateContent}
+                supportedLanguages={props.supportedLanguages}
               />
             );
           case 'range':
             return (
               <FormFieldFromDefinition
-                fieldDefinition={rangeFieldDefinitionFormState.getValues()}
+                form={rangeFieldDefinitionFormState}
+                fieldDefinition={rangeFieldDefinitionFormState.watch()}
                 name="exampleFields.range.content"
                 translateContent={props.translateContent}
+                supportedLanguages={props.supportedLanguages}
               />
             );
           case 'text':
             return (
               <FormFieldFromDefinition
-                fieldDefinition={textFieldDefinitionFormState.getValues()}
+                form={textFieldDefinitionFormState}
+                fieldDefinition={textFieldDefinitionFormState.watch()}
                 name="exampleFields.text.content"
                 translateContent={props.translateContent}
+                supportedLanguages={props.supportedLanguages}
               />
             );
           case 'textarea':
             return (
               <FormFieldFromDefinition
-                fieldDefinition={textareaFieldDefinitionFormState.getValues()}
+                form={textareaFieldDefinitionFormState}
+                fieldDefinition={textareaFieldDefinitionFormState.watch()}
                 name="exampleFields.textarea.content"
                 translateContent={props.translateContent}
+                supportedLanguages={props.supportedLanguages}
               />
             );
           case 'toggle':
             return (
               <FormFieldFromDefinition
-                fieldDefinition={toggleFieldDefinitionFormState.getValues()}
+                form={toggleFieldDefinitionFormState}
+                fieldDefinition={toggleFieldDefinitionFormState.watch()}
                 name="exampleFields.toggle.content"
                 translateContent={props.translateContent}
               />
             );
           default:
-            throw new Error(
-              `Unsupported example form Field "${props.fieldType}"`
-            );
+            throw new Error(`Unsupported example form Field "${fieldType}"`);
         }
       },
     }));
@@ -409,316 +361,151 @@ export const FieldDefinitionForm = forwardRef(
 );
 FieldDefinitionForm.displayName = 'FieldDefinitionForm';
 
-export interface FormFieldFromDefinitionProps<T extends FieldValues> {
-  fieldDefinition: FieldDefinition;
-  name: Path<T>;
-  translateContent: (key: string, record: TranslatableString) => string;
-  className?: string;
-  isDraggable?: boolean;
-  isEditable?: boolean;
-  onDelete?: (fieldDefinition: FieldDefinition) => void;
-}
-
-/**
- * Used to render a Field based on a FieldDefinition and attaches it to a form context
- *
- * If you only want to render the field without it being connected to a form context,
- * use FieldFromDefinition instead.
- */
-export function FormFieldFromDefinition<T extends FieldValues>({
-  fieldDefinition,
-  name,
-  translateContent,
-  isDraggable = false,
-  isEditable = false,
-  onDelete,
-  className,
-  ...props
-}: FormFieldFromDefinitionProps<T>): ReactElement {
-  return (
-    <FormField
-      key={fieldDefinition.id}
-      name={name}
-      render={({ field }) => (
-        <FormItem
-          className={cn(
-            `flex items-center col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`,
-            className
-          )}
-          {...props}
-        >
-          <div className="flex flex-col">
-            {isDraggable && (
-              <DragHandle
-                id={fieldDefinition.id}
-                className={clsx({ 'rounded-b-none': isEditable || onDelete })}
-              />
-            )}
-            {isEditable && (
-              <Button
-                variant="secondary"
-                size="icon"
-                className={clsx({
-                  'rounded-none': isDraggable && onDelete,
-                  'rounded-t-none': isDraggable,
-                  'rounded-b-none': onDelete,
-                })}
-              >
-                <EditIcon />
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() => onDelete(fieldDefinition)}
-                className={clsx({
-                  'rounded-t-none': isDraggable || isEditable,
-                })}
-              >
-                <TrashIcon />
-              </Button>
-            )}
-          </div>
-          <div className="flex flex-col w-full gap-2">
-            <FormLabel
-              isRequired={
-                'isRequired' in fieldDefinition
-                  ? fieldDefinition.isRequired
-                  : false
-              }
-            >
-              {translateContent('fieldDefinition.label', fieldDefinition.label)}
-            </FormLabel>
-            <FormControl>
-              {/* @todo add styling for toggle switches */}
-              <FormInputFromDefinition
-                fieldDefinition={fieldDefinition}
-                field={field}
-              />
-            </FormControl>
-            <FormDescription>
-              {translateContent(
-                'fieldDefinition.description',
-                fieldDefinition.description
-              )}
-            </FormDescription>
-            <FormMessage />
-          </div>
-        </FormItem>
-      )}
-    />
-  );
-}
-
-export interface FormInputFromDefinitionProps<T extends FieldValues> {
-  fieldDefinition: FieldDefinition;
-  field: ControllerRenderProps<FieldValues, Path<T>>;
-}
-
-function FormInputFromDefinition<T extends FieldValues>(
-  props: FormInputFromDefinitionProps<T>
-): ReactElement {
-  switch (props.fieldDefinition.fieldType) {
-    case 'text':
-      return (
-        <FormInput
-          field={props.field}
-          type="text"
-          minLength={props.fieldDefinition.min || undefined}
-          maxLength={props.fieldDefinition.max || undefined}
-          defaultValue={props.fieldDefinition.defaultValue || undefined}
-          required={props.fieldDefinition.isRequired}
-          disabled={props.fieldDefinition.isDisabled}
-        />
-      );
-    case 'textarea':
-      return (
-        <FormTextarea
-          field={props.field}
-          minLength={props.fieldDefinition.min || undefined}
-          maxLength={props.fieldDefinition.max || undefined}
-          defaultValue={props.fieldDefinition.defaultValue || undefined}
-          required={props.fieldDefinition.isRequired}
-          disabled={props.fieldDefinition.isDisabled}
-        />
-      );
-    case 'number':
-      return (
-        <FormInput
-          field={props.field}
-          type="number"
-          min={props.fieldDefinition.min || undefined}
-          max={props.fieldDefinition.max || undefined}
-          defaultValue={props.fieldDefinition.defaultValue || undefined}
-          required={props.fieldDefinition.isRequired}
-          disabled={props.fieldDefinition.isDisabled}
-        />
-      );
-    case 'range':
-      return (
-        <Slider
-          {...props.field}
-          defaultValue={[props.fieldDefinition.defaultValue]}
-          min={props.fieldDefinition.min}
-          max={props.fieldDefinition.max}
-          step={1} // @todo Core needs to support this too
-          disabled={props.fieldDefinition.isDisabled}
-        />
-      );
-    case 'toggle':
-      return (
-        <Switch
-          {...props.field}
-          defaultChecked={props.fieldDefinition.defaultValue}
-          checked={props.fieldDefinition.defaultValue}
-          required={props.fieldDefinition.isRequired}
-          disabled={props.fieldDefinition.isDisabled}
-        />
-      );
-    default:
-      throw new Error(
-        `Unsupported Entry definition FieldType "${props.fieldDefinition.fieldType}"`
-      );
-  }
-}
-
-export interface FieldFromDefinitionProps {
-  fieldDefinition: FieldDefinition;
-  translateContent: (key: string, record: TranslatableString) => string;
-  value?: string | number | boolean;
-}
-
-/**
- * Used to render a Field based on a FieldDefinition
- *
- * Only renders an input based on given definition and does not
- * connect to a form context. If you need a usable form field,
- * use FormFieldFromDefinition instead.
- */
-export function FieldFromDefinition(
-  props: FieldFromDefinitionProps
-): ReactElement {
-  return (
-    <FormItem
-      className={`col-span-12 ${fieldWidth(props.fieldDefinition.inputWidth)}`}
-    >
-      <Label
-        isRequired={
-          'isRequired' in props.fieldDefinition
-            ? props.fieldDefinition.isRequired
-            : false
-        }
-      >
-        {props.translateContent(
-          'fieldDefinition.label',
-          props.fieldDefinition.label
-        )}
-      </Label>
-      <InputFromDefinition
-        fieldDefinition={props.fieldDefinition}
-        value={props.value}
-      />
-      <p className={'text-[0.8rem] text-zinc-500 dark:text-zinc-400'}>
-        {props.translateContent(
-          'fieldDefinition.description',
-          props.fieldDefinition.description
-        )}
-      </p>
-    </FormItem>
-  );
-}
-
-export interface InputFromDefinitionProps {
+interface DisabledInputFromDefinitionProps {
+  id: string;
+  'aria-describedby': string;
   fieldDefinition: FieldDefinition;
   value?: string | number | boolean | undefined;
 }
 
-function InputFromDefinition(props: InputFromDefinitionProps): ReactElement {
-  switch (props.fieldDefinition.fieldType) {
+function DisabledInputFromDefinition({
+  id,
+  'aria-describedby': ariaDescribedBy,
+  fieldDefinition,
+  value,
+}: DisabledInputFromDefinitionProps): ReactElement {
+  switch (fieldDefinition.fieldType) {
     case 'text':
-      if (typeof props.value !== 'string' && props.value !== undefined) {
+      if (typeof value !== 'string') {
         throw new Error(
-          `Expected value to be a string, but got "${typeof props.value}"`
+          `Expected value to be a string, but got "${typeof value}"`
         );
       }
       return (
         <Input
+          id={id}
+          aria-describedby={ariaDescribedBy}
           type="text"
-          minLength={props.fieldDefinition.min || undefined}
-          maxLength={props.fieldDefinition.max || undefined}
-          defaultValue={props.fieldDefinition.defaultValue || undefined}
-          value={props.value}
-          required={props.fieldDefinition.isRequired}
+          value={value}
           disabled={true}
         />
       );
     case 'textarea':
-      if (typeof props.value !== 'string' && props.value !== undefined) {
+      if (typeof value !== 'string') {
         throw new Error(
-          `Expected value to be a string, but got "${typeof props.value}"`
+          `Expected value to be a string, but got "${typeof value}"`
         );
       }
       return (
         <Textarea
-          minLength={props.fieldDefinition.min || undefined}
-          maxLength={props.fieldDefinition.max || undefined}
-          defaultValue={props.fieldDefinition.defaultValue || undefined}
-          value={props.value}
-          required={props.fieldDefinition.isRequired}
+          id={id}
+          aria-describedby={ariaDescribedBy}
+          value={value}
           disabled={true}
         />
       );
     case 'number':
-      if (typeof props.value !== 'number' && props.value !== undefined) {
+      if (typeof value !== 'number') {
         throw new Error(
-          `Expected value to be a number, but got "${typeof props.value}"`
+          `Expected value to be a number, but got "${typeof value}"`
         );
       }
       return (
         <Input
+          id={id}
+          aria-describedby={ariaDescribedBy}
           type="number"
-          min={props.fieldDefinition.min || undefined}
-          max={props.fieldDefinition.max || undefined}
-          defaultValue={props.fieldDefinition.defaultValue || undefined}
-          value={props.value}
-          required={props.fieldDefinition.isRequired}
+          value={value}
           disabled={true}
         />
       );
     case 'range':
-      if (typeof props.value !== 'number' && props.value !== undefined) {
+      if (typeof value !== 'number') {
         throw new Error(
-          `Expected value to be a number, but got "${typeof props.value}"`
+          `Expected value to be a number, but got "${typeof value}"`
         );
       }
       return (
         <Slider
-          defaultValue={[props.fieldDefinition.defaultValue]}
-          value={props.value ? [props.value] : []}
-          min={props.fieldDefinition.min}
-          max={props.fieldDefinition.max}
+          id={id}
+          aria-describedby={ariaDescribedBy}
+          value={value ? [value] : []}
           step={1} // @todo Core needs to support this too
           disabled={true}
         />
       );
     case 'toggle':
-      if (typeof props.value !== 'boolean' && props.value !== undefined) {
+      if (typeof value !== 'boolean') {
         throw new Error(
-          `Expected value to be a boolean, but got "${typeof props.value}"`
+          `Expected value to be a boolean, but got "${typeof value}"`
         );
       }
       return (
         <Switch
-          defaultChecked={props.fieldDefinition.defaultValue}
-          checked={props.value || props.fieldDefinition.defaultValue}
-          required={props.fieldDefinition.isRequired}
+          id={id}
+          aria-describedby={ariaDescribedBy}
+          checked={value}
           disabled={true}
         />
       );
     default:
       throw new Error(
-        `Unsupported Entry definition FieldType "${props.fieldDefinition.fieldType}"`
+        `Unsupported Entry definition FieldType "${fieldDefinition.fieldType}"`
       );
   }
+}
+
+interface DisabledFieldFromDefinitionProps {
+  fieldDefinition: FieldDefinition;
+  translateContent: (key: string, record: TranslatableString) => string;
+  value: string | number | boolean;
+}
+
+/**
+ * Used to render a disabled Field based on a FieldDefinition to view it's value
+ *
+ * @note Does not connect to a form context.
+ * If you need a usable form field, use FormFieldFromDefinition instead.
+ */
+export function DisabledFieldFromDefinition({
+  fieldDefinition,
+  translateContent,
+  value,
+}: DisabledFieldFromDefinitionProps): ReactElement {
+  const inputId = React.useId();
+  const descriptionId = React.useId();
+
+  return (
+    <div
+      className={`grid gap-2 col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`}
+    >
+      <Label
+        htmlFor={inputId}
+        isRequired={
+          'isRequired' in fieldDefinition ? fieldDefinition.isRequired : false
+        }
+      >
+        {translateContent('fieldDefinition.label', fieldDefinition.label)}
+      </Label>
+
+      <DisabledInputFromDefinition
+        id={inputId}
+        aria-describedby={descriptionId}
+        fieldDefinition={fieldDefinition}
+        value={value}
+      />
+
+      {fieldDefinition.description && (
+        <p
+          id={descriptionId}
+          className={'text-zinc-500 dark:text-zinc-400 text-sm'}
+        >
+          {translateContent(
+            'fieldDefinition.description',
+            fieldDefinition.description
+          )}
+        </p>
+      )}
+    </div>
+  );
 }

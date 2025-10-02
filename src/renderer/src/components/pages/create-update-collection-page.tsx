@@ -18,7 +18,6 @@ import {
 import {
   FieldDefinitionForm,
   type FieldDefinitionFormRef,
-  FormFieldFromDefinition,
 } from '../forms/util';
 import { Button } from '../ui/button';
 import {
@@ -36,6 +35,7 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormFieldFromDefinition,
   FormItem,
   FormLabel,
   FormMessage,
@@ -103,22 +103,6 @@ export const CreateUpdateCollectionPage = ({
 
   return (
     <Page {...props}>
-      {/* {JSON.stringify(context.project.settings)}
-      {JSON.stringify(collectionForm.watch())} */}
-      {/* <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {supportedLanguageSchema.options.map((option) => {
-            return (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
-      </Select> */}
       <Form {...collectionForm}>
         <form onSubmit={collectionForm.handleSubmit(onCollectionSubmit)}>
           <div className="p-6 space-y-4">
@@ -296,17 +280,19 @@ export const CreateUpdateCollectionPage = ({
                   </Button>
                 </SheetTrigger>
                 <SheetContent
-                  // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
-                  //
-                  onInteractOutside={(event) => {
-                    console.log(event);
-                    event.preventDefault();
-                  }}
-                  overlayChildren={
-                    fieldDefinitionFormRef.current && (
-                      <fieldDefinitionFormRef.current.getExampleFormField />
-                    )
-                  }
+                // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
+                //
+                // onInteractOutside={(event) => {
+                //   console.log(event);
+                //   event.preventDefault();
+                // }}
+                // overlayChildren={
+                //   fieldDefinitionFormRef.current && (
+                //     <fieldDefinitionFormRef.current.getExampleFormField
+                //       fieldType={selectedFieldType}
+                //     />
+                //   )
+                // }
                 >
                   <SheetHeader>
                     <SheetTitle>Add a Field to this Collection</SheetTitle>
@@ -379,7 +365,12 @@ export const CreateUpdateCollectionPage = ({
                     >
                       <FormFieldFromDefinition
                         fieldDefinition={fieldDefinition}
+                        form={collectionForm}
+                        // @ts-ignore This is only to display the field, not to actually edit anything but the order of the fields
                         name={`currentFields.field-${index}.content`}
+                        supportedLanguages={
+                          context.project.settings.language.supported
+                        }
                         translateContent={context.translateContent}
                         isDraggable={true}
                         isEditable={true}
@@ -395,11 +386,6 @@ export const CreateUpdateCollectionPage = ({
                 })}
               </SortableFieldArray>
             </div>
-            {/* <p>
-              Dynamic Field generation. See
-              https://react-hook-form.com/api/usefieldarray/
-            </p>
-            {JSON.stringify(collectionForm.watch())} */}
           </PageSection>
           {isUpdatingCollection(collectionFormProps) && (
             <PageSection title="Danger Zone">
