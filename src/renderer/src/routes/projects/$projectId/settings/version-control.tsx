@@ -102,11 +102,11 @@ function ProjectSettingsVersionControlPage(): ReactElement {
             description="A Projects remote is a place that makes it accessible for other users. By adding a remote you are able to work with multiple others together on the same Project."
             actions={
               <Button
+                Icon={Check}
                 onClick={remoteOriginUrlForm.handleSubmit(onSetRemoteOriginUrl)}
                 isLoading={isSettingRemoteOriginUrl}
                 disabled={remoteOriginUrlForm.formState.isDirty === false}
               >
-                <Check className="w-4 h-4 mr-2"></Check>
                 Save changes
               </Button>
             }

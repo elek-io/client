@@ -1,21 +1,11 @@
 import {
+  FieldWidthSchema,
   type FieldDefinition,
   type FieldType,
   type SupportedLanguage,
 } from '@elek-io/core';
 import { Fragment, type HTMLAttributes, type ReactElement } from 'react';
 import { type FieldValues, type UseFormReturn } from 'react-hook-form';
-import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
 import {
   FormControl,
   FormDescription,
@@ -24,8 +14,15 @@ import {
   FormLabel,
   FormMessage,
 } from '../ui/form';
-import { FormInput } from '../ui/form-input';
-import { FormTextarea } from '../ui/form-textarea';
+import { TranslatableFormInput } from '../ui/form-input';
+import { TranslatableFormTextarea } from '../ui/form-textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 import { Separator } from '../ui/separator';
 import { Switch } from '../ui/switch';
 
@@ -53,53 +50,17 @@ const DefaultFieldDefinitionForm = ({
           <FormItem>
             <FormLabel isRequired={true}>Label</FormLabel>
             <FormControl>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <FormInput field={field} type="text" />
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Label</DialogTitle>
-                    <DialogDescription>
-                      The label is displayed above the input Field and should
+              <TranslatableFormInput
+                title="Label"
+                description='The label is displayed above the input Field and should
                       indicate what the user is supposed to enter. For example
-                      &quot;Title&quot;, &quot;Date of birth&quot; or
-                      &quot;Summary&quot;.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-2 py-6">
-                    {supportedLanguages.map((language) => {
-                      return (
-                        <FormField
-                          key={language}
-                          control={form.control}
-                          name={`label.${language}`}
-                          render={({ field }) => (
-                            <FormItem className="col-span-12 sm:col-span-5">
-                              <FormLabel isRequired={true}>
-                                {language}
-                              </FormLabel>
-                              <FormControl>
-                                <FormInput field={field} type="text" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="secondary">
-                        Done
-                      </Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                      "Title", "Date of birth" or
+                      "Summary".'
+                type="text"
+                field={field}
+                errors={form.formState.errors}
+                supportedLanguages={supportedLanguages}
+              />
             </FormControl>
             <FormDescription>
               The label is displayed above the input Field and should indicate
@@ -118,57 +79,48 @@ const DefaultFieldDefinitionForm = ({
           <FormItem>
             <FormLabel isRequired={true}>Description</FormLabel>
             <FormControl>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <FormTextarea field={field} />
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Label</DialogTitle>
-                    <DialogDescription>
-                      The label is displayed above the input Field and should
-                      indicate what the user is supposed to enter. For example
-                      &quot;Title&quot;, &quot;Date of birth&quot; or
-                      &quot;Summary&quot;.
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-2 py-6">
-                    {supportedLanguages.map((language) => {
-                      return (
-                        <FormField
-                          key={language}
-                          control={form.control}
-                          name={`description.${language}`}
-                          render={({ field }) => (
-                            <FormItem className="col-span-12 sm:col-span-5">
-                              <FormLabel isRequired={true}>
-                                {language}
-                              </FormLabel>
-                              <FormControl>
-                                <FormTextarea field={field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="secondary">
-                        Done
-                      </Button>
-                    </DialogClose>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <TranslatableFormTextarea
+                title="Description"
+                description="Describe what to input into this field. This text will be
+              displayed under the field to guide users."
+                field={field}
+                errors={form.formState.errors}
+                supportedLanguages={supportedLanguages}
+              />
             </FormControl>
             <FormDescription>
               Describe what to input into this field. This text will be
               displayed under the field to guide users.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name={'inputWidth'}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel isRequired={true}>Width</FormLabel>
+            <FormControl>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FieldWidthSchema.options.map((option) => {
+                    return (
+                      <SelectItem key={option} value={option}>
+                        {option} / 12
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormDescription>
+              Defines how wide the input field will be.
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -181,7 +133,7 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isRequired`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 shadow-xs">
             <div className="mr-4">
               <FormLabel isRequired={true}>Required</FormLabel>
               <FormDescription>
@@ -214,7 +166,7 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isUnique`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 shadow-xs">
             <div className="mr-4">
               <FormLabel isRequired={true}>Unique</FormLabel>
               <FormDescription>
@@ -246,7 +198,7 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isDisabled`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 shadow-xs">
             <div className="mr-4">
               <FormLabel isRequired={true}>Disabled</FormLabel>
               <FormDescription>

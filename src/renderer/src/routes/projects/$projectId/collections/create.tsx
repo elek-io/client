@@ -3,7 +3,7 @@ import {
   createCollectionSchema,
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { translatableDefaultNull } from '@renderer/components/forms/util';
+import { translatableDefaultNull } from '@renderer/components/pages/util';
 import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
 import { Button } from '@renderer/components/ui/button';
 import { NotificationIntent, useStore } from '@renderer/store';
@@ -38,16 +38,16 @@ function ProjectCollectionCreate(): ReactElement {
       projectId: context.project.id,
       icon: 'home',
       name: {
-        singular: translatableDefaultNull({
-          supportedLanguages: context.project.settings.language.supported,
-        }),
-        plural: translatableDefaultNull({
-          supportedLanguages: context.project.settings.language.supported,
-        }),
+        singular: translatableDefaultNull(
+          context.project.settings.language.supported
+        ),
+        plural: translatableDefaultNull(
+          context.project.settings.language.supported
+        ),
       },
-      description: translatableDefaultNull({
-        supportedLanguages: context.project.settings.language.supported,
-      }),
+      description: translatableDefaultNull(
+        context.project.settings.language.supported
+      ),
       slug: {
         singular: '',
         plural: '',
@@ -74,10 +74,10 @@ function ProjectCollectionCreate(): ReactElement {
     return (
       <>
         <Button
+          Icon={Check}
           isLoading={isCreatingCollection}
           onClick={createCollectionForm.handleSubmit(onCreate)}
         >
-          <Check className="w-4 h-4 mr-2"></Check>
           Create Collection
         </Button>
       </>

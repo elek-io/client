@@ -8,6 +8,7 @@ import {
 } from '@renderer/components/ui/card';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -93,8 +94,10 @@ function ListProjectsPage(): ReactElement {
   function Actions(): ReactElement {
     return (
       <>
-        <Button onClick={() => router.navigate({ to: '/projects/create' })}>
-          <Plus className="w-4 h-4 mr-2"></Plus>
+        <Button
+          Icon={Plus}
+          onClick={() => router.navigate({ to: '/projects/create' })}
+        >
           Create Project
         </Button>
         <Dialog
@@ -102,8 +105,7 @@ function ListProjectsPage(): ReactElement {
           onOpenChange={setIsCloningDialogOpen}
         >
           <DialogTrigger asChild>
-            <Button variant={'outline'}>
-              <DownloadCloud className="w-4 h-4 mr-2" />
+            <Button Icon={DownloadCloud} variant={'secondary'}>
               Clone Project
             </Button>
           </DialogTrigger>
@@ -116,7 +118,7 @@ function ListProjectsPage(): ReactElement {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-2 py-6">
+            <DialogBody>
               <Form {...cloneProjectForm}>
                 <form onSubmit={cloneProjectForm.handleSubmit(onCloneProject)}>
                   <FormField
@@ -135,14 +137,15 @@ function ListProjectsPage(): ReactElement {
                   />
                 </form>
               </Form>
-            </div>
+            </DialogBody>
 
             <DialogFooter>
               <Button
+                Icon={DownloadCloud}
                 onClick={cloneProjectForm.handleSubmit(onCloneProject)}
                 isLoading={isCloning}
               >
-                <DownloadCloud className="w-4 h-4 mr-2" /> Clone
+                Clone
               </Button>
             </DialogFooter>
           </DialogContent>

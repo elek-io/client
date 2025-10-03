@@ -6,6 +6,7 @@ import {
 } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@renderer/components/ui/button';
+import { Card } from '@renderer/components/ui/card';
 import { CommitHistory } from '@renderer/components/ui/commit-history';
 import {
   Form,
@@ -113,8 +114,8 @@ function UserProfilePage(): ReactElement {
         <Button
           onClick={setUserForm.handleSubmit(onSetUser)}
           isLoading={isSettingUser}
+          Icon={Check}
         >
-          <Check className="w-4 h-4 mr-2"></Check>
           Save local User
         </Button>
       </>
@@ -178,15 +179,15 @@ function UserProfilePage(): ReactElement {
         layout="bare"
       >
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
-          <main className="grid-cols-1 gap-4 lg:col-span-2">
-            <div className="rounded-lg bg-white dark:bg-zinc-900 shadow-sm">
-              <Form {...setUserForm}>
-                <form>
-                  <PageSection
-                    className="border-none space-y-6"
-                    title="Local User"
-                    description="Fill out your information below and watch it influence how your future changes will look like on the right."
-                  >
+          <Card className="lg:col-span-2 py-0">
+            <Form {...setUserForm}>
+              <form>
+                <PageSection
+                  title="Local User"
+                  description="Fill out your information below and watch it influence how your future changes will look like on the right."
+                  className="border-t-0 rounded-t-xl"
+                >
+                  <div className="grid gap-6">
                     <FormField
                       control={setUserForm.control}
                       name={`language`}
@@ -258,7 +259,7 @@ function UserProfilePage(): ReactElement {
                         <FormItem>
                           <FormLabel isRequired={true}>Email</FormLabel>
                           <FormControl>
-                            <FormInput field={field} type="text" />
+                            <FormInput field={field} type="email" />
                           </FormControl>
                           <FormDescription>
                             Your email allows other members of Projects to
@@ -268,12 +269,13 @@ function UserProfilePage(): ReactElement {
                         </FormItem>
                       )}
                     />
-                  </PageSection>
-                  <PageSection
-                    title="Local API"
-                    description={<LocalApiDescription />}
-                    className="space-y-6"
-                  >
+                  </div>
+                </PageSection>
+                <PageSection
+                  title="Local API"
+                  description={<LocalApiDescription />}
+                >
+                  <div className="grid gap-6">
                     <FormField
                       control={setUserForm.control}
                       name={`localApi.port`}
@@ -313,26 +315,24 @@ function UserProfilePage(): ReactElement {
                         </FormItem>
                       )}
                     />
-                  </PageSection>
-                </form>
-              </Form>
-            </div>
-          </main>
-          <aside className="grid grid-cols-1 gap-4">
-            <div className="rounded-lg bg-white dark:bg-zinc-900 shadow-sm">
-              <PageSection
-                className="border-none"
-                title="Example change"
-                description="This is how a change made by you will look like based on the information you've given on the left."
-              >
-                <CommitHistory
-                  projectId={'1'}
-                  commits={[exampleCommit]}
-                  language={setUserForm.watch('language')}
-                  disabled={true}
-                />
-              </PageSection>
-            </div>
+                  </div>
+                </PageSection>
+              </form>
+            </Form>
+          </Card>
+          <aside className="grid grid-cols-1">
+            <PageSection
+              title="Example change"
+              description="This is how a change made by you will look like based on the information you've given on the left."
+              standalone={true}
+            >
+              <CommitHistory
+                projectId={'1'}
+                commits={[exampleCommit]}
+                language={setUserForm.watch('language')}
+                disabled={true}
+              />
+            </PageSection>
           </aside>
         </div>
       </Page>

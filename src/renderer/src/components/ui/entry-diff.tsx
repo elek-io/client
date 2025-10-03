@@ -5,7 +5,7 @@ import {
   type TranslatableString,
 } from '@elek-io/core';
 import type { ReactElement } from 'react';
-import { FieldFromDefinition } from '../forms/util';
+import { DisabledFieldFromDefinition } from '../forms/util';
 
 export interface EntryDiffProps {
   collection: Collection;
@@ -21,10 +21,10 @@ export function EntryDiff({
   translateContent,
 }: EntryDiffProps): ReactElement {
   return (
-    <>
+    <div className="p-6 grid grid-cols-12 gap-x-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
       {collection.fieldDefinitions.map((definition, definitionIndex) => {
         return (
-          <FieldFromDefinition
+          <DisabledFieldFromDefinition
             key={definition.id}
             fieldDefinition={definition}
             translateContent={translateContent}
@@ -32,6 +32,6 @@ export function EntryDiff({
           />
         );
       })}
-    </>
+    </div>
   );
 }

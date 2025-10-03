@@ -34,79 +34,74 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
           id="app-bar"
           className="p-2 text-sm text-center border-b border-zinc-200 dark:border-zinc-800"
         >
-          <h1>
-            <DropdownMenu
-              open={isElekInfoOpen}
-              onOpenChange={setIsElekInfoOpen}
-            >
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size={'sm'}>
+          <DropdownMenu open={isElekInfoOpen} onOpenChange={setIsElekInfoOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size={'sm'} className="gap-0">
+                <h1>
                   elek.<span className="text-brand-600">io</span>
                   <strong className="ml-2 text-xs">Client</strong>
-                  <ChevronDown
-                    className={cn(
-                      'ml-2 h-4 w-4 transition',
-                      isElekInfoOpen && 'rotate-180'
-                    )}
-                  ></ChevronDown>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 mt-4 mr-2 window-not-draggable-area">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={() =>
-                      window.open(
-                        'https://github.com/elek-io/client/issues',
-                        '_blank'
-                      )
-                    }
-                  >
-                    Report an issue
-                    <DropdownMenuShortcut>
-                      <ExternalLink className="w-4 h-4"></ExternalLink>
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    elek.io Client
-                    <DropdownMenuShortcut>
-                      v{clientVersion}
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    elek.io Core
-                    <DropdownMenuShortcut>
-                      v{dependencies['@elek-io/core']}
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    Electron
-                    <DropdownMenuShortcut>
-                      v{electron.process.versions['electron']}
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Chromium
-                    <DropdownMenuShortcut>
-                      v{electron.process.versions['chrome']}
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Node
-                    <DropdownMenuShortcut>
-                      v{electron.process.versions['node']}
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </h1>
+                </h1>
+                <ChevronDown
+                  className={cn(
+                    'ml-2 h-4 w-4 transition',
+                    isElekInfoOpen && 'rotate-180'
+                  )}
+                ></ChevronDown>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mt-4 mr-2 window-not-draggable-area">
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() =>
+                    window.open(
+                      'https://github.com/elek-io/client/issues',
+                      '_blank'
+                    )
+                  }
+                >
+                  Report an issue
+                  <DropdownMenuShortcut>
+                    <ExternalLink className="w-4 h-4"></ExternalLink>
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  elek.io Client
+                  <DropdownMenuShortcut>v{clientVersion}</DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  elek.io Core
+                  <DropdownMenuShortcut>
+                    v{dependencies['@elek-io/core']}
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  Electron
+                  <DropdownMenuShortcut>
+                    v{electron.process.versions['electron']}
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Chromium
+                  <DropdownMenuShortcut>
+                    v{electron.process.versions['chrome']}
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Node
+                  <DropdownMenuShortcut>
+                    v{electron.process.versions['node']}
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
     );
