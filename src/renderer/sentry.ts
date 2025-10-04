@@ -16,10 +16,10 @@ import {
   replayIntegration,
 } from '@sentry/react';
 import { createHashHistory, createRouter } from '@tanstack/react-router';
-import { ipc } from './ipc';
+import { ipc } from '@renderer/ipc';
 
 // Import the generated route tree
-import { routeTree } from './routeTree.gen';
+import { routeTree } from '@renderer/routeTree.gen';
 
 // Create a new router instance
 const hashHistory = createHashHistory(); // Use hash based routing since in production electron just loads the index.html via the file protocol

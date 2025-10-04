@@ -2,10 +2,7 @@ import { type RouterContext } from '@renderer/routes/__root';
 import { cn } from '@renderer/util';
 import { ChevronDown, ExternalLink } from 'lucide-react';
 import { forwardRef, type HTMLAttributes, useState } from 'react';
-import {
-  version as clientVersion,
-  dependencies,
-} from '../../../../../package.json';
+import { version as clientVersion, dependencies } from '@root/package.json';
 import { Button } from './button';
 import {
   DropdownMenu,
