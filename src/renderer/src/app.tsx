@@ -1,41 +1,14 @@
-// @ts-ignore see: https://github.com/fontsource/fontsource/issues/1038
+// Sentry initialization should be imported first!
+import './sentry';
 import '@fontsource-variable/montserrat';
-// @ts-ignore see: https://github.com/fontsource/fontsource/issues/1038
 import '@fontsource/roboto';
 import { ThemeProvider } from '@renderer/components/theme-provider';
 import '@renderer/index.css';
-import { ipc } from '@renderer/ipc';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {
-  RouterProvider,
-  createHashHistory,
-  createRouter,
-} from '@tanstack/react-router';
+import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-
-// Import the generated route tree
-import { routeTree } from '@renderer/routeTree.gen';
-
-// Create a new router instance
-const hashHistory = createHashHistory(); // Use hash based routing since in production electron just loads the index.html via the file protocol
-const router = createRouter({
-  routeTree,
-  history: hashHistory,
-  context: { electron: ipc.electron, core: ipc.core },
-});
-router.subscribe('onBeforeLoad', (event) => {
-  ipc.core.logger.info(
-    `Client navigating from "${event?.fromLocation?.href}" to "${event.toLocation.href}"`
-  );
-});
-
-// Register the router instance for type safety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
+import { reactErrorHandler, router } from './sentry';
 
 // Initialize TanStack Query
 export const queryClient = new QueryClient();
@@ -43,7 +16,17 @@ export const queryClient = new QueryClient();
 // Render the app
 const rootElement = document.getElementById('app')!;
 if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement);
+  const root = ReactDOM.createRoot(rootElement, {
+    // Callback called when an error is thrown and not caught by an ErrorBoundary.
+    onUncaughtError: reactErrorHandler((error, errorInfo) => {
+      console.warn('Uncaught error', error, errorInfo.componentStack);
+    }),
+    // Callback called when React catches an error in an ErrorBoundary.
+    onCaughtError: reactErrorHandler(),
+    // Callback called when React automatically recovers from errors.
+    onRecoverableError: reactErrorHandler(),
+  });
+
   root.render(
     <StrictMode>
       <ThemeProvider defaultTheme="system" storageKey="client-theme">

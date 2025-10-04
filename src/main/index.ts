@@ -1,5 +1,8 @@
 import ElekIoCore from '@elek-io/core';
-import * as Sentry from '@sentry/electron/main';
+import {
+  init as sentryInit,
+  captureException as sentryCaptureException,
+} from '@sentry/electron/main';
 import {
   app,
   BrowserWindow,
@@ -23,9 +26,9 @@ export class SecurityError extends Error {
   }
 }
 
-Sentry.init({
+sentryInit({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
-  enableRendererProfiling: true,
+  enableRendererProfiling: true, // @see https://docs.sentry.io/platforms/javascript/guides/electron/profiling/
 });
 
 class Main {
@@ -132,7 +135,7 @@ class Main {
         false
       ) {
         const errorMessage = `Prevented navigation to untrusted, external URL "${parsedUrl.toString()}" from "${webContents.getURL()}"`;
-        Sentry.captureException(new SecurityError(errorMessage));
+        sentryCaptureException(new SecurityError(errorMessage));
         this.core?.logger.error(errorMessage);
 
         return { action: 'deny' };
@@ -244,7 +247,7 @@ class Main {
     ) {
       event.preventDefault();
       const errorMessage = `Prevented navigation to untrusted, internal URL "${parsedUrl.toString()}" from "${window.webContents.getURL()}"`;
-      Sentry.captureException(new SecurityError(errorMessage));
+      sentryCaptureException(new SecurityError(errorMessage));
       this.core?.logger.error(errorMessage);
     }
   }
@@ -260,7 +263,7 @@ class Main {
       );
 
       if (!this.core) {
-        Sentry.captureException(
+        sentryCaptureException(
           new Error(
             'Trying to handle custom file protocol but Core is not initialized.'
           )
@@ -272,7 +275,7 @@ class Main {
         absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false &&
         absoluteFilePath.startsWith(this.core.util.pathTo.tmp) === false
       ) {
-        Sentry.captureException(
+        sentryCaptureException(
           new SecurityError(
             `Tried to load file "${absoluteFilePath}" outside of Projects directory.`
           )
