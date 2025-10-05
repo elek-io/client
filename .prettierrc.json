@@ -5,5 +5,7 @@
   "semi": true,
   "singleQuote": true,
   "trailingComma": "es5",
-  "bracketSpacing": true
+  "bracketSpacing": true,
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindStylesheet": "./src/renderer/index.css"
 }
