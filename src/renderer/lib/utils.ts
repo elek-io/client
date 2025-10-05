@@ -1,6 +1,7 @@
-import { type SupportedLanguage } from '@elek-io/core';
 import { clsx, type ClassValue } from 'clsx';
-import { format, formatDistanceToNow } from 'date-fns';
+import { twMerge } from 'tailwind-merge';
+import { type SupportedLanguage } from '@elek-io/core';
+import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import {
   bg,
   cs,
@@ -33,10 +34,19 @@ import type {
   RefAttributes,
   SVGProps,
 } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
+}
+
+export function initials(name: string): string {
+  const parts = name.split(' ');
+  const firstPart = parts.shift();
+  const lastPart = parts.pop();
+
+  return (
+    (firstPart?.substring(0, 1) || '') + (lastPart?.substring(0, 1) || '')
+  ).toUpperCase();
 }
 
 export type Icon = ForwardRefExoticComponent<
@@ -51,7 +61,7 @@ export type Icon = ForwardRefExoticComponent<
  *
  * We use english (US) and Chinese (Simplified)
  */
-const importedLocales = {
+const importedLocales: Record<SupportedLanguage, Locale> = {
   bg,
   cs,
   da,
