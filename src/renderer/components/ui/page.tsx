@@ -32,7 +32,7 @@ export const Page = forwardRef<HTMLElement, PageProps>(
         onDragEnter={props.onDragEnter}
         onDrop={props.onDrop}
       >
-        <div className="relative bg-gradient-to-br from-brand-50 dark:from-brand-950 to-50% pb-32">
+        <div className="relative bg-gradient-to-br from-cyan-50 dark:from-cyan-950 to-50% pb-32">
           <div className="relative container mx-auto">
             <div className="md:flex md:items-center px-4 sm:px-6 lg:px-8 py-10">
               <div className="md:flex-auto">

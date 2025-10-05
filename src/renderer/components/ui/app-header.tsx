@@ -35,7 +35,7 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size={'sm'} className="gap-0">
                 <h1>
-                  elek.<span className="text-brand-600">io</span>
+                  elek.<span className="text-primary">io</span>
                   <strong className="ml-2 text-xs">Client</strong>
                 </h1>
                 <ChevronDown
