@@ -1,10 +1,11 @@
+import { Outlet, createFileRoute } from '@tanstack/react-router';
+import { Layers, Plus } from 'lucide-react';
+import type { ReactElement } from 'react';
+
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Sidebar } from '@renderer/components/ui/sidebar';
 import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
 import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
-import { Outlet, createFileRoute } from '@tanstack/react-router';
-import { Layers, Plus } from 'lucide-react';
-import type { ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   component: ProjectCollectionsLayout,

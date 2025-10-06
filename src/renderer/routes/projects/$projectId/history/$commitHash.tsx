@@ -1,10 +1,7 @@
-import {
-  type Asset,
-  type Collection,
-  type Entry,
-  type GitCommit,
-  type Project,
-} from '@elek-io/core';
+import { createFileRoute } from '@tanstack/react-router';
+import { Tag } from 'lucide-react';
+import { type ReactElement } from 'react';
+
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { Badge } from '@renderer/components/ui/badge';
 import { CollectionDiff } from '@renderer/components/ui/collection-diff';
@@ -12,9 +9,14 @@ import { DiffContainer } from '@renderer/components/ui/diff-container';
 import { EntryDiff } from '@renderer/components/ui/entry-diff';
 import { Page } from '@renderer/components/ui/page';
 import { ProjectDiff } from '@renderer/components/ui/project-diff';
-import { createFileRoute } from '@tanstack/react-router';
-import { Tag } from 'lucide-react';
-import { type ReactElement } from 'react';
+
+import {
+  type Asset,
+  type Collection,
+  type Entry,
+  type GitCommit,
+  type Project,
+} from '@elek-io/core';
 
 export const Route = createFileRoute(
   '/projects/$projectId/history/$commitHash'
@@ -527,7 +529,7 @@ function ProjectHistoryCommitPage(): ReactElement {
           <>
             <br />
             <Badge className="relative mt-2" variant="secondary">
-              <Tag className="w-4 h-4 absolute -bottom-2 -right-3" />
+              <Tag className="absolute -right-3 -bottom-2 h-4 w-4" />
               {context.commit.tag.message}
             </Badge>
           </>

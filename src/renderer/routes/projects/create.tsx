@@ -1,5 +1,9 @@
-import { type CreateProjectProps, createProjectSchema } from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+
 import { Button } from '@renderer/components/ui/button';
 import {
   Form,
@@ -14,10 +18,8 @@ import { Input } from '@renderer/components/ui/input';
 import { Page } from '@renderer/components/ui/page';
 import { Textarea } from '@renderer/components/ui/textarea';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import { type CreateProjectProps, createProjectSchema } from '@elek-io/core';
 
 export const Route = createFileRoute('/projects/create')({
   component: CreateProjectPage,
@@ -105,7 +107,7 @@ function CreateProjectPage(): ReactElement {
     >
       <Form {...createProjectForm}>
         <form onSubmit={createProjectForm.handleSubmit(onCreate)}>
-          <div className="p-6 space-y-4">
+          <div className="space-y-4 p-6">
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={createProjectForm.control}

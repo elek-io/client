@@ -1,7 +1,3 @@
-import { ScrollArea } from '@renderer/components/ui/scroll-area';
-import { Sidebar } from '@renderer/components/ui/sidebar';
-import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
 import {
   Outlet,
   type ToPathOption,
@@ -9,6 +5,11 @@ import {
 } from '@tanstack/react-router';
 import { GitBranch, type LucideIcon, Settings } from 'lucide-react';
 import type { ReactElement } from 'react';
+
+import { ScrollArea } from '@renderer/components/ui/scroll-area';
+import { Sidebar } from '@renderer/components/ui/sidebar';
+import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
+import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectCollectionsLayout,

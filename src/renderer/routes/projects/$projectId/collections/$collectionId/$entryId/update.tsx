@@ -1,15 +1,17 @@
-import {
-  getUpdateEntrySchemaFromFieldDefinitions,
-  type UpdateEntryProps,
-} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateUpdateEntryPage } from '@renderer/components/pages/create-update-entry-page';
-import { Button } from '@renderer/components/ui/button';
-import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import { CreateUpdateEntryPage } from '@renderer/components/pages/create-update-entry-page';
+import { Button } from '@renderer/components/ui/button';
+import { NotificationIntent, useStore } from '@renderer/store';
+
+import {
+  getUpdateEntrySchemaFromFieldDefinitions,
+  type UpdateEntryProps,
+} from '@elek-io/core';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/$entryId/update'

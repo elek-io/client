@@ -1,6 +1,7 @@
-import { type Asset } from '@elek-io/core';
 import { FileQuestion, FolderArchive } from 'lucide-react';
 import { forwardRef, useEffect, useRef, type ReactElement } from 'react';
+
+import { type Asset } from '@elek-io/core';
 
 export interface AssetDisplayProps extends Asset {
   /**
@@ -40,7 +41,7 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
           {...props}
           width={gif.width}
           height={gif.height}
-          className="max-w-full max-h-full object-contain"
+          className="max-h-full max-w-full object-contain"
         />
       );
     });
@@ -54,7 +55,7 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
       <img
         src={absolutePath}
         alt={`Asset "${props.name}"`}
-        className="max-w-full max-h-full object-contain"
+        className="max-h-full max-w-full object-contain"
       />
     );
   }
@@ -80,14 +81,14 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
       <embed
         src={absolutePath}
         type={props.mimeType}
-        className="w-full h-full object-contain"
+        className="h-full w-full object-contain"
       />
     );
   }
 
   if (props.mimeType === 'application/zip') {
-    return <FolderArchive className="w-10 h-10" />;
+    return <FolderArchive className="h-10 w-10" />;
   }
 
-  return <FileQuestion className="w-10 h-10" />;
+  return <FileQuestion className="h-10 w-10" />;
 }

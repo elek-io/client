@@ -1,10 +1,9 @@
-import {
-  type GitCommit,
-  type SetUserProps,
-  setUserSchema,
-  supportedLanguageSchema,
-} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+
 import { Button } from '@renderer/components/ui/button';
 import { Card } from '@renderer/components/ui/card';
 import { CommitHistory } from '@renderer/components/ui/commit-history';
@@ -30,10 +29,13 @@ import {
 import { Switch } from '@renderer/components/ui/switch';
 import { UserHeader } from '@renderer/components/ui/user-header';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import {
+  type GitCommit,
+  type SetUserProps,
+  setUserSchema,
+  supportedLanguageSchema,
+} from '@elek-io/core';
 
 export const Route = createFileRoute('/user/profile')({
   beforeLoad: async ({ context }) => {
@@ -179,13 +181,13 @@ function UserProfilePage(): ReactElement {
         layout="bare"
       >
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
-          <Card className="lg:col-span-2 py-0">
+          <Card className="py-0 lg:col-span-2">
             <Form {...setUserForm}>
               <form>
                 <PageSection
                   title="Local User"
                   description="Fill out your information below and watch it influence how your future changes will look like on the right."
-                  className="border-t-0 rounded-t-xl"
+                  className="rounded-t-xl border-t-0"
                 >
                   <div className="grid gap-6">
                     <FormField
@@ -297,7 +299,7 @@ function UserProfilePage(): ReactElement {
                       control={setUserForm.control}
                       name={`localApi.isEnabled`}
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-800">
                           <div className="mr-4">
                             <FormLabel isRequired={true}>Enabled</FormLabel>
                             <FormDescription>

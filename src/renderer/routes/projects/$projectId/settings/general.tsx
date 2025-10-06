@@ -1,12 +1,10 @@
-import {
-  type DeleteProjectProps,
-  type SupportedLanguage,
-  type UpdateProjectProps,
-  supportedLanguageSchema,
-  updateProjectSchema,
-} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Cross2Icon } from '@radix-ui/react-icons';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check, Plus, Trash } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+
 import { Button } from '@renderer/components/ui/button';
 import { Chip } from '@renderer/components/ui/chip';
 import {
@@ -53,10 +51,14 @@ import {
 } from '@renderer/components/ui/select';
 import { Textarea } from '@renderer/components/ui/textarea';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check, Plus, Trash } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import {
+  type DeleteProjectProps,
+  type SupportedLanguage,
+  type UpdateProjectProps,
+  supportedLanguageSchema,
+  updateProjectSchema,
+} from '@elek-io/core';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsGeneralPage,
@@ -161,7 +163,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
     >
       <Form {...projectForm}>
         <form>
-          <div className="p-6 space-y-4">
+          <div className="space-y-4 p-6">
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={projectForm.control}
@@ -213,7 +215,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
                           {field.value.map((language, index) => {
                             return (
                               <li key={language} className="mr-2 mb-2">
-                                <Chip className="pr-0 py-0">
+                                <Chip className="py-0 pr-0">
                                   {language}
                                   <Button
                                     variant="ghost"
@@ -260,7 +262,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button role="combobox">
-                              <Plus className="w-4 h-4 mr-2"></Plus>
+                              <Plus className="mr-2 h-4 w-4"></Plus>
                               Add language
                             </Button>
                           </PopoverTrigger>

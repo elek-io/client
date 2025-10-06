@@ -1,12 +1,14 @@
-import { type Asset } from '@elek-io/core';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Plus } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { AssetTeaser } from '@renderer/components/ui/asset-teaser';
 import { Button } from '@renderer/components/ui/button';
 import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Plus } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+
+import { type Asset } from '@elek-io/core';
 
 export const Route = createFileRoute('/projects/$projectId/assets/')({
   beforeLoad: async ({ context, params }) => {
@@ -38,7 +40,7 @@ function ProjectAssetsPage(): ReactElement {
     return (
       <>
         <Button variant="default" onClick={() => onAddAssets()}>
-          <Plus className="w-4 h-4 mr-2"></Plus>
+          <Plus className="mr-2 h-4 w-4"></Plus>
           Add Assets
         </Button>
       </>
@@ -106,9 +108,9 @@ function ProjectAssetsPage(): ReactElement {
             ))}
           </div>
         </div>
-        <div className="w-72 shrink-0 ml-8">
+        <div className="ml-8 w-72 shrink-0">
           {selectedAsset && (
-            <div className="text-sm flex flex-col items-start justify-between bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md">
+            <div className="flex flex-col items-start justify-between rounded-md border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-900">
               <AssetInfo
                 projectId={context.project.id}
                 asset={selectedAsset}

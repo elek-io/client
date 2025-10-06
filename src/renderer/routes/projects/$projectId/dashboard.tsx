@@ -1,9 +1,10 @@
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { type ReactElement } from 'react';
+
 import { Button } from '@renderer/components/ui/button';
 import { CommitHistory } from '@renderer/components/ui/commit-history';
 import { Page } from '@renderer/components/ui/page';
 import { PageSection } from '@renderer/components/ui/page-section';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { type ReactElement } from 'react';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,

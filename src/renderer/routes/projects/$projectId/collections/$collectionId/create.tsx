@@ -1,19 +1,21 @@
-import {
-  type CreateEntryProps,
-  getCreateEntrySchemaFromFieldDefinitions,
-} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  translatableDefaultEmptyArray,
-  translatableDefaultNull,
-} from '@renderer/components/pages/util';
-import { CreateUpdateEntryPage } from '@renderer/components/pages/create-update-entry-page';
-import { Button } from '@renderer/components/ui/button';
-import { NotificationIntent, useStore } from '@renderer/store';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import { CreateUpdateEntryPage } from '@renderer/components/pages/create-update-entry-page';
+import {
+  translatableDefaultEmptyArray,
+  translatableDefaultNull,
+} from '@renderer/components/pages/util';
+import { Button } from '@renderer/components/ui/button';
+import { NotificationIntent, useStore } from '@renderer/store';
+
+import {
+  type CreateEntryProps,
+  getCreateEntrySchemaFromFieldDefinitions,
+} from '@elek-io/core';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/create'

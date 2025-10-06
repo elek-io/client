@@ -1,16 +1,18 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
+import { Button } from '@renderer/components/ui/button';
+import { NotificationIntent, useStore } from '@renderer/store';
+
 import {
   type DeleteCollectionProps,
   type UpdateCollectionProps,
   updateCollectionSchema,
 } from '@elek-io/core';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
-import { Button } from '@renderer/components/ui/button';
-import { NotificationIntent, useStore } from '@renderer/store';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/update'
@@ -68,7 +70,7 @@ function ProjectCollectionUpdate(): ReactElement {
           isLoading={isUpdatingCollection}
           onClick={updateCollectionForm.handleSubmit(onUpdate)}
         >
-          <Check className="w-4 h-4 mr-2"></Check>
+          <Check className="mr-2 h-4 w-4"></Check>
           Save changes
         </Button>
       </>

@@ -1,17 +1,3 @@
-import { type TranslatableString } from '@elek-io/core';
-import { Button } from '@renderer/components/ui/button';
-import { Commit } from '@renderer/components/ui/commit';
-import { ScrollArea } from '@renderer/components/ui/scroll-area';
-import { Sidebar } from '@renderer/components/ui/sidebar';
-import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@renderer/components/ui/tooltip';
-import { NotificationIntent, useStore } from '@renderer/store';
 import { useQuery } from '@tanstack/react-query';
 import {
   Link,
@@ -35,6 +21,22 @@ import {
   UploadCloud,
 } from 'lucide-react';
 import { type ReactElement, useEffect, useState } from 'react';
+
+import { Button } from '@renderer/components/ui/button';
+import { Commit } from '@renderer/components/ui/commit';
+import { ScrollArea } from '@renderer/components/ui/scroll-area';
+import { Sidebar } from '@renderer/components/ui/sidebar';
+import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
+import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@renderer/components/ui/tooltip';
+import { NotificationIntent, useStore } from '@renderer/store';
+
+import { type TranslatableString } from '@elek-io/core';
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
@@ -195,7 +197,7 @@ function ProjectLayout(): ReactElement {
             <div className="flex shrink-0 flex-col p-4">
               <div className="flex items-center">
                 <div className="">
-                  <FolderGit2 className="w-8 h-8" />
+                  <FolderGit2 className="h-8 w-8" />
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium group-hover:text-gray-900">
@@ -214,7 +216,7 @@ function ProjectLayout(): ReactElement {
             </div>
             {context.project.remoteOriginUrl && (
               <>
-                <div className="p-4 pt-0 flex flex-col">
+                <div className="flex flex-col p-4 pt-0">
                   <div className="flex">
                     <Button
                       className="flex-1 rounded-r-none"
@@ -228,17 +230,17 @@ function ProjectLayout(): ReactElement {
                           projectChangesQuery.data.behind.length === 0)
                       }
                     >
-                      <ArrowDownUp className="w-4 h-4 mr-2" />
+                      <ArrowDownUp className="mr-2 h-4 w-4" />
                       Synchronize
                     </Button>
                     <Button
-                      className="rounded-l-none ml-0.5"
+                      className="ml-0.5 rounded-l-none"
                       onClick={() => projectChangesQuery.refetch()}
                       disabled={
                         projectChangesQuery.isFetching || isSynchronizing
                       }
                     >
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCw className="h-4 w-4" />
                     </Button>
                   </div>
 
@@ -247,9 +249,9 @@ function ProjectLayout(): ReactElement {
                       'Loading'
                     ) : (
                       <span className="flex items-center justify-center">
-                        <DownloadCloud className="w-4 h-4 mr-1" />
+                        <DownloadCloud className="mr-1 h-4 w-4" />
                         {projectChangesQuery.data?.behind.length}
-                        <UploadCloud className="w-4 h-4 ml-4 mr-1" />
+                        <UploadCloud className="mr-1 ml-4 h-4 w-4" />
                         {projectChangesQuery.data?.ahead.length}
                       </span>
                     )}

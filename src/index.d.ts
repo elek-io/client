@@ -1,6 +1,7 @@
 import type { ElectronAPI } from '@electron-toolkit/preload';
-import type ElekIoCore from '@elek-io/core';
 import type { Dialog } from 'electron';
+
+import type ElekIoCore from '@elek-io/core';
 
 declare global {
   interface ContextBridgeApi {

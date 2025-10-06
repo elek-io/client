@@ -1,8 +1,9 @@
-import {
-  type SetRemoteOriginUrlProjectProps,
-  setRemoteOriginUrlProjectSchema,
-} from '@elek-io/core';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+
 import { Button } from '@renderer/components/ui/button';
 import {
   Form,
@@ -17,10 +18,11 @@ import { Input } from '@renderer/components/ui/input';
 import { Page } from '@renderer/components/ui/page';
 import { PageSection } from '@renderer/components/ui/page-section';
 import { NotificationIntent, useStore } from '@renderer/store';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import {
+  type SetRemoteOriginUrlProjectProps,
+  setRemoteOriginUrlProjectSchema,
+} from '@elek-io/core';
 
 export const Route = createFileRoute(
   '/projects/$projectId/settings/version-control'

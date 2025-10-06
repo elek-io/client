@@ -1,4 +1,3 @@
-import ElekIoCore from '@elek-io/core';
 import {
   init as sentryInit,
   captureException as sentryCaptureException,
@@ -15,7 +14,11 @@ import {
   shell,
 } from 'electron';
 import Path from 'path';
+
+import ElekIoCore from '@elek-io/core';
+
 import icon from '../../resources/icon.png?asset';
+
 // import { updateElectronApp } from 'update-electron-app';
 
 export class SecurityError extends Error {
