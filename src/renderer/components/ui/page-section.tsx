@@ -1,5 +1,5 @@
-import { cn } from '@renderer/util';
 import { type HTMLAttributes, type ReactElement, type ReactNode } from 'react';
+
 import {
   Card,
   CardAction,
@@ -7,7 +7,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from './card';
+} from '@renderer/components/ui/card';
+import { cn } from '@renderer/lib/utils';
 
 export interface PageSectionProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
@@ -27,7 +28,7 @@ export function PageSection({
       asChild
       className={cn(
         {
-          'bg-transparent border-l-0 border-r-0 border-b-0 rounded-t-none':
+          'rounded-t-none border-r-0 border-b-0 border-l-0 bg-transparent':
             standalone === false,
         },
         className

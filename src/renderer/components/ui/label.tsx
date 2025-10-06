@@ -1,17 +1,16 @@
-'use client';
-
 import * as LabelPrimitive from '@radix-ui/react-label';
-import { cn } from '@renderer/util';
 import * as React from 'react';
+
+import { cn } from '@renderer/lib/utils';
 
 function Label({
   className,
   children,
-  isRequired,
+  isRequired = false,
   ...props
 }: React.ComponentProps<typeof LabelPrimitive.Root> & {
   isRequired?: boolean;
-}) {
+}): React.JSX.Element {
   return (
     <LabelPrimitive.Root
       data-slot="label"
@@ -23,7 +22,7 @@ function Label({
     >
       {children}
       {isRequired === false && (
-        <span className="text-zinc-500 dark:text-zinc-400">- optional</span>
+        <span className="text-sm text-muted-foreground">- optional</span>
       )}
     </LabelPrimitive.Root>
   );

@@ -1,9 +1,10 @@
-import { cn } from '@renderer/util';
 import {
   type DetailedHTMLProps,
   type HTMLAttributes,
   type ReactElement,
 } from 'react';
+
+import { cn } from '@renderer/lib/utils';
 
 export type SidebarNavigationProps = DetailedHTMLProps<
   HTMLAttributes<HTMLElement>,

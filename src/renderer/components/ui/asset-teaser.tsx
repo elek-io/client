@@ -1,7 +1,9 @@
-import { type Asset } from '@elek-io/core';
 import type { MouseEventHandler, ReactElement } from 'react';
-import { formatBytes } from '../../util';
-import { AssetDisplay } from './asset-display';
+
+import { AssetDisplay } from '@renderer/components/ui/asset-display';
+import { formatBytes } from '@renderer/lib/utils';
+
+import { type Asset } from '@elek-io/core';
 
 export interface AssetTeaserProps extends Asset {
   onClick?: MouseEventHandler;
@@ -10,11 +12,11 @@ export interface AssetTeaserProps extends Asset {
 export function AssetTeaser(props: AssetTeaserProps): ReactElement {
   return (
     <a
-      className="cursor-pointer no-underline transition-colors bg-white dark:bg-zinc-900 hover:bg-zinc-300 hover:dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 rounded-md p-2"
+      className="cursor-pointer rounded-md border border-zinc-200 bg-white p-2 text-zinc-800 no-underline transition-colors hover:bg-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 hover:dark:bg-zinc-700"
       onClick={props.onClick}
     >
       <div>
-        <div className="aspect-4/3 flex items-center justify-center">
+        <div className="flex aspect-4/3 items-center justify-center">
           <AssetDisplay {...props} static={true}></AssetDisplay>
         </div>
         <p className="mt-2 truncate text-sm">{props.name}</p>

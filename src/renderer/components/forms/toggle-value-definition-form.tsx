@@ -1,5 +1,9 @@
-import { type ToggleFieldDefinition } from '@elek-io/core';
 import type { ReactElement } from 'react';
+
+import {
+  DefaultFieldDefinitionForm,
+  type DefaultFieldDefinitionFormProps,
+} from '@renderer/components/forms/default-field-definition-form';
 import {
   Form,
   FormControl,
@@ -8,12 +12,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form';
-import { Switch } from '../ui/switch';
-import {
-  DefaultFieldDefinitionForm,
-  type DefaultFieldDefinitionFormProps,
-} from './default-field-definition-form';
+} from '@renderer/components/ui/form';
+import { Switch } from '@renderer/components/ui/switch';
+
+import { type ToggleFieldDefinition } from '@elek-io/core';
 
 export type ToggleFieldDefinitionFormProps =
   DefaultFieldDefinitionFormProps<ToggleFieldDefinition>;
@@ -30,7 +32,7 @@ const ToggleFieldDefinitionForm = ({
             control={form.control}
             name={`defaultValue`}
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 shadow-xs">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-800">
                 <div>
                   <FormLabel isRequired={true}>Default value</FormLabel>
                   <FormDescription>

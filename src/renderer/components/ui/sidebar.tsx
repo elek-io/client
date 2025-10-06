@@ -1,9 +1,10 @@
-import { cn } from '@renderer/util';
 import {
   type DetailedHTMLProps,
   type HTMLAttributes,
   type ReactElement,
 } from 'react';
+
+import { cn } from '@renderer/lib/utils';
 
 export interface SidebarProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
@@ -18,7 +19,7 @@ function Sidebar({
   return (
     <aside
       className={cn(
-        'flex flex-col shrink-0 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800',
+        'flex shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900',
         isNarrow ? 'w-18' : 'w-60',
         className
       )}

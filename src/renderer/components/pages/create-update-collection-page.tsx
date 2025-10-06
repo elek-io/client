@@ -1,3 +1,61 @@
+import { Plus, Trash } from 'lucide-react';
+import { type ReactElement, useRef, useState } from 'react';
+import {
+  type SubmitHandler,
+  type UseFormReturn,
+  useFieldArray,
+} from 'react-hook-form';
+
+import {
+  FieldDefinitionForm,
+  type FieldDefinitionFormRef,
+} from '@renderer/components/forms/util';
+import { Button } from '@renderer/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@renderer/components/ui/dialog';
+import {
+  DraggableComponent,
+  SortableFieldArray,
+} from '@renderer/components/ui/drag-and-drop';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormFieldFromDefinition,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@renderer/components/ui/form';
+import { TranslatableFormInput } from '@renderer/components/ui/form-input';
+import { TranslatableFormTextarea } from '@renderer/components/ui/form-textarea';
+import { Page, type PageProps } from '@renderer/components/ui/page';
+import { PageSection } from '@renderer/components/ui/page-section';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@renderer/components/ui/select';
+import {
+  Sheet,
+  // SheetBody,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@renderer/components/ui/sheet';
+
 import {
   type CreateCollectionProps,
   type DeleteCollectionProps,
@@ -8,59 +66,6 @@ import {
   type UpdateCollectionProps,
   supportedIconSchema,
 } from '@elek-io/core';
-import { Plus, Trash } from 'lucide-react';
-import { type ReactElement, useRef, useState } from 'react';
-import {
-  type SubmitHandler,
-  type UseFormReturn,
-  useFieldArray,
-} from 'react-hook-form';
-import {
-  FieldDefinitionForm,
-  type FieldDefinitionFormRef,
-} from '../forms/util';
-import { Button } from '../ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
-import { DraggableComponent, SortableFieldArray } from '../ui/drag-and-drop';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormFieldFromDefinition,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '../ui/form';
-import { TranslatableFormInput } from '../ui/form-input';
-import { TranslatableFormTextarea } from '../ui/form-textarea';
-import { Page, type PageProps } from '../ui/page';
-import { PageSection } from '../ui/page-section';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select';
-import {
-  Sheet,
-  SheetBody,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '../ui/sheet';
 
 export interface CreateUpdateCollectionPageProps extends PageProps {
   collectionForm: UseFormReturn<CreateCollectionProps | UpdateCollectionProps>;
@@ -105,8 +110,8 @@ export const CreateUpdateCollectionPage = ({
     <Page {...props}>
       <Form {...collectionForm}>
         <form onSubmit={collectionForm.handleSubmit(onCollectionSubmit)}>
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-12 gap-6 items-start">
+          <div className="space-y-4 p-6">
+            <div className="grid grid-cols-12 items-start gap-6">
               <FormField
                 control={collectionForm.control}
                 name={`icon`}
@@ -328,23 +333,21 @@ export const CreateUpdateCollectionPage = ({
                     </FormItem>
                   </SheetHeader>
 
-                  <SheetBody>
-                    <FieldDefinitionForm
-                      ref={fieldDefinitionFormRef}
-                      fieldDefinitions={fieldDefinitions}
-                      translateContent={context.translateContent}
-                      setIsAddFieldDefinitionSheetOpen={
-                        setIsAddFieldDefinitionSheetOpen
-                      }
-                      fieldType={selectedFieldType}
-                      supportedLanguages={
-                        context.project.settings.language.supported
-                      }
-                      defaultLanguage={
-                        context.project.settings.language.default
-                      }
-                    />
-                  </SheetBody>
+                  {/* <SheetBody> */}
+                  <FieldDefinitionForm
+                    ref={fieldDefinitionFormRef}
+                    fieldDefinitions={fieldDefinitions}
+                    translateContent={context.translateContent}
+                    setIsAddFieldDefinitionSheetOpen={
+                      setIsAddFieldDefinitionSheetOpen
+                    }
+                    fieldType={selectedFieldType}
+                    supportedLanguages={
+                      context.project.settings.language.supported
+                    }
+                    defaultLanguage={context.project.settings.language.default}
+                  />
+                  {/* </SheetBody> */}
 
                   <SheetFooter>
                     <Button className="w-full" onClick={addFieldDefinition}>
@@ -355,7 +358,7 @@ export const CreateUpdateCollectionPage = ({
               </Sheet>
             }
           >
-            <div className="grid grid-cols-12 gap-6 mt-6">
+            <div className="mt-6 grid grid-cols-12 gap-6">
               <SortableFieldArray fieldArray={fieldDefinitions}>
                 {fieldDefinitions.fields.map((fieldDefinition, index) => {
                   return (
@@ -389,9 +392,9 @@ export const CreateUpdateCollectionPage = ({
           </PageSection>
           {isUpdatingCollection(collectionFormProps) && (
             <PageSection title="Danger Zone">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium leading-6">
+                  <p className="text-sm leading-6 font-medium">
                     Delete this Collection
                   </p>
                 </div>
@@ -399,7 +402,7 @@ export const CreateUpdateCollectionPage = ({
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="destructive">
-                        <Trash className="w-4 h-4 mr-2"></Trash>
+                        <Trash className="mr-2 h-4 w-4"></Trash>
                         Delete Collection
                       </Button>
                     </DialogTrigger>
@@ -423,7 +426,7 @@ export const CreateUpdateCollectionPage = ({
                             })
                           }
                         >
-                          <Trash className="w-4 h-4 mr-2"></Trash>
+                          <Trash className="mr-2 h-4 w-4"></Trash>
                           Yes, delete this Collection
                         </Button>
                       </DialogFooter>

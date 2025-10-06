@@ -1,3 +1,27 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  forwardRef,
+  useImperativeHandle,
+  type ReactElement,
+  type Ref,
+} from 'react';
+import React from 'react';
+import { useForm, type UseFieldArrayReturn } from 'react-hook-form';
+
+import { NumberFieldDefinitionForm } from '@renderer/components/forms/number-value-definition-form';
+import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value-definition-form';
+import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
+import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
+import { ToggleFieldDefinitionForm } from '@renderer/components/forms/toggle-value-definition-form';
+import { translatableDefaultNull } from '@renderer/components/pages/util';
+import { FormFieldFromDefinition } from '@renderer/components/ui/form';
+import { Input } from '@renderer/components/ui/input';
+import { Label } from '@renderer/components/ui/label';
+import { Slider } from '@renderer/components/ui/slider';
+import { Switch } from '@renderer/components/ui/switch';
+import { Textarea } from '@renderer/components/ui/textarea';
+import { fieldWidth } from '@renderer/lib/utils';
+
 import {
   dateFieldDefinitionSchema,
   numberFieldDefinitionSchema,
@@ -18,28 +42,6 @@ import {
   type ToggleFieldDefinition,
   type TranslatableString,
 } from '@elek-io/core';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { fieldWidth } from '@renderer/util';
-import {
-  forwardRef,
-  useImperativeHandle,
-  type ReactElement,
-  type Ref,
-} from 'react';
-import { useForm, type UseFieldArrayReturn } from 'react-hook-form';
-import { FormFieldFromDefinition } from '../ui/form';
-import { Input } from '../ui/input';
-import { Slider } from '../ui/slider';
-import { Switch } from '../ui/switch';
-import { Textarea } from '../ui/textarea';
-import { NumberFieldDefinitionForm } from './number-value-definition-form';
-import { RangeFieldDefinitionForm } from './range-value-definition-form';
-import { TextFieldDefinitionForm } from './text-value-definition-form';
-import { TextareaFieldDefinitionForm } from './textarea-value-definition-form';
-import { ToggleFieldDefinitionForm } from './toggle-value-definition-form';
-import { translatableDefaultNull } from '../pages/util';
-import { Label } from '../ui/label';
-import React from 'react';
 
 export interface FieldDefinitionFormProps {
   supportedLanguages: SupportedLanguage[];
@@ -477,7 +479,7 @@ export function DisabledFieldFromDefinition({
 
   return (
     <div
-      className={`grid gap-2 col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`}
+      className={`col-span-12 grid gap-2 ${fieldWidth(fieldDefinition.inputWidth)}`}
     >
       <Label
         htmlFor={inputId}
@@ -498,7 +500,7 @@ export function DisabledFieldFromDefinition({
       {fieldDefinition.description && (
         <p
           id={descriptionId}
-          className={'text-zinc-500 dark:text-zinc-400 text-sm'}
+          className={'text-sm text-zinc-500 dark:text-zinc-400'}
         >
           {translateContent(
             'fieldDefinition.description',

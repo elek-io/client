@@ -1,13 +1,14 @@
 // Sentry initialization should be imported first!
-import '@renderer/sentry';
 import '@fontsource-variable/montserrat';
 import '@fontsource/roboto';
-import { ThemeProvider } from '@renderer/components/theme-provider';
-import '@renderer/index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
+
+import { ThemeProvider } from '@renderer/components/theme-provider';
+import '@renderer/index.css';
+import '@renderer/sentry';
 import { reactErrorHandler, router } from '@renderer/sentry';
 
 // Initialize TanStack Query

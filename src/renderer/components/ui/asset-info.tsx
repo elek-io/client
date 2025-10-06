@@ -1,9 +1,6 @@
-import { type Asset, type SupportedLanguage } from '@elek-io/core';
-import { ipc } from '@renderer/ipc';
-import { NotificationIntent, useStore } from '@renderer/store';
 import { Download, Edit2, Trash } from 'lucide-react';
 import type { ReactElement } from 'react';
-import { formatBytes, formatDatetime } from '../../util';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,15 +11,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from './alert-dialog';
-import { AssetDisplay } from './asset-display';
-import { Button } from './button';
+} from '@renderer/components/ui/alert-dialog';
+import { AssetDisplay } from '@renderer/components/ui/asset-display';
+import { Button } from '@renderer/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from './tooltip';
+} from '@renderer/components/ui/tooltip';
+import { ipc } from '@renderer/ipc';
+import { formatBytes, formatDatetime } from '@renderer/lib/utils';
+import { NotificationIntent, useStore } from '@renderer/store';
+
+import { type Asset, type SupportedLanguage } from '@elek-io/core';
 
 export interface AssetInfoProps {
   projectId: string;
@@ -189,8 +191,8 @@ export function AssetInfo({
 
   return (
     <>
-      <div className="p-2 pb-0 w-full">
-        <div className="aspect-4/3 flex items-center justify-center">
+      <div className="w-full p-2 pb-0">
+        <div className="flex aspect-4/3 items-center justify-center">
           <AssetDisplay {...asset} static={false}></AssetDisplay>
         </div>
       </div>
@@ -199,10 +201,10 @@ export function AssetInfo({
         <p className="text-zinc-400">{asset.description}</p>
       </div>
       <div className="w-full">
-        <dl className="divide-y divide-zinc-200 dark:divide-zinc-800 border-t border-b border-zinc-200 dark:border-zinc-800">
+        <dl className="divide-y divide-zinc-200 border-t border-b border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
           {information.map((info) => {
             return (
-              <div key={info.key} className="flex justify-between py-2 px-6">
+              <div key={info.key} className="flex justify-between px-6 py-2">
                 <dt className="">{info.key}</dt>
                 <dd className="whitespace-nowrap">
                   {info.tooltip && (
@@ -222,16 +224,16 @@ export function AssetInfo({
           })}
         </dl>
       </div>
-      <div className="flex flex-col p-4 w-full gap-2">
+      <div className="flex w-full flex-col gap-2 p-4">
         {showUpdateButton && (
           <Button variant="outline" className="" onClick={onAssetUpdate}>
-            <Edit2 className="w-4 h-4 mr-2" />
+            <Edit2 className="mr-2 h-4 w-4" />
             Update
           </Button>
         )}
 
         <Button variant="outline" onClick={onAssetSave}>
-          <Download className="w-4 h-4 mr-2" />
+          <Download className="mr-2 h-4 w-4" />
           Save as
         </Button>
 
@@ -239,7 +241,7 @@ export function AssetInfo({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive">
-                <Trash className="w-4 h-4 mr-2"></Trash>
+                <Trash className="mr-2 h-4 w-4"></Trash>
                 Delete
               </Button>
             </AlertDialogTrigger>

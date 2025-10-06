@@ -18,11 +18,12 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Slot } from '@radix-ui/react-slot';
-import { cn } from '@renderer/util';
 import { GripVerticalIcon } from 'lucide-react';
 import * as React from 'react';
 import type { FieldValues, UseFieldArrayReturn } from 'react-hook-form';
-import { Button } from './button';
+
+import { Button } from '@renderer/components/ui/button';
+import { cn } from '@renderer/lib/utils';
 
 function DragHandle({
   id,

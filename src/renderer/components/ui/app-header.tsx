@@ -1,9 +1,8 @@
-import { type RouterContext } from '@renderer/routes/__root';
-import { cn } from '@renderer/util';
+import { version as clientVersion, dependencies } from '@root/package.json';
 import { ChevronDown, ExternalLink } from 'lucide-react';
 import { forwardRef, type HTMLAttributes, useState } from 'react';
-import { version as clientVersion, dependencies } from '@root/package.json';
-import { Button } from './button';
+
+import { Button } from '@renderer/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from './dropdown-menu';
+} from '@renderer/components/ui/dropdown-menu';
+import { cn } from '@renderer/lib/utils';
+import { type RouterContext } from '@renderer/routes/__root';
 
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {
   electron: RouterContext['electron'];
@@ -25,11 +26,11 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
     return (
       <header
         ref={ref}
-        className="w-full window-draggable-area bg-white dark:bg-zinc-900"
+        className="window-draggable-area w-full bg-white dark:bg-zinc-900"
       >
         <div
           id="app-bar"
-          className="p-2 text-sm text-center border-b border-zinc-200 dark:border-zinc-800"
+          className="border-b border-zinc-200 p-2 text-center text-sm dark:border-zinc-800"
         >
           <DropdownMenu open={isElekInfoOpen} onOpenChange={setIsElekInfoOpen}>
             <DropdownMenuTrigger asChild>
@@ -46,7 +47,7 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
                 ></ChevronDown>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mt-4 mr-2 window-not-draggable-area">
+            <DropdownMenuContent className="window-not-draggable-area mt-4 mr-2 w-56">
               <DropdownMenuGroup>
                 <DropdownMenuItem
                   className="cursor-pointer"
@@ -59,7 +60,7 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
                 >
                   Report an issue
                   <DropdownMenuShortcut>
-                    <ExternalLink className="w-4 h-4"></ExternalLink>
+                    <ExternalLink className="h-4 w-4"></ExternalLink>
                   </DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuGroup>

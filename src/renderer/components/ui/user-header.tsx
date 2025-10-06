@@ -1,18 +1,16 @@
-import { type User } from '@elek-io/core';
-import { useStore } from '@renderer/store';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ArrowLeft, ArrowRight, ChevronDown, Moon, Sun } from 'lucide-react';
 import { forwardRef, Fragment, type HTMLAttributes } from 'react';
-import { type Theme, useTheme } from '../theme-provider';
-import { Avatar } from './avatar';
+
+import { Avatar } from '@renderer/components/ui/avatar';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from './breadcrumb';
-import { Button } from './button';
+} from '@renderer/components/ui/breadcrumb';
+import { Button } from '@renderer/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +26,11 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from './dropdown-menu';
+} from '@renderer/components/ui/dropdown-menu';
+import { useTheme, type Theme } from '@renderer/hooks/useTheme';
+import { useStore } from '@renderer/store';
+
+import { type User } from '@elek-io/core';
 
 export interface UserHeaderProps extends HTMLAttributes<HTMLDivElement> {
   user: User;
@@ -107,7 +109,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
           id="navigation-bar"
           className="flex border-b border-zinc-200 dark:border-zinc-800"
         >
-          <div className="p-2 w-60 flex shrink-0 border-r border-zinc-200 dark:border-zinc-800">
+          <div className="flex w-60 shrink-0 border-r border-zinc-200 p-2 dark:border-zinc-800">
             {/* <Button
               variant="ghost"
               size="icon"
@@ -126,7 +128,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
               </span>
             </Button> */}
           </div>
-          <div className="p-2 flex-auto flex justify-between items-center">
+          <div className="flex flex-auto items-center justify-between p-2">
             <div className="flex">
               <Button
                 variant="ghost"
@@ -147,7 +149,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                 </span>
               </Button>
 
-              <Breadcrumb className="flex ml-2">
+              <Breadcrumb className="ml-2 flex">
                 <BreadcrumbList>
                   {breadcrumbs.map((crumb, index, array) => (
                     <Fragment key={crumb.path}>
@@ -155,7 +157,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                         <BreadcrumbLink asChild>
                           <Link
                             to={crumb.path}
-                            className="text-zinc-800 dark:text-zinc-200 no-underline hover:underline"
+                            className="text-zinc-800 no-underline hover:underline dark:text-zinc-200"
                           >
                             {crumb.part}
                           </Link>
@@ -180,7 +182,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                     <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 mt-4 mr-2">
+                <DropdownMenuContent className="mt-4 mr-2 w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
@@ -218,11 +220,11 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                               System
                             </DropdownMenuRadioItem>
                             <DropdownMenuRadioItem value="light">
-                              <Sun className="h-4 w-4 mr-2" />
+                              <Sun className="mr-2 h-4 w-4" />
                               Light
                             </DropdownMenuRadioItem>
                             <DropdownMenuRadioItem value="dark">
-                              <Moon className="h-4 w-4 mr-2" />
+                              <Moon className="mr-2 h-4 w-4" />
                               Dark
                             </DropdownMenuRadioItem>
                           </DropdownMenuRadioGroup>

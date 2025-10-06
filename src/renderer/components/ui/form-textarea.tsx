@@ -1,5 +1,3 @@
-import type { SupportedLanguage } from '@elek-io/core';
-import { cn } from '@renderer/util';
 import { LanguagesIcon } from 'lucide-react';
 import {
   type ControllerRenderProps,
@@ -7,7 +5,8 @@ import {
   type FieldValues,
   type Path,
 } from 'react-hook-form';
-import { Button } from './button';
+
+import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
   DialogBody,
@@ -18,15 +17,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from './dialog';
+} from '@renderer/components/ui/dialog';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from './form';
-import { Textarea } from './textarea';
+} from '@renderer/components/ui/form';
+import { Textarea } from '@renderer/components/ui/textarea';
+import { cn } from '@renderer/lib/utils';
+
+import type { SupportedLanguage } from '@elek-io/core';
 
 export interface FormTextareaProps<T extends FieldValues>
   extends React.ComponentProps<'textarea'> {
@@ -120,7 +122,7 @@ function TranslatableFormTextarea<T extends FieldValues>({
                 className="h-full rounded-l-none"
                 aria-invalid={hasErrorsInTranslations()}
               >
-                <LanguagesIcon className="w-4 h-4" />
+                <LanguagesIcon className="h-4 w-4" />
               </Button>
             </DialogTrigger>
             <DialogContent>

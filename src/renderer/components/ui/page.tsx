@@ -1,4 +1,3 @@
-import { cn } from '@renderer/util';
 import {
   type DragEventHandler,
   forwardRef,
@@ -6,8 +5,10 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { Card, CardContent } from './card';
-import { ScrollArea } from './scroll-area';
+
+import { Card, CardContent } from '@renderer/components/ui/card';
+import { ScrollArea } from '@renderer/components/ui/scroll-area';
+import { cn } from '@renderer/lib/utils';
 
 export interface PageProps extends HTMLAttributes<HTMLElement> {
   title: string;
@@ -32,18 +33,18 @@ export const Page = forwardRef<HTMLElement, PageProps>(
         onDragEnter={props.onDragEnter}
         onDrop={props.onDrop}
       >
-        <div className="relative bg-gradient-to-br from-cyan-50 dark:from-cyan-950 to-50% pb-32">
+        <div className="relative bg-gradient-to-br from-cyan-50 to-50% pb-32 dark:from-cyan-950">
           <div className="relative container mx-auto">
-            <div className="md:flex md:items-center px-4 sm:px-6 lg:px-8 py-10">
+            <div className="px-4 py-10 sm:px-6 md:flex md:items-center lg:px-8">
               <div className="md:flex-auto">
                 <h2 className="text-3xl">{props.title}</h2>
                 {props.description && (
-                  <p className="mt-2 text-sm max-w-screen-sm">
+                  <p className="mt-2 max-w-screen-sm text-sm">
                     {props.description}
                   </p>
                 )}
               </div>
-              <div className="mt-4 md:mt-0 md:ml-16 md:flex-none flex flex-row space-x-2">
+              <div className="mt-4 flex flex-row space-x-2 md:mt-0 md:ml-16 md:flex-none">
                 {props.actions && props.actions}
               </div>
             </div>
@@ -52,7 +53,7 @@ export const Page = forwardRef<HTMLElement, PageProps>(
 
         <div className="relative">
           <div className="relative container mx-auto -mt-32">
-            <div className="p-4 sm:p-6 lg:p-8 !pt-0">
+            <div className="p-4 !pt-0 sm:p-6 lg:p-8">
               {props.layout === 'bare' ? (
                 <>{props.children}</>
               ) : (

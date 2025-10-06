@@ -1,13 +1,15 @@
-import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 import type { ReactElement } from 'react';
-import { CommitAuthor } from './commit-author';
+
 import {
   Card,
   CardAction,
   CardDescription,
   CardHeader,
   CardTitle,
-} from './card';
+} from '@renderer/components/ui/card';
+import { CommitAuthor } from '@renderer/components/ui/commit-author';
+
+import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 
 export interface DiffContainerProps {
   type: 'create' | 'before' | 'after' | 'delete';

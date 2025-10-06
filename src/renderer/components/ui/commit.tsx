@@ -1,7 +1,5 @@
 'use client';
 
-import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
-import { cn, formatDatetime } from '@renderer/util';
 import { Link, type LinkProps } from '@tanstack/react-router';
 import {
   CircleFadingArrowUp,
@@ -13,6 +11,10 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { ReactElement } from 'react';
+
+import { cn, formatDatetime } from '@renderer/lib/utils';
+
+import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 
 export interface CommitProps extends LinkProps {
   language: SupportedLanguage;
@@ -31,29 +33,29 @@ export function Commit({
     case 'create':
       iconComponent =
         commit.message.reference.objectType === 'project' ? (
-          <PartyPopper className="w-4 h-4" />
+          <PartyPopper className="h-4 w-4" />
         ) : (
-          <Plus className="w-4 h-4" />
+          <Plus className="h-4 w-4" />
         );
       break;
     case 'update':
-      iconComponent = <Pencil className="w-4 h-4" />;
+      iconComponent = <Pencil className="h-4 w-4" />;
       break;
     case 'delete':
-      iconComponent = <Trash2 className="w-4 h-4" />;
+      iconComponent = <Trash2 className="h-4 w-4" />;
       break;
     case 'upgrade':
-      iconComponent = <CircleFadingArrowUp className="w-4 h-4" />;
+      iconComponent = <CircleFadingArrowUp className="h-4 w-4" />;
       break;
     default:
-      iconComponent = <FileQuestion className="w-4 h-4" />;
+      iconComponent = <FileQuestion className="h-4 w-4" />;
       break;
   }
 
   return (
     <Link
       className={
-        'relative flex items-center space-x-4 px-3 py-1 no-underline transition-colors text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-md'
+        'relative flex items-center space-x-4 rounded-md px-3 py-1 text-zinc-800 no-underline transition-colors hover:bg-zinc-300 dark:text-zinc-200 dark:hover:bg-zinc-700'
       }
       activeProps={{
         className: cn(
@@ -63,8 +65,8 @@ export function Commit({
       }}
       {...props}
     >
-      <div className="relative bg-white dark:bg-zinc-900 border border-brand-600 rounded-full p-2 z-10">
-        {commit.tag && <Tag className="w-4 h-4 absolute -bottom-1 -right-2" />}
+      <div className="border-brand-600 relative z-10 rounded-full border bg-white p-2 dark:bg-zinc-900">
+        {commit.tag && <Tag className="absolute -right-2 -bottom-1 h-4 w-4" />}
         {iconComponent}
       </div>
       <div>

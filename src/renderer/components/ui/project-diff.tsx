@@ -1,17 +1,19 @@
-import { type Project } from '@elek-io/core';
 import type { ReactElement } from 'react';
-import { Chip } from './chip';
-import { FormItem } from './form';
-import { Input } from './input';
-import { Label } from './label';
+
+import { Chip } from '@renderer/components/ui/chip';
+import { FormItem } from '@renderer/components/ui/form';
+import { Input } from '@renderer/components/ui/input';
+import { Label } from '@renderer/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './select';
-import { Textarea } from './textarea';
+} from '@renderer/components/ui/select';
+import { Textarea } from '@renderer/components/ui/textarea';
+
+import { type Project } from '@elek-io/core';
 
 export interface ProjectDiffProps {
   project: Project;

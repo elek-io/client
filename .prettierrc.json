@@ -6,6 +6,16 @@
   "singleQuote": true,
   "trailingComma": "es5",
   "bracketSpacing": true,
-  "plugins": ["prettier-plugin-tailwindcss"],
+  "importOrder": [
+    "<THIRD_PARTY_MODULES>",
+    "^@renderer/(.*)$",
+    "^@elek-io/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "plugins": [
+    "@trivago/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss"
+  ],
   "tailwindStylesheet": "./src/renderer/index.css"
 }

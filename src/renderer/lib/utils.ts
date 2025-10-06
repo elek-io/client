@@ -1,6 +1,4 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { type SupportedLanguage } from '@elek-io/core';
 import { format, formatDistanceToNow, type Locale } from 'date-fns';
 import {
   bg,
@@ -34,6 +32,9 @@ import type {
   RefAttributes,
   SVGProps,
 } from 'react';
+import { twMerge } from 'tailwind-merge';
+
+import { type SupportedLanguage } from '@elek-io/core';
 
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));

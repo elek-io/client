@@ -1,4 +1,15 @@
-import { type Entry } from '@elek-io/core';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import {
+  type ColumnDef,
+  type VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import { ChevronDown, Plus, Settings } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
+
 import { Button } from '@renderer/components/ui/button';
 import {
   DropdownMenu,
@@ -24,18 +35,9 @@ import {
   TableHeader,
   TableRow,
 } from '@renderer/components/ui/table';
-import { formatDatetime } from '@renderer/util';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import {
-  type ColumnDef,
-  type VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
-import { ChevronDown, Plus, Settings } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+import { formatDatetime } from '@renderer/lib/utils';
+
+import { type Entry } from '@elek-io/core';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/'
@@ -206,7 +208,7 @@ function ProjectCollectionIndexPage(): ReactElement {
       description={<Description></Description>}
       actions={<Actions></Actions>}
     >
-      <div className="flex justify-end items-center p-6">
+      <div className="flex items-center justify-end p-6">
         <Input
           placeholder={`Filter ${context.translateContent(
             'currentCollection.name.plural',
@@ -293,7 +295,7 @@ function ProjectCollectionIndexPage(): ReactElement {
         </TableBody>
       </Table>
 
-      <div className="flex justify-end items-center p-6">
+      <div className="flex items-center justify-end p-6">
         <div className="flex-1 text-sm text-zinc-400">
           Showing{' '}
           {table

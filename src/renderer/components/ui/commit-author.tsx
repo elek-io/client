@@ -1,9 +1,11 @@
 'use client';
 
-import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
-import { formatDatetime } from '@renderer/util';
 import type { ReactElement } from 'react';
-import { Avatar } from './avatar';
+
+import { Avatar } from '@renderer/components/ui/avatar';
+import { formatDatetime } from '@renderer/lib/utils';
+
+import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 
 export interface CommitAuthorProps {
   language: SupportedLanguage;
@@ -20,7 +22,7 @@ export function CommitAuthor({
         'inline-flex items-center justify-center text-zinc-800 dark:text-zinc-200'
       }
     >
-      <Avatar name={commit.author.name} className="text-sm mr-2" />
+      <Avatar name={commit.author.name} className="mr-2 text-sm" />
       <div>
         <div className="flex items-center text-sm">
           {commit.message.method} {commit.message.reference.objectType}

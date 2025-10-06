@@ -1,5 +1,3 @@
-import type { SupportedLanguage } from '@elek-io/core';
-import { cn } from '@renderer/util';
 import { LanguagesIcon } from 'lucide-react';
 import {
   type ControllerRenderProps,
@@ -7,7 +5,8 @@ import {
   type FieldValues,
   type Path,
 } from 'react-hook-form';
-import { Button } from './button';
+
+import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
   DialogBody,
@@ -18,15 +17,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from './dialog';
+} from '@renderer/components/ui/dialog';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from './form';
-import { Input } from './input';
+} from '@renderer/components/ui/form';
+import { Input } from '@renderer/components/ui/input';
+import { cn } from '@renderer/lib/utils';
+
+import type { SupportedLanguage } from '@elek-io/core';
 
 export interface FormInputProps<T extends FieldValues>
   extends React.ComponentProps<'input'> {
@@ -139,7 +141,7 @@ function TranslatableFormInput<T extends FieldValues>({
                 className="rounded-l-none"
                 aria-invalid={hasErrorsInTranslations()}
               >
-                <LanguagesIcon className="w-4 h-4" />
+                <LanguagesIcon className="h-4 w-4" />
               </Button>
             </DialogTrigger>
             <DialogContent>

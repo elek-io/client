@@ -1,32 +1,21 @@
 'use client';
 
-import { Slot } from '@radix-ui/react-slot';
-import { cn, fieldWidth } from '@renderer/util';
-import * as React from 'react';
 import * as SliderPrimitive from '@radix-ui/react-slider';
+import { Slot } from '@radix-ui/react-slot';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
+import { EditIcon, LanguagesIcon, TrashIcon } from 'lucide-react';
+import * as React from 'react';
 import {
   Controller,
   FormProvider,
-  useFormContext,
-  useFormState,
   type ControllerProps,
   type ControllerRenderProps,
   type FieldPath,
   type FieldValues,
   type UseFormReturn,
 } from 'react-hook-form';
-import { Label } from './label';
-import type {
-  FieldDefinition,
-  FieldType,
-  SupportedLanguage,
-  TranslatableString,
-} from '@elek-io/core';
-import { Input } from './input';
-import { Textarea } from './textarea';
-import { Slider } from './slider';
-import { Switch } from './switch';
+
+import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
   DialogBody,
@@ -37,31 +26,35 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from './dialog';
-import { EditIcon, LanguagesIcon, TrashIcon } from 'lucide-react';
-import { Button } from './button';
-import { DragHandle } from './drag-and-drop';
-import clsx from 'clsx';
+} from '@renderer/components/ui/dialog';
+import { DragHandle } from '@renderer/components/ui/drag-and-drop';
+import { Input } from '@renderer/components/ui/input';
+import { Label } from '@renderer/components/ui/label';
+import { Slider } from '@renderer/components/ui/slider';
+import { Switch } from '@renderer/components/ui/switch';
+import { Textarea } from '@renderer/components/ui/textarea';
+import {
+  FormFieldContext,
+  FormItemContext,
+  useFormField,
+} from '@renderer/hooks/useFormField';
+import { cn, fieldWidth } from '@renderer/lib/utils';
+
+import type {
+  FieldDefinition,
+  FieldType,
+  SupportedLanguage,
+  TranslatableString,
+} from '@elek-io/core';
 
 const Form = FormProvider;
-
-type FormFieldContextValue<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> = {
-  name: TName;
-};
-
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
-);
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   ...props
-}: ControllerProps<TFieldValues, TName>) => {
+}: ControllerProps<TFieldValues, TName>): React.JSX.Element => {
   return (
     <FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />
@@ -69,41 +62,10 @@ const FormField = <
   );
 };
 
-const useFormField = () => {
-  const fieldContext = React.useContext(FormFieldContext);
-  const itemContext = React.useContext(FormItemContext);
-  const { getFieldState } = useFormContext();
-  const formState = useFormState({ name: fieldContext.name });
-  const fieldState = getFieldState(fieldContext.name, formState);
-
-  if (!fieldContext) {
-    throw new Error('useFormField should be used within <FormField>');
-  }
-
-  const { id } = itemContext;
-
-  return {
-    id,
-    name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
-    ...fieldState,
-  };
-};
-
-type FormItemContextValue = {
-  id: string;
-};
-
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-);
-
 function FormItem({
   className,
   ...props
-}: React.ComponentProps<'div'>): React.ReactElement {
+}: React.ComponentProps<'div'>): React.JSX.Element {
   const id = React.useId();
 
   return (
@@ -120,14 +82,14 @@ function FormItem({
 function FormLabel({
   className,
   ...props
-}: React.ComponentProps<typeof Label>): React.ReactElement {
+}: React.ComponentProps<typeof Label>): React.JSX.Element {
   const { error, formItemId } = useFormField();
 
   return (
     <Label
       data-slot="form-label"
       data-error={!!error}
-      className={cn('data-[error=true]:text-red-500', className)}
+      className={cn('data-[error=true]:text-destructive', className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -136,7 +98,7 @@ function FormLabel({
 
 function FormControl({
   ...props
-}: React.ComponentProps<typeof Slot>): React.ReactElement {
+}: React.ComponentProps<typeof Slot>): React.JSX.Element {
   const { error, formItemId, formDescriptionId, formMessageId } =
     useFormField();
 
@@ -158,14 +120,14 @@ function FormControl({
 function FormDescription({
   className,
   ...props
-}: React.ComponentProps<'p'>): React.ReactElement {
+}: React.ComponentProps<'p'>): React.JSX.Element {
   const { formDescriptionId } = useFormField();
 
   return (
     <p
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn('text-zinc-500 dark:text-zinc-400 text-sm', className)}
+      className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
   );
@@ -174,7 +136,7 @@ function FormDescription({
 function FormMessage({
   className,
   ...props
-}: React.ComponentProps<'p'>): React.ReactElement | null {
+}: React.ComponentProps<'p'>): React.JSX.Element | null {
   const { error, formMessageId } = useFormField();
   const body = error ? String(error?.message ?? '') : props.children;
 
@@ -186,7 +148,7 @@ function FormMessage({
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn('text-red-500 text-sm', className)}
+      className={cn('text-sm text-destructive', className)}
       {...props}
     >
       {body}
@@ -490,7 +452,7 @@ function FormComponentFromFieldDefinitionTranslatable<
             <DialogTrigger asChild>
               <Button
                 variant="secondary"
-                className="rounded-l-none h-full"
+                className="h-full rounded-l-none"
                 aria-invalid={hasErrorsInTranslations()}
                 Icon={LanguagesIcon}
               />
@@ -595,7 +557,7 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
       render={({ field }) => (
         <FormItem
           className={cn(
-            `flex items-center col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`,
+            `col-span-12 flex items-center ${fieldWidth(fieldDefinition.inputWidth)}`,
             className
           )}
         >
@@ -603,7 +565,7 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
             {isDraggable && (
               <DragHandle
                 id={fieldDefinition.id}
-                className={clsx({ 'rounded-b-none': isEditable || onDelete })}
+                className={cn({ 'rounded-b-none': isEditable || onDelete })}
               />
             )}
             {isEditable && (
@@ -611,7 +573,7 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                 Icon={EditIcon}
                 variant="secondary"
                 size="icon"
-                className={clsx({
+                className={cn({
                   'rounded-none': isDraggable && onDelete,
                   'rounded-t-none': isDraggable,
                   'rounded-b-none': onDelete,
@@ -624,13 +586,13 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                 variant="destructive"
                 size="icon"
                 onClick={() => onDelete(fieldDefinition)}
-                className={clsx({
+                className={cn({
                   'rounded-t-none': isDraggable || isEditable,
                 })}
               />
             )}
           </div>
-          <div className="flex flex-col w-full gap-2">
+          <div className="flex w-full flex-col gap-2">
             <FormLabel isRequired={fieldDefinition.isRequired}>
               {translateContent('fieldDefinition.label', fieldDefinition.label)}
             </FormLabel>
@@ -661,12 +623,11 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
 
 export {
   Form,
-  FormControl,
-  FormDescription,
-  FormField,
   FormItem,
   FormLabel,
+  FormControl,
+  FormDescription,
   FormMessage,
-  useFormField,
+  FormField,
   FormFieldFromDefinition,
 };

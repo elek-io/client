@@ -1,11 +1,6 @@
-import {
-  FieldWidthSchema,
-  type FieldDefinition,
-  type FieldType,
-  type SupportedLanguage,
-} from '@elek-io/core';
 import { Fragment, type HTMLAttributes, type ReactElement } from 'react';
 import { type FieldValues, type UseFormReturn } from 'react-hook-form';
+
 import {
   FormControl,
   FormDescription,
@@ -13,18 +8,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form';
-import { TranslatableFormInput } from '../ui/form-input';
-import { TranslatableFormTextarea } from '../ui/form-textarea';
+} from '@renderer/components/ui/form';
+import { TranslatableFormInput } from '@renderer/components/ui/form-input';
+import { TranslatableFormTextarea } from '@renderer/components/ui/form-textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
-import { Separator } from '../ui/separator';
-import { Switch } from '../ui/switch';
+} from '@renderer/components/ui/select';
+import { Separator } from '@renderer/components/ui/separator';
+import { Switch } from '@renderer/components/ui/switch';
+
+import {
+  FieldWidthSchema,
+  type FieldDefinition,
+  type FieldType,
+  type SupportedLanguage,
+} from '@elek-io/core';
 
 export interface DefaultFieldDefinitionFormProps<T extends FieldValues>
   extends HTMLAttributes<HTMLFormElement> {
@@ -133,7 +135,7 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isRequired`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 shadow-xs">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
               <FormLabel isRequired={true}>Required</FormLabel>
               <FormDescription>
@@ -166,7 +168,7 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isUnique`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 shadow-xs">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
               <FormLabel isRequired={true}>Unique</FormLabel>
               <FormDescription>
@@ -198,7 +200,7 @@ const DefaultFieldDefinitionForm = ({
         control={form.control}
         name={`isDisabled`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 shadow-xs">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
               <FormLabel isRequired={true}>Disabled</FormLabel>
               <FormDescription>

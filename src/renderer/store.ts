@@ -1,15 +1,18 @@
-import type {} from '@redux-devtools/extension'; // required for devtools typing
-import { toast } from '@renderer/components/ui/toast';
-import { type Icon } from '@renderer/util';
+import type {} from '@redux-devtools/extension';
+import { toast } from 'sonner';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-export enum NotificationIntent {
-  INFO = 'info',
-  SUCCESS = 'success',
-  WARNING = 'warning',
-  DANGER = 'danger',
-}
+import { type Icon } from '@renderer/lib/utils';
+
+export type NotificationIntent = 'info' | 'success' | 'warning' | 'danger';
+
+export const NotificationIntent = {
+  INFO: 'info' as NotificationIntent,
+  SUCCESS: 'success' as NotificationIntent,
+  WARNING: 'warning' as NotificationIntent,
+  DANGER: 'danger' as NotificationIntent,
+};
 
 export interface NotificationProps {
   intent?: NotificationIntent;

@@ -1,8 +1,3 @@
-import { AppHeader } from '@renderer/components/ui/app-header';
-import { Button } from '@renderer/components/ui/button';
-import { Page } from '@renderer/components/ui/page';
-import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
-import { Toaster } from '@renderer/components/ui/toast';
 import {
   type ErrorComponentProps,
   Outlet,
@@ -12,6 +7,12 @@ import {
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { type ReactElement } from 'react';
+
+import { AppHeader } from '@renderer/components/ui/app-header';
+import { Button } from '@renderer/components/ui/button';
+import { Page } from '@renderer/components/ui/page';
+import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
+import { Toaster } from '@renderer/components/ui/sonner';
 
 export interface RouterContext extends ContextBridgeApi {}
 
@@ -44,11 +45,11 @@ function ErrorComponent(props: ErrorComponentProps): ReactElement {
           variant="outline"
           onClick={() => router.navigate({ to: '/projects' })}
         >
-          <ArrowLeft className="w-4 h-4 mr-2"></ArrowLeft>
+          <ArrowLeft className="mr-2 h-4 w-4"></ArrowLeft>
           Back to Projects
         </Button>
         <Button variant="default" onClick={() => location.reload()}>
-          <RefreshCw className="w-4 h-4 mr-2"></RefreshCw>
+          <RefreshCw className="mr-2 h-4 w-4"></RefreshCw>
           Reload
         </Button>
       </>
@@ -62,7 +63,7 @@ function ErrorComponent(props: ErrorComponentProps): ReactElement {
         <div className="p-6">
           <p>{props.error.message}</p>
           <ScrollArea>
-            <div className="py-6 flex w-max text-xs">
+            <div className="flex w-max py-6 text-xs">
               <pre>{props.error.stack}</pre>
             </div>
             <ScrollBar orientation="horizontal" />
@@ -88,11 +89,11 @@ function NotFoundComponent(): ReactElement {
           variant="outline"
           onClick={() => router.navigate({ to: '/projects' })}
         >
-          <ArrowLeft className="w-4 h-4 mr-2"></ArrowLeft>
+          <ArrowLeft className="mr-2 h-4 w-4"></ArrowLeft>
           Back to Projects
         </Button>
         <Button variant="default" onClick={() => location.reload()}>
-          <RefreshCw className="w-4 h-4 mr-2"></RefreshCw>
+          <RefreshCw className="mr-2 h-4 w-4"></RefreshCw>
           Reload
         </Button>
       </>

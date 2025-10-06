@@ -1,9 +1,10 @@
-import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { type VariantProps } from 'class-variance-authority';
 import { LoaderCircleIcon, type LucideProps } from 'lucide-react';
-import { buttonVariants } from '@renderer/lib/variants';
+import * as React from 'react';
+
 import { cn } from '@renderer/lib/utils';
+import { buttonVariants } from '@renderer/lib/variants';
 
 function Button({
   className,

@@ -6,7 +6,6 @@
  * @see https://docs.sentry.io/platforms/javascript/guides/react/tracing/
  * @see https://docs.sentry.io/platforms/javascript/guides/react/features/tanstack-router/
  */
-
 import { init } from '@sentry/electron/renderer';
 import {
   init as reactInit,
@@ -16,9 +15,8 @@ import {
   replayIntegration,
 } from '@sentry/react';
 import { createHashHistory, createRouter } from '@tanstack/react-router';
-import { ipc } from '@renderer/ipc';
 
-// Import the generated route tree
+import { ipc } from '@renderer/ipc';
 import { routeTree } from '@renderer/routeTree.gen';
 
 // Create a new router instance
