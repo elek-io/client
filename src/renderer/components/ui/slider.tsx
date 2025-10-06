@@ -5,8 +5,8 @@ import { cn } from '@renderer/lib/utils';
 
 function Slider({
   className,
-  defaultValue,
-  value,
+  defaultValue = [],
+  value = [],
   min = 0,
   max = 100,
   ...props
