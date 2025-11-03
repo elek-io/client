@@ -23,7 +23,6 @@ declare global {
         info: ElekIoCore['logger']['info'];
         warn: ElekIoCore['logger']['warn'];
         error: ElekIoCore['logger']['error'];
-        read: ElekIoCore['logger']['read'];
       };
       user: {
         get: ElekIoCore['user']['get'];

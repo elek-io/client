@@ -139,7 +139,10 @@ class Main {
       ) {
         const errorMessage = `Prevented navigation to untrusted, external URL "${parsedUrl.toString()}" from "${webContents.getURL()}"`;
         sentryCaptureException(new SecurityError(errorMessage));
-        this.core?.logger.error(errorMessage);
+        this.core?.logger.error({
+          source: 'desktop',
+          message: errorMessage,
+        });
 
         return { action: 'deny' };
       }
@@ -251,7 +254,10 @@ class Main {
       event.preventDefault();
       const errorMessage = `Prevented navigation to untrusted, internal URL "${parsedUrl.toString()}" from "${window.webContents.getURL()}"`;
       sentryCaptureException(new SecurityError(errorMessage));
-      this.core?.logger.error(errorMessage);
+      this.core?.logger.error({
+        source: 'desktop',
+        message: errorMessage,
+      });
     }
   }
 
@@ -310,7 +316,6 @@ class Main {
       'core:logger:info': core.logger.info.bind(core.logger),
       'core:logger:warn': core.logger.warn.bind(core.logger),
       'core:logger:error': core.logger.error.bind(core.logger),
-      'core:logger:read': core.logger.read.bind(core.logger),
       'core:user:get': core.user.get.bind(core.user),
       'core:user:set': core.user.set.bind(core.user),
       'core:projects:count': core.projects.count.bind(core.projects),

@@ -30,16 +30,22 @@ function UpdateEntryPage(): ReactElement {
 
   const updateEntryForm = useForm<UpdateEntryProps>({
     resolver: async (data, context, options) => {
-      routeContext.core.logger.debug('Update Entry form data', data);
+      routeContext.core.logger.debug({
+        source: 'desktop',
+        message: 'Update Entry form data',
+        meta: { data },
+      });
       const validationResult = await zodResolver(generatedUpdateEntrySchema)(
+        // @ts-expect-error TS does not know the at runtime generated value schema and assumes it's an empty array
         data,
         context,
         options
       );
-      routeContext.core.logger.debug(
-        'Update Entry form validation result',
-        validationResult
-      );
+      routeContext.core.logger.debug({
+        source: 'desktop',
+        message: 'Update Entry form validation result',
+        meta: { validationResult },
+      });
       return validationResult;
     },
     defaultValues: {
@@ -113,7 +119,11 @@ function UpdateEntryPage(): ReactElement {
       });
     } catch (error) {
       setIsUpdatingEntry(false);
-      routeContext.core.logger.error('Failed to update Entry', error);
+      routeContext.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to update Entry',
+        meta: { error },
+      });
       addNotification({
         intent: NotificationIntent.DANGER,
         title: 'Failed to update Entry',

@@ -34,16 +34,22 @@ function CreateEntryPage(): ReactElement {
 
   const createEntryForm = useForm<CreateEntryProps>({
     resolver: async (data, context, options) => {
-      routeContext.core.logger.debug('Create Entry form data', data);
+      routeContext.core.logger.debug({
+        source: 'desktop',
+        message: 'Create Entry form data',
+        meta: { data },
+      });
       const validationResult = await zodResolver(generatedCreateEntrySchema)(
+        // @ts-expect-error TS does not know the at runtime generated value schema and assumes it's an empty array
         data,
         context,
         options
       );
-      routeContext.core.logger.debug(
-        'Create Entry form validation result',
-        validationResult
-      );
+      routeContext.core.logger.debug({
+        source: 'desktop',
+        message: 'Create Entry form validation result',
+        meta: { validationResult },
+      });
       return validationResult;
     },
     defaultValues: {
@@ -143,7 +149,11 @@ function CreateEntryPage(): ReactElement {
       });
     } catch (error) {
       setIsCreatingEntry(false);
-      routeContext.core.logger.error('Failed to create new Entry', error);
+      routeContext.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to create new Entry',
+        meta: { error },
+      });
       addNotification({
         intent: NotificationIntent.DANGER,
         title: 'Failed to create new Entry',
