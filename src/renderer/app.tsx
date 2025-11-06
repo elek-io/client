@@ -23,10 +23,9 @@ if (!rootElement.innerHTML) {
     onUncaughtError: reactErrorHandler((error, errorInfo) => {
       ipc.core.logger.error({
         source: 'desktop',
-        message: 'Uncaught React error',
+        message: `Uncaught React error`,
         meta: { error, errorInfo },
       });
-      console.error('Uncaught React error', error, errorInfo.componentStack);
     }),
     // Callback called when React catches an error in an ErrorBoundary.
     onCaughtError: reactErrorHandler(),

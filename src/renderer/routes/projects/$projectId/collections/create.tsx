@@ -123,9 +123,11 @@ function ProjectCollectionCreate(): ReactElement {
       title={`Create a new Collection`}
       actions={<Actions></Actions>}
       description={<Description></Description>}
-      context={context}
+      supportedLanguages={context.project.settings.language.supported}
+      defaultLanguage={context.project.settings.language.default}
       collectionForm={createCollectionForm}
-      onCollectionSubmit={onCreate}
+      onFormSubmit={onCreate}
+      translateContent={context.translateContent}
     />
   );
 }

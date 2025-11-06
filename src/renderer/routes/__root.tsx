@@ -23,9 +23,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: NotFoundComponent,
 });
 
-function ErrorComponent(props: ErrorComponentProps): ReactElement {
+function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
   const router = useRouter();
-  const { electron } = Route.useRouteContext();
+  const { electron, core } = Route.useRouteContext();
+
+  core.logger.error({
+    source: 'desktop',
+    message: `Uncaught route error: ${error.message}`,
+    meta: { error: { message: error.message, stack: error.stack } },
+  });
 
   function Description(): ReactElement {
     return (
@@ -61,10 +67,10 @@ function ErrorComponent(props: ErrorComponentProps): ReactElement {
       <AppHeader electron={electron} />
       <Page title="Error" description={<Description />} actions={<Actions />}>
         <div className="p-6">
-          <p>{props.error.message}</p>
+          <p>{error.message}</p>
           <ScrollArea>
             <div className="flex w-max py-6 text-xs">
-              <pre>{props.error.stack}</pre>
+              <pre>{error.stack}</pre>
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>

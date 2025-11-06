@@ -1,6 +1,7 @@
 import { Plus, Trash } from 'lucide-react';
 import { type ReactElement, useRef, useState } from 'react';
 import {
+  type FieldValues,
   type SubmitHandler,
   type UseFormReturn,
   useFieldArray,
@@ -47,7 +48,7 @@ import {
 } from '@renderer/components/ui/select';
 import {
   Sheet,
-  // SheetBody,
+  SheetBody,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -61,35 +62,43 @@ import {
   type DeleteCollectionProps,
   type FieldType,
   FieldTypeSchema,
-  type Project,
+  type SupportedLanguage,
   type TranslatableString,
   type UpdateCollectionProps,
   supportedIconSchema,
 } from '@elek-io/core';
 
-export interface CreateUpdateCollectionPageProps extends PageProps {
-  collectionForm: UseFormReturn<CreateCollectionProps | UpdateCollectionProps>;
-  onCollectionSubmit: SubmitHandler<
-    CreateCollectionProps | UpdateCollectionProps
-  >;
+export interface CreateUpdateCollectionPageProps<
+  TFieldValues extends FieldValues,
+> extends PageProps {
+  collectionForm: UseFormReturn<TFieldValues>;
+  supportedLanguages: SupportedLanguage[];
+  defaultLanguage: SupportedLanguage;
+  translateContent(key: string, record: TranslatableString): string;
+  onFormSubmit: SubmitHandler<TFieldValues>;
   onCollectionDelete?: SubmitHandler<DeleteCollectionProps>;
-  context: {
-    project: Project;
-    translateContent: (key: string, record: TranslatableString) => string;
-  };
 }
 
 export const CreateUpdateCollectionPage = ({
-  context,
   collectionForm,
-  onCollectionSubmit,
+  supportedLanguages,
+  defaultLanguage,
+  translateContent,
+  onFormSubmit,
+  onCollectionDelete,
   ...props
-}: CreateUpdateCollectionPageProps): ReactElement => {
+}: CreateUpdateCollectionPageProps<
+  CreateCollectionProps | UpdateCollectionProps
+>): ReactElement => {
   const fieldDefinitionFormRef = useRef<FieldDefinitionFormRef>(null);
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
   const collectionFormProps = collectionForm.getValues();
+
+  /**
+   * Type Guard to check if we are in "update" mode
+   */
   function isUpdatingCollection(
     collectionFormProps: CreateCollectionProps | UpdateCollectionProps
   ): collectionFormProps is UpdateCollectionProps {
@@ -109,8 +118,8 @@ export const CreateUpdateCollectionPage = ({
   return (
     <Page {...props}>
       <Form {...collectionForm}>
-        <form onSubmit={collectionForm.handleSubmit(onCollectionSubmit)}>
-          <div className="space-y-4 p-6">
+        <form onSubmit={collectionForm.handleSubmit(onFormSubmit)}>
+          <div className="space-y-6 p-6">
             <div className="grid grid-cols-12 items-start gap-6">
               <FormField
                 control={collectionForm.control}
@@ -143,7 +152,7 @@ export const CreateUpdateCollectionPage = ({
 
               <FormField
                 control={collectionForm.control}
-                name={`name.plural.${context.project.settings.language.default}`}
+                name={`name.plural.${defaultLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired={true}>
@@ -156,9 +165,7 @@ export const CreateUpdateCollectionPage = ({
                         type="text"
                         field={field}
                         errors={collectionForm.formState.errors}
-                        supportedLanguages={
-                          context.project.settings.language.supported
-                        }
+                        supportedLanguages={supportedLanguages}
                       />
                     </FormControl>
                     <FormDescription>
@@ -173,7 +180,7 @@ export const CreateUpdateCollectionPage = ({
 
               <FormField
                 control={collectionForm.control}
-                name={`name.singular.${context.project.settings.language.default}`}
+                name={`name.singular.${defaultLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired={true}>
@@ -186,9 +193,7 @@ export const CreateUpdateCollectionPage = ({
                         type="text"
                         field={field}
                         errors={collectionForm.formState.errors}
-                        supportedLanguages={
-                          context.project.settings.language.supported
-                        }
+                        supportedLanguages={supportedLanguages}
                       />
                     </FormControl>
                     <FormDescription>
@@ -202,7 +207,7 @@ export const CreateUpdateCollectionPage = ({
 
               <FormField
                 control={collectionForm.control}
-                name={`description.${context.project.settings.language.default}`}
+                name={`description.${defaultLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-12">
                     <FormLabel isRequired={true}>Description</FormLabel>
@@ -212,9 +217,7 @@ export const CreateUpdateCollectionPage = ({
                         description="A description of what this new Collection is used for."
                         field={field}
                         errors={collectionForm.formState.errors}
-                        supportedLanguages={
-                          context.project.settings.language.supported
-                        }
+                        supportedLanguages={supportedLanguages}
                       />
                     </FormControl>
                     <FormDescription>
@@ -333,21 +336,19 @@ export const CreateUpdateCollectionPage = ({
                     </FormItem>
                   </SheetHeader>
 
-                  {/* <SheetBody> */}
-                  <FieldDefinitionForm
-                    ref={fieldDefinitionFormRef}
-                    fieldDefinitions={fieldDefinitions}
-                    translateContent={context.translateContent}
-                    setIsAddFieldDefinitionSheetOpen={
-                      setIsAddFieldDefinitionSheetOpen
-                    }
-                    fieldType={selectedFieldType}
-                    supportedLanguages={
-                      context.project.settings.language.supported
-                    }
-                    defaultLanguage={context.project.settings.language.default}
-                  />
-                  {/* </SheetBody> */}
+                  <SheetBody>
+                    <FieldDefinitionForm
+                      ref={fieldDefinitionFormRef}
+                      fieldDefinitions={fieldDefinitions}
+                      translateContent={translateContent}
+                      setIsAddFieldDefinitionSheetOpen={
+                        setIsAddFieldDefinitionSheetOpen
+                      }
+                      fieldType={selectedFieldType}
+                      supportedLanguages={supportedLanguages}
+                      defaultLanguage={defaultLanguage}
+                    />
+                  </SheetBody>
 
                   <SheetFooter>
                     <Button className="w-full" onClick={addFieldDefinition}>
@@ -371,10 +372,8 @@ export const CreateUpdateCollectionPage = ({
                         form={collectionForm}
                         // @ts-ignore This is only to display the field, not to actually edit anything but the order of the fields
                         name={`currentFields.field-${index}.content`}
-                        supportedLanguages={
-                          context.project.settings.language.supported
-                        }
-                        translateContent={context.translateContent}
+                        supportedLanguages={supportedLanguages}
+                        translateContent={translateContent}
                         isDraggable={true}
                         isEditable={true}
                         onDelete={(fieldDefinition) => {
@@ -390,7 +389,7 @@ export const CreateUpdateCollectionPage = ({
               </SortableFieldArray>
             </div>
           </PageSection>
-          {isUpdatingCollection(collectionFormProps) && (
+          {isUpdatingCollection(collectionFormProps) && onCollectionDelete && (
             <PageSection title="Danger Zone">
               <div className="flex items-center justify-between">
                 <div>
@@ -419,9 +418,8 @@ export const CreateUpdateCollectionPage = ({
                         <Button
                           variant="destructive"
                           onClick={() =>
-                            props.onCollectionDelete &&
-                            props.onCollectionDelete({
-                              projectId: context.project.id,
+                            onCollectionDelete({
+                              projectId: collectionFormProps.projectId,
                               id: collectionFormProps.id,
                             })
                           }

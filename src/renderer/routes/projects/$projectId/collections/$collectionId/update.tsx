@@ -42,12 +42,10 @@ function ProjectCollectionUpdate(): ReactElement {
     },
   });
 
-  function Title(): string {
-    return `Configure ${context.translateContent(
-      'currentCollection.name.plural',
-      context.currentCollection.name.plural
-    )}`;
-  }
+  const title = `Configure ${context.translateContent(
+    'currentCollection.name.plural',
+    context.currentCollection.name.plural
+  )}`;
 
   function Description(): ReactElement {
     return (
@@ -131,13 +129,15 @@ function ProjectCollectionUpdate(): ReactElement {
 
   return (
     <CreateUpdateCollectionPage
-      title={Title()}
+      title={title}
       actions={<Actions></Actions>}
       description={<Description></Description>}
-      context={context}
+      supportedLanguages={context.project.settings.language.supported}
+      defaultLanguage={context.project.settings.language.default}
       collectionForm={updateCollectionForm}
-      onCollectionSubmit={onUpdate}
+      onFormSubmit={onUpdate}
       onCollectionDelete={onDelete}
+      translateContent={context.translateContent}
     />
   );
 }

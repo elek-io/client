@@ -518,14 +518,9 @@ function FormComponentFromFieldDefinitionTranslatable<
   );
 }
 
-export interface FormFieldFromDefinitionProps<
-  TFieldValues extends FieldValues,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TContext = any,
-  TTransformedValues = TFieldValues,
-> {
+interface FormFieldFromDefinitionProps<TFieldValues extends FieldValues> {
   fieldDefinition: FieldDefinition;
-  form: UseFormReturn<TFieldValues, TContext, TTransformedValues>;
+  form: UseFormReturn<TFieldValues>;
   name: FieldPath<TFieldValues>;
   supportedLanguages: SupportedLanguage[];
   translateContent(key: string, record: TranslatableString): string;

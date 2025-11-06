@@ -1,5 +1,9 @@
 import { type ReactElement } from 'react';
-import { type SubmitHandler, type UseFormReturn } from 'react-hook-form';
+import {
+  type FieldValues,
+  type SubmitHandler,
+  type UseFormReturn,
+} from 'react-hook-form';
 
 import { Form, FormFieldFromDefinition } from '@renderer/components/ui/form';
 import { Page, type PageProps } from '@renderer/components/ui/page';
@@ -12,13 +16,14 @@ import {
   type UpdateEntryProps,
 } from '@elek-io/core';
 
-interface CreateUpdateEntryPageProps extends PageProps {
-  entryForm: UseFormReturn<CreateEntryProps | UpdateEntryProps>;
+interface CreateUpdateEntryPageProps<TFieldValues extends FieldValues>
+  extends PageProps {
+  entryForm: UseFormReturn<TFieldValues>;
   fieldDefinitions: FieldDefinition[];
   supportedLanguages: SupportedLanguage[];
   defaultLanguage: SupportedLanguage;
   translateContent(key: string, record: TranslatableString): string;
-  onFormSubmit: SubmitHandler<CreateEntryProps | UpdateEntryProps>;
+  onFormSubmit: SubmitHandler<TFieldValues>;
 }
 
 function CreateUpdateEntryPage({
@@ -29,7 +34,9 @@ function CreateUpdateEntryPage({
   translateContent,
   onFormSubmit,
   ...props
-}: CreateUpdateEntryPageProps): ReactElement {
+}: CreateUpdateEntryPageProps<
+  CreateEntryProps | UpdateEntryProps
+>): ReactElement {
   return (
     <Page {...props}>
       <Form {...entryForm}>
