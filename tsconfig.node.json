@@ -4,9 +4,9 @@
     "@tsconfig/strictest/tsconfig.json"
   ],
   "include": [
-    "electron.vite.config.*",
-    "src/main/**/*",
-    "src/preload/**/*",
+    "electron.vite.config.ts",
+    "src/main",
+    "src/preload",
     "src/index.d.ts"
   ],
   "compilerOptions": {

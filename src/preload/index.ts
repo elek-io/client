@@ -44,7 +44,6 @@ const ipc: ContextBridgeApi = {
       info: (...args) => ipcRenderer.invoke('core:logger:info', ...args),
       warn: (...args) => ipcRenderer.invoke('core:logger:warn', ...args),
       error: (...args) => ipcRenderer.invoke('core:logger:error', ...args),
-      read: (...args) => ipcRenderer.invoke('core:logger:read', ...args),
     },
     user: {
       get: (...args) => ipcRenderer.invoke('core:user:get', ...args),

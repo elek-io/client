@@ -3,18 +3,14 @@
     "@tsconfig/vite-react/tsconfig.json",
     "@tsconfig/strictest/tsconfig.json"
   ],
-  "include": [
-    "src/renderer/src/env.d.ts",
-    "src/renderer/src/**/*",
-    "src/renderer/src/**/*.tsx",
-    "src/index.d.ts"
-  ],
+  "include": ["src/renderer", "src/index.d.ts"],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@renderer/*": ["src/renderer/src/*"]
+      "@root/*": ["./*"],
+      "@renderer/*": ["./src/renderer/*"]
     }
   }
 }

@@ -1,6 +1,7 @@
 import type { ElectronAPI } from '@electron-toolkit/preload';
-import type ElekIoCore from '@elek-io/core';
 import type { Dialog } from 'electron';
+
+import type ElekIoCore from '@elek-io/core';
 
 declare global {
   interface ContextBridgeApi {
@@ -22,7 +23,6 @@ declare global {
         info: ElekIoCore['logger']['info'];
         warn: ElekIoCore['logger']['warn'];
         error: ElekIoCore['logger']['error'];
-        read: ElekIoCore['logger']['read'];
       };
       user: {
         get: ElekIoCore['user']['get'];

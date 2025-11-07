@@ -1,0 +1,94 @@
+import { FileQuestion, FolderArchive } from 'lucide-react';
+import { forwardRef, useEffect, useRef, type ReactElement } from 'react';
+
+import { type Asset } from '@elek-io/core';
+
+export interface AssetDisplayProps extends Asset {
+  /**
+   * If set to true, GIFs will be displayed as static images (no animation).
+   * Video and audio files will be displayed without controls and not be played automatically.
+   */
+  static: boolean;
+}
+
+export function AssetDisplay(props: AssetDisplayProps): ReactElement {
+  const absolutePath = 'elek-io-local-file://' + props.absolutePath;
+  const ref = useRef(null);
+
+  if (props.mimeType === 'image/gif' && props.static === true) {
+    const gif = new Image();
+    gif.src = absolutePath;
+
+    const StaticGifCanvas = forwardRef<HTMLCanvasElement>((props, ref) => {
+      if (typeof ref === 'function') {
+        throw new Error(
+          `Only React Refs that are created with createRef or useRef are supported`
+        );
+      }
+
+      useEffect(() => {
+        const context = ref?.current?.getContext('2d');
+        if (!context) {
+          return undefined;
+        }
+
+        context.drawImage(gif, 0, 0);
+      }, [ref]);
+
+      return (
+        <canvas
+          ref={ref}
+          {...props}
+          width={gif.width}
+          height={gif.height}
+          className="max-h-full max-w-full object-contain"
+        />
+      );
+    });
+    StaticGifCanvas.displayName = 'StaticGifCanvas';
+
+    return <StaticGifCanvas ref={ref} />;
+  }
+
+  if (props.mimeType.startsWith('image/')) {
+    return (
+      <img
+        src={absolutePath}
+        alt={`Asset "${props.name}"`}
+        className="max-h-full max-w-full object-contain"
+      />
+    );
+  }
+
+  if (props.mimeType.startsWith('video/')) {
+    return (
+      <video muted controls={!props.static} autoPlay={!props.static}>
+        <source src={absolutePath} type={props.mimeType}></source>
+      </video>
+    );
+  }
+
+  if (props.mimeType.startsWith('audio/')) {
+    return (
+      <audio muted controls={!props.static} autoPlay={!props.static}>
+        <source src={absolutePath} type={props.mimeType}></source>
+      </audio>
+    );
+  }
+
+  if (props.mimeType === 'application/pdf') {
+    return (
+      <embed
+        src={absolutePath}
+        type={props.mimeType}
+        className="h-full w-full object-contain"
+      />
+    );
+  }
+
+  if (props.mimeType === 'application/zip') {
+    return <FolderArchive className="h-10 w-10" />;
+  }
+
+  return <FileQuestion className="h-10 w-10" />;
+}

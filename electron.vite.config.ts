@@ -33,15 +33,16 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src'),
+        '@root': resolve(__dirname, '.'),
+        '@renderer': resolve(__dirname, './src/renderer'),
       },
     },
     plugins: [
       tanstackRouter({
         target: 'react',
         autoCodeSplitting: true,
-        routesDirectory: './src/renderer/src/routes',
-        generatedRouteTree: './src/renderer/src/routeTree.gen.ts',
+        routesDirectory: '@renderer/routes',
+        generatedRouteTree: '@renderer/routeTree.gen.ts',
       }),
       viteReact(),
       tailwindcss(),

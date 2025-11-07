@@ -9,12 +9,10 @@
       content="default-src 'self' elek-io-local-file:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: elek-io-local-file:; worker-src 'self' blob:"
     />
     <title>Hello World!</title>
-    <link href="/src/index.css" rel="stylesheet" />
+    <link href="/index.css" rel="stylesheet" />
   </head>
-  <body
-    class="h-full antialiased transition-colors ease-linear bg-zinc-100 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200"
-  >
-    <div id="app" class="flex flex-col h-full"></div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body class="h-full">
+    <div id="app" class="flex h-full flex-col"></div>
+    <script type="module" src="/app.tsx"></script>
   </body>
 </html>
