@@ -50,11 +50,7 @@ function CreateProjectPage(): ReactElement {
       <>
         New Projects start with no history or data.
         <br></br>
-        Read more about{' '}
-        <a href="#" className="text-brand-600 hover:underline">
-          Projects in the documentation
-        </a>
-        .
+        Read more about <a href="#">Projects in the documentation</a>.
       </>
     );
   }

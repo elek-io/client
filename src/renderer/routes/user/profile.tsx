@@ -91,10 +91,8 @@ function UserProfilePage(): ReactElement {
           Before we start you need to set up a local User first. Don&apos;t
           worry, you are not creating an account and this information is only
           saved locally on this device! Read more about{' '}
-          <a href="#" className="text-brand-600 hover:underline">
-            local Users in our documentation
-          </a>{' '}
-          if you have questions about this step.
+          <a href="#">local Users in our documentation</a> if you have questions
+          about this step.
         </>
       );
     }
@@ -102,10 +100,7 @@ function UserProfilePage(): ReactElement {
     return (
       <>
         By editing your Users details, ... Read more about{' '}
-        <a href="#" className="text-brand-600 hover:underline">
-          local Users in our documentation
-        </a>
-        .
+        <a href="#">local Users in our documentation</a>.
       </>
     );
   }

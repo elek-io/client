@@ -24,7 +24,7 @@ export function CommitHistory({
 }: CommitHistoryProps): ReactElement {
   return (
     <div className={cn('relative', className)} {...props}>
-      <div className="before:border-brand-600 before:absolute before:ml-7 before:h-full before:border-l-2"></div>
+      <div className="before:absolute before:ml-7 before:h-full before:border-l-2 before:border-primary"></div>
       <div className="grid gap-2 py-2">
         {commits.map((commit) => (
           <Commit

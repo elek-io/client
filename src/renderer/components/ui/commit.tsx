@@ -65,7 +65,7 @@ export function Commit({
       }}
       {...props}
     >
-      <div className="border-brand-600 relative z-10 rounded-full border bg-white p-2 dark:bg-zinc-900">
+      <div className="relative z-10 rounded-full border border-primary bg-white p-2 dark:bg-zinc-900">
         {commit.tag && <Tag className="absolute -right-2 -bottom-1 h-4 w-4" />}
         {iconComponent}
       </div>

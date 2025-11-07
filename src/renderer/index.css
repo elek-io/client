@@ -129,10 +129,13 @@
     font-family: 'Montserrat Variable', sans-serif;
   }
 
-  /* a {
-    color: var(--color-brand-600);
+  a {
+    color: var(--color-primary);
+  }
+
+  a:hover {
     text-decoration: underline;
-  } */
+  }
 }
 
 /* @utility container {

@@ -63,11 +63,7 @@ function ProjectCollectionCreate(): ReactElement {
       <>
         A Collection holds information about how your content is structured.
         <br></br>
-        Read more about{' '}
-        <a href="#" className="text-brand-600 hover:underline">
-          Collections in the documentation
-        </a>
-        .
+        Read more about <a href="#">Collections in the documentation</a>.
       </>
     );
   }
