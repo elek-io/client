@@ -1,11 +1,14 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
-import { DownloadCloud, Plus } from 'lucide-react';
+import { DownloadCloud, EllipsisIcon, Plus } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
+import { Badge, RemoteOriginBadge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
 import {
   Card,
+  CardAction,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -21,6 +24,13 @@ import {
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@renderer/components/ui/empty';
+import {
   Form,
   FormControl,
   FormDescription,
@@ -34,6 +44,15 @@ import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
 
 import { type CloneProjectProps } from '@elek-io/core';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
 
 export const Route = createFileRoute('/projects/')({
   beforeLoad: async ({ context }) => {
@@ -163,28 +182,65 @@ function ListProjectsPage(): ReactElement {
       actions={<Actions></Actions>}
       layout="bare"
     >
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {context.projects.list.map((project) => {
-          return (
-            <Link
-              key={project.id}
-              to="/projects/$projectId/dashboard"
-              params={{ projectId: project.id }}
-              className="no-underline"
-            >
-              <Card className="hover:shadow-lg hover:dark:border-zinc-200">
+      {context.projects.total === 0 ? (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Plus />
+            </EmptyMedia>
+            <EmptyTitle>No Projects yet</EmptyTitle>
+            <EmptyDescription>
+              You haven&apos;t created any Projects yet. Get started by creating
+              a new or cloning an existing Project.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          {context.projects.list.map((project) => {
+            return (
+              <Card key={project.id} className="hover:border-accent-foreground">
                 <CardHeader>
-                  <CardTitle>{project.name}</CardTitle>
-                  <CardDescription>{project.description}</CardDescription>
+                  <Link
+                    to="/projects/$projectId/dashboard"
+                    params={{ projectId: project.id }}
+                    className="no-underline"
+                  >
+                    <CardTitle>{project.name}</CardTitle>
+                    <CardDescription>{project.description}</CardDescription>
+                  </Link>
+                  <CardAction>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <Button variant="ghost" size="icon">
+                          <EllipsisIcon />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>Profile</DropdownMenuItem>
+                        <DropdownMenuItem>Billing</DropdownMenuItem>
+                        <DropdownMenuItem>Team</DropdownMenuItem>
+                        <DropdownMenuItem>Subscription</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardAction>
                 </CardHeader>
-                {/* <CardContent>
-                  <Badge>Core version: {project.coreVersion}</Badge>
-                </CardContent> */}
+                <CardContent>
+                  <RemoteOriginBadge
+                    variant={'outline'}
+                    remoteOriginUrl={project.remoteOriginUrl}
+                  />
+                  <Badge variant={'outline'}>
+                    Core version: {project.coreVersion}
+                  </Badge>
+                </CardContent>
               </Card>
-            </Link>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </Page>
   );
 }

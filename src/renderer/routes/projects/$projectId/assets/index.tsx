@@ -5,6 +5,13 @@ import { type ReactElement, useState } from 'react';
 import { AssetInfo } from '@renderer/components/ui/asset-info';
 import { AssetTeaser } from '@renderer/components/ui/asset-teaser';
 import { Button } from '@renderer/components/ui/button';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@renderer/components/ui/empty';
 import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
 
@@ -39,8 +46,7 @@ function ProjectAssetsPage(): ReactElement {
   function Actions(): ReactElement {
     return (
       <>
-        <Button variant="default" onClick={() => onAddAssets()}>
-          <Plus className="mr-2 h-4 w-4"></Plus>
+        <Button variant="default" Icon={Plus} onClick={() => onAddAssets()}>
           Add Assets
         </Button>
       </>
@@ -96,36 +102,51 @@ function ProjectAssetsPage(): ReactElement {
       actions={<Actions></Actions>}
       layout="bare"
     >
-      <div className="flex">
-        <div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5 xl:gap-6">
-            {context.currentAssets.list.map((asset) => (
-              <AssetTeaser
-                key={asset.id}
-                {...asset}
-                onClick={() => setSelectedAsset(asset)}
-              ></AssetTeaser>
-            ))}
+      {context.currentAssets.total === 0 ? (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Plus />
+            </EmptyMedia>
+            <EmptyTitle>No Assets yet</EmptyTitle>
+            <EmptyDescription>
+              You haven&apos;t added any Assets yet. Get started by adding one
+              or more Assets by clicking the button in the top right corner.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <div className="flex">
+          <div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5 xl:gap-6">
+              {context.currentAssets.list.map((asset) => (
+                <AssetTeaser
+                  key={asset.id}
+                  {...asset}
+                  onClick={() => setSelectedAsset(asset)}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="ml-8 w-72 shrink-0">
+            {selectedAsset && (
+              <div className="flex flex-col items-start justify-between rounded-md border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <AssetInfo
+                  projectId={context.project.id}
+                  asset={selectedAsset}
+                  language={context.user.language}
+                  showUpdateButton={true}
+                  showDeleteButton={true}
+                  onAssetDeleted={() => {
+                    setSelectedAsset(null);
+                    router.invalidate();
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
-        <div className="ml-8 w-72 shrink-0">
-          {selectedAsset && (
-            <div className="flex flex-col items-start justify-between rounded-md border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-900">
-              <AssetInfo
-                projectId={context.project.id}
-                asset={selectedAsset}
-                language={context.user.language}
-                showUpdateButton={true}
-                showDeleteButton={true}
-                onAssetDeleted={() => {
-                  setSelectedAsset(null);
-                  router.invalidate();
-                }}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </Page>
   );
 }

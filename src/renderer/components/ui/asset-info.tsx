@@ -226,22 +226,24 @@ export function AssetInfo({
       </div>
       <div className="flex w-full flex-col gap-2 p-4">
         {showUpdateButton && (
-          <Button variant="outline" className="" onClick={onAssetUpdate}>
-            <Edit2 className="mr-2 h-4 w-4" />
+          <Button
+            variant="outline"
+            className=""
+            Icon={Edit2}
+            onClick={onAssetUpdate}
+          >
             Update
           </Button>
         )}
 
-        <Button variant="outline" onClick={onAssetSave}>
-          <Download className="mr-2 h-4 w-4" />
+        <Button variant="outline" Icon={Download} onClick={onAssetSave}>
           Save as
         </Button>
 
         {showDeleteButton && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash className="mr-2 h-4 w-4"></Trash>
+              <Button variant="destructive" Icon={Trash}>
                 Delete
               </Button>
             </AlertDialogTrigger>
@@ -257,8 +259,14 @@ export function AssetInfo({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onAssetDelete}>
-                  Continue
+                <AlertDialogAction asChild>
+                  <Button
+                    variant="destructive"
+                    Icon={Trash}
+                    onClick={onAssetDelete}
+                  >
+                    Delete
+                  </Button>
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
