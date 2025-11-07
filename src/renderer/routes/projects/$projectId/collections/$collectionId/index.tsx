@@ -263,7 +263,7 @@ function ProjectCollectionIndexPage(): ReactElement {
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {table.getRowModel().rows.length > 0 ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
@@ -313,12 +313,13 @@ function ProjectCollectionIndexPage(): ReactElement {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                disabled={table.getCanPreviousPage() === false}
               />
             </PaginationItem>
 
             {Array.from({ length: table.getPageCount() }).map(
               (_value, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <PaginationItem key={index + 1}>
                   <PaginationLink
                     onClick={() => table.setPageIndex(index)}
@@ -336,7 +337,7 @@ function ProjectCollectionIndexPage(): ReactElement {
             <PaginationItem>
               <PaginationNext
                 onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                disabled={table.getCanNextPage() === false}
               />
             </PaginationItem>
           </PaginationContent>

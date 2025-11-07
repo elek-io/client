@@ -46,7 +46,8 @@ export function initials(name: string): string {
   const lastPart = parts.pop();
 
   return (
-    (firstPart?.substring(0, 1) || '') + (lastPart?.substring(0, 1) || '')
+    (firstPart !== undefined ? firstPart.substring(0, 1) : '') +
+    (lastPart !== undefined ? lastPart.substring(0, 1) : '')
   ).toUpperCase();
 }
 
@@ -100,7 +101,7 @@ export function formatDatetime(
   relative: string;
   absolute: string;
 } {
-  if (!datetime) {
+  if (datetime === null || datetime === undefined) {
     // e.g. in case of a file not being updated yet, show a dash
     return {
       relative: '-',

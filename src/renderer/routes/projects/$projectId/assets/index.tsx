@@ -91,7 +91,8 @@ function ProjectAssetsPage(): ReactElement {
     for (const path of paths) {
       assetPromisses.push(
         context.core.assets.create({
-          name: path.split('/').pop() || '',
+          name:
+            path.split('/').pop() !== undefined ? path.split('/').pop()! : '',
           description: '',
           projectId: context.project.id,
           filePath: path,
@@ -136,7 +137,7 @@ function ProjectAssetsPage(): ReactElement {
             </div>
           </div>
           <div className="ml-8 w-72 shrink-0">
-            {selectedAsset ? (
+            {selectedAsset !== null ? (
               <div className="flex flex-col items-start justify-between rounded-md border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <AssetInfo
                   projectId={context.project.id}

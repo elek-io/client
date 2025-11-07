@@ -57,12 +57,19 @@ function UserProfilePage(): ReactElement {
     },
     defaultValues: {
       userType: 'local',
-      name: context.user?.name || '',
-      email: context.user?.email || '',
-      language: context.user?.language || 'en',
+      name: context.user?.name !== undefined ? context.user.name : '',
+      email: context.user?.email !== undefined ? context.user.email : '',
+      language:
+        context.user?.language !== undefined ? context.user.language : 'en',
       localApi: {
-        port: context.user?.localApi.port || 31310,
-        isEnabled: context.user?.localApi.isEnabled || false,
+        port:
+          context.user?.localApi.port !== undefined
+            ? context.user.localApi.port
+            : 31310,
+        isEnabled:
+          context.user?.localApi.isEnabled !== undefined
+            ? context.user.localApi.isEnabled
+            : false,
       },
     },
   });
@@ -170,7 +177,7 @@ function UserProfilePage(): ReactElement {
 
   return (
     <>
-      {context.user ? <UserHeader user={context.user} /> : null}
+      {context.user !== null ? <UserHeader user={context.user} /> : null}
       <Page
         title={
           context.user === null ? 'Welcome to elek.io Client' : 'User profile'

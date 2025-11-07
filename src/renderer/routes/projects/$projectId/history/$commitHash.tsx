@@ -68,6 +68,11 @@ export const Route = createFileRoute(
     };
 
     switch (commit.message.reference.objectType) {
+      case 'value':
+      case 'sharedValue':
+        throw new Error(
+          `Unsupported object type: ${commit.message.reference.objectType}`
+        );
       case 'project': {
         if (
           commit.message.method === 'update' ||
@@ -193,18 +198,13 @@ export const Route = createFileRoute(
         break;
       }
       case 'entry': {
-        if (!commit.message.reference.collectionId) {
+        if (commit.message.reference.collectionId === undefined) {
           throw new Error('Commit for Entry does not contain a collectionId');
         }
         const collection = await context.core.collections.read({
           projectId: context.project.id,
           id: commit.message.reference.collectionId,
         });
-        if (!collection) {
-          throw new Error(
-            `No Collection with ID "${commit.message.reference.collectionId}" found`
-          );
-        }
         resolvedObject.entry.collection = collection;
 
         if (
@@ -236,9 +236,6 @@ export const Route = createFileRoute(
         }
 
         if (commit.message.method !== 'delete') {
-          if (!commit.message.reference.collectionId) {
-            throw new Error('Commit for Entry does not contain a collectionId');
-          }
           const entry = await context.core.entries.read({
             projectId: context.project.id,
             collectionId: commit.message.reference.collectionId,
@@ -267,6 +264,9 @@ function ProjectHistoryCommitPage(): ReactElement {
 
   function DisplayChanges(): ReactElement {
     switch (context.commit.message.reference.objectType) {
+      case 'value':
+      case 'sharedValue':
+        return <></>;
       case 'project': {
         return (
           <>

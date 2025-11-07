@@ -46,7 +46,10 @@ function ProjectSettingsVersionControlPage(): ReactElement {
     },
     defaultValues: {
       id: context.project.id,
-      url: context.project.remoteOriginUrl || '',
+      url:
+        context.project.remoteOriginUrl !== null
+          ? context.project.remoteOriginUrl
+          : '',
     },
   });
 

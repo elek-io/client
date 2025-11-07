@@ -148,7 +148,7 @@ function ProjectLayout(): ReactElement {
         ),
       }));
     });
-  }, [context.collections]);
+  }, [context]);
 
   const projectChangesQuery = useQuery({
     enabled: context.project.remoteOriginUrl !== null,
@@ -217,7 +217,7 @@ function ProjectLayout(): ReactElement {
                 </Link>
               </div>
             </div>
-            {context.project.remoteOriginUrl ? (
+            {context.project.remoteOriginUrl !== null ? (
               <>
                 <div className="flex flex-col p-4 pt-0">
                   <div className="flex">
@@ -282,15 +282,12 @@ function ProjectLayout(): ReactElement {
                 onClick={async () => router.navigate({ to: '/projects' })}
               >
                 <FolderOutput className="h-6 w-6" aria-hidden="true" />
-                {!isProjectSidebarNarrow && (
-                  <span className="ml-4">Change Project</span>
-                )}
               </SidebarNavigationItem>
             ) : null}
 
             {projectNavigation.map((navigation) => {
               const item = (
-                <SidebarNavigationItem to={navigation.to} key={navigation.to}>
+                <SidebarNavigationItem to={navigation.to}>
                   <navigation.icon className="h-6 w-6" aria-hidden="true" />
                   {!isProjectSidebarNarrow && (
                     <span className="ml-4">{navigation.name}</span>
@@ -300,7 +297,7 @@ function ProjectLayout(): ReactElement {
 
               if (isProjectSidebarNarrow) {
                 return (
-                  <TooltipProvider key={navigation.to}>
+                  <TooltipProvider key={navigation.name}>
                     <Tooltip>
                       <TooltipTrigger asChild>{item}</TooltipTrigger>
                       <TooltipContent side="right" align="center">

@@ -92,7 +92,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
 
         // Use names instead of IDs to display
         const match = breadcrumbLookupMap.get(part);
-        if (match) {
+        if (match !== undefined) {
           part = match;
         }
 

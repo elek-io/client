@@ -201,7 +201,7 @@ export function AssetInfo({
               <div key={info.key} className="flex justify-between px-6 py-2">
                 <dt className="">{info.key}</dt>
                 <dd className="whitespace-nowrap">
-                  {info.tooltip ? (
+                  {info.tooltip !== undefined ? (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>{info.value}</TooltipTrigger>
@@ -210,8 +210,9 @@ export function AssetInfo({
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  ) : null}
-                  {!info.tooltip && info.value}
+                  ) : (
+                    info.value
+                  )}
                 </dd>
               </div>
             );
@@ -219,7 +220,7 @@ export function AssetInfo({
         </dl>
       </div>
       <div className="flex w-full flex-col gap-2 p-4">
-        {showUpdateButton ? (
+        {showUpdateButton === true ? (
           <Button
             variant="outline"
             className=""
@@ -234,7 +235,7 @@ export function AssetInfo({
           Save as
         </Button>
 
-        {showDeleteButton ? (
+        {showDeleteButton === true ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" Icon={Trash}>

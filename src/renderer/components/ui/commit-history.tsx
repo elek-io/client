@@ -31,7 +31,7 @@ export function CommitHistory({
             key={commit.hash}
             language={language}
             commit={commit}
-            disabled={disabled || false}
+            disabled={disabled === true}
             to="/projects/$projectId/history/$commitHash"
             params={{ projectId, commitHash: commit.hash }}
           />

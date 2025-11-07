@@ -56,12 +56,12 @@ function PaginationLink({
 }: PaginationLinkProps): React.JSX.Element {
   return (
     <a
-      aria-current={isActive ? 'page' : undefined}
+      aria-current={isActive === true ? 'page' : undefined}
       data-slot="pagination-link"
       data-active={isActive}
       className={cn(
         buttonVariants({
-          variant: isActive ? 'outline' : 'ghost',
+          variant: isActive === true ? 'outline' : 'ghost',
           size,
         }),
         className
