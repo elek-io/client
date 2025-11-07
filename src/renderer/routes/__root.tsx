@@ -27,7 +27,7 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
   const router = useRouter();
   const { electron, core } = Route.useRouteContext();
 
-  core.logger.error({
+  void core.logger.error({
     source: 'desktop',
     message: `Uncaught route error: ${error.message}`,
     meta: { error: { message: error.message, stack: error.stack } },

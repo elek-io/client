@@ -102,7 +102,7 @@ export const CreateUpdateCollectionPage = ({
   function isUpdatingCollection(
     collectionFormProps: CreateCollectionProps | UpdateCollectionProps
   ): collectionFormProps is UpdateCollectionProps {
-    return (collectionFormProps as UpdateCollectionProps).id !== undefined;
+    return 'id' in collectionFormProps;
   }
 
   const fieldDefinitions = useFieldArray({
@@ -111,8 +111,9 @@ export const CreateUpdateCollectionPage = ({
   });
 
   async function addFieldDefinition(): Promise<void> {
-    fieldDefinitionFormRef.current &&
-      fieldDefinitionFormRef.current.addDefinition();
+    if (fieldDefinitionFormRef.current) {
+      await fieldDefinitionFormRef.current.addDefinition();
+    }
   }
 
   return (

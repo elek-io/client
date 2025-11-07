@@ -28,7 +28,7 @@ import {
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
 import { UserHeader } from '@renderer/components/ui/user-header';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type GitCommit,
@@ -139,25 +139,29 @@ function UserProfilePage(): ReactElement {
       const isLocalApiRunning = await context.core.api.isRunning();
 
       if (user.localApi.isEnabled === true && isLocalApiRunning === false) {
-        context.core.api.start(user.localApi.port);
+        await context.core.api.start(user.localApi.port);
       }
 
       if (user.localApi.isEnabled === false && isLocalApiRunning === true) {
-        context.core.api.stop();
+        await context.core.api.stop();
       }
 
       setIsSettingUser(false);
       await router.navigate({ to: '/projects' });
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully setup User',
         description: 'The User was successfully setup.',
       });
     } catch (error) {
       setIsSettingUser(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to setup User',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to setup User',
         description: 'There was an error setting up the User.',
       });

@@ -191,8 +191,8 @@ function ProjectCollectionIndexPage(): ReactElement {
     return columns;
   }
 
-  function onRowClicked(id: string): void {
-    router.navigate({
+  async function onRowClicked(id: string): Promise<void> {
+    await router.navigate({
       to: '/projects/$projectId/collections/$collectionId/$entryId/update',
       params: {
         projectId: context.project.id,
@@ -268,7 +268,7 @@ function ProjectCollectionIndexPage(): ReactElement {
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
-                onClick={() => onRowClicked(row.original.id)}
+                onClick={async () => onRowClicked(row.original.id)}
                 className="hover:cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (

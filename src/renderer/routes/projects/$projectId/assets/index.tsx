@@ -13,7 +13,7 @@ import {
   EmptyTitle,
 } from '@renderer/components/ui/empty';
 import { Page } from '@renderer/components/ui/page';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type Asset } from '@elek-io/core';
 
@@ -70,11 +70,15 @@ function ProjectAssetsPage(): ReactElement {
       }
 
       await createAssetsFromPaths(result.filePaths);
-      router.invalidate();
+      await router.invalidate();
     } catch (error) {
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to open dialog',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to open dialog',
         description: 'There was an error showing the file select dialog.',
       });
@@ -95,8 +99,7 @@ function ProjectAssetsPage(): ReactElement {
       );
     }
 
-    const results = await Promise.all(assetPromisses);
-    console.log('Asset create results: ', results);
+    await Promise.all(assetPromisses);
   }
 
   return (
@@ -141,9 +144,9 @@ function ProjectAssetsPage(): ReactElement {
                   language={context.user.language}
                   showUpdateButton
                   showDeleteButton
-                  onAssetDeleted={() => {
+                  onAssetDeleted={async () => {
                     setSelectedAsset(null);
-                    router.invalidate();
+                    await router.invalidate();
                   }}
                 />
               </div>

@@ -124,7 +124,7 @@ export function formatDatetime(
  * @param bytes Number of bytes
  */
 export function formatBytes(bytes: number): string {
-  if (bytes == 0) return '0 Bytes';
+  if (bytes === 0) return '0 Bytes';
   const k = 1024,
     decimals = 2,
     sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],

@@ -10,6 +10,7 @@ import { ThemeProvider } from '@renderer/components/theme-provider';
 import '@renderer/index.css';
 import { ipc } from '@renderer/ipc';
 import '@renderer/sentry';
+// eslint-disable-next-line no-duplicate-imports
 import { reactErrorHandler, router } from '@renderer/sentry';
 
 // Initialize TanStack Query
@@ -21,7 +22,7 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement, {
     // Callback called when an error is thrown and not caught by an ErrorBoundary.
     onUncaughtError: reactErrorHandler((error, errorInfo) => {
-      ipc.core.logger.error({
+      void ipc.core.logger.error({
         source: 'desktop',
         message: `Uncaught React error`,
         meta: { error, errorInfo },

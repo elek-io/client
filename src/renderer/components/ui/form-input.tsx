@@ -55,10 +55,29 @@ function FormInput<T extends FieldValues>({
     switch (type) {
       case 'text':
       case 'email':
+      case 'url':
+      case 'tel':
+      case 'date':
+      case 'time':
+      case 'datetime-local':
+      case 'month':
+      case 'week':
+      case 'search':
+      case 'password':
         return value;
       case 'number':
+      case 'range':
         return parseInt(value);
-      default:
+      case 'button':
+      case 'checkbox':
+      case 'color':
+      case 'file':
+      case 'hidden':
+      case 'image':
+      case 'radio':
+      case 'reset':
+      case 'submit':
+      case undefined:
         throw new Error(`[FormInput] Unsupported input type "${type}"`);
     }
   }

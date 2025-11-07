@@ -17,7 +17,7 @@ import {
 import { Input } from '@renderer/components/ui/input';
 import { Page } from '@renderer/components/ui/page';
 import { PageSection } from '@renderer/components/ui/page-section';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type SetRemoteOriginUrlProjectProps,
@@ -38,15 +38,6 @@ function ProjectSettingsVersionControlPage(): ReactElement {
     useState(false);
   const remoteOriginUrlForm = useForm<SetRemoteOriginUrlProjectProps>({
     resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log(
-        'GitRemoteForm validation result',
-        await zodResolver(setRemoteOriginUrlProjectSchema)(
-          data,
-          context,
-          options
-        )
-      );
       return zodResolver(setRemoteOriginUrlProjectSchema)(
         data,
         context,
@@ -75,16 +66,20 @@ function ProjectSettingsVersionControlPage(): ReactElement {
       await context.core.projects.setRemoteOriginUrl(props);
       setIsSettingRemoteOriginUrl(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully updated Project remote',
         description: 'The Project was successfully updated.',
       });
-      router.invalidate();
+      await router.invalidate();
     } catch (error) {
       setIsSettingRemoteOriginUrl(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to update Project remote',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to update Project remote',
         description: 'There was an error updating the Project.',
       });

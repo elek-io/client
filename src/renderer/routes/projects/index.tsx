@@ -41,7 +41,7 @@ import {
 } from '@renderer/components/ui/form';
 import { FormInput } from '@renderer/components/ui/form-input';
 import { Page } from '@renderer/components/ui/page';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type CloneProjectProps } from '@elek-io/core';
 
@@ -83,15 +83,19 @@ function ListProjectsPage(): ReactElement {
       setIsCloningDialogOpen(false);
       await router.invalidate();
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully cloned Project',
         description: 'The Project was successfully cloned.',
       });
     } catch (error) {
       setIsCloning(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to clone Project',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to clone Project',
         description: 'There was an error cloning the Project.',
       });

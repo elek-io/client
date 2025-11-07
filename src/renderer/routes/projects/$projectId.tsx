@@ -34,7 +34,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type TranslatableString } from '@elek-io/core';
 
@@ -51,19 +51,18 @@ export const Route = createFileRoute('/projects/$projectId')({
      */
     function translateContent(key: string, record: TranslatableString): string {
       const toUserLanguage = record[context.user.language];
-      if (toUserLanguage) {
+      if (toUserLanguage !== undefined) {
         return toUserLanguage;
       }
 
       const toProjectsDefaultLanguage =
-        project.settings.language.default &&
         record[project.settings.language.default];
-      if (toProjectsDefaultLanguage) {
+      if (toProjectsDefaultLanguage !== undefined) {
         return toProjectsDefaultLanguage;
       }
 
       const toEnglish = record['en'];
-      if (toEnglish) {
+      if (toEnglish !== undefined) {
         return toEnglish;
       }
 
@@ -172,7 +171,7 @@ function ProjectLayout(): ReactElement {
       });
       setIsSynchronizing(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully synchronized Project',
         description: 'The Project was successfully synchronized.',
       });
@@ -180,9 +179,13 @@ function ProjectLayout(): ReactElement {
       // router.invalidate();
     } catch (error) {
       setIsSynchronizing(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to synchronize Project',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to synchronize Project',
         description: 'There was an error synchronizing the Project.',
       });

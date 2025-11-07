@@ -50,7 +50,7 @@ import {
   SelectValue,
 } from '@renderer/components/ui/select';
 import { Textarea } from '@renderer/components/ui/textarea';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type DeleteProjectProps,
@@ -75,11 +75,6 @@ function ProjectSettingsGeneralPage(): ReactElement {
   ] = useState(false);
   const projectForm = useForm<UpdateProjectProps>({
     resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log(
-        'ProjectForm validation result',
-        await zodResolver(updateProjectSchema)(data, context, options)
-      );
       return zodResolver(updateProjectSchema)(data, context, options);
     },
     defaultValues: context.project,
@@ -120,16 +115,20 @@ function ProjectSettingsGeneralPage(): ReactElement {
       await context.core.projects.update(project);
       setIsUpdatingProject(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully updated Project',
         description: 'The Project was successfully updated.',
       });
-      router.invalidate();
+      await router.invalidate();
     } catch (error) {
       setIsUpdatingProject(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to update Project',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to update Project',
         description: 'There was an error updating the Project on disk.',
       });
@@ -140,15 +139,19 @@ function ProjectSettingsGeneralPage(): ReactElement {
     try {
       await context.core.projects.delete({ id: project.id });
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully deleted Project',
         description: 'The Project was successfully deleted.',
       });
-      router.navigate({ to: '/projects' });
+      await router.navigate({ to: '/projects' });
     } catch (error) {
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to delete Project',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to delete Project',
         description: 'There was an error deleting the Project from disk.',
       });
