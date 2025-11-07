@@ -157,9 +157,9 @@ function ProjectSettingsGeneralPage(): ReactElement {
 
   return (
     <Page
-      title={`General Settings`}
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      title="General Settings"
+      description={<Description />}
+      actions={<Actions />}
     >
       <Form {...projectForm}>
         <form>
@@ -167,14 +167,14 @@ function ProjectSettingsGeneralPage(): ReactElement {
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={projectForm.control}
-                name={'name'}
+                name="name"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Project name</FormLabel>
+                    <FormLabel isRequired>Project name</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -182,14 +182,14 @@ function ProjectSettingsGeneralPage(): ReactElement {
 
               <FormField
                 control={projectForm.control}
-                name={'description'}
+                name="description"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Project description</FormLabel>
+                    <FormLabel isRequired>Project description</FormLabel>
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -205,10 +205,10 @@ function ProjectSettingsGeneralPage(): ReactElement {
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={projectForm.control}
-                name={'settings.language.supported'}
+                name="settings.language.supported"
                 render={({ field }) => (
                   <FormItem className="col-span-6">
-                    <FormLabel isRequired={true}>Supported</FormLabel>
+                    <FormLabel isRequired>Supported</FormLabel>
                     <FormControl>
                       <>
                         <ul className="flex flex-wrap">
@@ -262,7 +262,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button role="combobox">
-                              <Plus className="mr-2 h-4 w-4"></Plus>
+                              <Plus className="mr-2 h-4 w-4" />
                               Add language
                             </Button>
                           </PopoverTrigger>
@@ -324,10 +324,10 @@ function ProjectSettingsGeneralPage(): ReactElement {
 
               <FormField
                 control={projectForm.control}
-                name={'settings.language.default'}
+                name="settings.language.default"
                 render={({ field }) => (
                   <FormItem className="col-span-6">
-                    <FormLabel isRequired={true}>Default</FormLabel>
+                    <FormLabel isRequired>Default</FormLabel>
                     <FormControl>
                       <Select
                         value={field.value}
@@ -430,7 +430,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
             </DialogContent>
           </Dialog>
         }
-      ></PageSection>
+      />
     </Page>
   );
 }

@@ -271,20 +271,32 @@ function ProjectHistoryCommitPage(): ReactElement {
         return (
           <>
             {!context.resolvedObject.project.before &&
-              context.resolvedObject.project.after && (
-                <DiffContainer
-                  type="create"
-                  commit={context.resolvedObject.project.after.commit}
-                  language={context.user.language}
-                >
-                  <ProjectDiff project={context.resolvedObject.project.after} />
-                </DiffContainer>
-              )}
+            context.resolvedObject.project.after ? (
+              <DiffContainer
+                type="create"
+                commit={context.resolvedObject.project.after.commit}
+                language={context.user.language}
+              >
+                <ProjectDiff project={context.resolvedObject.project.after} />
+              </DiffContainer>
+            ) : null}
 
             {!context.resolvedObject.project.after &&
-              context.resolvedObject.project.before && (
+            context.resolvedObject.project.before ? (
+              <DiffContainer
+                type="delete"
+                commit={context.resolvedObject.project.before.commit}
+                language={context.user.language}
+              >
+                <ProjectDiff project={context.resolvedObject.project.before} />
+              </DiffContainer>
+            ) : null}
+
+            {context.resolvedObject.project.before &&
+            context.resolvedObject.project.after ? (
+              <>
                 <DiffContainer
-                  type="delete"
+                  type="before"
                   commit={context.resolvedObject.project.before.commit}
                   language={context.user.language}
                 >
@@ -292,32 +304,16 @@ function ProjectHistoryCommitPage(): ReactElement {
                     project={context.resolvedObject.project.before}
                   />
                 </DiffContainer>
-              )}
 
-            {context.resolvedObject.project.before &&
-              context.resolvedObject.project.after && (
-                <>
-                  <DiffContainer
-                    type="before"
-                    commit={context.resolvedObject.project.before.commit}
-                    language={context.user.language}
-                  >
-                    <ProjectDiff
-                      project={context.resolvedObject.project.before}
-                    />
-                  </DiffContainer>
-
-                  <DiffContainer
-                    type="after"
-                    commit={context.resolvedObject.project.after.commit}
-                    language={context.user.language}
-                  >
-                    <ProjectDiff
-                      project={context.resolvedObject.project.after}
-                    />
-                  </DiffContainer>
-                </>
-              )}
+                <DiffContainer
+                  type="after"
+                  commit={context.resolvedObject.project.after.commit}
+                  language={context.user.language}
+                >
+                  <ProjectDiff project={context.resolvedObject.project.after} />
+                </DiffContainer>
+              </>
+            ) : null}
           </>
         );
       }
@@ -325,24 +321,40 @@ function ProjectHistoryCommitPage(): ReactElement {
         return (
           <>
             {!context.resolvedObject.asset.before &&
-              context.resolvedObject.asset.after && (
-                <DiffContainer
-                  type="create"
-                  commit={context.resolvedObject.asset.after.commit}
+            context.resolvedObject.asset.after ? (
+              <DiffContainer
+                type="create"
+                commit={context.resolvedObject.asset.after.commit}
+                language={context.user.language}
+              >
+                <AssetInfo
+                  projectId={context.project.id}
                   language={context.user.language}
-                >
-                  <AssetInfo
-                    projectId={context.project.id}
-                    language={context.user.language}
-                    asset={context.resolvedObject.asset.after}
-                  />
-                </DiffContainer>
-              )}
+                  asset={context.resolvedObject.asset.after}
+                />
+              </DiffContainer>
+            ) : null}
 
             {!context.resolvedObject.asset.after &&
-              context.resolvedObject.asset.before && (
+            context.resolvedObject.asset.before ? (
+              <DiffContainer
+                type="delete"
+                commit={context.resolvedObject.asset.before.commit}
+                language={context.user.language}
+              >
+                <AssetInfo
+                  projectId={context.project.id}
+                  language={context.user.language}
+                  asset={context.resolvedObject.asset.before}
+                />
+              </DiffContainer>
+            ) : null}
+
+            {context.resolvedObject.asset.before &&
+            context.resolvedObject.asset.after ? (
+              <>
                 <DiffContainer
-                  type="delete"
+                  type="before"
                   commit={context.resolvedObject.asset.before.commit}
                   language={context.user.language}
                 >
@@ -352,36 +364,20 @@ function ProjectHistoryCommitPage(): ReactElement {
                     asset={context.resolvedObject.asset.before}
                   />
                 </DiffContainer>
-              )}
 
-            {context.resolvedObject.asset.before &&
-              context.resolvedObject.asset.after && (
-                <>
-                  <DiffContainer
-                    type="before"
-                    commit={context.resolvedObject.asset.before.commit}
+                <DiffContainer
+                  type="after"
+                  commit={context.resolvedObject.asset.after.commit}
+                  language={context.user.language}
+                >
+                  <AssetInfo
+                    projectId={context.project.id}
                     language={context.user.language}
-                  >
-                    <AssetInfo
-                      projectId={context.project.id}
-                      language={context.user.language}
-                      asset={context.resolvedObject.asset.before}
-                    />
-                  </DiffContainer>
-
-                  <DiffContainer
-                    type="after"
-                    commit={context.resolvedObject.asset.after.commit}
-                    language={context.user.language}
-                  >
-                    <AssetInfo
-                      projectId={context.project.id}
-                      language={context.user.language}
-                      asset={context.resolvedObject.asset.after}
-                    />
-                  </DiffContainer>
-                </>
-              )}
+                    asset={context.resolvedObject.asset.after}
+                  />
+                </DiffContainer>
+              </>
+            ) : null}
           </>
         );
       }
@@ -389,24 +385,40 @@ function ProjectHistoryCommitPage(): ReactElement {
         return (
           <>
             {!context.resolvedObject.collection.before &&
-              context.resolvedObject.collection.after && (
-                <DiffContainer
-                  type="create"
-                  commit={context.resolvedObject.collection.after.commit}
+            context.resolvedObject.collection.after ? (
+              <DiffContainer
+                type="create"
+                commit={context.resolvedObject.collection.after.commit}
+                language={context.user.language}
+              >
+                <CollectionDiff
+                  collection={context.resolvedObject.collection.after}
                   language={context.user.language}
-                >
-                  <CollectionDiff
-                    collection={context.resolvedObject.collection.after}
-                    language={context.user.language}
-                    translateContent={context.translateContent}
-                  />
-                </DiffContainer>
-              )}
+                  translateContent={context.translateContent}
+                />
+              </DiffContainer>
+            ) : null}
 
             {!context.resolvedObject.collection.after &&
-              context.resolvedObject.collection.before && (
+            context.resolvedObject.collection.before ? (
+              <DiffContainer
+                type="delete"
+                commit={context.resolvedObject.collection.before.commit}
+                language={context.user.language}
+              >
+                <CollectionDiff
+                  collection={context.resolvedObject.collection.before}
+                  language={context.user.language}
+                  translateContent={context.translateContent}
+                />
+              </DiffContainer>
+            ) : null}
+
+            {context.resolvedObject.collection.before &&
+            context.resolvedObject.collection.after ? (
+              <>
                 <DiffContainer
-                  type="delete"
+                  type="before"
                   commit={context.resolvedObject.collection.before.commit}
                   language={context.user.language}
                 >
@@ -416,36 +428,20 @@ function ProjectHistoryCommitPage(): ReactElement {
                     translateContent={context.translateContent}
                   />
                 </DiffContainer>
-              )}
 
-            {context.resolvedObject.collection.before &&
-              context.resolvedObject.collection.after && (
-                <>
-                  <DiffContainer
-                    type="before"
-                    commit={context.resolvedObject.collection.before.commit}
+                <DiffContainer
+                  type="after"
+                  commit={context.resolvedObject.collection.after.commit}
+                  language={context.user.language}
+                >
+                  <CollectionDiff
+                    collection={context.resolvedObject.collection.after}
                     language={context.user.language}
-                  >
-                    <CollectionDiff
-                      collection={context.resolvedObject.collection.before}
-                      language={context.user.language}
-                      translateContent={context.translateContent}
-                    />
-                  </DiffContainer>
-
-                  <DiffContainer
-                    type="after"
-                    commit={context.resolvedObject.collection.after.commit}
-                    language={context.user.language}
-                  >
-                    <CollectionDiff
-                      collection={context.resolvedObject.collection.after}
-                      language={context.user.language}
-                      translateContent={context.translateContent}
-                    />
-                  </DiffContainer>
-                </>
-              )}
+                    translateContent={context.translateContent}
+                  />
+                </DiffContainer>
+              </>
+            ) : null}
           </>
         );
       }
@@ -453,25 +449,42 @@ function ProjectHistoryCommitPage(): ReactElement {
         return (
           <>
             {!context.resolvedObject.entry.before &&
-              context.resolvedObject.entry.after && (
-                <DiffContainer
-                  type="create"
-                  commit={context.resolvedObject.entry.after.commit}
+            context.resolvedObject.entry.after ? (
+              <DiffContainer
+                type="create"
+                commit={context.resolvedObject.entry.after.commit}
+                language={context.user.language}
+              >
+                <EntryDiff
+                  collection={context.resolvedObject.entry.collection!}
+                  entry={context.resolvedObject.entry.after}
                   language={context.user.language}
-                >
-                  <EntryDiff
-                    collection={context.resolvedObject.entry.collection!}
-                    entry={context.resolvedObject.entry.after}
-                    language={context.user.language}
-                    translateContent={context.translateContent}
-                  />
-                </DiffContainer>
-              )}
+                  translateContent={context.translateContent}
+                />
+              </DiffContainer>
+            ) : null}
 
             {!context.resolvedObject.entry.after &&
-              context.resolvedObject.entry.before && (
+            context.resolvedObject.entry.before ? (
+              <DiffContainer
+                type="delete"
+                commit={context.resolvedObject.entry.before.commit}
+                language={context.user.language}
+              >
+                <EntryDiff
+                  collection={context.resolvedObject.entry.collection!}
+                  entry={context.resolvedObject.entry.before}
+                  language={context.user.language}
+                  translateContent={context.translateContent}
+                />
+              </DiffContainer>
+            ) : null}
+
+            {context.resolvedObject.entry.before &&
+            context.resolvedObject.entry.after ? (
+              <>
                 <DiffContainer
-                  type="delete"
+                  type="before"
                   commit={context.resolvedObject.entry.before.commit}
                   language={context.user.language}
                 >
@@ -482,38 +495,21 @@ function ProjectHistoryCommitPage(): ReactElement {
                     translateContent={context.translateContent}
                   />
                 </DiffContainer>
-              )}
 
-            {context.resolvedObject.entry.before &&
-              context.resolvedObject.entry.after && (
-                <>
-                  <DiffContainer
-                    type="before"
-                    commit={context.resolvedObject.entry.before.commit}
+                <DiffContainer
+                  type="after"
+                  commit={context.resolvedObject.entry.after.commit}
+                  language={context.user.language}
+                >
+                  <EntryDiff
+                    collection={context.resolvedObject.entry.collection!}
+                    entry={context.resolvedObject.entry.after}
                     language={context.user.language}
-                  >
-                    <EntryDiff
-                      collection={context.resolvedObject.entry.collection!}
-                      entry={context.resolvedObject.entry.before}
-                      language={context.user.language}
-                      translateContent={context.translateContent}
-                    />
-                  </DiffContainer>
-
-                  <DiffContainer
-                    type="after"
-                    commit={context.resolvedObject.entry.after.commit}
-                    language={context.user.language}
-                  >
-                    <EntryDiff
-                      collection={context.resolvedObject.entry.collection!}
-                      entry={context.resolvedObject.entry.after}
-                      language={context.user.language}
-                      translateContent={context.translateContent}
-                    />
-                  </DiffContainer>
-                </>
-              )}
+                    translateContent={context.translateContent}
+                  />
+                </DiffContainer>
+              </>
+            ) : null}
           </>
         );
       }
@@ -525,7 +521,7 @@ function ProjectHistoryCommitPage(): ReactElement {
   function Description(): ReactElement {
     return (
       <>
-        {context.commit.tag && (
+        {context.commit.tag ? (
           <>
             <br />
             <Badge className="relative mt-2" variant="secondary">
@@ -533,7 +529,7 @@ function ProjectHistoryCommitPage(): ReactElement {
               {context.commit.tag.message}
             </Badge>
           </>
-        )}
+        ) : null}
       </>
     );
   }

@@ -93,9 +93,9 @@ function ProjectSettingsVersionControlPage(): ReactElement {
 
   return (
     <Page
-      title={`Version Control Settings`}
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      title="Version Control Settings"
+      description={<Description />}
+      actions={<Actions />}
     >
       <Form {...remoteOriginUrlForm}>
         <form>
@@ -116,14 +116,14 @@ function ProjectSettingsVersionControlPage(): ReactElement {
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={remoteOriginUrlForm.control}
-                name={'url'}
+                name="url"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Remote URL</FormLabel>
+                    <FormLabel isRequired>Remote URL</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}

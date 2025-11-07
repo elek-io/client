@@ -193,7 +193,7 @@ export function AssetInfo({
     <>
       <div className="w-full p-2 pb-0">
         <div className="flex aspect-4/3 items-center justify-center">
-          <AssetDisplay {...asset} static={false}></AssetDisplay>
+          <AssetDisplay {...asset} static={false} />
         </div>
       </div>
       <div className="p-6">
@@ -207,7 +207,7 @@ export function AssetInfo({
               <div key={info.key} className="flex justify-between px-6 py-2">
                 <dt className="">{info.key}</dt>
                 <dd className="whitespace-nowrap">
-                  {info.tooltip && (
+                  {info.tooltip ? (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>{info.value}</TooltipTrigger>
@@ -216,7 +216,7 @@ export function AssetInfo({
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  )}
+                  ) : null}
                   {!info.tooltip && info.value}
                 </dd>
               </div>
@@ -225,7 +225,7 @@ export function AssetInfo({
         </dl>
       </div>
       <div className="flex w-full flex-col gap-2 p-4">
-        {showUpdateButton && (
+        {showUpdateButton ? (
           <Button
             variant="outline"
             className=""
@@ -234,13 +234,13 @@ export function AssetInfo({
           >
             Update
           </Button>
-        )}
+        ) : null}
 
         <Button variant="outline" Icon={Download} onClick={onAssetSave}>
           Save as
         </Button>
 
-        {showDeleteButton && (
+        {showDeleteButton ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" Icon={Trash}>
@@ -271,7 +271,7 @@ export function AssetInfo({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        )}
+        ) : null}
       </div>
     </>
   );

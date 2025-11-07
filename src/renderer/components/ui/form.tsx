@@ -1,8 +1,8 @@
 'use client';
 
-import * as SliderPrimitive from '@radix-ui/react-slider';
+import type * as SliderPrimitive from '@radix-ui/react-slider';
 import { Slot } from '@radix-ui/react-slot';
-import * as SwitchPrimitive from '@radix-ui/react-switch';
+import type * as SwitchPrimitive from '@radix-ui/react-switch';
 import { EditIcon, LanguagesIcon, TrashIcon } from 'lucide-react';
 import * as React from 'react';
 import {
@@ -465,14 +465,14 @@ function FormComponentFromFieldDefinitionTranslatable<
                     fieldDefinition.label
                   )}
                 </DialogTitle>
-                {fieldDefinition.description && (
+                {fieldDefinition.description ? (
                   <DialogDescription>
                     {translateContent(
                       'fieldDefinition.description',
                       fieldDefinition.description
                     )}
                   </DialogDescription>
-                )}
+                ) : null}
               </DialogHeader>
 
               <DialogBody>
@@ -484,7 +484,7 @@ function FormComponentFromFieldDefinitionTranslatable<
                       render={({ field }) => (
                         <FormItem>
                           {/* Translations into supported languages are always required! */}
-                          <FormLabel isRequired={true}>{language}</FormLabel>
+                          <FormLabel isRequired>{language}</FormLabel>
                           <FormControl>
                             <FormComponentFromFieldDefinition
                               field={field}
@@ -557,13 +557,13 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
           )}
         >
           <div className="flex flex-col">
-            {isDraggable && (
+            {isDraggable ? (
               <DragHandle
                 id={fieldDefinition.id}
                 className={cn({ 'rounded-b-none': isEditable || onDelete })}
               />
-            )}
-            {isEditable && (
+            ) : null}
+            {isEditable ? (
               <Button
                 Icon={EditIcon}
                 variant="secondary"
@@ -574,8 +574,8 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                   'rounded-b-none': onDelete,
                 })}
               />
-            )}
-            {onDelete && (
+            ) : null}
+            {onDelete ? (
               <Button
                 Icon={TrashIcon}
                 variant="destructive"
@@ -585,7 +585,7 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                   'rounded-t-none': isDraggable || isEditable,
                 })}
               />
-            )}
+            ) : null}
           </div>
           <div className="flex w-full flex-col gap-2">
             <FormLabel isRequired={fieldDefinition.isRequired}>
@@ -600,14 +600,14 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                 translateContent={translateContent}
               />
             </FormControl>
-            {fieldDefinition.description && (
+            {fieldDefinition.description ? (
               <FormDescription>
                 {translateContent(
                   'fieldDefinition.description',
                   fieldDefinition.description
                 )}
               </FormDescription>
-            )}
+            ) : null}
             <FormMessage />
           </div>
         </FormItem>

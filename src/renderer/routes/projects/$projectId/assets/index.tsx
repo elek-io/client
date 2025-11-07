@@ -46,7 +46,11 @@ function ProjectAssetsPage(): ReactElement {
   function Actions(): ReactElement {
     return (
       <>
-        <Button variant="default" Icon={Plus} onClick={() => onAddAssets()}>
+        <Button
+          variant="default"
+          Icon={Plus}
+          onClick={async () => onAddAssets()}
+        >
           Add Assets
         </Button>
       </>
@@ -98,8 +102,8 @@ function ProjectAssetsPage(): ReactElement {
   return (
     <Page
       title="Assets"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      description={<Description />}
+      actions={<Actions />}
       layout="bare"
     >
       {context.currentAssets.total === 0 ? (
@@ -129,21 +133,21 @@ function ProjectAssetsPage(): ReactElement {
             </div>
           </div>
           <div className="ml-8 w-72 shrink-0">
-            {selectedAsset && (
+            {selectedAsset ? (
               <div className="flex flex-col items-start justify-between rounded-md border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <AssetInfo
                   projectId={context.project.id}
                   asset={selectedAsset}
                   language={context.user.language}
-                  showUpdateButton={true}
-                  showDeleteButton={true}
+                  showUpdateButton
+                  showDeleteButton
                   onAssetDeleted={() => {
                     setSelectedAsset(null);
                     router.invalidate();
                   }}
                 />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       )}

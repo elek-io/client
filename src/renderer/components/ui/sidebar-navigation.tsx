@@ -17,7 +17,7 @@ function SidebarNavigation({
 }: SidebarNavigationProps): ReactElement {
   return (
     <div className="group flex flex-col gap-4 py-2">
-      <nav className={cn('grid gap-1 px-3', className)} {...props}></nav>
+      <nav className={cn('grid gap-1 px-3', className)} {...props} />
     </div>
   );
 }

@@ -24,7 +24,7 @@ function Sidebar({
         className
       )}
       {...props}
-    ></aside>
+    />
   );
 }
 

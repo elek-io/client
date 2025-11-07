@@ -56,7 +56,7 @@ function ProjectCollectionIndexPage(): ReactElement {
   const [filter, setFilter] = useState('');
   const dataQuery = useQuery({
     queryKey: ['entries', context.currentCollection.id, pagination, filter],
-    queryFn: () =>
+    queryFn: async () =>
       context.core.entries.list({
         projectId: context.project.id,
         collectionId: context.currentCollection.id,
@@ -123,7 +123,7 @@ function ProjectCollectionIndexPage(): ReactElement {
       <>
         <Button
           Icon={Plus}
-          onClick={() =>
+          onClick={async () =>
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/create',
               params: {
@@ -142,7 +142,7 @@ function ProjectCollectionIndexPage(): ReactElement {
         <Button
           Icon={Settings}
           variant="secondary"
-          onClick={() =>
+          onClick={async () =>
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/update',
               params: {
@@ -203,11 +203,7 @@ function ProjectCollectionIndexPage(): ReactElement {
   }
 
   return (
-    <Page
-      title={Title()}
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
-    >
+    <Page title={Title()} description={<Description />} actions={<Actions />}>
       <div className="flex items-center justify-end p-6">
         <Input
           placeholder={`Filter ${context.translateContent(
@@ -222,7 +218,7 @@ function ProjectCollectionIndexPage(): ReactElement {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
               Visible Values
-              <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
+              <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

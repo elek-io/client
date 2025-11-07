@@ -209,12 +209,12 @@ function ProjectLayout(): ReactElement {
                 </div>
               </div>
               <div className="ml-11">
-                <Link to={'/projects'} className="text-xs">
+                <Link to="/projects" className="text-xs">
                   Change Project
                 </Link>
               </div>
             </div>
-            {context.project.remoteOriginUrl && (
+            {context.project.remoteOriginUrl ? (
               <>
                 <div className="flex flex-col p-4 pt-0">
                   <div className="flex">
@@ -235,7 +235,7 @@ function ProjectLayout(): ReactElement {
                     </Button>
                     <Button
                       className="ml-0.5 rounded-l-none"
-                      onClick={() => projectChangesQuery.refetch()}
+                      onClick={async () => projectChangesQuery.refetch()}
                       disabled={
                         projectChangesQuery.isFetching || isSynchronizing
                       }
@@ -257,43 +257,38 @@ function ProjectLayout(): ReactElement {
                     )}
                   </p>
 
-                  {projectChangesQuery.data &&
-                    projectChangesQuery.data.ahead.map((commit) => (
-                      <Commit
-                        key={commit.hash}
-                        commit={commit}
-                        language={context.user.language}
-                      />
-                    ))}
+                  {projectChangesQuery.data
+                    ? projectChangesQuery.data.ahead.map((commit) => (
+                        <Commit
+                          key={commit.hash}
+                          commit={commit}
+                          language={context.user.language}
+                        />
+                      ))
+                    : null}
                 </div>
               </>
-            )}
+            ) : null}
           </>
         )}
 
         <ScrollArea className="border-t border-zinc-200 dark:border-zinc-800">
           <SidebarNavigation>
-            {isProjectSidebarNarrow && (
+            {isProjectSidebarNarrow ? (
               <SidebarNavigationItem
-                onClick={() => router.navigate({ to: '/projects' })}
+                onClick={async () => router.navigate({ to: '/projects' })}
               >
-                <FolderOutput
-                  className="h-6 w-6"
-                  aria-hidden="true"
-                ></FolderOutput>
+                <FolderOutput className="h-6 w-6" aria-hidden="true" />
                 {!isProjectSidebarNarrow && (
                   <span className="ml-4">Change Project</span>
                 )}
               </SidebarNavigationItem>
-            )}
+            ) : null}
 
             {projectNavigation.map((navigation) => {
               const item = (
                 <SidebarNavigationItem to={navigation.to} key={navigation.to}>
-                  <navigation.icon
-                    className="h-6 w-6"
-                    aria-hidden="true"
-                  ></navigation.icon>
+                  <navigation.icon className="h-6 w-6" aria-hidden="true" />
                   {!isProjectSidebarNarrow && (
                     <span className="ml-4">{navigation.name}</span>
                   )}
@@ -320,7 +315,7 @@ function ProjectLayout(): ReactElement {
       </Sidebar>
 
       <div className="flex flex-1 flex-col">
-        <Outlet></Outlet>
+        <Outlet />
       </div>
     </div>
   );

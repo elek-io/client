@@ -27,18 +27,18 @@ export function CollectionDiff({
     <>
       <div className="flex flex-col gap-6 p-6">
         <FormItem>
-          <Label isRequired={true}>Collection name (Plural)</Label>
-          <Input value={collection.name.plural[language]} disabled={true} />
+          <Label isRequired>Collection name (Plural)</Label>
+          <Input value={collection.name.plural[language]} disabled />
         </FormItem>
 
         <FormItem>
-          <Label isRequired={true}>Entry name (Singular)</Label>
-          <Input value={collection.name.singular[language]} disabled={true} />
+          <Label isRequired>Entry name (Singular)</Label>
+          <Input value={collection.name.singular[language]} disabled />
         </FormItem>
 
         <FormItem>
-          <Label isRequired={true}>Description</Label>
-          <Textarea value={collection.description[language]} disabled={true} />
+          <Label isRequired>Description</Label>
+          <Textarea value={collection.description[language]} disabled />
         </FormItem>
       </div>
 
@@ -50,7 +50,7 @@ export function CollectionDiff({
               key={definition.id}
               fieldDefinition={definition}
               translateContent={translateContent}
-              value={''}
+              value=""
             />
           ))}
         </div>

@@ -158,7 +158,7 @@ function TranslatableFormInput<T extends FieldValues>({
                       name={`${baseName}.${language}` as Path<T>}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>{language}</FormLabel>
+                          <FormLabel isRequired>{language}</FormLabel>
                           <FormControl>
                             <FormInput field={field} type={type} />
                           </FormControl>

@@ -102,7 +102,7 @@ function ListProjectsPage(): ReactElement {
     return (
       <>
         A Project ...
-        <br></br>
+        <br />
         Read more about <a href="#">Projects in the documentation</a>.
       </>
     );
@@ -113,7 +113,7 @@ function ListProjectsPage(): ReactElement {
       <>
         <Button
           Icon={Plus}
-          onClick={() => router.navigate({ to: '/projects/create' })}
+          onClick={async () => router.navigate({ to: '/projects/create' })}
         >
           Create Project
         </Button>
@@ -122,7 +122,7 @@ function ListProjectsPage(): ReactElement {
           onOpenChange={setIsCloningDialogOpen}
         >
           <DialogTrigger asChild>
-            <Button Icon={DownloadCloud} variant={'secondary'}>
+            <Button Icon={DownloadCloud} variant="secondary">
               Clone Project
             </Button>
           </DialogTrigger>
@@ -143,11 +143,11 @@ function ListProjectsPage(): ReactElement {
                     name="url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel isRequired={true}>URL</FormLabel>
+                        <FormLabel isRequired>URL</FormLabel>
                         <FormControl>
                           <FormInput field={field} type="text" />
                         </FormControl>
-                        <FormDescription></FormDescription>
+                        <FormDescription />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -174,8 +174,8 @@ function ListProjectsPage(): ReactElement {
   return (
     <Page
       title="Projects"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      description={<Description />}
+      actions={<Actions />}
       layout="bare"
     >
       {context.projects.total === 0 ? (
@@ -225,10 +225,10 @@ function ListProjectsPage(): ReactElement {
                 </CardHeader>
                 <CardContent>
                   <RemoteOriginBadge
-                    variant={'outline'}
+                    variant="outline"
                     remoteOriginUrl={project.remoteOriginUrl}
                   />
-                  <Badge variant={'outline'}>
+                  <Badge variant="outline">
                     Core version: {project.coreVersion}
                   </Badge>
                 </CardContent>

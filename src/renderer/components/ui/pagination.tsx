@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@renderer/components/ui/button';
+import { type Button } from '@renderer/components/ui/button';
 import { cn } from '@renderer/lib/utils';
 import { buttonVariants } from '@renderer/lib/variants';
 

@@ -30,7 +30,7 @@ const NumberFieldDefinitionForm = ({
         <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
             control={form.control}
-            name={`defaultValue`}
+            name="defaultValue"
             render={({ field }) => (
               <FormItem>
                 <FormLabel isRequired={false}>Default value</FormLabel>
@@ -48,7 +48,7 @@ const NumberFieldDefinitionForm = ({
           <div className="flex flex-row items-center justify-between space-x-2">
             <FormField
               control={form.control}
-              name={`min`}
+              name="min"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel isRequired={false}>Minimum</FormLabel>
@@ -64,7 +64,7 @@ const NumberFieldDefinitionForm = ({
             />
             <FormField
               control={form.control}
-              name={`max`}
+              name="max"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel isRequired={false}>Maximum</FormLabel>

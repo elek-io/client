@@ -62,7 +62,7 @@ function ProjectCollectionCreate(): ReactElement {
     return (
       <>
         A Collection holds information about how your content is structured.
-        <br></br>
+        <br />
         Read more about <a href="#">Collections in the documentation</a>.
       </>
     );
@@ -116,9 +116,9 @@ function ProjectCollectionCreate(): ReactElement {
 
   return (
     <CreateUpdateCollectionPage
-      title={`Create a new Collection`}
-      actions={<Actions></Actions>}
-      description={<Description></Description>}
+      title="Create a new Collection"
+      actions={<Actions />}
+      description={<Description />}
       supportedLanguages={context.project.settings.language.supported}
       defaultLanguage={context.project.settings.language.default}
       collectionForm={createCollectionForm}

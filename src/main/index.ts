@@ -5,7 +5,7 @@ import {
 import {
   app,
   BrowserWindow,
-  BrowserWindowConstructorOptions,
+  type BrowserWindowConstructorOptions,
   dialog,
   ipcMain,
   net,
@@ -60,8 +60,8 @@ class Main {
     // }
 
     // Register app events
-    app.on('ready', () => this.onAppReady());
-    app.on('activate', () => this.onAppActivate());
+    app.on('ready', async () => this.onAppReady());
+    app.on('activate', async () => this.onAppActivate());
     app.on('window-all-closed', () => this.onAppAllWindowsClosed());
     app.on('web-contents-created', (event, webContents) =>
       this.onAppWebContentsCreated(event, webContents)

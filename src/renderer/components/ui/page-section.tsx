@@ -36,15 +36,15 @@ export function PageSection({
     >
       <section>
         <CardHeader>
-          {props.title && <CardTitle>{props.title}</CardTitle>}
-          {props.description && (
+          {props.title ? <CardTitle>{props.title}</CardTitle> : null}
+          {props.description ? (
             <CardDescription>{props.description}</CardDescription>
-          )}
-          {props.actions && (
-            <CardAction>{props.actions && props.actions}</CardAction>
-          )}
+          ) : null}
+          {props.actions ? (
+            <CardAction>{props.actions ? props.actions : null}</CardAction>
+          ) : null}
         </CardHeader>
-        {props.children && <CardContent>{props.children}</CardContent>}
+        {props.children ? <CardContent>{props.children}</CardContent> : null}
       </section>
     </Card>
   );

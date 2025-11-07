@@ -166,7 +166,7 @@ function UserProfilePage(): ReactElement {
 
   return (
     <>
-      {context.user && <UserHeader user={context.user} />}
+      {context.user ? <UserHeader user={context.user} /> : null}
       <Page
         title={
           context.user === null ? 'Welcome to elek.io Client' : 'User profile'
@@ -187,12 +187,10 @@ function UserProfilePage(): ReactElement {
                   <div className="grid gap-6">
                     <FormField
                       control={setUserForm.control}
-                      name={`language`}
+                      name="language"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>
-                            Preferred language
-                          </FormLabel>
+                          <FormLabel isRequired>Preferred language</FormLabel>
                           <FormControl>
                             <Select
                               value={field.value}
@@ -234,10 +232,10 @@ function UserProfilePage(): ReactElement {
                     />
                     <FormField
                       control={setUserForm.control}
-                      name={`name`}
+                      name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>Full name</FormLabel>
+                          <FormLabel isRequired>Full name</FormLabel>
                           <FormControl>
                             <FormInput field={field} type="text" />
                           </FormControl>
@@ -251,10 +249,10 @@ function UserProfilePage(): ReactElement {
                     />
                     <FormField
                       control={setUserForm.control}
-                      name={`email`}
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>Email</FormLabel>
+                          <FormLabel isRequired>Email</FormLabel>
                           <FormControl>
                             <FormInput field={field} type="email" />
                           </FormControl>
@@ -275,10 +273,10 @@ function UserProfilePage(): ReactElement {
                   <div className="grid gap-6">
                     <FormField
                       control={setUserForm.control}
-                      name={`localApi.port`}
+                      name="localApi.port"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>Port</FormLabel>
+                          <FormLabel isRequired>Port</FormLabel>
                           <FormControl>
                             <FormInput field={field} type="number" />
                           </FormControl>
@@ -292,11 +290,11 @@ function UserProfilePage(): ReactElement {
                     />
                     <FormField
                       control={setUserForm.control}
-                      name={`localApi.isEnabled`}
+                      name="localApi.isEnabled"
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-800">
                           <div className="mr-4">
-                            <FormLabel isRequired={true}>Enabled</FormLabel>
+                            <FormLabel isRequired>Enabled</FormLabel>
                             <FormDescription>
                               Enabling the local API allows you to read local
                               Project data.
@@ -321,13 +319,13 @@ function UserProfilePage(): ReactElement {
             <PageSection
               title="Example change"
               description="This is how a change made by you will look like based on the information you've given on the left."
-              standalone={true}
+              standalone
             >
               <CommitHistory
-                projectId={'1'}
+                projectId="1"
                 commits={[exampleCommit]}
                 language={setUserForm.watch('language')}
-                disabled={true}
+                disabled
               />
             </PageSection>
           </aside>

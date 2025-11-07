@@ -49,7 +49,7 @@ function CreateProjectPage(): ReactElement {
     return (
       <>
         New Projects start with no history or data.
-        <br></br>
+        <br />
         Read more about <a href="#">Projects in the documentation</a>.
       </>
     );
@@ -98,8 +98,8 @@ function CreateProjectPage(): ReactElement {
   return (
     <Page
       title="Create a new Project"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      description={<Description />}
+      actions={<Actions />}
     >
       <Form {...createProjectForm}>
         <form onSubmit={createProjectForm.handleSubmit(onCreate)}>
@@ -107,14 +107,14 @@ function CreateProjectPage(): ReactElement {
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={createProjectForm.control}
-                name={'name'}
+                name="name"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Project name</FormLabel>
+                    <FormLabel isRequired>Project name</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -122,14 +122,14 @@ function CreateProjectPage(): ReactElement {
 
               <FormField
                 control={createProjectForm.control}
-                name={'description'}
+                name="description"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Project description</FormLabel>
+                    <FormLabel isRequired>Project description</FormLabel>
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}

@@ -24,7 +24,7 @@ function Avatar({
       )}
       {...props}
     >
-      {src && <AvatarImage src={src}></AvatarImage>}
+      {src ? <AvatarImage src={src} /> : null}
       <AvatarFallback>{initials(name)}</AvatarFallback>
     </AvatarPrimitive.Root>
   );

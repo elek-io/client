@@ -123,10 +123,10 @@ export const CreateUpdateCollectionPage = ({
             <div className="grid grid-cols-12 items-start gap-6">
               <FormField
                 control={collectionForm.control}
-                name={`icon`}
+                name="icon"
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-2">
-                    <FormLabel isRequired={true}>Icon</FormLabel>
+                    <FormLabel isRequired>Icon</FormLabel>
                     <FormControl>
                       <Select
                         onValueChange={field.onChange}
@@ -155,9 +155,7 @@ export const CreateUpdateCollectionPage = ({
                 name={`name.plural.${defaultLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel isRequired={true}>
-                      Collection name (Plural)
-                    </FormLabel>
+                    <FormLabel isRequired>Collection name (Plural)</FormLabel>
                     <FormControl>
                       <TranslatableFormInput
                         title="Collection name (Plural)"
@@ -183,9 +181,7 @@ export const CreateUpdateCollectionPage = ({
                 name={`name.singular.${defaultLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel isRequired={true}>
-                      Entry name (Singluar)
-                    </FormLabel>
+                    <FormLabel isRequired>Entry name (Singluar)</FormLabel>
                     <FormControl>
                       <TranslatableFormInput
                         title="Entry name (Singluar)"
@@ -210,7 +206,7 @@ export const CreateUpdateCollectionPage = ({
                 name={`description.${defaultLanguage}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-12">
-                    <FormLabel isRequired={true}>Description</FormLabel>
+                    <FormLabel isRequired>Description</FormLabel>
                     <FormControl>
                       <TranslatableFormTextarea
                         title="Description"
@@ -309,7 +305,7 @@ export const CreateUpdateCollectionPage = ({
                       enter data that follows the boundries you&apos;ve set.
                     </SheetDescription>
                     <FormItem>
-                      <FormLabel isRequired={true}>Input type</FormLabel>
+                      <FormLabel isRequired>Input type</FormLabel>
                       <Select
                         value={selectedFieldType}
                         onValueChange={(value: FieldType) =>
@@ -374,8 +370,8 @@ export const CreateUpdateCollectionPage = ({
                         name={`currentFields.field-${index}.content`}
                         supportedLanguages={supportedLanguages}
                         translateContent={translateContent}
-                        isDraggable={true}
-                        isEditable={true}
+                        isDraggable
+                        isEditable
                         onDelete={(fieldDefinition) => {
                           const index = fieldDefinitions.fields.findIndex(
                             (field) => field.id === fieldDefinition.id
@@ -389,7 +385,7 @@ export const CreateUpdateCollectionPage = ({
               </SortableFieldArray>
             </div>
           </PageSection>
-          {isUpdatingCollection(collectionFormProps) && onCollectionDelete && (
+          {isUpdatingCollection(collectionFormProps) && onCollectionDelete ? (
             <PageSection title="Danger Zone">
               <div className="flex items-center justify-between">
                 <div>
@@ -401,7 +397,7 @@ export const CreateUpdateCollectionPage = ({
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="destructive">
-                        <Trash className="mr-2 h-4 w-4"></Trash>
+                        <Trash className="mr-2 h-4 w-4" />
                         Delete Collection
                       </Button>
                     </DialogTrigger>
@@ -424,7 +420,7 @@ export const CreateUpdateCollectionPage = ({
                             })
                           }
                         >
-                          <Trash className="mr-2 h-4 w-4"></Trash>
+                          <Trash className="mr-2 h-4 w-4" />
                           Yes, delete this Collection
                         </Button>
                       </DialogFooter>
@@ -433,7 +429,7 @@ export const CreateUpdateCollectionPage = ({
                 </div>
               </div>
             </PageSection>
-          )}
+          ) : null}
         </form>
       </Form>
     </Page>

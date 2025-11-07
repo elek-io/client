@@ -51,7 +51,7 @@ function ProjectCollectionUpdate(): ReactElement {
     return (
       <>
         A Collection holds information about how your content is structured.
-        <br></br>
+        <br />
         Read more about <a href="#">Collections in the documentation</a>.
       </>
     );
@@ -64,7 +64,7 @@ function ProjectCollectionUpdate(): ReactElement {
           isLoading={isUpdatingCollection}
           onClick={updateCollectionForm.handleSubmit(onUpdate)}
         >
-          <Check className="mr-2 h-4 w-4"></Check>
+          <Check className="mr-2 h-4 w-4" />
           Save changes
         </Button>
       </>
@@ -126,8 +126,8 @@ function ProjectCollectionUpdate(): ReactElement {
   return (
     <CreateUpdateCollectionPage
       title={title}
-      actions={<Actions></Actions>}
-      description={<Description></Description>}
+      actions={<Actions />}
+      description={<Description />}
       supportedLanguages={context.project.settings.language.supported}
       defaultLanguage={context.project.settings.language.default}
       collectionForm={updateCollectionForm}

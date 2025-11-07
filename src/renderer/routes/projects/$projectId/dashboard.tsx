@@ -22,7 +22,7 @@ function ProjectDashboardPage(): ReactElement {
     return (
       <>
         <Button
-          onClick={() =>
+          onClick={async () =>
             router.navigate({
               to: '/projects/$projectId/history',
               params: { projectId: context.project.id },
@@ -42,7 +42,7 @@ function ProjectDashboardPage(): ReactElement {
           title="Current Project"
           description="Some debug Project output"
           className="lg:col-span-2"
-          standalone={true}
+          standalone
         >
           <pre>
             <code>{JSON.stringify(context.project, null, 2)}</code>
@@ -53,7 +53,7 @@ function ProjectDashboardPage(): ReactElement {
           description="View the latest changes made to the project."
           actions={<LatestChangesActions />}
           className="lg:col-span-1"
-          standalone={true}
+          standalone
         >
           <CommitHistory
             projectId={context.project.id}

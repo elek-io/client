@@ -389,7 +389,7 @@ function DisabledInputFromDefinition({
           aria-describedby={ariaDescribedBy}
           type="text"
           value={value}
-          disabled={true}
+          disabled
         />
       );
     case 'textarea':
@@ -403,7 +403,7 @@ function DisabledInputFromDefinition({
           id={id}
           aria-describedby={ariaDescribedBy}
           value={value}
-          disabled={true}
+          disabled
         />
       );
     case 'number':
@@ -418,7 +418,7 @@ function DisabledInputFromDefinition({
           aria-describedby={ariaDescribedBy}
           type="number"
           value={value}
-          disabled={true}
+          disabled
         />
       );
     case 'range':
@@ -433,7 +433,7 @@ function DisabledInputFromDefinition({
           aria-describedby={ariaDescribedBy}
           value={value ? [value] : []}
           step={1} // @todo Core needs to support this too
-          disabled={true}
+          disabled
         />
       );
     case 'toggle':
@@ -447,7 +447,7 @@ function DisabledInputFromDefinition({
           id={id}
           aria-describedby={ariaDescribedBy}
           checked={value}
-          disabled={true}
+          disabled
         />
       );
     default:
@@ -497,17 +497,17 @@ export function DisabledFieldFromDefinition({
         value={value}
       />
 
-      {fieldDefinition.description && (
+      {fieldDefinition.description ? (
         <p
           id={descriptionId}
-          className={'text-sm text-zinc-500 dark:text-zinc-400'}
+          className="text-sm text-zinc-500 dark:text-zinc-400"
         >
           {translateContent(
             'fieldDefinition.description',
             fieldDefinition.description
           )}
         </p>
-      )}
+      ) : null}
     </div>
   );
 }
