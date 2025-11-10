@@ -1,11 +1,19 @@
-import { Outlet, createFileRoute } from '@tanstack/react-router';
+import { Link, Outlet, createFileRoute } from '@tanstack/react-router';
 import { Layers, Plus } from 'lucide-react';
 import type { ReactElement } from 'react';
 
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
-import { Sidebar } from '@renderer/components/ui/sidebar';
-import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@renderer/components/ui/sidebar';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   component: ProjectCollectionsLayout,
@@ -18,39 +26,62 @@ function ProjectCollectionsLayout(): ReactElement {
     <div className="flex h-full">
       <Sidebar>
         <ScrollArea>
-          <SidebarNavigation>
-            <SidebarNavigationItem to="/projects/$projectId/collections/create">
-              <Plus className="h-6 w-6" aria-hidden="true"></Plus>
-              <span className="ml-4">Create Collection</span>
-            </SidebarNavigationItem>
-
-            <strong className="mt-2 px-3 text-sm">Collections</strong>
-            {context.collections.list.map((collection) => (
-              <SidebarNavigationItem
-                key={collection.id}
-                to="/projects/$projectId/collections/$collectionId"
-                params={{
-                  projectId: context.project.id,
-                  collectionId: collection.id,
-                }}
-              >
-                <Layers className="h-6 w-6" aria-hidden="true"></Layers>
-                <span className="ml-4">
-                  {context.translateContent(
-                    'collection.name.plural',
-                    collection.name.plural
+          <SidebarHeader>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link
+                      to="/projects/$projectId/collections/create"
+                      params={{ projectId: context.project.id }}
+                      activeProps={{ 'data-active': true }}
+                    >
+                      <Plus />
+                      <span>Create Collection</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Collections</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {context.collections.list.map((collection) => (
+                    <SidebarMenuItem key={collection.id}>
+                      <SidebarMenuButton asChild>
+                        <Link
+                          to="/projects/$projectId/collections/$collectionId"
+                          params={{
+                            projectId: context.project.id,
+                            collectionId: collection.id,
+                          }}
+                          activeProps={{ 'data-active': true }}
+                        >
+                          <Layers />
+                          <span>
+                            {context.translateContent(
+                              'collection.name.plural',
+                              collection.name.plural
+                            )}
+                          </span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                  {context.collections.total === 0 && (
+                    <p className="px-3 text-sm">No Collections found</p>
                   )}
-                </span>
-              </SidebarNavigationItem>
-            ))}
-            {context.collections.total === 0 && (
-              <p className="px-3 text-sm">No Collections found</p>
-            )}
-          </SidebarNavigation>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
         </ScrollArea>
       </Sidebar>
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <Outlet></Outlet>
+        <Outlet />
       </div>
     </div>
   );

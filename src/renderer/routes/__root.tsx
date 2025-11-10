@@ -132,7 +132,7 @@ function RootComponent(): ReactElement {
       <AppHeader electron={electron} />
       <Outlet></Outlet>
       <Toaster />
-      <TanStackRouterDevtools />
+      <TanStackRouterDevtools position="bottom-right" />
     </>
   );
 }

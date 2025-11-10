@@ -1,39 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  Link,
-  Outlet,
-  type ToPathOption,
-  createFileRoute,
-  useRouter,
-} from '@tanstack/react-router';
-import {
-  ArrowDownUp,
-  DownloadCloud,
-  FolderGit2,
-  FolderOutput,
-  History,
-  Image,
-  Layers,
-  LayoutDashboard,
-  type LucideIcon,
-  RefreshCw,
-  Settings,
-  UploadCloud,
-} from 'lucide-react';
+import { Outlet, createFileRoute } from '@tanstack/react-router';
 import { type ReactElement, useEffect, useState } from 'react';
 
-import { Button } from '@renderer/components/ui/button';
-import { Commit } from '@renderer/components/ui/commit';
-import { ScrollArea } from '@renderer/components/ui/scroll-area';
-import { Sidebar } from '@renderer/components/ui/sidebar';
-import { SidebarNavigation } from '@renderer/components/ui/sidebar-navigation';
-import { SidebarNavigationItem } from '@renderer/components/ui/sidebar-navigation-item';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@renderer/components/ui/tooltip';
+import { ProjectSidebar } from '@renderer/components/project-sidebar';
 import { NotificationIntent, useStore } from '@renderer/store';
 
 import { type TranslatableString } from '@elek-io/core';
@@ -89,44 +58,9 @@ export const Route = createFileRoute('/projects/$projectId')({
 });
 
 function ProjectLayout(): ReactElement {
-  const router = useRouter();
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
-  const isProjectSidebarNarrow = useStore(
-    (state) => state.isProjectSidebarNarrow
-  );
   const [isSynchronizing, setIsSynchronizing] = useState(false);
-  const projectNavigation: {
-    name: string;
-    to: ToPathOption;
-    icon: LucideIcon;
-  }[] = [
-    {
-      name: 'Dashboard',
-      to: '/projects/$projectId/dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      name: 'Assets',
-      to: '/projects/$projectId/assets',
-      icon: Image,
-    },
-    {
-      name: 'Collections',
-      to: '/projects/$projectId/collections',
-      icon: Layers,
-    },
-    {
-      name: 'History',
-      to: '/projects/$projectId/history',
-      icon: History,
-    },
-    {
-      name: 'Settings',
-      to: '/projects/$projectId/settings',
-      icon: Settings,
-    },
-  ];
 
   useEffect(() => {
     useStore.setState((prev) => ({
@@ -191,7 +125,18 @@ function ProjectLayout(): ReactElement {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <Sidebar isNarrow={isProjectSidebarNarrow}>
+      <ProjectSidebar
+        project={context.project}
+        projectChangesQuery={projectChangesQuery}
+        isSynchronizing={isSynchronizing}
+        onSynchronize={onSynchronize}
+      />
+
+      <div className="flex flex-1 flex-col">
+        <Outlet />
+      </div>
+
+      {/* <Sidebar isNarrow={isProjectSidebarNarrow}>
         {!isProjectSidebarNarrow && (
           <>
             <div className="flex shrink-0 flex-col p-4">
@@ -317,11 +262,7 @@ function ProjectLayout(): ReactElement {
             })}
           </SidebarNavigation>
         </ScrollArea>
-      </Sidebar>
-
-      <div className="flex flex-1 flex-col">
-        <Outlet></Outlet>
-      </div>
+      </Sidebar> */}
     </div>
   );
 }
