@@ -5,6 +5,8 @@ import { Check, Plus, Trash } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
+import { Page } from '@renderer/components/page';
+import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
 import { Chip } from '@renderer/components/ui/chip';
 import {
@@ -35,8 +37,6 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { Input } from '@renderer/components/ui/input';
-import { Page } from '@renderer/components/ui/page';
-import { PageSection } from '@renderer/components/ui/page-section';
 import {
   Popover,
   PopoverContent,

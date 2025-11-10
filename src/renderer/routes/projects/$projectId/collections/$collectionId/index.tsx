@@ -10,6 +10,7 @@ import {
 import { ChevronDown, Plus, Settings } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 
+import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import {
   DropdownMenu,
@@ -18,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@renderer/components/ui/dropdown-menu';
 import { Input } from '@renderer/components/ui/input';
-import { Page } from '@renderer/components/ui/page';
 import {
   Pagination,
   PaginationContent,

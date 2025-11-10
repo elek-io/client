@@ -3,6 +3,8 @@ import { DownloadCloud, EllipsisIcon, Plus } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
+import { FormInput } from '@renderer/components/form-input';
+import { Page } from '@renderer/components/page';
 import { Badge, RemoteOriginBadge } from '@renderer/components/ui/badge';
 import { Button } from '@renderer/components/ui/button';
 import {
@@ -39,8 +41,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { FormInput } from '@renderer/components/ui/form-input';
-import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
 
 import { type CloneProjectProps } from '@elek-io/core';

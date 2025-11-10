@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 import type { ReactElement } from 'react';
 
-import { CommitHistory } from '@renderer/components/ui/commit-history';
+import { CommitHistory } from '@renderer/components/commit-history';
 import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { Sidebar } from '@renderer/components/ui/sidebar';
 

@@ -2,8 +2,9 @@ import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 
-import { AssetInfo } from '@renderer/components/ui/asset-info';
-import { AssetTeaser } from '@renderer/components/ui/asset-teaser';
+import { AssetInfo } from '@renderer/components/asset-info';
+import { AssetTeaser } from '@renderer/components/asset-teaser';
+import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import {
   Empty,
@@ -12,7 +13,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@renderer/components/ui/empty';
-import { Page } from '@renderer/components/ui/page';
 import { NotificationIntent, useStore } from '@renderer/store';
 
 import { type Asset } from '@elek-io/core';

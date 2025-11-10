@@ -8,9 +8,9 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { type ReactElement } from 'react';
 
-import { AppHeader } from '@renderer/components/ui/app-header';
+import { AppHeader } from '@renderer/components/app-header';
+import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
-import { Page } from '@renderer/components/ui/page';
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/sonner';
 

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import type { ReactElement } from 'react';
 
-import { UserHeader } from '@renderer/components/ui/user-header';
+import { UserHeader } from '@renderer/components/user-header';
 
 export const Route = createFileRoute('/projects')({
   beforeLoad: async ({ context }) => {

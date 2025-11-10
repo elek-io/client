@@ -15,6 +15,7 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 
+import { DragHandle } from '@renderer/components/drag-and-drop';
 import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
@@ -27,7 +28,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
-import { DragHandle } from '@renderer/components/ui/drag-and-drop';
 import { Input } from '@renderer/components/ui/input';
 import { Label } from '@renderer/components/ui/label';
 import { Slider } from '@renderer/components/ui/slider';

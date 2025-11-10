@@ -2,13 +2,13 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Tag } from 'lucide-react';
 import { type ReactElement } from 'react';
 
-import { AssetInfo } from '@renderer/components/ui/asset-info';
+import { AssetInfo } from '@renderer/components/asset-info';
+import { CollectionDiff } from '@renderer/components/collection-diff';
+import { DiffContainer } from '@renderer/components/diff-container';
+import { EntryDiff } from '@renderer/components/entry-diff';
+import { Page } from '@renderer/components/page';
+import { ProjectDiff } from '@renderer/components/project-diff';
 import { Badge } from '@renderer/components/ui/badge';
-import { CollectionDiff } from '@renderer/components/ui/collection-diff';
-import { DiffContainer } from '@renderer/components/ui/diff-container';
-import { EntryDiff } from '@renderer/components/ui/entry-diff';
-import { Page } from '@renderer/components/ui/page';
-import { ProjectDiff } from '@renderer/components/ui/project-diff';
 
 import {
   type Asset,
