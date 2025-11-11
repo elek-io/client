@@ -85,7 +85,7 @@ export function ProjectSidebar({
       <SidebarContent>
         {project.remoteOriginUrl && (
           <SidebarGroup>
-            <div className="flex flex-col p-4 pt-0">
+            <div className="flex flex-col">
               <div className="flex">
                 <Button
                   className="flex-1 rounded-r-none"
@@ -98,17 +98,16 @@ export function ProjectSidebar({
                     (projectChangesQuery.data.ahead.length === 0 &&
                       projectChangesQuery.data.behind.length === 0)
                   }
+                  Icon={ArrowDownUp}
                 >
-                  <ArrowDownUp className="mr-2 h-4 w-4" />
                   Synchronize
                 </Button>
                 <Button
                   className="ml-0.5 rounded-l-none"
                   onClick={() => projectChangesQuery.refetch()}
                   disabled={projectChangesQuery.isFetching || isSynchronizing}
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
+                  Icon={RefreshCw}
+                />
               </div>
 
               <p className="mt-2 text-center text-xs font-medium text-zinc-400">
