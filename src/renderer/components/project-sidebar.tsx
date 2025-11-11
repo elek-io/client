@@ -17,6 +17,10 @@ import React from 'react';
 import { ProjectSwitcher } from '@renderer/components/project-switcher';
 import { Button } from '@renderer/components/ui/button';
 import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from '@renderer/components/ui/button-group';
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -85,44 +89,41 @@ export function ProjectSidebar({
       <SidebarContent>
         {project.remoteOriginUrl && (
           <SidebarGroup>
-            <div className="flex flex-col">
-              <div className="flex">
-                <Button
-                  className="flex-1 rounded-r-none"
-                  onClick={onSynchronize}
-                  isLoading={isSynchronizing}
-                  disabled={
-                    projectChangesQuery.isFetching ||
-                    isSynchronizing ||
-                    projectChangesQuery.data === undefined ||
-                    (projectChangesQuery.data.ahead.length === 0 &&
-                      projectChangesQuery.data.behind.length === 0)
-                  }
-                  Icon={ArrowDownUp}
-                >
-                  Synchronize
-                </Button>
-                <Button
-                  className="ml-0.5 rounded-l-none"
-                  onClick={() => projectChangesQuery.refetch()}
-                  disabled={projectChangesQuery.isFetching || isSynchronizing}
-                  Icon={RefreshCw}
-                />
-              </div>
-
-              <p className="mt-2 text-center text-xs font-medium text-zinc-400">
-                {projectChangesQuery.isFetching ? (
-                  'Loading'
-                ) : (
-                  <span className="flex items-center justify-center">
-                    <DownloadCloud className="mr-1 h-4 w-4" />
-                    {projectChangesQuery.data?.behind.length}
-                    <UploadCloud className="mr-1 ml-4 h-4 w-4" />
-                    {projectChangesQuery.data?.ahead.length}
-                  </span>
-                )}
-              </p>
-            </div>
+            <ButtonGroup className="w-full">
+              <Button
+                className="flex-1"
+                onClick={onSynchronize}
+                isLoading={isSynchronizing}
+                disabled={
+                  projectChangesQuery.isFetching ||
+                  isSynchronizing ||
+                  projectChangesQuery.data === undefined ||
+                  (projectChangesQuery.data.ahead.length === 0 &&
+                    projectChangesQuery.data.behind.length === 0)
+                }
+                Icon={ArrowDownUp}
+              >
+                Synchronize
+              </Button>
+              <ButtonGroupSeparator />
+              <Button
+                onClick={() => projectChangesQuery.refetch()}
+                disabled={projectChangesQuery.isFetching || isSynchronizing}
+                Icon={RefreshCw}
+              />
+            </ButtonGroup>
+            <p className="mt-2 text-center text-xs font-medium text-zinc-400">
+              {projectChangesQuery.isFetching ? (
+                'Loading'
+              ) : (
+                <span className="flex items-center justify-center">
+                  <DownloadCloud className="mr-1 h-4 w-4" />
+                  {projectChangesQuery.data?.behind.length}
+                  <UploadCloud className="mr-1 ml-4 h-4 w-4" />
+                  {projectChangesQuery.data?.ahead.length}
+                </span>
+              )}
+            </p>
           </SidebarGroup>
         )}
         <SidebarGroup>
