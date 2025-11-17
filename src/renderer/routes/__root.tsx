@@ -27,7 +27,7 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
   const router = useRouter();
   const { electron, core } = Route.useRouteContext();
 
-  core.logger.error({
+  void core.logger.error({
     source: 'desktop',
     message: `Uncaught route error: ${error.message}`,
     meta: { error: { message: error.message, stack: error.stack } },
@@ -49,13 +49,13 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
       <>
         <Button
           variant="outline"
-          onClick={() => router.navigate({ to: '/projects' })}
+          onClick={async () => router.navigate({ to: '/projects' })}
         >
-          <ArrowLeft className="mr-2 h-4 w-4"></ArrowLeft>
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Projects
         </Button>
         <Button variant="default" onClick={() => location.reload()}>
-          <RefreshCw className="mr-2 h-4 w-4"></RefreshCw>
+          <RefreshCw className="mr-2 h-4 w-4" />
           Reload
         </Button>
       </>
@@ -93,13 +93,13 @@ function NotFoundComponent(): ReactElement {
       <>
         <Button
           variant="outline"
-          onClick={() => router.navigate({ to: '/projects' })}
+          onClick={async () => router.navigate({ to: '/projects' })}
         >
-          <ArrowLeft className="mr-2 h-4 w-4"></ArrowLeft>
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Projects
         </Button>
         <Button variant="default" onClick={() => location.reload()}>
-          <RefreshCw className="mr-2 h-4 w-4"></RefreshCw>
+          <RefreshCw className="mr-2 h-4 w-4" />
           Reload
         </Button>
       </>
@@ -130,7 +130,7 @@ function RootComponent(): ReactElement {
   return (
     <>
       <AppHeader electron={electron} />
-      <Outlet></Outlet>
+      <Outlet />
       <Toaster />
       <TanStackRouterDevtools position="bottom-right" />
     </>

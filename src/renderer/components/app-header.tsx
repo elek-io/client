@@ -28,7 +28,7 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
         <div id="app-bar" className="border-b p-2 text-center text-sm">
           <DropdownMenu open={isElekInfoOpen} onOpenChange={setIsElekInfoOpen}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size={'sm'} className="gap-0">
+              <Button variant="ghost" size="sm" className="gap-0">
                 <h1>
                   elek.<span className="text-primary">io</span>
                   <strong className="ml-2 text-xs">Client</strong>
@@ -38,7 +38,7 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
                     'ml-2 h-4 w-4 transition',
                     isElekInfoOpen && 'rotate-180'
                   )}
-                ></ChevronDown>
+                />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="window-not-draggable-area mt-4 mr-2 w-56">
@@ -54,7 +54,7 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
                 >
                   Report an issue
                   <DropdownMenuShortcut>
-                    <ExternalLink className="h-4 w-4"></ExternalLink>
+                    <ExternalLink className="h-4 w-4" />
                   </DropdownMenuShortcut>
                 </DropdownMenuItem>
               </DropdownMenuGroup>

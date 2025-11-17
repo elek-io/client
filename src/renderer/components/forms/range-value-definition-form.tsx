@@ -30,10 +30,10 @@ const RangeFieldDefinitionForm = ({
         <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
             control={form.control}
-            name={`defaultValue`}
+            name="defaultValue"
             render={({ field }) => (
               <FormItem>
-                <FormLabel isRequired={true}>Default value</FormLabel>
+                <FormLabel isRequired>Default value</FormLabel>
                 <FormControl>
                   <FormInput field={field} type="number" />
                 </FormControl>
@@ -48,10 +48,10 @@ const RangeFieldDefinitionForm = ({
           <div className="flex flex-row items-center justify-between space-x-2">
             <FormField
               control={form.control}
-              name={`min`}
+              name="min"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel isRequired={true}>Minimum</FormLabel>
+                  <FormLabel isRequired>Minimum</FormLabel>
                   <FormControl>
                     <FormInput field={field} type="number" />
                   </FormControl>
@@ -64,10 +64,10 @@ const RangeFieldDefinitionForm = ({
             />
             <FormField
               control={form.control}
-              name={`max`}
+              name="max"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel isRequired={true}>Maximum</FormLabel>
+                  <FormLabel isRequired>Maximum</FormLabel>
                   <FormControl>
                     <FormInput field={field} type="number" />
                   </FormControl>

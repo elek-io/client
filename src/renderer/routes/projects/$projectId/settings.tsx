@@ -77,6 +77,7 @@ function ProjectCollectionsLayout(): ReactElement {
       </Sidebar>
       <div className="flex flex-1 flex-col overflow-y-auto">
         <Outlet />
+        <Outlet />
       </div>
     </div>
   );

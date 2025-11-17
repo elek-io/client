@@ -10,7 +10,7 @@ import {
   translatableDefaultNull,
 } from '@renderer/components/pages/util';
 import { Button } from '@renderer/components/ui/button';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type CreateEntryProps,
@@ -34,7 +34,7 @@ function CreateEntryPage(): ReactElement {
 
   const createEntryForm = useForm<CreateEntryProps>({
     resolver: async (data, context, options) => {
-      routeContext.core.logger.debug({
+      await routeContext.core.logger.debug({
         source: 'desktop',
         message: 'Create Entry form data',
         meta: { data },
@@ -45,7 +45,7 @@ function CreateEntryPage(): ReactElement {
         context,
         options
       );
-      routeContext.core.logger.debug({
+      await routeContext.core.logger.debug({
         source: 'desktop',
         message: 'Create Entry form validation result',
         meta: { validationResult },
@@ -133,14 +133,14 @@ function CreateEntryPage(): ReactElement {
       await routeContext.core.entries.create(props);
       setIsCreatingEntry(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: `Created new ${routeContext.translateContent(
           'currentCollection.name',
           routeContext.currentCollection.name.singular
         )}`,
         description: 'The Entry has been created.',
       });
-      router.navigate({
+      await router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
           projectId: routeContext.project.id,
@@ -149,13 +149,13 @@ function CreateEntryPage(): ReactElement {
       });
     } catch (error) {
       setIsCreatingEntry(false);
-      routeContext.core.logger.error({
+      await routeContext.core.logger.error({
         source: 'desktop',
         message: 'Failed to create new Entry',
         meta: { error },
       });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to create new Entry',
         description: 'There was an error creating the new Entry.',
       });

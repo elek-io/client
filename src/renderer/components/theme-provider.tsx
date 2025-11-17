@@ -11,12 +11,13 @@ type ThemeProviderProps = {
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'client-theme',
+  storageKey = 'elek-io-desktop-theme',
   ...props
 }: ThemeProviderProps): React.ReactElement {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    const stored = localStorage.getItem(storageKey) as Theme | null;
+    return stored ?? defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;

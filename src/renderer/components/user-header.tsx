@@ -92,7 +92,7 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
 
         // Use names instead of IDs to display
         const match = breadcrumbLookupMap.get(part);
-        if (match) {
+        if (match !== undefined) {
           part = match;
         }
 
@@ -132,18 +132,16 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                 size="icon"
                 onClick={() => router.history.back()}
               >
-                <ArrowLeft className="h-4 w-4"></ArrowLeft>
-                <span className="sr-only">{'__root.buttonNavigateBack'}</span>
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">__root.buttonNavigateBack</span>
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => router.history.forward()}
               >
-                <ArrowRight className="h-4 w-4"></ArrowRight>
-                <span className="sr-only">
-                  {'__root.buttonNavigateForward'}
-                </span>
+                <ArrowRight className="h-4 w-4" />
+                <span className="sr-only">__root.buttonNavigateForward</span>
               </Button>
 
               <Breadcrumb className="ml-2 flex">
@@ -174,9 +172,9 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                       className="mr-2"
                       name={user.name}
                       src="https://github.com/shadcn.png"
-                    ></Avatar>
+                    />
                     {user.name}
-                    <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
+                    <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="mt-4 mr-2 w-56">
@@ -184,7 +182,9 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     <DropdownMenuItem
-                      onClick={() => router.navigate({ to: '/user/profile' })}
+                      onClick={async () =>
+                        router.navigate({ to: '/user/profile' })
+                      }
                     >
                       Profile
                       <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>

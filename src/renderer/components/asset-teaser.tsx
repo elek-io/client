@@ -17,7 +17,7 @@ export function AssetTeaser(props: AssetTeaserProps): ReactElement {
     >
       <div>
         <div className="flex aspect-4/3 items-center justify-center">
-          <AssetDisplay {...props} static={true}></AssetDisplay>
+          <AssetDisplay {...props} static />
         </div>
         <p className="mt-2 truncate text-sm">{props.name}</p>
         <p className="text-sm">

@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/user/')({
-  beforeLoad: async () => {
+  beforeLoad: () => {
     throw redirect({
       to: '/user/profile',
     });

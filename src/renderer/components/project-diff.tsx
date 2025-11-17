@@ -23,17 +23,17 @@ export function ProjectDiff({ project }: ProjectDiffProps): ReactElement {
   return (
     <>
       <FormItem>
-        <Label isRequired={true}>Project name</Label>
-        <Input value={project.name} disabled={true} />
+        <Label isRequired>Project name</Label>
+        <Input value={project.name} disabled />
       </FormItem>
 
       <FormItem>
         <Label isRequired={false}>Project description</Label>
-        <Textarea value={project.description} disabled={true} />
+        <Textarea value={project.description} disabled />
       </FormItem>
 
       <FormItem>
-        <Label isRequired={true}>Supported languages</Label>
+        <Label isRequired>Supported languages</Label>
         <ul className="flex flex-wrap">
           {project.settings.language.supported.map((language) => {
             return (
@@ -46,8 +46,8 @@ export function ProjectDiff({ project }: ProjectDiffProps): ReactElement {
       </FormItem>
 
       <FormItem>
-        <Label isRequired={true}>Default language</Label>
-        <Select value={project.settings.language.default} disabled={true}>
+        <Label isRequired>Default language</Label>
+        <Select value={project.settings.language.default} disabled>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

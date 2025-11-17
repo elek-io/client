@@ -17,11 +17,7 @@ export function CommitAuthor({
   language,
 }: CommitAuthorProps): ReactElement {
   return (
-    <div
-      className={
-        'inline-flex items-center justify-center text-zinc-800 dark:text-zinc-200'
-      }
-    >
+    <div className="inline-flex items-center justify-center text-zinc-800 dark:text-zinc-200">
       <Avatar name={commit.author.name} className="mr-2 text-sm" />
       <div>
         <div className="flex items-center text-sm">

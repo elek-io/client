@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@renderer/components/ui/button';
+import { type Button } from '@renderer/components/ui/button';
 import { cn } from '@renderer/lib/utils';
 import { buttonVariants } from '@renderer/lib/variants';
 
@@ -56,12 +56,12 @@ function PaginationLink({
 }: PaginationLinkProps): React.JSX.Element {
   return (
     <a
-      aria-current={isActive ? 'page' : undefined}
+      aria-current={isActive === true ? 'page' : undefined}
       data-slot="pagination-link"
       data-active={isActive}
       className={cn(
         buttonVariants({
-          variant: isActive ? 'outline' : 'ghost',
+          variant: isActive === true ? 'outline' : 'ghost',
           size,
         }),
         className

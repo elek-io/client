@@ -55,7 +55,7 @@ function FormTextarea<T extends FieldValues>({
     <Textarea
       {...field}
       {...props}
-      value={field.value || ''} // The value can now also be null but the textarea cannot handle it, so we set a default empty string instead
+      value={field.value !== null ? field.value : ''} // The value can now also be null but the textarea cannot handle it, so we set a default empty string instead
       onChange={(event) => field.onChange(transform(event.target.value))}
     />
   );
@@ -92,21 +92,30 @@ function TranslatableFormTextarea<T extends FieldValues>({
    */
   function hasErrorsInTranslations(): boolean {
     // Traverse the errors object to reach the base field errors
-    let fieldErrors: any = errors;
+    let fieldErrors: unknown = errors;
     for (const segment of baseName.split('.')) {
-      if (!fieldErrors || typeof fieldErrors !== 'object') {
+      if (
+        fieldErrors === null ||
+        fieldErrors === undefined ||
+        typeof fieldErrors !== 'object'
+      ) {
         return false;
       }
       fieldErrors = fieldErrors[segment];
     }
 
-    if (!fieldErrors || typeof fieldErrors !== 'object') {
+    if (
+      fieldErrors === null ||
+      fieldErrors === undefined ||
+      typeof fieldErrors !== 'object'
+    ) {
       return false;
     }
 
     // Check for errors in other languages
     return supportedLanguages.some(
-      (language) => language !== currentLanguage && !!fieldErrors[language]
+      (language) =>
+        language !== currentLanguage && fieldErrors[language] !== undefined
     );
   }
 

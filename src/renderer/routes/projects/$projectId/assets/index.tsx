@@ -46,7 +46,11 @@ function ProjectAssetsPage(): ReactElement {
   function Actions(): ReactElement {
     return (
       <>
-        <Button variant="default" Icon={Plus} onClick={() => onAddAssets()}>
+        <Button
+          variant="default"
+          Icon={Plus}
+          onClick={async () => onAddAssets()}
+        >
           Add Assets
         </Button>
       </>
@@ -66,11 +70,15 @@ function ProjectAssetsPage(): ReactElement {
       }
 
       await createAssetsFromPaths(result.filePaths);
-      router.invalidate();
+      await router.invalidate();
     } catch (error) {
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to open dialog',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to open dialog',
         description: 'There was an error showing the file select dialog.',
       });
@@ -83,7 +91,8 @@ function ProjectAssetsPage(): ReactElement {
     for (const path of paths) {
       assetPromisses.push(
         context.core.assets.create({
-          name: path.split('/').pop() || '',
+          name:
+            path.split('/').pop() !== undefined ? path.split('/').pop()! : '',
           description: '',
           projectId: context.project.id,
           filePath: path,
@@ -91,15 +100,14 @@ function ProjectAssetsPage(): ReactElement {
       );
     }
 
-    const results = await Promise.all(assetPromisses);
-    console.log('Asset create results: ', results);
+    await Promise.all(assetPromisses);
   }
 
   return (
     <Page
       title="Assets"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      description={<Description />}
+      actions={<Actions />}
       layout="bare"
     >
       {context.currentAssets.total === 0 ? (
@@ -129,21 +137,21 @@ function ProjectAssetsPage(): ReactElement {
             </div>
           </div>
           <div className="ml-8 w-72 shrink-0">
-            {selectedAsset && (
+            {selectedAsset !== null ? (
               <div className="flex flex-col items-start justify-between rounded-md border border-zinc-200 bg-white text-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <AssetInfo
                   projectId={context.project.id}
                   asset={selectedAsset}
                   language={context.user.language}
-                  showUpdateButton={true}
-                  showDeleteButton={true}
-                  onAssetDeleted={() => {
+                  showUpdateButton
+                  showDeleteButton
+                  onAssetDeleted={async () => {
                     setSelectedAsset(null);
-                    router.invalidate();
+                    await router.invalidate();
                   }}
                 />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       )}

@@ -26,7 +26,7 @@ function ProjectHistoryLayout(): ReactElement {
         </ScrollArea>
       </Sidebar>
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <Outlet></Outlet>
+        <Outlet />
       </div>
     </div>
   );

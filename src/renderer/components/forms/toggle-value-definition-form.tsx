@@ -30,11 +30,11 @@ const ToggleFieldDefinitionForm = ({
         <DefaultFieldDefinitionForm form={form} {...props}>
           <FormField
             control={form.control}
-            name={`defaultValue`}
+            name="defaultValue"
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-800">
                 <div>
-                  <FormLabel isRequired={true}>Default value</FormLabel>
+                  <FormLabel isRequired>Default value</FormLabel>
                   <FormDescription>
                     The initial value for the field.
                   </FormDescription>

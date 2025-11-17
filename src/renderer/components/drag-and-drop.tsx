@@ -101,9 +101,8 @@ function SortableFieldArray<T extends FieldValues>({
   }
 
   function handleDragEnd(event: DragEndEvent): void {
-    console.log(event);
     const { active, over } = event;
-    if (active && over && active.id !== over.id) {
+    if (over !== null && active.id !== over.id) {
       const oldIndex = fieldArray.fields.findIndex(
         (item) => item.id === active.id
       );
@@ -129,7 +128,7 @@ function SortableFieldArray<T extends FieldValues>({
         {children}
       </SortableContext>
       <DragOverlay>
-        {activeId ? <div id={activeId.toString()} /> : null}
+        {activeId !== null ? <div id={activeId.toString()} /> : null}
       </DragOverlay>
     </DndContext>
   );
