@@ -41,7 +41,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type CloneProjectProps } from '@elek-io/core';
 

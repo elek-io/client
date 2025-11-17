@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { Input } from '@renderer/components/ui/input';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type SetRemoteOriginUrlProjectProps,

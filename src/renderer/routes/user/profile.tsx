@@ -28,7 +28,7 @@ import {
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
 import { UserHeader } from '@renderer/components/user-header';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type GitCommit,

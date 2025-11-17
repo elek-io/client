@@ -13,7 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@renderer/components/ui/empty';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type Asset } from '@elek-io/core';
 
