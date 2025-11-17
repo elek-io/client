@@ -1,20 +1,17 @@
-import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
-import { DownloadCloud, EllipsisIcon, Plus } from 'lucide-react';
+import queryOptions from '@root/src/renderer/queries/options';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { DownloadCloud, Plus } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { FormInput } from '@renderer/components/form-input';
 import { Page } from '@renderer/components/page';
-import { Badge, RemoteOriginBadge } from '@renderer/components/ui/badge';
-import { Button } from '@renderer/components/ui/button';
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@renderer/components/ui/card';
+  ProjectCard,
+  ProjectCardSkeleton,
+} from '@renderer/components/project-card';
+import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
   DialogBody,
@@ -23,7 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@renderer/components/ui/dialog';
 import {
   Empty,
@@ -41,61 +37,37 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { NotificationIntent, useStore } from '@renderer/store';
 
 import { type CloneProjectProps } from '@elek-io/core';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../../components/ui/dropdown-menu';
-
 export const Route = createFileRoute('/projects/')({
-  beforeLoad: async ({ context }) => {
-    const projects = await context.core.projects.list({ limit: 0 });
-
-    return { projects };
-  },
   component: ListProjectsPage,
 });
 
 function ListProjectsPage(): ReactElement {
   const router = useRouter();
-  const context = Route.useRouteContext();
-  const addNotification = useStore((state) => state.addNotification);
+  const {
+    data: projects,
+    isPending: isProjectsPending,
+    isError: isProjectsError,
+    error: projectsError,
+  } = useQuery(
+    queryOptions.projects.list({
+      limit: 0,
+    })
+  );
   const cloneProjectForm = useForm<CloneProjectProps>({
     defaultValues: {
       url: '',
     },
   });
+  const { mutateAsync: cloneProject, isPending: isCloningProject } =
+    useMutation(queryOptions.projects.clone);
   const [isCloningDialogOpen, setIsCloningDialogOpen] = useState(false);
-  const [isCloning, setIsCloning] = useState(false);
 
   const onCloneProject: SubmitHandler<CloneProjectProps> = async (props) => {
-    setIsCloning(true);
-    try {
-      await context.core.projects.clone(props);
-      setIsCloning(false);
-      setIsCloningDialogOpen(false);
-      await router.invalidate();
-      addNotification({
-        intent: NotificationIntent.SUCCESS,
-        title: 'Successfully cloned Project',
-        description: 'The Project was successfully cloned.',
-      });
-    } catch (error) {
-      setIsCloning(false);
-      console.error(error);
-      addNotification({
-        intent: NotificationIntent.DANGER,
-        title: 'Failed to clone Project',
-        description: 'There was an error cloning the Project.',
-      });
-    }
+    await cloneProject(props);
+    setIsCloningDialogOpen(false);
   };
 
   function Description(): ReactElement {
@@ -117,126 +89,99 @@ function ListProjectsPage(): ReactElement {
         >
           Create Project
         </Button>
-        <Dialog
-          open={isCloningDialogOpen}
-          onOpenChange={setIsCloningDialogOpen}
+        <Button
+          Icon={DownloadCloud}
+          variant={'secondary'}
+          onClick={() => setIsCloningDialogOpen(true)}
         >
-          <DialogTrigger asChild>
-            <Button Icon={DownloadCloud} variant={'secondary'}>
-              Clone Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Clone a Project by URL</DialogTitle>
-              <DialogDescription>
-                You can clone an existing Project by providing the URL. Make
-                sure you have the necessary permissions to access the Project.
-              </DialogDescription>
-            </DialogHeader>
-
-            <DialogBody>
-              <Form {...cloneProjectForm}>
-                <form onSubmit={cloneProjectForm.handleSubmit(onCloneProject)}>
-                  <FormField
-                    control={cloneProjectForm.control}
-                    name="url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel isRequired={true}>URL</FormLabel>
-                        <FormControl>
-                          <FormInput field={field} type="text" />
-                        </FormControl>
-                        <FormDescription></FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
-            </DialogBody>
-
-            <DialogFooter>
-              <Button
-                Icon={DownloadCloud}
-                onClick={cloneProjectForm.handleSubmit(onCloneProject)}
-                isLoading={isCloning}
-              >
-                Clone
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          Clone Project
+        </Button>
       </>
     );
   }
 
+  if (isProjectsError) {
+    throw projectsError;
+  }
+
   return (
-    <Page
-      title="Projects"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
-      layout="bare"
-    >
-      {context.projects.total === 0 ? (
-        <Empty className="border border-dashed">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Plus />
-            </EmptyMedia>
-            <EmptyTitle>No Projects yet</EmptyTitle>
-            <EmptyDescription>
-              You haven&apos;t created any Projects yet. Get started by creating
-              a new or cloning an existing Project.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {context.projects.list.map((project) => {
-            return (
-              <Card key={project.id} className="hover:border-accent-foreground">
-                <CardHeader>
-                  <Link
-                    to="/projects/$projectId/dashboard"
-                    params={{ projectId: project.id }}
-                    className="no-underline"
-                  >
-                    <CardTitle>{project.name}</CardTitle>
-                    <CardDescription>{project.description}</CardDescription>
-                  </Link>
-                  <CardAction>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger>
-                        <Button variant="ghost" size="icon">
-                          <EllipsisIcon />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Billing</DropdownMenuItem>
-                        <DropdownMenuItem>Team</DropdownMenuItem>
-                        <DropdownMenuItem>Subscription</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </CardAction>
-                </CardHeader>
-                <CardContent>
-                  <RemoteOriginBadge
-                    variant={'outline'}
-                    remoteOriginUrl={project.remoteOriginUrl}
-                  />
-                  <Badge variant={'outline'}>
-                    Core version: {project.coreVersion}
-                  </Badge>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-    </Page>
+    <>
+      <Page
+        title="Projects"
+        description={<Description></Description>}
+        actions={<Actions></Actions>}
+        layout="bare"
+      >
+        {isProjectsPending ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {[1, 2, 3, 4, 5].map((i) => {
+              return <ProjectCardSkeleton key={i} />;
+            })}
+          </div>
+        ) : projects.total === 0 ? (
+          <Empty className="border border-dashed">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Plus />
+              </EmptyMedia>
+              <EmptyTitle>No Projects yet</EmptyTitle>
+              <EmptyDescription>
+                You haven&apos;t created any Projects yet. Get started by
+                creating a new or cloning an existing Project.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {projects.list.map((project) => {
+              return <ProjectCard key={project.id} project={project} />;
+            })}
+          </div>
+        )}
+      </Page>
+
+      <Dialog open={isCloningDialogOpen} onOpenChange={setIsCloningDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Clone a Project by URL</DialogTitle>
+            <DialogDescription>
+              You can clone an existing Project by providing the URL. Make sure
+              you have the necessary permissions to access the Project.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogBody>
+            <Form {...cloneProjectForm}>
+              <form onSubmit={cloneProjectForm.handleSubmit(onCloneProject)}>
+                <FormField
+                  control={cloneProjectForm.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel isRequired={true}>URL</FormLabel>
+                      <FormControl>
+                        <FormInput field={field} type="text" />
+                      </FormControl>
+                      <FormDescription></FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
+          </DialogBody>
+
+          <DialogFooter>
+            <Button
+              Icon={DownloadCloud}
+              onClick={cloneProjectForm.handleSubmit(onCloneProject)}
+              isLoading={isCloningProject}
+            >
+              Clone
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

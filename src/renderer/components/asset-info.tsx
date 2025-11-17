@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { Download, Edit2, Trash } from 'lucide-react';
 import type { ReactElement } from 'react';
 
@@ -20,11 +21,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
-import { ipc } from '@renderer/ipc';
 import { formatBytes, formatDatetime } from '@renderer/lib/utils';
 import { NotificationIntent, useStore } from '@renderer/store';
 
 import { type Asset, type SupportedLanguage } from '@elek-io/core';
+
+import queryOptions from '../queries/options';
 
 export interface AssetInfoProps {
   projectId: string;
@@ -72,7 +74,7 @@ export function AssetInfo({
 
   async function onAssetUpdate(): Promise<void> {
     try {
-      const result = await ipc.electron.dialog.showOpenDialog({
+      const result = await window.ipc.electron.dialog.showOpenDialog({
         title: 'Select Asset to update with',
         buttonLabel: 'Update Asset',
         properties: ['openFile'],
@@ -82,13 +84,16 @@ export function AssetInfo({
         return;
       }
 
-      await ipc.core.assets.update({
-        projectId: projectId,
-        id: asset.id,
-        newFilePath: result.filePaths[0],
-        name: 'Updated Asset',
-        description: 'Updated Asset',
-      });
+      const updateAssetMutation = useMutation(
+        queryOptions.assets.update({
+          projectId: projectId,
+          id: asset.id,
+          newFilePath: result.filePaths[0],
+          name: 'Updated Asset',
+          description: 'Updated Asset',
+        })
+      );
+      await updateAssetMutation.mutateAsync();
       addNotification({
         intent: NotificationIntent.SUCCESS,
         title: 'Successfully updated Asset',
@@ -118,7 +123,7 @@ export function AssetInfo({
     }
 
     try {
-      const result = await ipc.electron.dialog.showSaveDialog({
+      const result = await window.ipc.electron.dialog.showSaveDialog({
         // title: `Save Asset ${asset.name}.${asset.extension} to disk`,
         // buttonLabel: 'Save Asset',
         // message: 'Hello World!',

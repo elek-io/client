@@ -3,12 +3,17 @@ import { Outlet, createFileRoute } from '@tanstack/react-router';
 import { type ReactElement, useEffect, useState } from 'react';
 
 import { ProjectSidebar } from '@renderer/components/project-sidebar';
+import { queryClient, queryOptions } from '@renderer/queries';
 import { NotificationIntent, useStore } from '@renderer/store';
 
 import { type TranslatableString } from '@elek-io/core';
 
 export const Route = createFileRoute('/projects/$projectId')({
   beforeLoad: async ({ context, params }) => {
+    const project = await queryClient.ensureQueryData(
+      queryOptions.projects.read({ id: params.projectId })
+    );
+
     /**
      * Returns given TranslatableString in the language of the current user
      *
@@ -39,18 +44,8 @@ export const Route = createFileRoute('/projects/$projectId')({
       return `(Missing translation for key "${key}")`;
     }
 
-    const project = await context.core.projects.read({
-      id: params.projectId,
-    });
-
-    const collections = await context.core.collections.list({
-      projectId: params.projectId,
-      limit: 0,
-    });
-
     return {
       project,
-      collections,
       translateContent,
     };
   },
@@ -61,6 +56,12 @@ function ProjectLayout(): ReactElement {
   const context = Route.useRouteContext();
   const addNotification = useStore((state) => state.addNotification);
   const [isSynchronizing, setIsSynchronizing] = useState(false);
+  const projectChangesQuery = useQuery(
+    queryOptions.projects.getChanges(context.project)
+  );
+  // const  = useQuery(
+  //   queryOptions.projects.(context.project)
+  // );
 
   useEffect(() => {
     useStore.setState((prev) => ({
@@ -71,32 +72,19 @@ function ProjectLayout(): ReactElement {
     }));
   }, [context.project]);
 
-  useEffect(() => {
-    context.collections.list.map((collection) => {
-      useStore.setState((prev) => ({
-        breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
-          collection.id,
-          context.translateContent(
-            'collection.name.plural',
-            collection.name.plural
-          )
-        ),
-      }));
-    });
-  }, [context.collections]);
-
-  const projectChangesQuery = useQuery({
-    enabled: context.project.remoteOriginUrl !== null,
-    queryKey: ['projectChanges', context.project.id],
-    queryFn: async () => {
-      const changes = await context.core.projects.getChanges({
-        id: context.project.id,
-      });
-      return changes;
-    },
-    // Refetch the data every 3 minutes
-    refetchInterval: 180000,
-  });
+  // useEffect(() => {
+  //   context.collections.list.map((collection) => {
+  //     useStore.setState((prev) => ({
+  //       breadcrumbLookupMap: new Map(prev.breadcrumbLookupMap).set(
+  //         collection.id,
+  //         context.translateContent(
+  //           'collection.name.plural',
+  //           collection.name.plural
+  //         )
+  //       ),
+  //     }));
+  //   });
+  // }, [context.collections]);
 
   async function onSynchronize(): Promise<void> {
     setIsSynchronizing(true);
