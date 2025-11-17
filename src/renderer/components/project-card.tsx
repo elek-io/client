@@ -56,10 +56,10 @@ function ProjectCard({ project }: { project: Project }): React.JSX.Element {
       </CardHeader>
       <CardContent>
         <RemoteOriginBadge
-          variant={'outline'}
+          variant="outline"
           remoteOriginUrl={project.remoteOriginUrl}
         />
-        <Badge variant={'outline'}>Core version: {project.coreVersion}</Badge>
+        <Badge variant="outline">Core version: {project.coreVersion}</Badge>
       </CardContent>
     </Card>
   );

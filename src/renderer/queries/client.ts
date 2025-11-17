@@ -25,7 +25,7 @@ export const queryClient = new QueryClient({
       staleTime: Infinity,
     },
     mutations: {
-      onSuccess: (data, variables, result, context) => {
+      onSuccess: async (data, variables, result, context) => {
         const logableMutationMeta = logableMutationMetaSchema.safeParse(
           context.meta
         );
@@ -35,7 +35,7 @@ export const queryClient = new QueryClient({
             `${logableMutationMeta.data.method} ${logableMutationMeta.data.objectType}`
           );
 
-          window.ipc.core.logger.info({
+          await window.ipc.core.logger.info({
             source: 'desktop',
             message: `Successfully ${logableMutationMeta.data.method}ed ${logableMutationMeta.data.objectType}`,
             meta: {
@@ -43,7 +43,7 @@ export const queryClient = new QueryClient({
             },
           });
         } else {
-          window.ipc.core.logger.error({
+          await window.ipc.core.logger.error({
             source: 'desktop',
             message: 'Detected mutation without meta',
             meta: {
@@ -55,7 +55,7 @@ export const queryClient = new QueryClient({
           });
         }
       },
-      onError: (error, variables, result, context) => {
+      onError: async (error, variables, result, context) => {
         const logableMutationMeta = logableMutationMetaSchema.safeParse(
           context.meta
         );
@@ -65,7 +65,7 @@ export const queryClient = new QueryClient({
             `${logableMutationMeta.data.method} ${logableMutationMeta.data.objectType}`
           );
 
-          window.ipc.core.logger.error({
+          await window.ipc.core.logger.error({
             source: 'desktop',
             message: `Failed to ${logableMutationMeta.data.method} ${logableMutationMeta.data.objectType}`,
             meta: {
@@ -73,7 +73,7 @@ export const queryClient = new QueryClient({
             },
           });
         } else {
-          window.ipc.core.logger.error({
+          await window.ipc.core.logger.error({
             source: 'desktop',
             message: 'Detected mutation without meta',
             meta: {

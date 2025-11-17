@@ -127,7 +127,7 @@ function RootComponent(): ReactElement {
   return (
     <>
       <AppHeader electron={window.ipc.electron} />
-      <Outlet></Outlet>
+      <Outlet />
       <Toaster />
       <TanStackRouterDevtools position="bottom-right" initialIsOpen={false} />
       <ReactQueryDevtools position="bottom" initialIsOpen={false} />

@@ -91,7 +91,7 @@ function ListProjectsPage(): ReactElement {
         </Button>
         <Button
           Icon={DownloadCloud}
-          variant={'secondary'}
+          variant="secondary"
           onClick={() => setIsCloningDialogOpen(true)}
         >
           Clone Project
@@ -108,8 +108,8 @@ function ListProjectsPage(): ReactElement {
     <>
       <Page
         title="Projects"
-        description={<Description></Description>}
-        actions={<Actions></Actions>}
+        description={<Description />}
+        actions={<Actions />}
         layout="bare"
       >
         {isProjectsPending ? (
@@ -158,11 +158,11 @@ function ListProjectsPage(): ReactElement {
                   name="url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel isRequired={true}>URL</FormLabel>
+                      <FormLabel isRequired>URL</FormLabel>
                       <FormControl>
                         <FormInput field={field} type="text" />
                       </FormControl>
-                      <FormDescription></FormDescription>
+                      <FormDescription />
                       <FormMessage />
                     </FormItem>
                   )}

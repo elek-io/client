@@ -191,10 +191,10 @@ export default {
           method: 'synchronize',
           objectType: 'project',
         },
-        onSuccess: (_data, _variables, _onMutateResult, context) => {
+        onSuccess: async (_data, _variables, _onMutateResult, context) => {
           // On synchronization anything inside the Project may have changed
           // so we invalidate it entirely
-          context.client.invalidateQueries({
+          await context.client.invalidateQueries({
             queryKey: ['projects', project.id],
             refetchType: 'all',
           });
