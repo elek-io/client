@@ -9,7 +9,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
+  DropdownMenuAddOn,
   DropdownMenuTrigger,
 } from '@renderer/components/ui/dropdown-menu';
 import { cn } from '@renderer/lib/utils';
@@ -53,43 +53,43 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
                   }
                 >
                   Report an issue
-                  <DropdownMenuShortcut>
+                  <DropdownMenuAddOn>
                     <ExternalLink className="h-4 w-4" />
-                  </DropdownMenuShortcut>
+                  </DropdownMenuAddOn>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   elek.io Client
-                  <DropdownMenuShortcut>v{clientVersion}</DropdownMenuShortcut>
+                  <DropdownMenuAddOn>v{clientVersion}</DropdownMenuAddOn>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   elek.io Core
-                  <DropdownMenuShortcut>
+                  <DropdownMenuAddOn>
                     v{dependencies['@elek-io/core']}
-                  </DropdownMenuShortcut>
+                  </DropdownMenuAddOn>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   Electron
-                  <DropdownMenuShortcut>
+                  <DropdownMenuAddOn>
                     v{electron.process.versions['electron']}
-                  </DropdownMenuShortcut>
+                  </DropdownMenuAddOn>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   Chromium
-                  <DropdownMenuShortcut>
+                  <DropdownMenuAddOn>
                     v{electron.process.versions['chrome']}
-                  </DropdownMenuShortcut>
+                  </DropdownMenuAddOn>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   Node
-                  <DropdownMenuShortcut>
+                  <DropdownMenuAddOn>
                     v{electron.process.versions['node']}
-                  </DropdownMenuShortcut>
+                  </DropdownMenuAddOn>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>

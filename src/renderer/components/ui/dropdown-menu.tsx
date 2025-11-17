@@ -190,7 +190,7 @@ function DropdownMenuSeparator({
   );
 }
 
-function DropdownMenuShortcut({
+function DropdownMenuAddOn({
   className,
   ...props
 }: React.ComponentProps<'span'>): React.JSX.Element {
@@ -266,7 +266,7 @@ export {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
+  DropdownMenuAddOn,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,

@@ -14,6 +14,7 @@ import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/sonner';
+import { UserHeader } from '@renderer/components/user-header';
 
 export interface RouterContext {}
 
@@ -127,6 +128,7 @@ function RootComponent(): ReactElement {
   return (
     <>
       <AppHeader electron={window.ipc.electron} />
+      <UserHeader />
       <Outlet />
       <Toaster />
       <TanStackRouterDevtools position="bottom-right" initialIsOpen={false} />

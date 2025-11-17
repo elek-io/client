@@ -17,7 +17,6 @@ import {
   type ReadAssetProps,
   type ReadCollectionProps,
   type ReadProjectProps,
-  type SetUserProps,
   type UpdateAssetProps,
   type UpdateCollectionProps,
   type UpdateProjectProps,
@@ -466,18 +465,44 @@ export default {
           return await window.ipc.core.user.get();
         },
       }),
-    set: (props: SetUserProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.user.set(props);
-        },
-        meta: {
-          method: 'set',
-          objectType: 'user',
-        },
-        onSuccess: (updatedUser, _variables, _onMutateResult, context) => {
-          context.client.setQueryData(['user'], updatedUser);
+    set: mutationOptions({
+      mutationFn: window.ipc.core.user.set,
+      meta: {
+        method: 'set',
+        objectType: 'user',
+      },
+      onSuccess: (updatedUser, _variables, _onMutateResult, context) => {
+        context.client.setQueryData(['user'], updatedUser);
+      },
+    }),
+  },
+  api: {
+    isRunning: () =>
+      queryOptions({
+        queryKey: ['user', 'localApi', 'isRunning'],
+        queryFn: async () => {
+          return await window.ipc.core.api.isRunning();
         },
       }),
+    start: mutationOptions({
+      mutationFn: window.ipc.core.api.start,
+      meta: {
+        method: 'start',
+        objectType: 'api',
+      },
+      onSuccess: (_data, _variables, _onMutateResult, context) => {
+        context.client.setQueryData(['user', 'localApi', 'isRunning'], true);
+      },
+    }),
+    stop: mutationOptions({
+      mutationFn: window.ipc.core.api.stop,
+      meta: {
+        method: 'stop',
+        objectType: 'api',
+      },
+      onSuccess: (_data, _variables, _onMutateResult, context) => {
+        context.client.setQueryData(['user', 'localApi', 'isRunning'], false);
+      },
+    }),
   },
 };
