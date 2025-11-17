@@ -88,6 +88,7 @@
     "@hookform/devtools": "4.4.0",
     "@redux-devtools/extension": "3.3.0",
     "@tailwindcss/vite": "4.1.17",
+    "@tanstack/react-query-devtools": "5.90.2",
     "@tanstack/react-router-devtools": "1.131.2",
     "@tanstack/router-plugin": "1.131.2",
     "@trivago/prettier-plugin-sort-imports": "5.2.2",
