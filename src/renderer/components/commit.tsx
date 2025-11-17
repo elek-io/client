@@ -54,9 +54,7 @@ export function Commit({
 
   return (
     <Link
-      className={
-        'relative flex items-center space-x-4 rounded-md px-3 py-1 text-zinc-800 no-underline transition-colors hover:bg-zinc-300 dark:text-zinc-200 dark:hover:bg-zinc-700'
-      }
+      className="relative flex items-center space-x-4 rounded-md px-3 py-1 text-zinc-800 no-underline transition-colors hover:bg-zinc-300 dark:text-zinc-200 dark:hover:bg-zinc-700"
       activeProps={{
         className: cn(
           'bg-zinc-200 dark:bg-zinc-800 after:absolute after:-right-0.5 after:h-3/6 after:border-l-4 after:rounded-sm after:border-zinc-800 dark:after:border-zinc-300',
@@ -66,7 +64,9 @@ export function Commit({
       {...props}
     >
       <div className="relative z-10 rounded-full border border-primary bg-white p-2 dark:bg-zinc-900">
-        {commit.tag && <Tag className="absolute -right-2 -bottom-1 h-4 w-4" />}
+        {commit.tag ? (
+          <Tag className="absolute -right-2 -bottom-1 h-4 w-4" />
+        ) : null}
         {iconComponent}
       </div>
       <div>

@@ -28,7 +28,7 @@ import {
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
 import { UserHeader } from '@renderer/components/user-header';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type GitCommit,
@@ -57,12 +57,19 @@ function UserProfilePage(): ReactElement {
     },
     defaultValues: {
       userType: 'local',
-      name: context.user?.name || '',
-      email: context.user?.email || '',
-      language: context.user?.language || 'en',
+      name: context.user?.name !== undefined ? context.user.name : '',
+      email: context.user?.email !== undefined ? context.user.email : '',
+      language:
+        context.user?.language !== undefined ? context.user.language : 'en',
       localApi: {
-        port: context.user?.localApi.port || 31310,
-        isEnabled: context.user?.localApi.isEnabled || false,
+        port:
+          context.user?.localApi.port !== undefined
+            ? context.user.localApi.port
+            : 31310,
+        isEnabled:
+          context.user?.localApi.isEnabled !== undefined
+            ? context.user.localApi.isEnabled
+            : false,
       },
     },
   });
@@ -139,25 +146,29 @@ function UserProfilePage(): ReactElement {
       const isLocalApiRunning = await context.core.api.isRunning();
 
       if (user.localApi.isEnabled === true && isLocalApiRunning === false) {
-        context.core.api.start(user.localApi.port);
+        await context.core.api.start(user.localApi.port);
       }
 
       if (user.localApi.isEnabled === false && isLocalApiRunning === true) {
-        context.core.api.stop();
+        await context.core.api.stop();
       }
 
       setIsSettingUser(false);
       await router.navigate({ to: '/projects' });
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully setup User',
         description: 'The User was successfully setup.',
       });
     } catch (error) {
       setIsSettingUser(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to setup User',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to setup User',
         description: 'There was an error setting up the User.',
       });
@@ -166,7 +177,7 @@ function UserProfilePage(): ReactElement {
 
   return (
     <>
-      {context.user && <UserHeader user={context.user} />}
+      {context.user !== null ? <UserHeader user={context.user} /> : null}
       <Page
         title={
           context.user === null ? 'Welcome to elek.io Client' : 'User profile'
@@ -187,12 +198,10 @@ function UserProfilePage(): ReactElement {
                   <div className="grid gap-6">
                     <FormField
                       control={setUserForm.control}
-                      name={`language`}
+                      name="language"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>
-                            Preferred language
-                          </FormLabel>
+                          <FormLabel isRequired>Preferred language</FormLabel>
                           <FormControl>
                             <Select
                               value={field.value}
@@ -234,10 +243,10 @@ function UserProfilePage(): ReactElement {
                     />
                     <FormField
                       control={setUserForm.control}
-                      name={`name`}
+                      name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>Full name</FormLabel>
+                          <FormLabel isRequired>Full name</FormLabel>
                           <FormControl>
                             <FormInput field={field} type="text" />
                           </FormControl>
@@ -251,10 +260,10 @@ function UserProfilePage(): ReactElement {
                     />
                     <FormField
                       control={setUserForm.control}
-                      name={`email`}
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>Email</FormLabel>
+                          <FormLabel isRequired>Email</FormLabel>
                           <FormControl>
                             <FormInput field={field} type="email" />
                           </FormControl>
@@ -275,10 +284,10 @@ function UserProfilePage(): ReactElement {
                   <div className="grid gap-6">
                     <FormField
                       control={setUserForm.control}
-                      name={`localApi.port`}
+                      name="localApi.port"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>Port</FormLabel>
+                          <FormLabel isRequired>Port</FormLabel>
                           <FormControl>
                             <FormInput field={field} type="number" />
                           </FormControl>
@@ -292,11 +301,11 @@ function UserProfilePage(): ReactElement {
                     />
                     <FormField
                       control={setUserForm.control}
-                      name={`localApi.isEnabled`}
+                      name="localApi.isEnabled"
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-800">
                           <div className="mr-4">
-                            <FormLabel isRequired={true}>Enabled</FormLabel>
+                            <FormLabel isRequired>Enabled</FormLabel>
                             <FormDescription>
                               Enabling the local API allows you to read local
                               Project data.
@@ -321,13 +330,13 @@ function UserProfilePage(): ReactElement {
             <PageSection
               title="Example change"
               description="This is how a change made by you will look like based on the information you've given on the left."
-              standalone={true}
+              standalone
             >
               <CommitHistory
-                projectId={'1'}
+                projectId="1"
                 commits={[exampleCommit]}
                 language={setUserForm.watch('language')}
-                disabled={true}
+                disabled
               />
             </PageSection>
           </aside>

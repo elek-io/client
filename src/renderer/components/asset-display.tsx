@@ -63,7 +63,7 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
   if (props.mimeType.startsWith('video/')) {
     return (
       <video muted controls={!props.static} autoPlay={!props.static}>
-        <source src={absolutePath} type={props.mimeType}></source>
+        <source src={absolutePath} type={props.mimeType} />
       </video>
     );
   }
@@ -71,7 +71,7 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
   if (props.mimeType.startsWith('audio/')) {
     return (
       <audio muted controls={!props.static} autoPlay={!props.static}>
-        <source src={absolutePath} type={props.mimeType}></source>
+        <source src={absolutePath} type={props.mimeType} />
       </audio>
     );
   }

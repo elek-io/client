@@ -3,20 +3,8 @@ import { toast } from 'sonner';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-import { type Icon } from '@renderer/lib/utils';
-
-export type NotificationIntent = 'info' | 'success' | 'warning' | 'danger';
-
-export const NotificationIntent = {
-  INFO: 'info' as NotificationIntent,
-  SUCCESS: 'success' as NotificationIntent,
-  WARNING: 'warning' as NotificationIntent,
-  DANGER: 'danger' as NotificationIntent,
-};
-
 export interface NotificationProps {
-  intent?: NotificationIntent;
-  icon?: Icon;
+  intent: 'info' | 'success' | 'warning' | 'danger';
   title: string;
   description: string;
 }
@@ -35,27 +23,25 @@ export const useStore = create<StoreState>()(
   devtools((set) => ({
     notifications: [],
     addNotification: (notification): void => {
-      console.log('New notification:', notification);
       switch (notification.intent) {
-        case NotificationIntent.INFO:
+        case 'info':
           toast.info(notification.title, {
             description: notification.description,
           });
           break;
-        case NotificationIntent.SUCCESS:
+        case 'success':
           toast.success(notification.title, {
             description: notification.description,
           });
           break;
-        case NotificationIntent.WARNING:
+        case 'warning':
           toast.warning(notification.title, {
             description: notification.description,
           });
           break;
-        case NotificationIntent.DANGER:
+        case 'danger':
           toast.error(notification.title, {
             description: notification.description,
-            important: true,
           });
           break;
       }

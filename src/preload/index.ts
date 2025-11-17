@@ -2,18 +2,18 @@
 // // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 import { electronAPI } from '@electron-toolkit/preload';
 import {
-  BaseWindow,
+  type BaseWindow,
   contextBridge,
   ipcRenderer,
-  OpenDialogOptions,
-  SaveDialogOptions,
+  type OpenDialogOptions,
+  type SaveDialogOptions,
 } from 'electron';
 
 const ipc: ContextBridgeApi = {
   electron: {
     process: electronAPI.process,
     dialog: {
-      showOpenDialog: (
+      showOpenDialog: async (
         windowOrOptions: BaseWindow | OpenDialogOptions,
         options?: OpenDialogOptions
       ) =>
@@ -22,7 +22,7 @@ const ipc: ContextBridgeApi = {
           windowOrOptions,
           options
         ),
-      showSaveDialog: (
+      showSaveDialog: async (
         windowOrOptions: BaseWindow | SaveDialogOptions,
         options?: SaveDialogOptions
       ) =>
@@ -35,59 +35,77 @@ const ipc: ContextBridgeApi = {
   },
   core: {
     api: {
-      start: (...args) => ipcRenderer.invoke('core:api:start', ...args),
-      isRunning: (...args) => ipcRenderer.invoke('core:api:isRunning', ...args),
-      stop: (...args) => ipcRenderer.invoke('core:api:stop', ...args),
+      start: async (...args) => ipcRenderer.invoke('core:api:start', ...args),
+      isRunning: async (...args) =>
+        ipcRenderer.invoke('core:api:isRunning', ...args),
+      stop: async (...args) => ipcRenderer.invoke('core:api:stop', ...args),
     },
     logger: {
-      debug: (...args) => ipcRenderer.invoke('core:logger:debug', ...args),
-      info: (...args) => ipcRenderer.invoke('core:logger:info', ...args),
-      warn: (...args) => ipcRenderer.invoke('core:logger:warn', ...args),
-      error: (...args) => ipcRenderer.invoke('core:logger:error', ...args),
+      debug: async (...args) =>
+        ipcRenderer.invoke('core:logger:debug', ...args),
+      info: async (...args) => ipcRenderer.invoke('core:logger:info', ...args),
+      warn: async (...args) => ipcRenderer.invoke('core:logger:warn', ...args),
+      error: async (...args) =>
+        ipcRenderer.invoke('core:logger:error', ...args),
     },
     user: {
-      get: (...args) => ipcRenderer.invoke('core:user:get', ...args),
-      set: (...args) => ipcRenderer.invoke('core:user:set', ...args),
+      get: async (...args) => ipcRenderer.invoke('core:user:get', ...args),
+      set: async (...args) => ipcRenderer.invoke('core:user:set', ...args),
     },
     projects: {
-      count: (...args) => ipcRenderer.invoke('core:projects:count', ...args),
-      create: (...args) => ipcRenderer.invoke('core:projects:create', ...args),
-      list: (...args) => ipcRenderer.invoke('core:projects:list', ...args),
-      read: (...args) => ipcRenderer.invoke('core:projects:read', ...args),
-      update: (...args) => ipcRenderer.invoke('core:projects:update', ...args),
-      getChanges: (...args) =>
+      count: async (...args) =>
+        ipcRenderer.invoke('core:projects:count', ...args),
+      create: async (...args) =>
+        ipcRenderer.invoke('core:projects:create', ...args),
+      list: async (...args) =>
+        ipcRenderer.invoke('core:projects:list', ...args),
+      read: async (...args) =>
+        ipcRenderer.invoke('core:projects:read', ...args),
+      update: async (...args) =>
+        ipcRenderer.invoke('core:projects:update', ...args),
+      getChanges: async (...args) =>
         ipcRenderer.invoke('core:projects:getChanges', ...args),
-      synchronize: (...args) =>
+      synchronize: async (...args) =>
         ipcRenderer.invoke('core:projects:synchronize', ...args),
-      clone: (...args) => ipcRenderer.invoke('core:projects:clone', ...args),
-      setRemoteOriginUrl: (...args) =>
+      clone: async (...args) =>
+        ipcRenderer.invoke('core:projects:clone', ...args),
+      setRemoteOriginUrl: async (...args) =>
         ipcRenderer.invoke('core:projects:setRemoteOriginUrl', ...args),
-      delete: (...args) => ipcRenderer.invoke('core:projects:delete', ...args),
+      delete: async (...args) =>
+        ipcRenderer.invoke('core:projects:delete', ...args),
     },
     assets: {
-      list: (...args) => ipcRenderer.invoke('core:assets:list', ...args),
-      create: (...args) => ipcRenderer.invoke('core:assets:create', ...args),
-      read: (...args) => ipcRenderer.invoke('core:assets:read', ...args),
-      update: (...args) => ipcRenderer.invoke('core:assets:update', ...args),
-      delete: (...args) => ipcRenderer.invoke('core:assets:delete', ...args),
-      save: (...args) => ipcRenderer.invoke('core:assets:save', ...args),
+      list: async (...args) => ipcRenderer.invoke('core:assets:list', ...args),
+      create: async (...args) =>
+        ipcRenderer.invoke('core:assets:create', ...args),
+      read: async (...args) => ipcRenderer.invoke('core:assets:read', ...args),
+      update: async (...args) =>
+        ipcRenderer.invoke('core:assets:update', ...args),
+      delete: async (...args) =>
+        ipcRenderer.invoke('core:assets:delete', ...args),
+      save: async (...args) => ipcRenderer.invoke('core:assets:save', ...args),
     },
     collections: {
-      list: (...args) => ipcRenderer.invoke('core:collections:list', ...args),
-      create: (...args) =>
+      list: async (...args) =>
+        ipcRenderer.invoke('core:collections:list', ...args),
+      create: async (...args) =>
         ipcRenderer.invoke('core:collections:create', ...args),
-      read: (...args) => ipcRenderer.invoke('core:collections:read', ...args),
-      update: (...args) =>
+      read: async (...args) =>
+        ipcRenderer.invoke('core:collections:read', ...args),
+      update: async (...args) =>
         ipcRenderer.invoke('core:collections:update', ...args),
-      delete: (...args) =>
+      delete: async (...args) =>
         ipcRenderer.invoke('core:collections:delete', ...args),
     },
     entries: {
-      list: (...args) => ipcRenderer.invoke('core:entries:list', ...args),
-      create: (...args) => ipcRenderer.invoke('core:entries:create', ...args),
-      read: (...args) => ipcRenderer.invoke('core:entries:read', ...args),
-      update: (...args) => ipcRenderer.invoke('core:entries:update', ...args),
-      delete: (...args) => ipcRenderer.invoke('core:entries:delete', ...args),
+      list: async (...args) => ipcRenderer.invoke('core:entries:list', ...args),
+      create: async (...args) =>
+        ipcRenderer.invoke('core:entries:create', ...args),
+      read: async (...args) => ipcRenderer.invoke('core:entries:read', ...args),
+      update: async (...args) =>
+        ipcRenderer.invoke('core:entries:update', ...args),
+      delete: async (...args) =>
+        ipcRenderer.invoke('core:entries:delete', ...args),
     },
   },
 };

@@ -55,10 +55,29 @@ function FormInput<T extends FieldValues>({
     switch (type) {
       case 'text':
       case 'email':
+      case 'url':
+      case 'tel':
+      case 'date':
+      case 'time':
+      case 'datetime-local':
+      case 'month':
+      case 'week':
+      case 'search':
+      case 'password':
         return value;
       case 'number':
+      case 'range':
         return parseInt(value);
-      default:
+      case 'button':
+      case 'checkbox':
+      case 'color':
+      case 'file':
+      case 'hidden':
+      case 'image':
+      case 'radio':
+      case 'reset':
+      case 'submit':
+      case undefined:
         throw new Error(`[FormInput] Unsupported input type "${type}"`);
     }
   }
@@ -68,7 +87,7 @@ function FormInput<T extends FieldValues>({
       {...field}
       {...props}
       type={type}
-      value={field.value || ''} // The value can now also be null but the input cannot handle it, so we set a default empty string instead
+      value={field.value !== null ? field.value : ''} // The value can now also be null but the input cannot handle it, so we set a default empty string instead
       onChange={(event) => field.onChange(transform(event.target.value))}
     />
   );
@@ -106,21 +125,30 @@ function TranslatableFormInput<T extends FieldValues>({
    */
   function hasErrorsInTranslations(): boolean {
     // Traverse the errors object to reach the base field errors
-    let fieldErrors: any = errors;
+    let fieldErrors: unknown = errors;
     for (const segment of baseName.split('.')) {
-      if (!fieldErrors || typeof fieldErrors !== 'object') {
+      if (
+        fieldErrors === null ||
+        fieldErrors === undefined ||
+        typeof fieldErrors !== 'object'
+      ) {
         return false;
       }
       fieldErrors = fieldErrors[segment];
     }
 
-    if (!fieldErrors || typeof fieldErrors !== 'object') {
+    if (
+      fieldErrors === null ||
+      fieldErrors === undefined ||
+      typeof fieldErrors !== 'object'
+    ) {
       return false;
     }
 
     // Check for errors in other languages
     return supportedLanguages.some(
-      (language) => language !== currentLanguage && !!fieldErrors[language]
+      (language) =>
+        language !== currentLanguage && fieldErrors[language] !== undefined
     );
   }
 
@@ -158,7 +186,7 @@ function TranslatableFormInput<T extends FieldValues>({
                       name={`${baseName}.${language}` as Path<T>}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel isRequired={true}>{language}</FormLabel>
+                          <FormLabel isRequired>{language}</FormLabel>
                           <FormControl>
                             <FormInput field={field} type={type} />
                           </FormControl>

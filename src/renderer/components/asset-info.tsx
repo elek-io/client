@@ -22,7 +22,7 @@ import {
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
 import { formatBytes, formatDatetime } from '@renderer/lib/utils';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type Asset, type SupportedLanguage } from '@elek-io/core';
 
@@ -95,7 +95,7 @@ export function AssetInfo({
       );
       await updateAssetMutation.mutateAsync();
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully updated Asset',
         description: 'The Asset was updated successfully.',
       });
@@ -103,9 +103,13 @@ export function AssetInfo({
         onAssetUpdated();
       }
     } catch (error) {
-      console.error(error);
+      await ipc.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to update Asset',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to update Asset',
         description: 'There was an error updating the Asset to disk.',
       });
@@ -113,15 +117,6 @@ export function AssetInfo({
   }
 
   async function onAssetSave(): Promise<void> {
-    if (!asset) {
-      addNotification({
-        intent: NotificationIntent.DANGER,
-        title: 'Failed to save Asset',
-        description: 'No Asset selected to save.',
-      });
-      return;
-    }
-
     try {
       const result = await window.ipc.electron.dialog.showSaveDialog({
         // title: `Save Asset ${asset.name}.${asset.extension} to disk`,
@@ -147,14 +142,18 @@ export function AssetInfo({
         filePath: result.filePath,
       });
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully saved Asset',
         description: 'The Asset was saved successfully.',
       });
     } catch (error) {
-      console.error(error);
+      await ipc.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to save Asset',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to save Asset',
         description: 'There was an error saving the Asset to disk.',
       });
@@ -162,22 +161,13 @@ export function AssetInfo({
   }
 
   async function onAssetDelete(): Promise<void> {
-    if (!asset) {
-      addNotification({
-        intent: NotificationIntent.DANGER,
-        title: 'Failed to delete Asset',
-        description: 'No Asset selected to delete.',
-      });
-      return;
-    }
-
     try {
       await ipc.core.assets.delete({
         ...asset,
         projectId: projectId,
       });
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully deleted Asset',
         description: 'The Asset was deleted successfully.',
       });
@@ -185,9 +175,13 @@ export function AssetInfo({
         onAssetDeleted();
       }
     } catch (error) {
-      console.error(error);
+      await ipc.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to delete Asset',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to delete Asset',
         description: 'There was an error deleting the Asset from disk.',
       });
@@ -198,7 +192,7 @@ export function AssetInfo({
     <>
       <div className="w-full p-2 pb-0">
         <div className="flex aspect-4/3 items-center justify-center">
-          <AssetDisplay {...asset} static={false}></AssetDisplay>
+          <AssetDisplay {...asset} static={false} />
         </div>
       </div>
       <div className="p-6">
@@ -212,7 +206,7 @@ export function AssetInfo({
               <div key={info.key} className="flex justify-between px-6 py-2">
                 <dt className="">{info.key}</dt>
                 <dd className="whitespace-nowrap">
-                  {info.tooltip && (
+                  {info.tooltip !== undefined ? (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>{info.value}</TooltipTrigger>
@@ -221,8 +215,9 @@ export function AssetInfo({
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
+                  ) : (
+                    info.value
                   )}
-                  {!info.tooltip && info.value}
                 </dd>
               </div>
             );
@@ -230,7 +225,7 @@ export function AssetInfo({
         </dl>
       </div>
       <div className="flex w-full flex-col gap-2 p-4">
-        {showUpdateButton && (
+        {showUpdateButton === true ? (
           <Button
             variant="outline"
             className=""
@@ -239,13 +234,13 @@ export function AssetInfo({
           >
             Update
           </Button>
-        )}
+        ) : null}
 
         <Button variant="outline" Icon={Download} onClick={onAssetSave}>
           Save as
         </Button>
 
-        {showDeleteButton && (
+        {showDeleteButton === true ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" Icon={Trash}>
@@ -276,7 +271,7 @@ export function AssetInfo({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        )}
+        ) : null}
       </div>
     </>
   );

@@ -25,7 +25,7 @@ function ProjectsLayout(): ReactElement {
   return (
     <>
       <UserHeader user={user} />
-      <Outlet></Outlet>
+      <Outlet />
     </>
   );
 }

@@ -6,7 +6,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CreateUpdateEntryPage } from '@renderer/components/pages/create-update-entry-page';
 import { Button } from '@renderer/components/ui/button';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   getUpdateEntrySchemaFromFieldDefinitions,
@@ -30,7 +30,7 @@ function UpdateEntryPage(): ReactElement {
 
   const updateEntryForm = useForm<UpdateEntryProps>({
     resolver: async (data, context, options) => {
-      routeContext.core.logger.debug({
+      await routeContext.core.logger.debug({
         source: 'desktop',
         message: 'Update Entry form data',
         meta: { data },
@@ -41,7 +41,7 @@ function UpdateEntryPage(): ReactElement {
         context,
         options
       );
-      routeContext.core.logger.debug({
+      await routeContext.core.logger.debug({
         source: 'desktop',
         message: 'Update Entry form validation result',
         meta: { validationResult },
@@ -103,14 +103,14 @@ function UpdateEntryPage(): ReactElement {
       await routeContext.core.entries.update(entry);
       setIsUpdatingEntry(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: `Updated ${routeContext.translateContent(
           'currentCollection.name',
           routeContext.currentCollection.name.singular
         )}`,
         description: 'The Entry has been updated.',
       });
-      router.navigate({
+      await router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
           projectId: routeContext.project.id,
@@ -119,13 +119,13 @@ function UpdateEntryPage(): ReactElement {
       });
     } catch (error) {
       setIsUpdatingEntry(false);
-      routeContext.core.logger.error({
+      await routeContext.core.logger.error({
         source: 'desktop',
         message: 'Failed to update Entry',
         meta: { error },
       });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to update Entry',
         description: 'There was an error updating the Entry.',
       });

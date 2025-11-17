@@ -39,7 +39,7 @@ function RemoteOriginBadge({
     asChild?: boolean;
     remoteOriginUrl: string | null;
   }): React.JSX.Element {
-  if (remoteOriginUrl) {
+  if (remoteOriginUrl !== null) {
     const url = new URL(remoteOriginUrl);
 
     const HostIcon = url.hostname.includes('github.com')

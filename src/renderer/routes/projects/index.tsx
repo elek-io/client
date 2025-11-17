@@ -74,7 +74,7 @@ function ListProjectsPage(): ReactElement {
     return (
       <>
         A Project ...
-        <br></br>
+        <br />
         Read more about <a href="#">Projects in the documentation</a>.
       </>
     );
@@ -85,7 +85,7 @@ function ListProjectsPage(): ReactElement {
       <>
         <Button
           Icon={Plus}
-          onClick={() => router.navigate({ to: '/projects/create' })}
+          onClick={async () => router.navigate({ to: '/projects/create' })}
         >
           Create Project
         </Button>

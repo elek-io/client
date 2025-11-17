@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 import {
-  DayButton,
+  type DayButton,
   DayPicker,
   getDefaultClassNames,
   type ChevronProps,
@@ -186,9 +186,10 @@ function CalendarDayButton({
   const defaultClassNames = getDefaultClassNames();
 
   const ref = React.useRef<HTMLButtonElement>(null);
+  const isFocused = modifiers['focused'];
   React.useEffect(() => {
-    if (modifiers['focused']) ref.current?.focus();
-  }, [modifiers['focused']]);
+    if (isFocused === true) ref.current?.focus();
+  }, [isFocused]);
 
   return (
     <Button
@@ -197,10 +198,11 @@ function CalendarDayButton({
       size="icon"
       data-day={day.date.toLocaleDateString()}
       data-selected-single={
-        modifiers['selected'] &&
-        !modifiers['range_start'] &&
-        !modifiers['range_end'] &&
-        !modifiers['range_middle']
+        modifiers['selected'] === true &&
+        modifiers['range_start'] !== true &&
+        modifiers['range_end'] !== true
+          ? modifiers['range_middle'] !== true
+          : null
       }
       data-range-start={modifiers['range_start']}
       data-range-end={modifiers['range_end']}

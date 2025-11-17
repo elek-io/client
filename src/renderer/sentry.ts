@@ -26,9 +26,9 @@ const router = createRouter({
   context: {},
 });
 router.subscribe('onBeforeLoad', (event) => {
-  window.ipc.core.logger.info({
+  void window.ipc.core.logger.info({
     source: 'desktop',
-    message: `Client navigating from "${event?.fromLocation?.href}" to "${event.toLocation.href}"`,
+    message: `Client navigating from "${event.fromLocation?.href}" to "${event.toLocation.href}"`,
   });
 });
 

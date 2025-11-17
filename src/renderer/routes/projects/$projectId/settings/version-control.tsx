@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { Input } from '@renderer/components/ui/input';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type SetRemoteOriginUrlProjectProps,
@@ -38,15 +38,6 @@ function ProjectSettingsVersionControlPage(): ReactElement {
     useState(false);
   const remoteOriginUrlForm = useForm<SetRemoteOriginUrlProjectProps>({
     resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log(
-        'GitRemoteForm validation result',
-        await zodResolver(setRemoteOriginUrlProjectSchema)(
-          data,
-          context,
-          options
-        )
-      );
       return zodResolver(setRemoteOriginUrlProjectSchema)(
         data,
         context,
@@ -55,7 +46,10 @@ function ProjectSettingsVersionControlPage(): ReactElement {
     },
     defaultValues: {
       id: context.project.id,
-      url: context.project.remoteOriginUrl || '',
+      url:
+        context.project.remoteOriginUrl !== null
+          ? context.project.remoteOriginUrl
+          : '',
     },
   });
 
@@ -75,16 +69,20 @@ function ProjectSettingsVersionControlPage(): ReactElement {
       await context.core.projects.setRemoteOriginUrl(props);
       setIsSettingRemoteOriginUrl(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully updated Project remote',
         description: 'The Project was successfully updated.',
       });
-      router.invalidate();
+      await router.invalidate();
     } catch (error) {
       setIsSettingRemoteOriginUrl(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to update Project remote',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to update Project remote',
         description: 'There was an error updating the Project.',
       });
@@ -93,9 +91,9 @@ function ProjectSettingsVersionControlPage(): ReactElement {
 
   return (
     <Page
-      title={`Version Control Settings`}
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      title="Version Control Settings"
+      description={<Description />}
+      actions={<Actions />}
     >
       <Form {...remoteOriginUrlForm}>
         <form>
@@ -116,14 +114,14 @@ function ProjectSettingsVersionControlPage(): ReactElement {
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={remoteOriginUrlForm.control}
-                name={'url'}
+                name="url"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Remote URL</FormLabel>
+                    <FormLabel isRequired>Remote URL</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}

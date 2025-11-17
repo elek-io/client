@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   forwardRef,
+  useId,
   useImperativeHandle,
   type ReactElement,
   type Ref,
 } from 'react';
-import React from 'react';
 import { useForm, type UseFieldArrayReturn } from 'react-hook-form';
 
 import { NumberFieldDefinitionForm } from '@renderer/components/forms/number-value-definition-form';
@@ -55,7 +55,7 @@ export interface FieldDefinitionFormProps {
 }
 
 export interface FieldDefinitionFormRef {
-  addDefinition: () => void;
+  addDefinition: () => Promise<void>;
   getExampleFormField: () => ReactElement;
 }
 
@@ -71,22 +71,7 @@ export const FieldDefinitionForm = forwardRef(
     };
 
     const textareaFieldDefinitionFormState = useForm<TextareaFieldDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'TextareaFieldDefinition validation result',
-          await zodResolver(textareaFieldDefinitionSchema)(
-            data,
-            context,
-            options
-          )
-        );
-        return zodResolver(textareaFieldDefinitionSchema)(
-          data,
-          context,
-          options
-        );
-      },
+      resolver: zodResolver(textareaFieldDefinitionSchema),
       defaultValues: {
         ...FieldDefinitionBaseDefaults,
         id: uuid(),
@@ -98,15 +83,8 @@ export const FieldDefinitionForm = forwardRef(
       },
     });
 
-    const dateFieldDefinitionFormState = useForm<DateFieldDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'DateFieldDefinition validation result',
-          await zodResolver(dateFieldDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(dateFieldDefinitionSchema)(data, context, options);
-      },
+    const _dateFieldDefinitionFormState = useForm<DateFieldDefinition>({
+      resolver: zodResolver(dateFieldDefinitionSchema),
       defaultValues: {
         ...FieldDefinitionBaseDefaults,
         id: uuid(),
@@ -117,14 +95,7 @@ export const FieldDefinitionForm = forwardRef(
     });
 
     const numberFieldDefinitionFormState = useForm<NumberFieldDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'NumberFieldDefinition validation result',
-          await zodResolver(numberFieldDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(numberFieldDefinitionSchema)(data, context, options);
-      },
+      resolver: zodResolver(numberFieldDefinitionSchema),
       defaultValues: {
         ...FieldDefinitionBaseDefaults,
         id: uuid(),
@@ -138,14 +109,7 @@ export const FieldDefinitionForm = forwardRef(
     });
 
     const rangeFieldDefinitionFormState = useForm<RangeFieldDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'RangeFieldDefinition validation result',
-          await zodResolver(rangeFieldDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(rangeFieldDefinitionSchema)(data, context, options);
-      },
+      resolver: zodResolver(rangeFieldDefinitionSchema),
       defaultValues: {
         ...FieldDefinitionBaseDefaults,
         id: uuid(),
@@ -160,14 +124,7 @@ export const FieldDefinitionForm = forwardRef(
     });
 
     const toggleFieldDefinitionFormState = useForm<ToggleFieldDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'ToggleFieldDefinition validation result',
-          await zodResolver(toggleFieldDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(toggleFieldDefinitionSchema)(data, context, options);
-      },
+      resolver: zodResolver(toggleFieldDefinitionSchema),
       defaultValues: {
         ...FieldDefinitionBaseDefaults,
         id: uuid(),
@@ -180,14 +137,7 @@ export const FieldDefinitionForm = forwardRef(
     });
 
     const textFieldDefinitionFormState = useForm<TextFieldDefinition>({
-      resolver: async (data, context, options) => {
-        // you can debug your validation schema here
-        console.log(
-          'TextFieldDefinition validation result',
-          await zodResolver(textFieldDefinitionSchema)(data, context, options)
-        );
-        return zodResolver(textFieldDefinitionSchema)(data, context, options);
-      },
+      resolver: zodResolver(textFieldDefinitionSchema),
       defaultValues: {
         ...FieldDefinitionBaseDefaults,
         id: uuid(),
@@ -247,6 +197,15 @@ export const FieldDefinitionForm = forwardRef(
                 toggleFieldDefinitionFormState.setValue('id', uuid());
               }
             )();
+          case 'asset':
+          case 'entry':
+          case 'datetime':
+          case 'date':
+          case 'email':
+          case 'url':
+          case 'ipv4':
+          case 'time':
+          case 'telephone':
           default:
             throw new Error(
               `Tried to validate unsupported fieldType "${props.fieldType}" of Value definition`
@@ -304,6 +263,15 @@ export const FieldDefinitionForm = forwardRef(
                 translateContent={props.translateContent}
               />
             );
+          case 'asset':
+          case 'entry':
+          case 'datetime':
+          case 'date':
+          case 'email':
+          case 'url':
+          case 'ipv4':
+          case 'time':
+          case 'telephone':
           default:
             throw new Error(`Unsupported example form Field "${fieldType}"`);
         }
@@ -356,6 +324,15 @@ export const FieldDefinitionForm = forwardRef(
             fieldType={props.fieldType}
           />
         );
+      case 'asset':
+      case 'entry':
+      case 'datetime':
+      case 'date':
+      case 'email':
+      case 'url':
+      case 'ipv4':
+      case 'time':
+      case 'telephone':
       default:
         throw new Error(`Unsupported definition form "${props.fieldType}"`);
     }
@@ -389,7 +366,7 @@ function DisabledInputFromDefinition({
           aria-describedby={ariaDescribedBy}
           type="text"
           value={value}
-          disabled={true}
+          disabled
         />
       );
     case 'textarea':
@@ -403,7 +380,7 @@ function DisabledInputFromDefinition({
           id={id}
           aria-describedby={ariaDescribedBy}
           value={value}
-          disabled={true}
+          disabled
         />
       );
     case 'number':
@@ -418,7 +395,7 @@ function DisabledInputFromDefinition({
           aria-describedby={ariaDescribedBy}
           type="number"
           value={value}
-          disabled={true}
+          disabled
         />
       );
     case 'range':
@@ -433,7 +410,7 @@ function DisabledInputFromDefinition({
           aria-describedby={ariaDescribedBy}
           value={value ? [value] : []}
           step={1} // @todo Core needs to support this too
-          disabled={true}
+          disabled
         />
       );
     case 'toggle':
@@ -447,9 +424,18 @@ function DisabledInputFromDefinition({
           id={id}
           aria-describedby={ariaDescribedBy}
           checked={value}
-          disabled={true}
+          disabled
         />
       );
+    case 'asset':
+    case 'entry':
+    case 'datetime':
+    case 'date':
+    case 'email':
+    case 'url':
+    case 'ipv4':
+    case 'time':
+    case 'telephone':
     default:
       throw new Error(
         `Unsupported Entry definition FieldType "${fieldDefinition.fieldType}"`
@@ -474,8 +460,8 @@ export function DisabledFieldFromDefinition({
   translateContent,
   value,
 }: DisabledFieldFromDefinitionProps): ReactElement {
-  const inputId = React.useId();
-  const descriptionId = React.useId();
+  const inputId = useId();
+  const descriptionId = useId();
 
   return (
     <div
@@ -497,17 +483,17 @@ export function DisabledFieldFromDefinition({
         value={value}
       />
 
-      {fieldDefinition.description && (
+      {fieldDefinition.description ? (
         <p
           id={descriptionId}
-          className={'text-sm text-zinc-500 dark:text-zinc-400'}
+          className="text-sm text-zinc-500 dark:text-zinc-400"
         >
           {translateContent(
             'fieldDefinition.description',
             fieldDefinition.description
           )}
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

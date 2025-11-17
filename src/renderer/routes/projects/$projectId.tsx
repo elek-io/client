@@ -4,7 +4,7 @@ import { type ReactElement, useEffect, useState } from 'react';
 
 import { ProjectSidebar } from '@renderer/components/project-sidebar';
 import { queryClient, queryOptions } from '@renderer/queries';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type TranslatableString } from '@elek-io/core';
 
@@ -25,19 +25,18 @@ export const Route = createFileRoute('/projects/$projectId')({
      */
     function translateContent(key: string, record: TranslatableString): string {
       const toUserLanguage = record[context.user.language];
-      if (toUserLanguage) {
+      if (toUserLanguage !== undefined) {
         return toUserLanguage;
       }
 
       const toProjectsDefaultLanguage =
-        project.settings.language.default &&
         record[project.settings.language.default];
-      if (toProjectsDefaultLanguage) {
+      if (toProjectsDefaultLanguage !== undefined) {
         return toProjectsDefaultLanguage;
       }
 
       const toEnglish = record['en'];
-      if (toEnglish) {
+      if (toEnglish !== undefined) {
         return toEnglish;
       }
 
@@ -94,7 +93,7 @@ function ProjectLayout(): ReactElement {
       });
       setIsSynchronizing(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully synchronized Project',
         description: 'The Project was successfully synchronized.',
       });
@@ -102,9 +101,13 @@ function ProjectLayout(): ReactElement {
       // router.invalidate();
     } catch (error) {
       setIsSynchronizing(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to synchronize Project',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to synchronize Project',
         description: 'There was an error synchronizing the Project.',
       });
@@ -142,12 +145,12 @@ function ProjectLayout(): ReactElement {
                 </div>
               </div>
               <div className="ml-11">
-                <Link to={'/projects'} className="text-xs">
+                <Link to="/projects" className="text-xs">
                   Change Project
                 </Link>
               </div>
             </div>
-            {context.project.remoteOriginUrl && (
+            {context.project.remoteOriginUrl !== null ? (
               <>
                 <div className="flex flex-col p-4 pt-0">
                   <div className="flex">
@@ -168,7 +171,7 @@ function ProjectLayout(): ReactElement {
                     </Button>
                     <Button
                       className="ml-0.5 rounded-l-none"
-                      onClick={() => projectChangesQuery.refetch()}
+                      onClick={async () => projectChangesQuery.refetch()}
                       disabled={
                         projectChangesQuery.isFetching || isSynchronizing
                       }
@@ -190,43 +193,35 @@ function ProjectLayout(): ReactElement {
                     )}
                   </p>
 
-                  {projectChangesQuery.data &&
-                    projectChangesQuery.data.ahead.map((commit) => (
-                      <Commit
-                        key={commit.hash}
-                        commit={commit}
-                        language={context.user.language}
-                      />
-                    ))}
+                  {projectChangesQuery.data
+                    ? projectChangesQuery.data.ahead.map((commit) => (
+                        <Commit
+                          key={commit.hash}
+                          commit={commit}
+                          language={context.user.language}
+                        />
+                      ))
+                    : null}
                 </div>
               </>
-            )}
+            ) : null}
           </>
         )}
 
         <ScrollArea className="border-t border-zinc-200 dark:border-zinc-800">
           <SidebarNavigation>
-            {isProjectSidebarNarrow && (
+            {isProjectSidebarNarrow ? (
               <SidebarNavigationItem
-                onClick={() => router.navigate({ to: '/projects' })}
+                onClick={async () => router.navigate({ to: '/projects' })}
               >
-                <FolderOutput
-                  className="h-6 w-6"
-                  aria-hidden="true"
-                ></FolderOutput>
-                {!isProjectSidebarNarrow && (
-                  <span className="ml-4">Change Project</span>
-                )}
+                <FolderOutput className="h-6 w-6" aria-hidden="true" />
               </SidebarNavigationItem>
-            )}
+            ) : null}
 
             {projectNavigation.map((navigation) => {
               const item = (
-                <SidebarNavigationItem to={navigation.to} key={navigation.to}>
-                  <navigation.icon
-                    className="h-6 w-6"
-                    aria-hidden="true"
-                  ></navigation.icon>
+                <SidebarNavigationItem to={navigation.to}>
+                  <navigation.icon className="h-6 w-6" aria-hidden="true" />
                   {!isProjectSidebarNarrow && (
                     <span className="ml-4">{navigation.name}</span>
                   )}
@@ -235,7 +230,7 @@ function ProjectLayout(): ReactElement {
 
               if (isProjectSidebarNarrow) {
                 return (
-                  <TooltipProvider key={navigation.to}>
+                  <TooltipProvider key={navigation.name}>
                     <Tooltip>
                       <TooltipTrigger asChild>{item}</TooltipTrigger>
                       <TooltipContent side="right" align="center">

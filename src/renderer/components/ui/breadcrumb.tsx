@@ -46,7 +46,7 @@ function BreadcrumbLink({
 }: React.ComponentProps<'a'> & {
   asChild?: boolean;
 }): React.JSX.Element {
-  const Comp = asChild ? Slot : 'a';
+  const Comp = asChild === true ? Slot : 'a';
 
   return (
     <Comp

@@ -47,7 +47,7 @@ function ProjectCollectionsLayout(): ReactElement {
     <div className="flex h-full">
       <Sidebar>
         <ScrollArea>
-          <SidebarHeader></SidebarHeader>
+          <SidebarHeader />
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel>Settings</SidebarGroupLabel>

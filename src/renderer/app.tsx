@@ -10,6 +10,7 @@ import { ThemeProvider } from '@renderer/components/theme-provider';
 import '@renderer/index.css';
 import { queryClient } from '@renderer/queries';
 import '@renderer/sentry';
+// eslint-disable-next-line no-duplicate-imports
 import { reactErrorHandler, router } from '@renderer/sentry';
 
 // Render the app
@@ -17,17 +18,31 @@ const rootElement = document.getElementById('app')!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement, {
     // Callback called when an error is thrown and not caught by an ErrorBoundary.
+    // Type cast needed: React 19 ErrorInfo type includes `| undefined` for optional properties,
+    // but @sentry/react v10.17.0 ErrorInfo type doesn't. Runtime behavior is compatible.
     onUncaughtError: reactErrorHandler((error, errorInfo) => {
-      window.ipc.core.logger.error({
+      void window.ipc.core.logger.error({
         source: 'desktop',
         message: `Uncaught React error`,
         meta: { error, errorInfo },
       });
-    }),
+    }) as (
+      error: unknown,
+      errorInfo: { componentStack?: string | undefined }
+    ) => void,
     // Callback called when React catches an error in an ErrorBoundary.
-    onCaughtError: reactErrorHandler(),
+    onCaughtError: reactErrorHandler() as (
+      error: unknown,
+      errorInfo: {
+        componentStack?: string | undefined;
+        errorBoundary?: React.Component<unknown> | undefined;
+      }
+    ) => void,
     // Callback called when React automatically recovers from errors.
-    onRecoverableError: reactErrorHandler(),
+    onRecoverableError: reactErrorHandler() as (
+      error: unknown,
+      errorInfo: ReactDOM.ErrorInfo
+    ) => void,
   });
 
   root.render(

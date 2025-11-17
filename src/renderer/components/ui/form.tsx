@@ -1,8 +1,8 @@
 'use client';
 
-import * as SliderPrimitive from '@radix-ui/react-slider';
+import type * as SliderPrimitive from '@radix-ui/react-slider';
 import { Slot } from '@radix-ui/react-slot';
-import * as SwitchPrimitive from '@radix-ui/react-switch';
+import type * as SwitchPrimitive from '@radix-ui/react-switch';
 import { EditIcon, LanguagesIcon, TrashIcon } from 'lucide-react';
 import * as React from 'react';
 import {
@@ -107,11 +107,11 @@ function FormControl({
       data-slot="form-control"
       id={formItemId}
       aria-describedby={
-        !error
+        error === undefined
           ? `${formDescriptionId}`
           : `${formDescriptionId} ${formMessageId}`
       }
-      aria-invalid={!!error}
+      aria-invalid={error !== undefined}
       {...props}
     />
   );
@@ -138,9 +138,10 @@ function FormMessage({
   ...props
 }: React.ComponentProps<'p'>): React.JSX.Element | null {
   const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message ?? '') : props.children;
+  const body =
+    error !== undefined ? String(error.message ?? '') : props.children;
 
-  if (!body) {
+  if (body === undefined || body === null || body === '') {
     return null;
   }
 
@@ -190,7 +191,7 @@ function FormInputField<TFieldValues extends FieldValues>({
     <Input
       type={type === 'telephone' ? 'tel' : type}
       {...field}
-      value={field.value || ''} // The value can now also be null but the input can't handle it, so we set a default empty string instead
+      value={field.value !== null ? field.value : ''} // The value can now also be null but the input can't handle it, so we set a default empty string instead
       onChange={(event) => field.onChange(transform(event.target.value))}
       {...props}
     />
@@ -224,7 +225,7 @@ function FormTextareaField<TFieldValues extends FieldValues>({
   return (
     <Textarea
       {...field}
-      value={field.value || ''} // The value can now also be null but the input can't handle it, so we set a default empty string instead
+      value={field.value !== null ? field.value : ''} // The value can now also be null but the input can't handle it, so we set a default empty string instead
       onChange={(event) => field.onChange(transform(event.target.value))}
       {...props}
     />
@@ -303,27 +304,39 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
           // Text input specific props
           minLength={
             'min' in fieldDefinition
-              ? fieldDefinition.min || undefined
+              ? fieldDefinition.min !== null
+                ? fieldDefinition.min
+                : undefined
               : undefined
           }
           maxLength={
             'max' in fieldDefinition
-              ? fieldDefinition.max || undefined
+              ? fieldDefinition.max !== null
+                ? fieldDefinition.max
+                : undefined
               : undefined
           }
           // Number input specific props
           min={
             'min' in fieldDefinition
-              ? fieldDefinition.min || undefined
+              ? fieldDefinition.min !== null
+                ? fieldDefinition.min
+                : undefined
               : undefined
           }
           max={
             'max' in fieldDefinition
-              ? fieldDefinition.max || undefined
+              ? fieldDefinition.max !== null
+                ? fieldDefinition.max
+                : undefined
               : undefined
           }
           // Props common to all input types
-          defaultValue={fieldDefinition.defaultValue || undefined}
+          defaultValue={
+            fieldDefinition.defaultValue !== null
+              ? fieldDefinition.defaultValue
+              : undefined
+          }
           required={fieldDefinition.isRequired}
           disabled={fieldDefinition.isDisabled}
           field={field}
@@ -333,9 +346,17 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
     case 'textarea':
       return (
         <FormTextareaField
-          minLength={fieldDefinition.min || undefined}
-          maxLength={fieldDefinition.max || undefined}
-          defaultValue={fieldDefinition.defaultValue || undefined}
+          minLength={
+            fieldDefinition.min !== null ? fieldDefinition.min : undefined
+          }
+          maxLength={
+            fieldDefinition.max !== null ? fieldDefinition.max : undefined
+          }
+          defaultValue={
+            fieldDefinition.defaultValue !== null
+              ? fieldDefinition.defaultValue
+              : undefined
+          }
           required={fieldDefinition.isRequired}
           disabled={fieldDefinition.isDisabled}
           field={field}
@@ -420,21 +441,22 @@ function FormComponentFromFieldDefinitionTranslatable<
    */
   function hasErrorsInTranslations(): boolean {
     // Traverse the errors object to reach the base field errors
-    let fieldErrors = form.formState.errors;
+    let fieldErrors: unknown = form.formState.errors;
     for (const segment of baseName.split('.')) {
-      if (!fieldErrors || typeof fieldErrors !== 'object') {
+      if (typeof fieldErrors !== 'object' || fieldErrors === null) {
         return false;
       }
-      fieldErrors = fieldErrors[segment];
+      fieldErrors = (fieldErrors as Record<string, unknown>)[segment];
     }
 
-    if (!fieldErrors || typeof fieldErrors !== 'object') {
+    if (typeof fieldErrors !== 'object' || fieldErrors === null) {
       return false;
     }
 
     // Check for errors in other languages
     return supportedLanguages.some(
-      (language) => language !== currentLanguage && !!fieldErrors[language]
+      (language) =>
+        language !== currentLanguage && fieldErrors[language] !== undefined
     );
   }
 
@@ -465,14 +487,14 @@ function FormComponentFromFieldDefinitionTranslatable<
                     fieldDefinition.label
                   )}
                 </DialogTitle>
-                {fieldDefinition.description && (
+                {fieldDefinition.description !== null ? (
                   <DialogDescription>
                     {translateContent(
                       'fieldDefinition.description',
                       fieldDefinition.description
                     )}
                   </DialogDescription>
-                )}
+                ) : null}
               </DialogHeader>
 
               <DialogBody>
@@ -484,7 +506,7 @@ function FormComponentFromFieldDefinitionTranslatable<
                       render={({ field }) => (
                         <FormItem>
                           {/* Translations into supported languages are always required! */}
-                          <FormLabel isRequired={true}>{language}</FormLabel>
+                          <FormLabel isRequired>{language}</FormLabel>
                           <FormControl>
                             <FormComponentFromFieldDefinition
                               field={field}
@@ -557,35 +579,39 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
           )}
         >
           <div className="flex flex-col">
-            {isDraggable && (
+            {isDraggable === true ? (
               <DragHandle
                 id={fieldDefinition.id}
-                className={cn({ 'rounded-b-none': isEditable || onDelete })}
+                className={cn({
+                  'rounded-b-none':
+                    isEditable === true || onDelete !== undefined,
+                })}
               />
-            )}
-            {isEditable && (
+            ) : null}
+            {isEditable === true ? (
               <Button
                 Icon={EditIcon}
                 variant="secondary"
                 size="icon"
                 className={cn({
-                  'rounded-none': isDraggable && onDelete,
-                  'rounded-t-none': isDraggable,
-                  'rounded-b-none': onDelete,
+                  'rounded-none':
+                    isDraggable === true && onDelete !== undefined,
+                  'rounded-t-none': isDraggable === true,
+                  'rounded-b-none': onDelete !== undefined,
                 })}
               />
-            )}
-            {onDelete && (
+            ) : null}
+            {onDelete !== undefined ? (
               <Button
                 Icon={TrashIcon}
                 variant="destructive"
                 size="icon"
                 onClick={() => onDelete(fieldDefinition)}
                 className={cn({
-                  'rounded-t-none': isDraggable || isEditable,
+                  'rounded-t-none': isDraggable === true || isEditable === true,
                 })}
               />
-            )}
+            ) : null}
           </div>
           <div className="flex w-full flex-col gap-2">
             <FormLabel isRequired={fieldDefinition.isRequired}>
@@ -600,14 +626,14 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                 translateContent={translateContent}
               />
             </FormControl>
-            {fieldDefinition.description && (
+            {fieldDefinition.description !== null ? (
               <FormDescription>
                 {translateContent(
                   'fieldDefinition.description',
                   fieldDefinition.description
                 )}
               </FormDescription>
-            )}
+            ) : null}
             <FormMessage />
           </div>
         </FormItem>

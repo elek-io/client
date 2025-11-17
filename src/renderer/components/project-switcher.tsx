@@ -24,11 +24,7 @@ export function ProjectSwitcher({
 }: {
   project: Project;
 }): React.JSX.Element | null {
-  const [activeProject, setActiveProject] = React.useState(project);
-
-  if (!activeProject) {
-    return null;
-  }
+  const [activeProject, _setActiveProject] = React.useState(project);
 
   return (
     <SidebarMenu>
@@ -56,7 +52,7 @@ export function ProjectSwitcher({
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             align="start"
-            side={'right'}
+            side="right"
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">

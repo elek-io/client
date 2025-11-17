@@ -87,7 +87,7 @@ export function ProjectSidebar({
         <ProjectSwitcher project={project} />
       </SidebarHeader>
       <SidebarContent>
-        {project.remoteOriginUrl && (
+        {project.remoteOriginUrl != null ? (
           <SidebarGroup>
             <ButtonGroup className="w-full">
               <Button
@@ -107,7 +107,7 @@ export function ProjectSidebar({
               </Button>
               <ButtonGroupSeparator />
               <Button
-                onClick={() => projectChangesQuery.refetch()}
+                onClick={async () => await projectChangesQuery.refetch()}
                 disabled={projectChangesQuery.isFetching || isSynchronizing}
                 Icon={RefreshCw}
               />
@@ -125,7 +125,7 @@ export function ProjectSidebar({
               )}
             </p>
           </SidebarGroup>
-        )}
+        ) : null}
         <SidebarGroup>
           <SidebarGroupLabel>Project</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -144,7 +144,7 @@ export function ProjectSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter></SidebarFooter>
+      <SidebarFooter />
     </Sidebar>
   );
 }

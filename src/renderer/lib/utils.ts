@@ -46,7 +46,8 @@ export function initials(name: string): string {
   const lastPart = parts.pop();
 
   return (
-    (firstPart?.substring(0, 1) || '') + (lastPart?.substring(0, 1) || '')
+    (firstPart !== undefined ? firstPart.substring(0, 1) : '') +
+    (lastPart !== undefined ? lastPart.substring(0, 1) : '')
   ).toUpperCase();
 }
 
@@ -100,7 +101,7 @@ export function formatDatetime(
   relative: string;
   absolute: string;
 } {
-  if (!datetime) {
+  if (datetime === null || datetime === undefined) {
     // e.g. in case of a file not being updated yet, show a dash
     return {
       relative: '-',
@@ -124,7 +125,7 @@ export function formatDatetime(
  * @param bytes Number of bytes
  */
 export function formatBytes(bytes: number): string {
-  if (bytes == 0) return '0 Bytes';
+  if (bytes === 0) return '0 Bytes';
   const k = 1024,
     decimals = 2,
     sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
