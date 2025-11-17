@@ -7,7 +7,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
 import { translatableDefaultNull } from '@renderer/components/pages/util';
 import { Button } from '@renderer/components/ui/button';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type CreateCollectionProps,
@@ -28,12 +28,6 @@ function ProjectCollectionCreate(): ReactElement {
 
   const createCollectionForm = useForm<CreateCollectionProps>({
     resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log('formData', data);
-      console.log(
-        'validation result',
-        await zodResolver(createCollectionSchema)(data, context, options)
-      );
       return zodResolver(createCollectionSchema)(data, context, options);
     },
     defaultValues: {
@@ -62,7 +56,7 @@ function ProjectCollectionCreate(): ReactElement {
     return (
       <>
         A Collection holds information about how your content is structured.
-        <br></br>
+        <br />
         Read more about <a href="#">Collections in the documentation</a>.
       </>
     );
@@ -92,11 +86,11 @@ function ProjectCollectionCreate(): ReactElement {
       );
       setIsCreatingCollection(false);
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Created new collection',
         description: 'You can now create Entries for this new Collection.',
       });
-      router.navigate({
+      await router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
           projectId: context.project.id,
@@ -105,9 +99,13 @@ function ProjectCollectionCreate(): ReactElement {
       });
     } catch (error) {
       setIsCreatingCollection(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to create new collection',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to create new collection',
         description: 'There was an error creating the new Collection.',
       });
@@ -116,9 +114,9 @@ function ProjectCollectionCreate(): ReactElement {
 
   return (
     <CreateUpdateCollectionPage
-      title={`Create a new Collection`}
-      actions={<Actions></Actions>}
-      description={<Description></Description>}
+      title="Create a new Collection"
+      actions={<Actions />}
+      description={<Description />}
       supportedLanguages={context.project.settings.language.supported}
       defaultLanguage={context.project.settings.language.default}
       collectionForm={createCollectionForm}

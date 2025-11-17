@@ -3,6 +3,21 @@ import type { Dialog } from 'electron';
 
 import type ElekIoCore from '@elek-io/core';
 
+/**
+ * Utility type that transforms all methods in an object to return Promises.
+ * This reflects the async nature of IPC communication - even if the underlying
+ * method is synchronous, calling it through ipcRenderer.invoke is always async.
+ *
+ * @template T - The object type to transform
+ */
+type AsyncifyMethods<T> = {
+  [K in keyof T]: T[K] extends (...args: infer A) => infer R
+    ? (...args: A) => Promise<Awaited<R>>
+    : T[K] extends object
+      ? AsyncifyMethods<T[K]>
+      : T[K];
+};
+
 declare global {
   interface ContextBridgeApi {
     electron: {
@@ -12,7 +27,7 @@ declare global {
         showSaveDialog: Dialog['showSaveDialog'];
       };
     };
-    core: {
+    core: AsyncifyMethods<{
       api: {
         start: ElekIoCore['api']['start'];
         isRunning: ElekIoCore['api']['isRunning'];
@@ -62,7 +77,7 @@ declare global {
         update: ElekIoCore['entries']['update'];
         delete: ElekIoCore['entries']['delete'];
       };
-    };
+    }>;
   }
   interface Window {
     ipc: ContextBridgeApi;

@@ -41,7 +41,7 @@ import {
 } from '@renderer/components/ui/form';
 import { FormInput } from '@renderer/components/ui/form-input';
 import { Page } from '@renderer/components/ui/page';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type CloneProjectProps } from '@elek-io/core';
 
@@ -83,15 +83,19 @@ function ListProjectsPage(): ReactElement {
       setIsCloningDialogOpen(false);
       await router.invalidate();
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully cloned Project',
         description: 'The Project was successfully cloned.',
       });
     } catch (error) {
       setIsCloning(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to clone Project',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to clone Project',
         description: 'There was an error cloning the Project.',
       });
@@ -102,7 +106,7 @@ function ListProjectsPage(): ReactElement {
     return (
       <>
         A Project ...
-        <br></br>
+        <br />
         Read more about <a href="#">Projects in the documentation</a>.
       </>
     );
@@ -113,7 +117,7 @@ function ListProjectsPage(): ReactElement {
       <>
         <Button
           Icon={Plus}
-          onClick={() => router.navigate({ to: '/projects/create' })}
+          onClick={async () => router.navigate({ to: '/projects/create' })}
         >
           Create Project
         </Button>
@@ -122,7 +126,7 @@ function ListProjectsPage(): ReactElement {
           onOpenChange={setIsCloningDialogOpen}
         >
           <DialogTrigger asChild>
-            <Button Icon={DownloadCloud} variant={'secondary'}>
+            <Button Icon={DownloadCloud} variant="secondary">
               Clone Project
             </Button>
           </DialogTrigger>
@@ -143,11 +147,11 @@ function ListProjectsPage(): ReactElement {
                     name="url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel isRequired={true}>URL</FormLabel>
+                        <FormLabel isRequired>URL</FormLabel>
                         <FormControl>
                           <FormInput field={field} type="text" />
                         </FormControl>
-                        <FormDescription></FormDescription>
+                        <FormDescription />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -174,8 +178,8 @@ function ListProjectsPage(): ReactElement {
   return (
     <Page
       title="Projects"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      description={<Description />}
+      actions={<Actions />}
       layout="bare"
     >
       {context.projects.total === 0 ? (
@@ -225,10 +229,10 @@ function ListProjectsPage(): ReactElement {
                 </CardHeader>
                 <CardContent>
                   <RemoteOriginBadge
-                    variant={'outline'}
+                    variant="outline"
                     remoteOriginUrl={project.remoteOriginUrl}
                   />
-                  <Badge variant={'outline'}>
+                  <Badge variant="outline">
                     Core version: {project.coreVersion}
                   </Badge>
                 </CardContent>

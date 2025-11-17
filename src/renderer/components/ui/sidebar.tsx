@@ -20,11 +20,11 @@ function Sidebar({
     <aside
       className={cn(
         'flex shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900',
-        isNarrow ? 'w-18' : 'w-60',
+        isNarrow === true ? 'w-18' : 'w-60',
         className
       )}
       {...props}
-    ></aside>
+    />
   );
 }
 

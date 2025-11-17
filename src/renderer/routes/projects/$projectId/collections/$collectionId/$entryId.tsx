@@ -17,5 +17,5 @@ export const Route = createFileRoute(
 });
 
 function ProjectCollectionEntryLayout(): ReactElement {
-  return <Outlet></Outlet>;
+  return <Outlet />;
 }

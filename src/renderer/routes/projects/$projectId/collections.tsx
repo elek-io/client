@@ -20,7 +20,7 @@ function ProjectCollectionsLayout(): ReactElement {
         <ScrollArea>
           <SidebarNavigation>
             <SidebarNavigationItem to="/projects/$projectId/collections/create">
-              <Plus className="h-6 w-6" aria-hidden="true"></Plus>
+              <Plus className="h-6 w-6" aria-hidden="true" />
               <span className="ml-4">Create Collection</span>
             </SidebarNavigationItem>
 
@@ -34,7 +34,7 @@ function ProjectCollectionsLayout(): ReactElement {
                   collectionId: collection.id,
                 }}
               >
-                <Layers className="h-6 w-6" aria-hidden="true"></Layers>
+                <Layers className="h-6 w-6" aria-hidden="true" />
                 <span className="ml-4">
                   {context.translateContent(
                     'collection.name.plural',
@@ -50,7 +50,7 @@ function ProjectCollectionsLayout(): ReactElement {
         </ScrollArea>
       </Sidebar>
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <Outlet></Outlet>
+        <Outlet />
       </div>
     </div>
   );

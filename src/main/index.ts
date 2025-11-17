@@ -5,7 +5,7 @@ import {
 import {
   app,
   BrowserWindow,
-  BrowserWindowConstructorOptions,
+  type BrowserWindowConstructorOptions,
   dialog,
   ipcMain,
   net,
@@ -36,6 +36,7 @@ sentryInit({
 
 class Main {
   public readonly customFileProtocol: string = 'elek-io-local-file';
+  private readonly rendererUrl = process.env['ELECTRON_RENDERER_URL'];
   private allowedHostnamesToLoadInternal: string[] = [];
   private allowedHostnamesToLoadExternal: string[] = [
     this.customFileProtocol,
@@ -48,10 +49,8 @@ class Main {
 
   constructor() {
     // Allow the vite dev server to do HMR in development
-    if (app.isPackaged === false && process.env['ELECTRON_RENDERER_URL']) {
-      this.allowedHostnamesToLoadInternal.push(
-        process.env['ELECTRON_RENDERER_URL']
-      );
+    if (app.isPackaged === false && this.rendererUrl !== undefined) {
+      this.allowedHostnamesToLoadInternal.push(this.rendererUrl);
     }
 
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -60,8 +59,12 @@ class Main {
     // }
 
     // Register app events
-    app.on('ready', () => this.onAppReady());
-    app.on('activate', () => this.onAppActivate());
+    app.on('ready', () => {
+      void this.onAppReady();
+    });
+    app.on('activate', () => {
+      void this.onAppActivate();
+    });
     app.on('window-all-closed', () => this.onAppAllWindowsClosed());
     app.on('web-contents-created', (event, webContents) =>
       this.onAppWebContentsCreated(event, webContents)
@@ -148,7 +151,7 @@ class Main {
       }
 
       setImmediate(() => {
-        shell.openExternal(url);
+        void shell.openExternal(url);
       });
       return { action: 'deny' };
     });
@@ -190,17 +193,19 @@ class Main {
     if (app.isPackaged) {
       // Client is in production
       // Load the static index.html directly
-      window.loadFile(Path.join(__dirname, `../renderer/index.html`));
+      await window.loadFile(Path.join(__dirname, `../renderer/index.html`));
       // Uncomment to debug a production build
       // window.webContents.openDevTools();
     } else {
       // Client is in development
-      const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
-      if (!rendererUrl) {
+      if (this.rendererUrl === undefined) {
         throw new Error(`"process.env['ELECTRON_RENDERER_URL']" is empty`);
       }
-      console.log('Loading frontend in development by URL:', rendererUrl);
-      window.loadURL(rendererUrl);
+      this.core?.logger.info({
+        source: 'desktop',
+        message: `Loading frontend in development by URL: ${this.rendererUrl}`,
+      });
+      await window.loadURL(this.rendererUrl);
       window.webContents.openDevTools();
     }
 

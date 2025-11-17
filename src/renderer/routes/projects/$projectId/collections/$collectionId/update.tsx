@@ -6,7 +6,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
 import { Button } from '@renderer/components/ui/button';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import {
   type DeleteCollectionProps,
@@ -28,12 +28,6 @@ function ProjectCollectionUpdate(): ReactElement {
 
   const updateCollectionForm = useForm<UpdateCollectionProps>({
     resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log('formData', data);
-      console.log(
-        'validation result',
-        await zodResolver(updateCollectionSchema)(data, context, options)
-      );
       return zodResolver(updateCollectionSchema)(data, context, options);
     },
     defaultValues: {
@@ -51,7 +45,7 @@ function ProjectCollectionUpdate(): ReactElement {
     return (
       <>
         A Collection holds information about how your content is structured.
-        <br></br>
+        <br />
         Read more about <a href="#">Collections in the documentation</a>.
       </>
     );
@@ -64,7 +58,7 @@ function ProjectCollectionUpdate(): ReactElement {
           isLoading={isUpdatingCollection}
           onClick={updateCollectionForm.handleSubmit(onUpdate)}
         >
-          <Check className="mr-2 h-4 w-4"></Check>
+          <Check className="mr-2 h-4 w-4" />
           Save changes
         </Button>
       </>
@@ -78,7 +72,7 @@ function ProjectCollectionUpdate(): ReactElement {
         ...collection,
       });
       setIsUpdatingCollection(false);
-      router.navigate({
+      await router.navigate({
         to: '/projects/$projectId/collections/$collectionId',
         params: {
           projectId: context.project.id,
@@ -87,9 +81,13 @@ function ProjectCollectionUpdate(): ReactElement {
       });
     } catch (error) {
       setIsUpdatingCollection(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to update Collection',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to update Collection',
         description: 'There was an error updating the Collection.',
       });
@@ -103,20 +101,24 @@ function ProjectCollectionUpdate(): ReactElement {
         id: collection.id,
       });
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully deleted Collection',
         description: 'The Collection was successfully deleted.',
       });
-      router.navigate({
+      await router.navigate({
         to: '/projects/$projectId/collections',
         params: {
           projectId: context.project.id,
         },
       });
     } catch (error) {
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to delete Collection',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to delete Collection',
         description: 'There was an error deleting the Collection from disk.',
       });
@@ -126,8 +128,8 @@ function ProjectCollectionUpdate(): ReactElement {
   return (
     <CreateUpdateCollectionPage
       title={title}
-      actions={<Actions></Actions>}
-      description={<Description></Description>}
+      actions={<Actions />}
+      description={<Description />}
       supportedLanguages={context.project.settings.language.supported}
       defaultLanguage={context.project.settings.language.default}
       collectionForm={updateCollectionForm}

@@ -17,7 +17,7 @@ import {
 import { Input } from '@renderer/components/ui/input';
 import { Page } from '@renderer/components/ui/page';
 import { Textarea } from '@renderer/components/ui/textarea';
-import { NotificationIntent, useStore } from '@renderer/store';
+import { useStore } from '@renderer/store';
 
 import { type CreateProjectProps, createProjectSchema } from '@elek-io/core';
 
@@ -32,11 +32,6 @@ function CreateProjectPage(): ReactElement {
   const [isCreatingProject, setCreatingProject] = useState(false);
   const createProjectForm = useForm<CreateProjectProps>({
     resolver: async (data, context, options) => {
-      // you can debug your validation schema here
-      console.log(
-        'ProjectForm validation result',
-        await zodResolver(createProjectSchema)(data, context, options)
-      );
       return zodResolver(createProjectSchema)(data, context, options);
     },
     defaultValues: {
@@ -49,7 +44,7 @@ function CreateProjectPage(): ReactElement {
     return (
       <>
         New Projects start with no history or data.
-        <br></br>
+        <br />
         Read more about <a href="#">Projects in the documentation</a>.
       </>
     );
@@ -76,19 +71,23 @@ function CreateProjectPage(): ReactElement {
         ...project,
       });
       addNotification({
-        intent: NotificationIntent.SUCCESS,
+        intent: 'success',
         title: 'Successfully created Project',
         description: `The Project "${project.name}" was successfully created.`,
       });
-      router.navigate({
+      await router.navigate({
         to: '/projects/$projectId',
         params: { projectId: newProject.id },
       });
     } catch (error) {
       setCreatingProject(false);
-      console.error(error);
+      await context.core.logger.error({
+        source: 'desktop',
+        message: 'Failed to create Project',
+        meta: { error },
+      });
       addNotification({
-        intent: NotificationIntent.DANGER,
+        intent: 'danger',
         title: 'Failed to create Project',
         description: 'There was an error creating the Project on disk.',
       });
@@ -98,8 +97,8 @@ function CreateProjectPage(): ReactElement {
   return (
     <Page
       title="Create a new Project"
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
+      description={<Description />}
+      actions={<Actions />}
     >
       <Form {...createProjectForm}>
         <form onSubmit={createProjectForm.handleSubmit(onCreate)}>
@@ -107,14 +106,14 @@ function CreateProjectPage(): ReactElement {
             <div className="grid grid-cols-12 gap-6">
               <FormField
                 control={createProjectForm.control}
-                name={'name'}
+                name="name"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Project name</FormLabel>
+                    <FormLabel isRequired>Project name</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -122,14 +121,14 @@ function CreateProjectPage(): ReactElement {
 
               <FormField
                 control={createProjectForm.control}
-                name={'description'}
+                name="description"
                 render={({ field }) => (
                   <FormItem className="col-span-12">
-                    <FormLabel isRequired={true}>Project description</FormLabel>
+                    <FormLabel isRequired>Project description</FormLabel>
                     <FormControl>
                       <Textarea {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
+                    <FormDescription />
                     <FormMessage />
                   </FormItem>
                 )}

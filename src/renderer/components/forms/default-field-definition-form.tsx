@@ -50,7 +50,7 @@ const DefaultFieldDefinitionForm = ({
         name={`label.${currentLanguage}`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel isRequired={true}>Label</FormLabel>
+            <FormLabel isRequired>Label</FormLabel>
             <FormControl>
               <TranslatableFormInput
                 title="Label"
@@ -79,7 +79,7 @@ const DefaultFieldDefinitionForm = ({
         name={`description.${currentLanguage}`}
         render={({ field }) => (
           <FormItem>
-            <FormLabel isRequired={true}>Description</FormLabel>
+            <FormLabel isRequired>Description</FormLabel>
             <FormControl>
               <TranslatableFormTextarea
                 title="Description"
@@ -101,10 +101,10 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name={'inputWidth'}
+        name="inputWidth"
         render={({ field }) => (
           <FormItem>
-            <FormLabel isRequired={true}>Width</FormLabel>
+            <FormLabel isRequired>Width</FormLabel>
             <FormControl>
               <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger>
@@ -133,11 +133,11 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name={`isRequired`}
+        name="isRequired"
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
-              <FormLabel isRequired={true}>Required</FormLabel>
+              <FormLabel isRequired>Required</FormLabel>
               <FormDescription>
                 Required fields need to be filled before an Item of the
                 Collection can be created or updated.{' '}
@@ -166,11 +166,11 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name={`isUnique`}
+        name="isUnique"
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
-              <FormLabel isRequired={true}>Unique</FormLabel>
+              <FormLabel isRequired>Unique</FormLabel>
               <FormDescription>
                 You won&apos;t be able to create an Entry if there is an
                 existing Entry with identical content.
@@ -198,11 +198,11 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name={`isDisabled`}
+        name="isDisabled"
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
-              <FormLabel isRequired={true}>Disabled</FormLabel>
+              <FormLabel isRequired>Disabled</FormLabel>
               <FormDescription>
                 You won&apos;t be able to change the Value if this is active.
               </FormDescription>

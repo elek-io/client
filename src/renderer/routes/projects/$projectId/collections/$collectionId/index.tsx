@@ -56,7 +56,7 @@ function ProjectCollectionIndexPage(): ReactElement {
   const [filter, setFilter] = useState('');
   const dataQuery = useQuery({
     queryKey: ['entries', context.currentCollection.id, pagination, filter],
-    queryFn: () =>
+    queryFn: async () =>
       context.core.entries.list({
         projectId: context.project.id,
         collectionId: context.currentCollection.id,
@@ -123,7 +123,7 @@ function ProjectCollectionIndexPage(): ReactElement {
       <>
         <Button
           Icon={Plus}
-          onClick={() =>
+          onClick={async () =>
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/create',
               params: {
@@ -142,7 +142,7 @@ function ProjectCollectionIndexPage(): ReactElement {
         <Button
           Icon={Settings}
           variant="secondary"
-          onClick={() =>
+          onClick={async () =>
             router.navigate({
               to: '/projects/$projectId/collections/$collectionId/update',
               params: {
@@ -191,8 +191,8 @@ function ProjectCollectionIndexPage(): ReactElement {
     return columns;
   }
 
-  function onRowClicked(id: string): void {
-    router.navigate({
+  async function onRowClicked(id: string): Promise<void> {
+    await router.navigate({
       to: '/projects/$projectId/collections/$collectionId/$entryId/update',
       params: {
         projectId: context.project.id,
@@ -203,11 +203,7 @@ function ProjectCollectionIndexPage(): ReactElement {
   }
 
   return (
-    <Page
-      title={Title()}
-      description={<Description></Description>}
-      actions={<Actions></Actions>}
-    >
+    <Page title={Title()} description={<Description />} actions={<Actions />}>
       <div className="flex items-center justify-end p-6">
         <Input
           placeholder={`Filter ${context.translateContent(
@@ -222,7 +218,7 @@ function ProjectCollectionIndexPage(): ReactElement {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
               Visible Values
-              <ChevronDown className="ml-2 h-4 w-4"></ChevronDown>
+              <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -267,12 +263,12 @@ function ProjectCollectionIndexPage(): ReactElement {
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length ? (
+          {table.getRowModel().rows.length > 0 ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
-                onClick={() => onRowClicked(row.original.id)}
+                onClick={async () => onRowClicked(row.original.id)}
                 className="hover:cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (
@@ -317,12 +313,13 @@ function ProjectCollectionIndexPage(): ReactElement {
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                disabled={table.getCanPreviousPage() === false}
               />
             </PaginationItem>
 
             {Array.from({ length: table.getPageCount() }).map(
               (_value, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <PaginationItem key={index + 1}>
                   <PaginationLink
                     onClick={() => table.setPageIndex(index)}
@@ -340,7 +337,7 @@ function ProjectCollectionIndexPage(): ReactElement {
             <PaginationItem>
               <PaginationNext
                 onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                disabled={table.getCanNextPage() === false}
               />
             </PaginationItem>
           </PaginationContent>

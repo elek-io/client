@@ -40,10 +40,7 @@ function ProjectCollectionsLayout(): ReactElement {
           <SidebarNavigation>
             {settingsNavigation.map((navigation) => (
               <SidebarNavigationItem key={navigation.to} to={navigation.to}>
-                <navigation.icon
-                  className="h-6 w-6"
-                  aria-hidden="true"
-                ></navigation.icon>
+                <navigation.icon className="h-6 w-6" aria-hidden="true" />
                 <span className="ml-4">{navigation.name}</span>
               </SidebarNavigationItem>
             ))}
@@ -51,7 +48,7 @@ function ProjectCollectionsLayout(): ReactElement {
         </ScrollArea>
       </Sidebar>
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <Outlet></Outlet>
+        <Outlet />
       </div>
     </div>
   );
