@@ -2,7 +2,7 @@
 
 import { type HTMLAttributes, type ReactElement } from 'react';
 
-import { Commit } from '@renderer/components/ui/commit';
+import { Commit } from '@renderer/components/commit';
 import { cn } from '@renderer/lib/utils';
 
 import { type GitCommit, type SupportedLanguage } from '@elek-io/core';

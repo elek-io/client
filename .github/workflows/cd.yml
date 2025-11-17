@@ -33,8 +33,8 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      # - name: Run linter
-      #   run: pnpm run lint
+      - name: Run linter
+        run: pnpm run lint
       - name: Create or update pull request
         id: changesets
         uses: changesets/action@v1

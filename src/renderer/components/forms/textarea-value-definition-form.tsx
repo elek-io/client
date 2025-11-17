@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react';
 
+import { FormInput } from '@renderer/components/form-input';
+import { FormTextarea } from '@renderer/components/form-textarea';
 import {
   DefaultFieldDefinitionForm,
   type DefaultFieldDefinitionFormProps,
@@ -13,8 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { FormInput } from '@renderer/components/ui/form-input';
-import { FormTextarea } from '@renderer/components/ui/form-textarea';
 
 import { type TextareaFieldDefinition } from '@elek-io/core';
 

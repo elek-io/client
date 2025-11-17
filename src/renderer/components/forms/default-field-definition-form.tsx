@@ -1,6 +1,8 @@
 import { Fragment, type HTMLAttributes, type ReactElement } from 'react';
 import { type FieldValues, type UseFormReturn } from 'react-hook-form';
 
+import { TranslatableFormInput } from '@renderer/components/form-input';
+import { TranslatableFormTextarea } from '@renderer/components/form-textarea';
 import {
   FormControl,
   FormDescription,
@@ -9,8 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { TranslatableFormInput } from '@renderer/components/ui/form-input';
-import { TranslatableFormTextarea } from '@renderer/components/ui/form-textarea';
 import {
   Select,
   SelectContent,

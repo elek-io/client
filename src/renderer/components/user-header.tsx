@@ -104,12 +104,9 @@ const UserHeader = forwardRef<HTMLInputElement, UserHeaderProps>(
       });
 
     return (
-      <div ref={ref} className="w-full bg-white dark:bg-zinc-900">
-        <div
-          id="navigation-bar"
-          className="flex border-b border-zinc-200 dark:border-zinc-800"
-        >
-          <div className="flex w-60 shrink-0 border-r border-zinc-200 p-2 dark:border-zinc-800">
+      <div ref={ref} className="w-full bg-sidebar">
+        <div id="navigation-bar" className="flex border-b">
+          <div className="flex w-60 shrink-0 border-r p-2">
             {/* <Button
               variant="ghost"
               size="icon"

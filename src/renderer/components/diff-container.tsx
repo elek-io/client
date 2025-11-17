@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { CommitAuthor } from '@renderer/components/commit-author';
 import {
   Card,
   CardAction,
@@ -7,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@renderer/components/ui/card';
-import { CommitAuthor } from '@renderer/components/ui/commit-author';
 
 import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
 

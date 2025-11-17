@@ -5,8 +5,8 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 
+import { Page, type PageProps } from '@renderer/components/page';
 import { Form, FormFieldFromDefinition } from '@renderer/components/ui/form';
-import { Page, type PageProps } from '@renderer/components/ui/page';
 
 import {
   type CreateEntryProps,

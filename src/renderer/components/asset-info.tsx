@@ -1,6 +1,7 @@
 import { Download, Edit2, Trash } from 'lucide-react';
 import type { ReactElement } from 'react';
 
+import { AssetDisplay } from '@renderer/components/asset-display';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +13,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@renderer/components/ui/alert-dialog';
-import { AssetDisplay } from '@renderer/components/ui/asset-display';
 import { Button } from '@renderer/components/ui/button';
 import {
   Tooltip,

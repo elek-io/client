@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
+import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import {
   Form,
@@ -15,7 +16,6 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { Input } from '@renderer/components/ui/input';
-import { Page } from '@renderer/components/ui/page';
 import { Textarea } from '@renderer/components/ui/textarea';
 import { useStore } from '@renderer/store';
 

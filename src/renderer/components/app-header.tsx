@@ -24,14 +24,8 @@ const AppHeader = forwardRef<HTMLInputElement, AppHeaderProps>(
     const [isElekInfoOpen, setIsElekInfoOpen] = useState(false);
 
     return (
-      <header
-        ref={ref}
-        className="window-draggable-area w-full bg-white dark:bg-zinc-900"
-      >
-        <div
-          id="app-bar"
-          className="border-b border-zinc-200 p-2 text-center text-sm dark:border-zinc-800"
-        >
+      <header ref={ref} className="window-draggable-area w-full bg-sidebar">
+        <div id="app-bar" className="border-b p-2 text-center text-sm">
           <DropdownMenu open={isElekInfoOpen} onOpenChange={setIsElekInfoOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-0">

@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { FormInput } from '@renderer/components/form-input';
 import {
   DefaultFieldDefinitionForm,
   type DefaultFieldDefinitionFormProps,
@@ -13,7 +14,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { FormInput } from '@renderer/components/ui/form-input';
 
 import { type NumberFieldDefinition } from '@elek-io/core';
 

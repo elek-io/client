@@ -129,11 +129,11 @@
     font-family: 'Montserrat Variable', sans-serif;
   }
 
-  a {
+  main a {
     color: var(--color-primary);
   }
 
-  a:hover {
+  main a:hover {
     text-decoration: underline;
   }
 }

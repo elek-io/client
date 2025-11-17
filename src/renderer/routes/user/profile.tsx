@@ -4,9 +4,12 @@ import { Check } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
+import { CommitHistory } from '@renderer/components/commit-history';
+import { FormInput } from '@renderer/components/form-input';
+import { Page } from '@renderer/components/page';
+import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
 import { Card } from '@renderer/components/ui/card';
-import { CommitHistory } from '@renderer/components/ui/commit-history';
 import {
   Form,
   FormControl,
@@ -16,9 +19,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { FormInput } from '@renderer/components/ui/form-input';
-import { Page } from '@renderer/components/ui/page';
-import { PageSection } from '@renderer/components/ui/page-section';
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
-import { UserHeader } from '@renderer/components/ui/user-header';
+import { UserHeader } from '@renderer/components/user-header';
 import { useStore } from '@renderer/store';
 
 import {

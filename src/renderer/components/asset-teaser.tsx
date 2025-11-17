@@ -1,6 +1,6 @@
 import type { MouseEventHandler, ReactElement } from 'react';
 
-import { AssetDisplay } from '@renderer/components/ui/asset-display';
+import { AssetDisplay } from '@renderer/components/asset-display';
 import { formatBytes } from '@renderer/lib/utils';
 
 import { type Asset } from '@elek-io/core';

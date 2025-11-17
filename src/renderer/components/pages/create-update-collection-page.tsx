@@ -8,9 +8,17 @@ import {
 } from 'react-hook-form';
 
 import {
+  DraggableComponent,
+  SortableFieldArray,
+} from '@renderer/components/drag-and-drop';
+import { TranslatableFormInput } from '@renderer/components/form-input';
+import { TranslatableFormTextarea } from '@renderer/components/form-textarea';
+import {
   FieldDefinitionForm,
   type FieldDefinitionFormRef,
 } from '@renderer/components/forms/util';
+import { Page, type PageProps } from '@renderer/components/page';
+import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
@@ -22,10 +30,6 @@ import {
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
 import {
-  DraggableComponent,
-  SortableFieldArray,
-} from '@renderer/components/ui/drag-and-drop';
-import {
   Form,
   FormControl,
   FormDescription,
@@ -35,10 +39,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { TranslatableFormInput } from '@renderer/components/ui/form-input';
-import { TranslatableFormTextarea } from '@renderer/components/ui/form-textarea';
-import { Page, type PageProps } from '@renderer/components/ui/page';
-import { PageSection } from '@renderer/components/ui/page-section';
 import {
   Select,
   SelectContent,
