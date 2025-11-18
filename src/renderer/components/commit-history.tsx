@@ -1,8 +1,8 @@
 'use client';
 
-import { type HTMLAttributes, type ReactElement } from 'react';
+import { type HTMLAttributes } from 'react';
 
-import { Commit } from '@renderer/components/commit';
+import { Commit, CommitSkeleton } from '@renderer/components/commit';
 import { cn } from '@renderer/lib/utils';
 
 import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
@@ -21,10 +21,10 @@ export function CommitHistory({
   projectId,
   disabled,
   ...props
-}: CommitHistoryProps): ReactElement {
+}: CommitHistoryProps): React.JSX.Element {
   return (
     <div className={cn('relative', className)} {...props}>
-      <div className="before:absolute before:ml-7 before:h-full before:border-l-2 before:border-primary" />
+      <div className="before:absolute before:ml-6 before:h-full before:border-l-2 before:border-primary" />
       <div className="grid gap-2 py-2">
         {commits.map((commit) => (
           <Commit
@@ -35,6 +35,19 @@ export function CommitHistory({
             to="/projects/$projectId/history/$commitHash"
             params={{ projectId, commitHash: commit.hash }}
           />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function CommitHistorySkeleton(): React.JSX.Element {
+  return (
+    <div className="relative">
+      <div className="before:absolute before:ml-7 before:h-full before:border-l-2 before:border-primary" />
+      <div className="grid gap-2 py-2">
+        {[1, 2, 3].map((index) => (
+          <CommitSkeleton key={index} />
         ))}
       </div>
     </div>

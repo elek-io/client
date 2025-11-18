@@ -1,36 +1,56 @@
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { type ReactElement } from 'react';
 
-import { CommitHistory } from '@renderer/components/commit-history';
+import {
+  CommitHistory,
+  CommitHistorySkeleton,
+} from '@renderer/components/commit-history';
 import { Page } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
+import { queryOptions } from '@renderer/queries';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,
 });
 
-function ProjectDashboardPage(): ReactElement {
+function ProjectDashboardPage(): React.JSX.Element {
+  const { projectId } = Route.useParams();
   const router = useRouter();
-  const context = Route.useRouteContext();
+  const {
+    data: project,
+    isPending: isProjectPending,
+    isError: isProjectError,
+    error: projectError,
+  } = useQuery(queryOptions.projects.read({ id: projectId }));
 
-  function Description(): ReactElement {
+  if (isProjectError) {
+    throw projectError;
+  }
+
+  function Description(): React.JSX.Element {
     return <>The Dashboard gives you an overview of your project.</>;
   }
 
-  function LatestChangesActions(): ReactElement {
+  function LatestChangesActions(): React.JSX.Element {
+    if (isProjectError) {
+      throw projectError;
+    }
+
     return (
       <>
-        <Button
-          onClick={async () =>
-            router.navigate({
-              to: '/projects/$projectId/history',
-              params: { projectId: context.project.id },
-            })
-          }
-        >
-          Full History
-        </Button>
+        {isProjectPending ? null : (
+          <Button
+            onClick={async () =>
+              router.navigate({
+                to: '/projects/$projectId/history',
+                params: { projectId: project.id },
+              })
+            }
+          >
+            Full History
+          </Button>
+        )}
       </>
     );
   }
@@ -45,7 +65,7 @@ function ProjectDashboardPage(): ReactElement {
           standalone
         >
           <pre>
-            <code>{JSON.stringify(context.project, null, 2)}</code>
+            <code>{JSON.stringify(project, null, 2)}</code>
           </pre>
         </PageSection>
         <PageSection
@@ -55,11 +75,15 @@ function ProjectDashboardPage(): ReactElement {
           className="lg:col-span-1"
           standalone
         >
-          <CommitHistory
-            projectId={context.project.id}
-            commits={context.project.fullHistory.slice(0, 5)}
-            language={context.user.language}
-          />
+          {isProjectPending ? (
+            <CommitHistorySkeleton />
+          ) : (
+            <CommitHistory
+              projectId={project.id}
+              commits={project.fullHistory.slice(0, 5)}
+              language="en"
+            />
+          )}
         </PageSection>
       </div>
     </Page>
