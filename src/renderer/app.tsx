@@ -1,4 +1,3 @@
-// Sentry initialization should be imported first!
 import '@fontsource-variable/montserrat';
 import '@fontsource/roboto';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -7,11 +6,11 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { ThemeProvider } from '@renderer/components/theme-provider';
+import '@renderer/index';
+// eslint-disable-next-line no-duplicate-imports
+import { reactErrorHandler, router } from '@renderer/index';
 import '@renderer/index.css';
 import { queryClient } from '@renderer/queries';
-import '@renderer/sentry';
-// eslint-disable-next-line no-duplicate-imports
-import { reactErrorHandler, router } from '@renderer/sentry';
 
 // Render the app
 const rootElement = document.getElementById('app')!;
