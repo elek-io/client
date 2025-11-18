@@ -1,6 +1,15 @@
 # Overview
 
-elek.io Client is built on [Electron](https://www.electronjs.org/), to create a cross-platform desktop application with web technologies (TypeScript, React). The architecture consists of three main layers: the Main Process, the Preload Script, and the Renderer Process.
+## Introduction
+
+elek.io Client is built on [Electron](https://www.electronjs.org/) to create a cross-platform desktop application with web technologies (TypeScript, React).
+
+> [!NOTE]
+> By choosing Electron, we keep the languages (everything is mainly TypeScript) used throughout our repositories to a minimum and the knowledge barrier for potential contributors low. Although applications build e.g. with [Tauri](https://tauri.app/) do have a smaller bundle size and memory footprint, adding another language (Rust) would increase complexity for contributors by alot.
+
+## Architecture
+
+Electron applications consist of three main layers: the Main Process, the Preload Script, and the Renderer Process.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -24,7 +33,7 @@ elek.io Client is built on [Electron](https://www.electronjs.org/), to create a 
 
 While elek.io Client provides the user interface in a desktop application, all core functionalities related to file I/O, content handling, Git operations, local read-only API hosting and CLI usage are encapsulated in the separate [@elek-io/core](https://github.com/elek-io/core) library.
 
-It is used by the Main Process, since only it has access to the filesystem and Node.js APIs - the Renderer Process is sandboxed for security reasons.
+@elek-io/core is used by the Main Process, since only it has access to the filesystem and Node.js APIs - the Renderer Process is sandboxed for security reasons.
 
 Therefore the Renderer Process communicates with the Main Process via IPC (Inter-Process Communication) to request operations via @elek-io/core.
 
@@ -61,11 +70,11 @@ contextBridge.exposeInMainWorld('ipc', {
 // Renderer process uses the IPC API (src/renderer/)
 const project = await window.ipc.core.projects.create({
   name: 'My Project',
-  description: 'A new project',
+  description: 'A new Project',
 });
 ```
 
-50+ IPC Channels are available and organized by namespace.
+35+ IPC Channels are available and organized by namespace.
 
 ### Project Structure
 
@@ -83,6 +92,7 @@ client/
 │       │   └── ui/        # UI components
 │       ├── hooks/         # React hooks
 │       ├── lib/           # Utilities
+│       ├── queries/       # Data fetching, mutations and caching
 │       ├── routes/        # File-based routing
 │       │   ├── projects/
 │       │   │   ├── $projectId/
@@ -98,9 +108,7 @@ client/
 │       │   │   └── profile.tsx
 │       │   └── __root.tsx
 │       ├── app.tsx        # App entry point
-│       ├── ipc.ts         # IPC communication
-│       ├── sentry.ts      # Error monitoring
-│       └── store.ts       # State management
+│       └── index.ts       # Error monitoring and router setup
 ├── build/                 # Build resources (icons, etc.)
 ├── documentation/         # Developer docs
 ├── electron-builder.yml   # Build configuration
@@ -111,7 +119,9 @@ client/
 
 ### Security
 
-As mentioned, elek.io Client only allows the Renderer Process to communicate with the Main Process via a controlled IPC API exposed through the Preload Script. This follows the [security best practices of Electron](https://www.electronjs.org/docs/latest/tutorial/security) and ensures that untrusted code running in the Renderer Process (e.g. third-party libraries, users content) cannot directly access Node.js APIs or the filesystem.
+Handling user content that is distributed and could potentially be malicious within an app that has access to the file system, strict security is necessary. elek.io Client follows [Electron's security best practices](https://www.electronjs.org/docs/latest/tutorial/security) to create strong isolation boundaries.
+
+The Renderer Process can only communicate with the Main Process via a controlled IPC API exposed through the Preload Script. This ensures that untrusted code running in the Renderer Process (e.g., third-party libraries or user content) cannot directly access Node.js APIs or the filesystem.
 
 #### Renderer Process Isolation
 
@@ -131,14 +141,28 @@ A Content Security Policy is enforced via a `<meta>` tag in the `src/renderer/in
 
 #### External Content Restrictions
 
-Some links to elek.io domains and loading of content are allowed in elek.io Client. To prevent abuse, the following restrictions are in place:
+Some links to elek.io domains and loading of content are allowed in elek.io Client. To prevent abuse and potential security risks, the following restrictions are in place:
 
 **URL Whitelisting**:
 
-All external requests (e.g. when a user clicks a link inside the renderer or an Asset is displayed) are checked against a whitelist. See `allowedHostnamesToLoadExternal` in [`src/main/index.ts`](/src/main/index.ts).
+All external requests (e.g., when a user clicks a link inside the renderer or an Asset is displayed) are checked against a whitelist of allowed hostnames:
 
-Links to these hostnames are opened inside the default browser, not an elek.io Client renderer.
+- `elek-io-local-file://` (custom file protocol)
+- `localhost`
+- `elek.io`
+- `api.elek.io`
+- `github.com`
+
+See `allowedHostnamesToLoadExternal` in [`src/main/index.ts:41-46`](/src/main/index.ts) for the implementation.
+
+Links to whitelisted external hostnames are opened in the default system browser, not within an elek.io Client renderer window.
 
 **Custom File Protocol**:
 
-Loading of Assets in the UI is handled via a custom file protocol `elek-io-local-file://` since the standard `file://` protocol in electron has more privileges than in a browser. This ensures path validation (must be within project or tmp folders) and prevents directory traversal.
+Loading of Assets in the UI is handled via a custom file protocol `elek-io-local-file://` since the standard `file://` protocol in Electron has more privileges than in a browser. This custom protocol implementation ensures path validation (files must be within Project or tmp folders) and prevents directory traversal attacks.
+
+See [`src/main/index.ts:267-305`](/src/main/index.ts) for the custom protocol implementation.
+
+---
+
+**Last Updated:** 2025-11-18
