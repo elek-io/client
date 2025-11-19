@@ -1,3 +1,4 @@
+import { ProjectUtilProvider } from '@root/src/renderer/providers/ProjectUtilProvider';
 import { useQuery } from '@tanstack/react-query';
 import { Outlet, createFileRoute } from '@tanstack/react-router';
 
@@ -5,7 +6,6 @@ import {
   ProjectSidebar,
   ProjectSidebarSkeleton,
 } from '@renderer/components/project-sidebar';
-import { ContentTranslationProvider } from '@renderer/providers/ContentTranslationProvider';
 import { queryOptions } from '@renderer/queries';
 
 export const Route = createFileRoute('/projects/$projectId')({
@@ -26,7 +26,7 @@ function ProjectLayout(): React.JSX.Element {
   }
 
   return (
-    <ContentTranslationProvider projectId={projectId}>
+    <ProjectUtilProvider projectId={projectId}>
       <div className="flex h-full overflow-hidden">
         {isProjectPending ? (
           <ProjectSidebarSkeleton />
@@ -38,6 +38,6 @@ function ProjectLayout(): React.JSX.Element {
           <Outlet />
         </div>
       </div>
-    </ContentTranslationProvider>
+    </ProjectUtilProvider>
   );
 }

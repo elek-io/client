@@ -5,11 +5,10 @@ import { type HTMLAttributes } from 'react';
 import { Commit, CommitSkeleton } from '@renderer/components/commit';
 import { cn } from '@renderer/lib/utils';
 
-import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
+import { type GitCommit } from '@elek-io/core';
 
 export interface CommitHistoryProps extends HTMLAttributes<HTMLDivElement> {
   commits: GitCommit[];
-  language: SupportedLanguage;
   projectId: string;
   disabled?: boolean;
 }
@@ -17,7 +16,6 @@ export interface CommitHistoryProps extends HTMLAttributes<HTMLDivElement> {
 export function CommitHistory({
   className,
   commits,
-  language,
   projectId,
   disabled,
   ...props
@@ -29,7 +27,6 @@ export function CommitHistory({
         {commits.map((commit) => (
           <Commit
             key={commit.hash}
-            language={language}
             commit={commit}
             disabled={disabled === true}
             to="/projects/$projectId/history/$commitHash"

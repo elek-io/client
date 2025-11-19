@@ -1,5 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
-import { format, formatDistanceToNow, type Locale } from 'date-fns';
+import { type Locale } from 'date-fns';
 import {
   bg,
   cs,
@@ -63,7 +63,7 @@ export type Icon = ForwardRefExoticComponent<
  *
  * We use english (US) and Chinese (Simplified)
  */
-const importedLocales: Record<SupportedLanguage, Locale> = {
+export const importedLocales: Record<SupportedLanguage, Locale> = {
   bg,
   cs,
   da,
@@ -89,35 +89,6 @@ const importedLocales: Record<SupportedLanguage, Locale> = {
   sv,
   zh: zhCN,
 };
-
-/**
- * Formats given datetime string to be human readable
- * and be in the user selected locale
- */
-export function formatDatetime(
-  datetime: string | null | undefined,
-  language: SupportedLanguage
-): {
-  relative: string;
-  absolute: string;
-} {
-  if (datetime === null || datetime === undefined) {
-    // e.g. in case of a file not being updated yet, show a dash
-    return {
-      relative: '-',
-      absolute: '-',
-    };
-  }
-  return {
-    relative: formatDistanceToNow(datetime, {
-      addSuffix: true,
-      locale: importedLocales[language],
-    }),
-    absolute: format(datetime, 'Pp', {
-      locale: importedLocales[language],
-    }),
-  };
-}
 
 /**
  * Formats given number of bytes into a human readable format

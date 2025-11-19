@@ -7,7 +7,7 @@ import {
   ImageIcon,
   TrashIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 
 import { AssetDisplay } from '@renderer/components/asset-display';
@@ -35,6 +35,16 @@ import {
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
 import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@renderer/components/ui/form';
+import { Input } from '@renderer/components/ui/input';
+import {
   Item,
   ItemContent,
   ItemDescription,
@@ -43,6 +53,8 @@ import {
   ItemTitle,
 } from '@renderer/components/ui/item';
 import { Skeleton } from '@renderer/components/ui/skeleton';
+import { Textarea } from '@renderer/components/ui/textarea';
+import { useProjectUtil } from '@renderer/hooks/useProjectUtil';
 import { formatBytes } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
@@ -52,21 +64,18 @@ import {
   type UpdateAssetProps,
 } from '@elek-io/core';
 
+import { Separator } from './ui/separator';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from './ui/form';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip';
 
 export function AssetTeaser(
   props: Asset & { projectId: string }
 ): React.JSX.Element {
+  const { formatDatetime } = useProjectUtil();
   const { mutateAsync: saveAsset } = useMutation(queryOptions.assets.save);
   const { mutateAsync: updateAsset } = useMutation(queryOptions.assets.update);
   const [isUpdateAssetDialogOpen, setIsUpdateAssetDialogOpen] =
@@ -84,6 +93,29 @@ export function AssetTeaser(
       newFilePath: undefined,
     },
   });
+  const createdTime = formatDatetime({ datetime: props.created });
+  const updatedTime = formatDatetime({ datetime: props.updated });
+  const information = [
+    {
+      key: 'Size',
+      value: formatBytes(props.size),
+    },
+    {
+      key: 'Type',
+      value: props.extension.toUpperCase(),
+      tooltip: props.mimeType,
+    },
+    {
+      key: 'Created',
+      value: createdTime.relative,
+      tooltip: createdTime.absolute,
+    },
+    {
+      key: 'Updated',
+      value: updatedTime.relative,
+      tooltip: updatedTime.absolute,
+    },
+  ];
 
   async function onAssetSave(): Promise<void> {
     const result = await window.ipc.electron.dialog.showSaveDialog({
@@ -124,9 +156,35 @@ export function AssetTeaser(
       </ItemHeader>
       <ItemContent>
         <ItemTitle className="line-clamp-1">{props.name}</ItemTitle>
+
         <ItemDescription>
-          {formatBytes(props.size)} - {props.extension.toUpperCase()}
+          <span className="line-clamp-1">{props.description || '-'}</span>
         </ItemDescription>
+
+        {information.map((info, index, array) => {
+          return (
+            <Fragment key={info.key}>
+              <div className="flex justify-between">
+                <div className="">{info.key}</div>
+                <div className="whitespace-nowrap">
+                  {info.tooltip !== undefined && info.tooltip !== '-' ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>{info.value}</TooltipTrigger>
+                        <TooltipContent side="top" align="center">
+                          <p>{info.tooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    info.value
+                  )}
+                </div>
+              </div>
+              {array.length !== index + 1 ? <Separator /> : null}
+            </Fragment>
+          );
+        })}
       </ItemContent>
       <ItemFooter>
         <ButtonGroup className="w-full">

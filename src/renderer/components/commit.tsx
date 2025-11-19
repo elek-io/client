@@ -12,23 +12,19 @@ import {
   Trash2,
 } from 'lucide-react';
 
-import { cn, formatDatetime } from '@renderer/lib/utils';
+import { Skeleton } from '@renderer/components/ui/skeleton';
+import { useProjectUtil } from '@renderer/hooks/useProjectUtil';
+import { cn } from '@renderer/lib/utils';
 import { sidebarMenuButtonVariants } from '@renderer/lib/variants';
 
-import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
-
-import { Skeleton } from './ui/skeleton';
+import { type GitCommit } from '@elek-io/core';
 
 export interface CommitProps extends LinkProps {
-  language: SupportedLanguage;
   commit: GitCommit;
 }
 
-export function Commit({
-  commit,
-  language,
-  ...props
-}: CommitProps): React.JSX.Element {
+export function Commit({ commit, ...props }: CommitProps): React.JSX.Element {
+  const { formatDatetime } = useProjectUtil();
   let iconComponent: React.JSX.Element;
 
   switch (commit.message.method) {
@@ -73,7 +69,7 @@ export function Commit({
         </div>
         <div className="text-xs font-medium text-sidebar-foreground/70">
           {commit.author.name} -{' '}
-          {formatDatetime(commit.datetime, language).relative}
+          {formatDatetime({ datetime: commit.datetime }).relative}
         </div>
       </div>
     </Link>
