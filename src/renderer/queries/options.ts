@@ -3,7 +3,6 @@ import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import {
   type Asset,
   type Collection,
-  type CreateAssetProps,
   type CreateCollectionProps,
   type CreateEntryProps,
   type CreateProjectProps,
@@ -369,36 +368,33 @@ export default {
       }),
   },
   assets: {
-    create: (props: CreateAssetProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.assets.create(props);
-        },
-        meta: {
-          method: 'create',
-          objectType: 'asset',
-        },
-        onSuccess: (createdAsset, _variables, _onMutateResult, context) => {
-          // Add Asset to cache individually
-          context.client.setQueryData(
-            ['projects', props.projectId, 'assets', createdAsset.id],
-            createdAsset
-          );
+    create: mutationOptions({
+      mutationFn: window.ipc.core.assets.create,
+      meta: {
+        method: 'create',
+        objectType: 'asset',
+      },
+      onSuccess: (createdAsset, variables, _onMutateResult, context) => {
+        // Add Asset to cache individually
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'assets', createdAsset.id],
+          createdAsset
+        );
 
-          // And update the Assets list cache too
-          context.client.setQueryData(
-            ['projects', props.projectId, 'assets'],
-            (old: PaginatedList<Asset>) => {
-              return {
-                total: old.total + 1,
-                limit: old.limit,
-                offset: old.offset,
-                list: [...old.list, createdAsset],
-              };
-            }
-          );
-        },
-      }),
+        // And update the Assets list cache too
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'assets'],
+          (old: PaginatedList<Asset>) => {
+            return {
+              total: old.total + 1,
+              limit: old.limit,
+              offset: old.offset,
+              list: [...old.list, createdAsset],
+            };
+          }
+        );
+      },
+    }),
     read: (props: ReadAssetProps) =>
       queryOptions({
         queryKey: ['projects', props.projectId, 'assets', props.id],

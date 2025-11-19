@@ -1,17 +1,20 @@
 import { FileQuestion, FolderArchive } from 'lucide-react';
-import { forwardRef, useEffect, useRef, type ReactElement } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
+
+import { cn } from '@renderer/lib/utils';
 
 import { type Asset } from '@elek-io/core';
 
-export interface AssetDisplayProps extends Asset {
-  /**
-   * If set to true, GIFs will be displayed as static images (no animation).
-   * Video and audio files will be displayed without controls and not be played automatically.
-   */
-  static: boolean;
-}
-
-export function AssetDisplay(props: AssetDisplayProps): ReactElement {
+export function AssetDisplay(
+  props: Asset & {
+    className?: string;
+    /**
+     * If set to true, GIFs will be displayed as static images (no animation).
+     * Video and audio files will be displayed without controls and not be played automatically.
+     */
+    static: boolean;
+  }
+): React.JSX.Element {
   const absolutePath = 'elek-io-local-file://' + props.absolutePath;
   const ref = useRef(null);
 
@@ -19,7 +22,7 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
     const gif = new Image();
     gif.src = absolutePath;
 
-    const StaticGifCanvas = forwardRef<HTMLCanvasElement>((props, ref) => {
+    const StaticGifCanvas = forwardRef<HTMLCanvasElement>((_props, ref) => {
       if (typeof ref === 'function') {
         throw new Error(
           `Only React Refs that are created with createRef or useRef are supported`
@@ -38,10 +41,9 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
       return (
         <canvas
           ref={ref}
-          {...props}
           width={gif.width}
           height={gif.height}
-          className="max-h-full max-w-full object-contain"
+          className={cn('h-full w-full object-contain', props.className)}
         />
       );
     });
@@ -55,14 +57,19 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
       <img
         src={absolutePath}
         alt={`Asset "${props.name}"`}
-        className="max-h-full max-w-full object-contain"
+        className={cn('h-full w-full object-contain', props.className)}
       />
     );
   }
 
   if (props.mimeType.startsWith('video/')) {
     return (
-      <video muted controls={!props.static} autoPlay={!props.static}>
+      <video
+        muted
+        controls={!props.static}
+        autoPlay={!props.static}
+        className={cn('', props.className)}
+      >
         <source src={absolutePath} type={props.mimeType} />
       </video>
     );
@@ -70,7 +77,12 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
 
   if (props.mimeType.startsWith('audio/')) {
     return (
-      <audio muted controls={!props.static} autoPlay={!props.static}>
+      <audio
+        muted
+        controls={!props.static}
+        autoPlay={!props.static}
+        className={cn('', props.className)}
+      >
         <source src={absolutePath} type={props.mimeType} />
       </audio>
     );
@@ -81,7 +93,7 @@ export function AssetDisplay(props: AssetDisplayProps): ReactElement {
       <embed
         src={absolutePath}
         type={props.mimeType}
-        className="h-full w-full object-contain"
+        className={cn('h-full w-full object-contain', props.className)}
       />
     );
   }
