@@ -6,7 +6,6 @@ import {
   type CreateCollectionProps,
   type CreateEntryProps,
   type CreateProjectProps,
-  type DeleteAssetProps,
   type DeleteCollectionProps,
   type DeleteProjectProps,
   type Entry,
@@ -19,7 +18,6 @@ import {
   type ReadCollectionProps,
   type ReadProjectProps,
   type SetRemoteOriginUrlProjectProps,
-  type UpdateAssetProps,
   type UpdateCollectionProps,
   type UpdateEntryProps,
   type UpdateProjectProps,
@@ -402,68 +400,69 @@ export default {
           return await window.ipc.core.assets.read(props);
         },
       }),
-    update: (props: UpdateAssetProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.assets.update(props);
-        },
-        meta: {
-          method: 'update',
-          objectType: 'asset',
-        },
-        onSuccess: (updatedAsset, _variables, _onMutateResult, context) => {
-          // Update Asset in cache individually
-          context.client.setQueryData(
-            ['projects', props.projectId, 'assets', updatedAsset.id],
-            updatedAsset
-          );
+    update: mutationOptions({
+      mutationFn: window.ipc.core.assets.update,
+      meta: {
+        method: 'update',
+        objectType: 'asset',
+      },
+      onSuccess: (updatedAsset, variables, _onMutateResult, context) => {
+        // Update Asset in cache individually
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'assets', updatedAsset.id],
+          updatedAsset
+        );
 
-          // And update the Assets list cache too
-          context.client.setQueryData(
-            ['projects', props.projectId, 'assets'],
-            (old: PaginatedList<Asset>) => {
-              return {
-                total: old.total,
-                limit: old.limit,
-                offset: old.offset,
-                list: old.list.map((oldAsset) =>
-                  oldAsset.id === updatedAsset.id ? updatedAsset : oldAsset
-                ),
-              };
-            }
-          );
-        },
-      }),
-    delete: (props: DeleteAssetProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.assets.delete(props);
-        },
-        meta: {
-          method: 'delete',
-          objectType: 'asset',
-        },
-        onSuccess: (_deletedAsset, _variables, _onMutateResult, context) => {
-          // Remove Asset from cache individually
-          context.client.setQueryData(
-            ['projects', props.projectId, 'assets', props.id],
-            undefined
-          );
+        // And update the Assets list cache too
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'assets'],
+          (old: PaginatedList<Asset>) => {
+            return {
+              total: old.total,
+              limit: old.limit,
+              offset: old.offset,
+              list: old.list.map((oldAsset) =>
+                oldAsset.id === updatedAsset.id ? updatedAsset : oldAsset
+              ),
+            };
+          }
+        );
+      },
+    }),
+    delete: mutationOptions({
+      mutationFn: window.ipc.core.assets.delete,
+      meta: {
+        method: 'delete',
+        objectType: 'asset',
+      },
+      onSuccess: (_deletedAsset, variables, _onMutateResult, context) => {
+        // Remove Asset from cache individually
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'assets', variables.id],
+          undefined
+        );
 
-          // And update the Assets list cache too
-          context.client.setQueryData(
-            ['projects', props.projectId, 'assets'],
-            (old: PaginatedList<Asset>) => {
-              return {
-                total: old.total - 1,
-                limit: old.limit,
-                offset: old.offset,
-                list: old.list.filter((oldAsset) => oldAsset.id !== props.id),
-              };
-            }
-          );
-        },
-      }),
+        // And update the Assets list cache too
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'assets'],
+          (old: PaginatedList<Asset>) => {
+            return {
+              total: old.total - 1,
+              limit: old.limit,
+              offset: old.offset,
+              list: old.list.filter((oldAsset) => oldAsset.id !== variables.id),
+            };
+          }
+        );
+      },
+    }),
+    save: mutationOptions({
+      mutationFn: window.ipc.core.assets.save,
+      meta: {
+        method: 'save',
+        objectType: 'asset',
+      },
+    }),
     list: (props: ListAssetsProps) =>
       queryOptions({
         queryKey: ['projects', props.projectId, 'assets'],

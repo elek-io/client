@@ -188,7 +188,7 @@ function ItemFooter({
     <div
       data-slot="item-footer"
       className={cn(
-        'flex basis-full items-center justify-between gap-2',
+        'flex basis-full items-center justify-between gap-2 p-2.5 pt-0',
         className
       )}
       {...props}
