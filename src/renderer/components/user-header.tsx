@@ -14,6 +14,7 @@ import { Button } from '@renderer/components/ui/button';
 import { queryOptions } from '@renderer/queries';
 import { useStore } from '@renderer/store';
 
+import { ButtonGroup } from './ui/button-group';
 import { UserDropdown, UserDropdownSkeleton } from './user-dropdown';
 
 export function UserHeader(): React.JSX.Element {
@@ -25,13 +26,6 @@ export function UserHeader(): React.JSX.Element {
     isError: isUserError,
     error: userError,
   } = useQuery(queryOptions.user.get());
-  // @todo causes "Maximum update depth exceeded" error
-  // const [isProjectSidebarNarrow, setIsProjectSidebarNarrow] = useStore(
-  //   (storeState) => [
-  //     storeState.isProjectSidebarNarrow,
-  //     storeState.setIsProjectSidebarNarrow,
-  //   ]
-  // );
   const breadcrumbLookupMap = useStore(
     (storeState) => storeState.breadcrumbLookupMap
   );
@@ -92,74 +86,49 @@ export function UserHeader(): React.JSX.Element {
   }
 
   return (
-    <div className="w-full bg-sidebar">
-      <div id="navigation-bar" className="flex border-b">
-        <div className="flex w-60 shrink-0 border-r p-2">
-          {/* <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsProjectSidebarNarrow(!isProjectSidebarNarrow)}
-            >
-              <ArrowLeftToLine
-                className={cn(
-                  'h-4 w-4 transition',
-                  isProjectSidebarNarrow && 'rotate-180'
-                )}
-              ></ArrowLeftToLine>
-              <span className="sr-only">
-                {isProjectSidebarNarrow
-                  ? '__root.buttonSetSidebarToWide'
-                  : '__root.buttonSetSidebarToNarrow'}
-              </span>
-            </Button> */}
-        </div>
-        <div className="flex flex-auto items-center justify-between p-2">
-          <div className="flex">
+    <div className="flex w-full border-b bg-sidebar">
+      <div className="flex w-60 shrink-0 border-r p-2" />
+      <div className="flex flex-1 items-center p-1">
+        <div className="flex flex-1 items-center">
+          <ButtonGroup>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => router.history.back()}
+              Icon={ArrowLeft}
             >
-              <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">__root.buttonNavigateBack</span>
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => router.history.forward()}
+              Icon={ArrowRight}
             >
-              <ArrowRight className="h-4 w-4" />
               <span className="sr-only">__root.buttonNavigateForward</span>
             </Button>
+          </ButtonGroup>
 
-            <Breadcrumb className="ml-2 flex">
-              <BreadcrumbList>
-                {breadcrumbs.map((crumb, index, array) => (
-                  <Fragment key={crumb.path}>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link
-                          to={crumb.path}
-                          className="text-zinc-800 no-underline hover:underline dark:text-zinc-200"
-                        >
-                          {crumb.part}
-                        </Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    {array.length !== index + 1 && <BreadcrumbSeparator />}
-                  </Fragment>
-                ))}
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-          <div className="flex">
-            {isUserPending ? (
-              <UserDropdownSkeleton />
-            ) : user === null ? null : (
-              <UserDropdown user={user} />
-            )}
-          </div>
+          <Breadcrumb className="ml-4 flex flex-1">
+            <BreadcrumbList>
+              {breadcrumbs.map((crumb, index, array) => (
+                <Fragment key={crumb.path}>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link to={crumb.path}>{crumb.part}</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  {array.length !== index + 1 && <BreadcrumbSeparator />}
+                </Fragment>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
+        {isUserPending ? (
+          <UserDropdownSkeleton />
+        ) : user === null ? null : (
+          <UserDropdown user={user} />
+        )}
       </div>
     </div>
   );

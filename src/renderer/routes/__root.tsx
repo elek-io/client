@@ -65,7 +65,7 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
 
   return (
     <>
-      <AppHeader electron={window.ipc.electron} />
+      <AppHeader />
       <Page title="Error" description={<Description />} actions={<Actions />}>
         <div className="p-6">
           <p>{error.message}</p>
@@ -108,7 +108,7 @@ function NotFoundComponent(): ReactElement {
 
   return (
     <>
-      <AppHeader electron={window.ipc.electron} />
+      <AppHeader />
       <Page
         title="Not Found"
         description={<Description />}
@@ -127,7 +127,7 @@ function NotFoundComponent(): ReactElement {
 function RootComponent(): ReactElement {
   return (
     <>
-      <AppHeader electron={window.ipc.electron} />
+      <AppHeader />
       <UserHeader />
       <Outlet />
       <Toaster />
