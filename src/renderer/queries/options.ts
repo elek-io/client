@@ -3,14 +3,12 @@ import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import {
   type Asset,
   type Collection,
-  type CreateCollectionProps,
-  type CreateEntryProps,
   type CreateProjectProps,
-  type DeleteCollectionProps,
   type DeleteProjectProps,
   type Entry,
   type ListAssetsProps,
   type ListCollectionsProps,
+  type ListEntriesProps,
   type ListProjectsProps,
   type PaginatedList,
   type Project,
@@ -18,7 +16,6 @@ import {
   type ReadCollectionProps,
   type ReadProjectProps,
   type SetRemoteOriginUrlProjectProps,
-  type UpdateCollectionProps,
   type UpdateEntryProps,
   type UpdateProjectProps,
 } from '@elek-io/core';
@@ -172,13 +169,13 @@ export default {
         );
       },
     }),
-    getChanges: (project: Project) =>
+    getChanges: (projectId: string, project?: Project) =>
       queryOptions({
-        enabled: project.remoteOriginUrl !== null,
-        queryKey: ['projects', project.id, 'changes'],
+        enabled: project !== undefined && project.remoteOriginUrl !== null,
+        queryKey: ['projects', projectId, 'changes'],
         queryFn: async () => {
           return await window.ipc.core.projects.getChanges({
-            id: project.id,
+            id: projectId,
           });
         },
         // Refetch the data every 3 minutes
@@ -228,41 +225,38 @@ export default {
       }),
   },
   collections: {
-    create: (props: CreateCollectionProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.collections.create(props);
-        },
-        meta: {
-          method: 'create',
-          objectType: 'collection',
-        },
-        onSuccess: (
-          createdCollection,
-          _variables,
-          _onMutateResult,
-          context
-        ) => {
-          // Add Collection to cache individually
-          context.client.setQueryData(
-            ['projects', props.projectId, 'collections', createdCollection.id],
-            createdCollection
-          );
+    create: mutationOptions({
+      mutationFn: window.ipc.core.collections.create,
+      meta: {
+        method: 'create',
+        objectType: 'collection',
+      },
+      onSuccess: (createdCollection, variables, _onMutateResult, context) => {
+        // Add Collection to cache individually
+        context.client.setQueryData(
+          [
+            'projects',
+            variables.projectId,
+            'collections',
+            createdCollection.id,
+          ],
+          createdCollection
+        );
 
-          // And update the Collections list cache too
-          context.client.setQueryData(
-            ['projects', props.projectId, 'collections'],
-            (old: PaginatedList<Collection>) => {
-              return {
-                total: old.total + 1,
-                limit: old.limit,
-                offset: old.offset,
-                list: [...old.list, createdCollection],
-              };
-            }
-          );
-        },
-      }),
+        // And update the Collections list cache too
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'collections'],
+          (old: PaginatedList<Collection>) => {
+            return {
+              total: old.total + 1,
+              limit: old.limit,
+              offset: old.offset,
+              list: [...old.list, createdCollection],
+            };
+          }
+        );
+      },
+    }),
     read: (props: ReadCollectionProps) =>
       queryOptions({
         queryKey: ['projects', props.projectId, 'collections', props.id],
@@ -270,82 +264,71 @@ export default {
           return await window.ipc.core.collections.read(props);
         },
       }),
-    update: (props: UpdateCollectionProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.collections.update(props);
-        },
-        meta: {
-          method: 'update',
-          objectType: 'collection',
-        },
-        onSuccess: (
-          updatedCollection,
-          _variables,
-          _onMutateResult,
-          context
-        ) => {
-          // Update Collection in cache individually
-          context.client.setQueryData(
-            ['projects', props.projectId, 'collections', updatedCollection.id],
-            updatedCollection
-          );
+    update: mutationOptions({
+      mutationFn: window.ipc.core.collections.update,
+      meta: {
+        method: 'update',
+        objectType: 'collection',
+      },
+      onSuccess: (updatedCollection, variables, _onMutateResult, context) => {
+        // Update Collection in cache individually
+        context.client.setQueryData(
+          [
+            'projects',
+            variables.projectId,
+            'collections',
+            updatedCollection.id,
+          ],
+          updatedCollection
+        );
 
-          // And update the Collections list cache too
-          context.client.setQueryData(
-            ['projects', props.projectId, 'collections'],
-            (old: PaginatedList<Collection>) => {
-              return {
-                total: old.total,
-                limit: old.limit,
-                offset: old.offset,
-                list: old.list.map((oldCollection) =>
-                  oldCollection.id === updatedCollection.id
-                    ? updatedCollection
-                    : oldCollection
-                ),
-              };
-            }
-          );
-        },
-      }),
-    delete: (props: DeleteCollectionProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.collections.delete(props);
-        },
-        meta: {
-          method: 'delete',
-          objectType: 'collection',
-        },
-        onSuccess: (
-          _deletedCollection,
-          _variables,
-          _onMutateResult,
-          context
-        ) => {
-          // Remove Collection from cache individually
-          context.client.setQueryData(
-            ['projects', props.projectId, 'collections', props.id],
-            undefined
-          );
+        // And update the Collections list cache too
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'collections'],
+          (old: PaginatedList<Collection>) => {
+            return {
+              total: old.total,
+              limit: old.limit,
+              offset: old.offset,
+              list: old.list.map((oldCollection) =>
+                oldCollection.id === updatedCollection.id
+                  ? updatedCollection
+                  : oldCollection
+              ),
+            };
+          }
+        );
+      },
+    }),
+    delete: mutationOptions({
+      mutationFn: window.ipc.core.collections.delete,
+      meta: {
+        method: 'delete',
+        objectType: 'collection',
+      },
+      onSuccess: (_deletedCollection, variables, _onMutateResult, context) => {
+        // Remove Collection from cache individually
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'collections', variables.id],
+          undefined
+        );
 
-          // And update the Collections list cache too
-          context.client.setQueryData(
-            ['projects', props.projectId, 'collections'],
-            (old: PaginatedList<Collection>) => {
-              return {
-                total: old.total - 1,
-                limit: old.limit,
-                offset: old.offset,
-                list: old.list.filter(
-                  (oldCollection) => oldCollection.id !== props.id
-                ),
-              };
-            }
-          );
-        },
-      }),
+        // And update the Collections list cache too
+        context.client.setQueryData(
+          ['projects', variables.projectId, 'collections'],
+          (old: PaginatedList<Collection>) => {
+            return {
+              total: old.total - 1,
+              limit: old.limit,
+              offset: old.offset,
+              list: old.list.filter(
+                (oldCollection) => oldCollection.id !== variables.id
+              ),
+            };
+          }
+        );
+      },
+    }),
     list: (props: ListCollectionsProps) =>
       queryOptions({
         queryKey: ['projects', props.projectId, 'collections'],
@@ -483,50 +466,47 @@ export default {
       }),
   },
   entries: {
-    create: (props: CreateEntryProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.entries.create(props);
-        },
-        meta: {
-          method: 'create',
-          objectType: 'entry',
-        },
-        onSuccess: (createdEntry, _variables, _onMutateResult, context) => {
-          // Add Entry to cache individually
-          context.client.setQueryData(
-            [
-              'projects',
-              props.projectId,
-              'collections',
-              props.collectionId,
-              'entries',
-              createdEntry.id,
-            ],
-            createdEntry
-          );
+    create: mutationOptions({
+      mutationFn: window.ipc.core.entries.create,
+      meta: {
+        method: 'create',
+        objectType: 'entry',
+      },
+      onSuccess: (createdEntry, variables, _onMutateResult, context) => {
+        // Add Entry to cache individually
+        context.client.setQueryData(
+          [
+            'projects',
+            variables.projectId,
+            'collections',
+            variables.collectionId,
+            'entries',
+            createdEntry.id,
+          ],
+          createdEntry
+        );
 
-          // And update the Entries list cache too
-          context.client.setQueryData(
-            [
-              'projects',
-              props.projectId,
-              'collections',
-              props.collectionId,
-              'entries',
-            ],
-            (old: PaginatedList<Entry> | undefined) => {
-              if (!old) return old;
-              return {
-                total: old.total + 1,
-                limit: old.limit,
-                offset: old.offset,
-                list: [...old.list, createdEntry],
-              };
-            }
-          );
-        },
-      }),
+        // And update the Entries list cache too
+        context.client.setQueryData(
+          [
+            'projects',
+            variables.projectId,
+            'collections',
+            variables.collectionId,
+            'entries',
+          ],
+          (old: PaginatedList<Entry> | undefined) => {
+            if (!old) return old;
+            return {
+              total: old.total + 1,
+              limit: old.limit,
+              offset: old.offset,
+              list: [...old.list, createdEntry],
+            };
+          }
+        );
+      },
+    }),
     read: (props: { projectId: string; collectionId: string; id: string }) =>
       queryOptions({
         queryKey: [
@@ -631,12 +611,7 @@ export default {
           );
         },
       }),
-    list: (props: {
-      projectId: string;
-      collectionId: string;
-      limit: number;
-      offset: number;
-    }) =>
+    list: (props: ListEntriesProps) =>
       queryOptions({
         queryKey: [
           'projects',

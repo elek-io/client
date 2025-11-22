@@ -16,6 +16,8 @@ import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/sonner';
 import { UserHeader } from '@renderer/components/user-header';
 
+import { UserProvider } from '../providers/UserProvider';
+
 export interface RouterContext {}
 
 // Use the routerContext to create your root route
@@ -126,13 +128,13 @@ function NotFoundComponent(): ReactElement {
 
 function RootComponent(): ReactElement {
   return (
-    <>
+    <UserProvider>
       <AppHeader />
       <UserHeader />
       <Outlet />
       <Toaster />
       <TanStackRouterDevtools position="bottom-right" initialIsOpen={false} />
       <ReactQueryDevtools position="bottom" initialIsOpen={false} />
-    </>
+    </UserProvider>
   );
 }
