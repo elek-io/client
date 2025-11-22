@@ -27,6 +27,78 @@ All `queryOptions` and `mutationOptions` are centrally defined in [`options.ts`]
 
 ## Querying Data
 
+### Using Context Providers for User and Project Data
+
+For accessing the current user and project data, prefer using the `useUser()` and `useProject()` hooks instead of directly calling `useQuery()` with `queryOptions.user.get()` or `queryOptions.projects.read()`.
+
+**Benefits:**
+
+- Reduces the number of active query observers - the providers create a single query that's shared across all components
+- Provides convenient utility methods (`formatDatetime`, `translateContent`) that automatically use the current user/project context
+- Ensures consistent data access patterns throughout the application
+- Better performance with fewer unnecessary query subscriptions
+
+#### UserProvider and useUser Hook
+
+The [`UserProvider`](../../src/renderer/providers/UserProvider.tsx) wraps the entire application at the root level (see [`routes/__root.tsx:131`](../../src/renderer/routes/__root.tsx)). It provides:
+
+- `userQuery: UseQueryResult<User | null>` - The current user query result
+- `formatDatetime: (props: FormatDatetimeProps) => { relative: string; absolute: string }` - Formats datetime strings according to the user's locale
+
+**Example:** See [`components/user-header.tsx`](../../src/renderer/components/user-header.tsx)
+
+```typescript
+import { useUser } from '@renderer/hooks/useUser';
+
+function UserHeader() {
+  const { userQuery, formatDatetime } = useUser();
+
+  // Access user data
+  const user = userQuery.data;
+
+  // Format a datetime
+  const formattedDate = formatDatetime({ datetime: user?.createdAt });
+
+  return (
+    <div>
+      <p>{user?.name}</p>
+      <p>Joined {formattedDate.relative}</p>
+    </div>
+  );
+}
+```
+
+#### ProjectProvider and useProject Hook
+
+The [`ProjectProvider`](../../src/renderer/providers/ProjectProvider.tsx) wraps all project-specific routes (see [`routes/projects/$projectId.tsx:14`](../../src/renderer/routes/projects/$projectId.tsx)). It provides:
+
+- `projectId: string` - The current project ID from the route
+- `projectQuery: UseQueryResult<Project>` - The current project query result
+- `userQuery: UseQueryResult<User | null>` - The current user query result (inherited from UserProvider)
+- `formatDatetime: (props: FormatDatetimeProps) => { relative: string; absolute: string }` - Datetime formatter (inherited from UserProvider)
+- `translateContent: (props: TranslateContentProps) => string` - Translates user-defined content to the current user's language, falling back to the project's default language, then English
+
+**Example:** See [`components/project-sidebar.tsx`](../../src/renderer/components/project-sidebar.tsx)
+
+```typescript
+import { useProject } from '@renderer/hooks/useProject';
+
+function ProjectSettings() {
+  const { projectQuery, translateContent } = useProject();
+
+  // Access project data
+  const project = projectQuery.data;
+
+  // Translate content
+  const title = translateContent({
+    key: 'project.title',
+    record: project?.name // TranslatableString object
+  });
+
+  return <h1>{title}</h1>;
+}
+```
+
 ### Non-Blocking Page Loads
 
 We prioritize fast, responsive UI by rendering pages immediately without waiting for data to load. Navigation between pages should feel instantaneous.
@@ -125,4 +197,4 @@ This metadata is used by the query client to automatically display success/error
 
 ---
 
-**Last Updated:** 2025-11-18
+**Last Updated:** 2025-11-22
