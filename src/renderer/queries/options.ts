@@ -16,7 +16,6 @@ import {
   type ReadCollectionProps,
   type ReadProjectProps,
   type SetRemoteOriginUrlProjectProps,
-  type UpdateEntryProps,
   type UpdateProjectProps,
 } from '@elek-io/core';
 
@@ -32,6 +31,7 @@ export default {
         mutationFn: async () => {
           return await window.ipc.core.projects.create(props);
         },
+        throwOnError: true,
         meta: {
           method: 'create',
           objectType: 'project',
@@ -63,12 +63,14 @@ export default {
         queryFn: async () => {
           return await window.ipc.core.projects.read(props);
         },
+        throwOnError: true,
       }),
     update: (props: UpdateProjectProps) =>
       mutationOptions({
         mutationFn: async () => {
           return await window.ipc.core.projects.update(props);
         },
+        throwOnError: true,
         meta: {
           method: 'update',
           objectType: 'project',
@@ -103,6 +105,7 @@ export default {
         mutationFn: async () => {
           return await window.ipc.core.projects.delete(props);
         },
+        throwOnError: true,
         meta: {
           method: 'delete',
           objectType: 'project',
@@ -141,9 +144,11 @@ export default {
 
           return projects;
         },
+        throwOnError: true,
       }),
     clone: mutationOptions({
       mutationFn: window.ipc.core.projects.clone,
+      throwOnError: true,
       meta: {
         method: 'clone',
         objectType: 'project',
@@ -178,11 +183,13 @@ export default {
             id: projectId,
           });
         },
+        throwOnError: true,
         // Refetch the data every 3 minutes
         refetchInterval: 180000,
       }),
     synchronize: mutationOptions({
       mutationFn: window.ipc.core.projects.synchronize,
+      throwOnError: true,
       meta: {
         method: 'synchronize',
         objectType: 'project',
@@ -199,6 +206,7 @@ export default {
     setRemoteOriginUrl: (props: SetRemoteOriginUrlProjectProps) =>
       mutationOptions({
         mutationFn: window.ipc.core.projects.setRemoteOriginUrl,
+        throwOnError: true,
         meta: {
           method: 'update',
           objectType: 'project',
@@ -227,6 +235,7 @@ export default {
   collections: {
     create: mutationOptions({
       mutationFn: window.ipc.core.collections.create,
+      throwOnError: true,
       meta: {
         method: 'create',
         objectType: 'collection',
@@ -263,9 +272,11 @@ export default {
         queryFn: async () => {
           return await window.ipc.core.collections.read(props);
         },
+        throwOnError: true,
       }),
     update: mutationOptions({
       mutationFn: window.ipc.core.collections.update,
+      throwOnError: true,
       meta: {
         method: 'update',
         objectType: 'collection',
@@ -302,6 +313,7 @@ export default {
     }),
     delete: mutationOptions({
       mutationFn: window.ipc.core.collections.delete,
+      throwOnError: true,
       meta: {
         method: 'delete',
         objectType: 'collection',
@@ -346,11 +358,13 @@ export default {
 
           return collections;
         },
+        throwOnError: true,
       }),
   },
   assets: {
     create: mutationOptions({
       mutationFn: window.ipc.core.assets.create,
+      throwOnError: true,
       meta: {
         method: 'create',
         objectType: 'asset',
@@ -382,9 +396,11 @@ export default {
         queryFn: async () => {
           return await window.ipc.core.assets.read(props);
         },
+        throwOnError: true,
       }),
     update: mutationOptions({
       mutationFn: window.ipc.core.assets.update,
+      throwOnError: true,
       meta: {
         method: 'update',
         objectType: 'asset',
@@ -414,6 +430,7 @@ export default {
     }),
     delete: mutationOptions({
       mutationFn: window.ipc.core.assets.delete,
+      throwOnError: true,
       meta: {
         method: 'delete',
         objectType: 'asset',
@@ -441,6 +458,7 @@ export default {
     }),
     save: mutationOptions({
       mutationFn: window.ipc.core.assets.save,
+      throwOnError: true,
       meta: {
         method: 'save',
         objectType: 'asset',
@@ -463,11 +481,13 @@ export default {
 
           return assets;
         },
+        throwOnError: true,
       }),
   },
   entries: {
     create: mutationOptions({
       mutationFn: window.ipc.core.entries.create,
+      throwOnError: true,
       meta: {
         method: 'create',
         objectType: 'entry',
@@ -520,58 +540,58 @@ export default {
         queryFn: async () => {
           return await window.ipc.core.entries.read(props);
         },
+        throwOnError: true,
       }),
-    update: (props: UpdateEntryProps) =>
-      mutationOptions({
-        mutationFn: async () => {
-          return await window.ipc.core.entries.update(props);
-        },
-        meta: {
-          method: 'update',
-          objectType: 'entry',
-        },
-        onSuccess: (updatedEntry, _variables, _onMutateResult, context) => {
-          // Update Entry in cache individually
-          context.client.setQueryData(
-            [
-              'projects',
-              props.projectId,
-              'collections',
-              props.collectionId,
-              'entries',
-              updatedEntry.id,
-            ],
-            updatedEntry
-          );
+    update: mutationOptions({
+      mutationFn: window.ipc.core.entries.update,
+      throwOnError: true,
+      meta: {
+        method: 'update',
+        objectType: 'entry',
+      },
+      onSuccess: (updatedEntry, variables, _onMutateResult, context) => {
+        // Update Entry in cache individually
+        context.client.setQueryData(
+          [
+            'projects',
+            variables.projectId,
+            'collections',
+            variables.collectionId,
+            'entries',
+            updatedEntry.id,
+          ],
+          updatedEntry
+        );
 
-          // And update the Entries list cache too
-          context.client.setQueryData(
-            [
-              'projects',
-              props.projectId,
-              'collections',
-              props.collectionId,
-              'entries',
-            ],
-            (old: PaginatedList<Entry> | undefined) => {
-              if (!old) return old;
-              return {
-                total: old.total,
-                limit: old.limit,
-                offset: old.offset,
-                list: old.list.map((oldEntry) =>
-                  oldEntry.id === updatedEntry.id ? updatedEntry : oldEntry
-                ),
-              };
-            }
-          );
-        },
-      }),
+        // And update the Entries list cache too
+        context.client.setQueryData(
+          [
+            'projects',
+            variables.projectId,
+            'collections',
+            variables.collectionId,
+            'entries',
+          ],
+          (old: PaginatedList<Entry> | undefined) => {
+            if (!old) return old;
+            return {
+              total: old.total,
+              limit: old.limit,
+              offset: old.offset,
+              list: old.list.map((oldEntry) =>
+                oldEntry.id === updatedEntry.id ? updatedEntry : oldEntry
+              ),
+            };
+          }
+        );
+      },
+    }),
     delete: (props: { projectId: string; collectionId: string; id: string }) =>
       mutationOptions({
         mutationFn: async () => {
           return await window.ipc.core.entries.delete(props);
         },
+        throwOnError: true,
         meta: {
           method: 'delete',
           objectType: 'entry',
@@ -641,6 +661,7 @@ export default {
 
           return entries;
         },
+        throwOnError: true,
       }),
   },
   user: {
@@ -650,9 +671,11 @@ export default {
         queryFn: async () => {
           return await window.ipc.core.user.get();
         },
+        throwOnError: true,
       }),
     set: mutationOptions({
       mutationFn: window.ipc.core.user.set,
+      throwOnError: true,
       meta: {
         method: 'set',
         objectType: 'user',
@@ -669,9 +692,11 @@ export default {
         queryFn: async () => {
           return await window.ipc.core.api.isRunning();
         },
+        throwOnError: true,
       }),
     start: mutationOptions({
       mutationFn: window.ipc.core.api.start,
+      throwOnError: true,
       meta: {
         method: 'start',
         objectType: 'api',
@@ -682,6 +707,7 @@ export default {
     }),
     stop: mutationOptions({
       mutationFn: window.ipc.core.api.stop,
+      throwOnError: true,
       meta: {
         method: 'stop',
         objectType: 'api',

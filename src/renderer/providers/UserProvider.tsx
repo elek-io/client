@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
 import { format, formatDistanceToNow } from 'date-fns';
 import React from 'react';
 
 import { UserContext } from '@renderer/hooks/useUser';
 import { importedLocales } from '@renderer/lib/utils';
 import queryOptions from '@renderer/queries/options';
+
+import { useQueryNoError } from '../hooks/useQueryNoError';
 
 export interface FormatDatetimeProps {
   datetime: string | null | undefined;
@@ -15,7 +16,7 @@ export function UserProvider({
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
-  const userQuery = useQuery(queryOptions.user.get());
+  const userQuery = useQueryNoError(queryOptions.user.get());
 
   /**
    * Formats given datetime string to be human readable
@@ -26,8 +27,8 @@ export function UserProvider({
       if (
         datetime === null ||
         datetime === undefined ||
-        userQuery.data === null ||
-        userQuery.data === undefined
+        userQuery.isPending === true ||
+        userQuery.data === null
       ) {
         // e.g. in case of a file not being updated yet
         // or the user data not being loaded yet, show a dash
@@ -47,7 +48,7 @@ export function UserProvider({
         }),
       };
     },
-    [userQuery.data]
+    [userQuery.data, userQuery.isPending]
   );
 
   return (

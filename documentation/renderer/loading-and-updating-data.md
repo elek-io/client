@@ -125,6 +125,29 @@ return (
 
 This ensures the page structure renders immediately, with placeholders that are replaced by real data as it loads.
 
+### Error Handling - Prefer useQueryNoError
+
+**Always use [`useQueryNoError`](../../src/renderer/hooks/useQueryNoError.ts) instead of `useQuery` for data fetching.**
+
+This hook solves a TypeScript limitation where `data` is typed as `T | undefined` even with `throwOnError: true`. It manually throws errors to the error boundary and returns a narrowed type without error states.
+
+**Example:** See [`routes/projects/$projectId/collections/$collectionId/index.tsx:28-36`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/index.tsx)
+
+```typescript
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+
+const { data: collection, isPending } = useQueryNoError(
+  queryOptions.collections.read({ projectId, id: collectionId })
+);
+
+if (isPending) return <LoadingSkeleton />;
+
+// data is now safely typed as defined (no error or loading states)
+return <div>{collection.name}</div>;
+```
+
+See the hook's JSDoc for implementation details. Errors are caught by the root `ErrorComponent` in [`routes/__root.tsx:30-84`](../../src/renderer/routes/__root.tsx).
+
 ## Mutating Data
 
 ### Form Mutations with Existing Data

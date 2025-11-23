@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 
 import { ProjectContext } from '@renderer/hooks/useProject';
@@ -6,6 +5,8 @@ import { useUser } from '@renderer/hooks/useUser';
 import queryOptions from '@renderer/queries/options';
 
 import type { TranslatableString } from '@elek-io/core';
+
+import { useQueryNoError } from '../hooks/useQueryNoError';
 
 export interface TranslateContentProps {
   key: string;
@@ -20,7 +21,9 @@ export function ProjectProvider({
   children: React.ReactNode;
 }): React.JSX.Element {
   const { userQuery, formatDatetime } = useUser();
-  const projectQuery = useQuery(queryOptions.projects.read({ id: projectId }));
+  const projectQuery = useQueryNoError(
+    queryOptions.projects.read({ id: projectId })
+  );
 
   /**
    * Returns given TranslatableString in the language of the current user
@@ -35,14 +38,14 @@ export function ProjectProvider({
    */
   const translateContent = React.useCallback(
     ({ key, record }: TranslateContentProps) => {
-      if (userQuery.data !== undefined && userQuery.data !== null) {
+      if (userQuery.isPending === false && userQuery.data !== null) {
         const toUserLanguage = record[userQuery.data.language];
         if (toUserLanguage !== undefined) {
           return toUserLanguage;
         }
       }
 
-      if (projectQuery.data !== undefined) {
+      if (projectQuery.isPending === false) {
         const toProjectsDefaultLanguage =
           record[projectQuery.data.settings.language.default];
         if (toProjectsDefaultLanguage !== undefined) {
@@ -57,7 +60,7 @@ export function ProjectProvider({
 
       return key;
     },
-    [userQuery.data, projectQuery.data]
+    [userQuery, projectQuery]
   );
 
   return (

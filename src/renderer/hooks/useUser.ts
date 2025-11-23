@@ -1,12 +1,13 @@
-import { type UseQueryResult } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
 import { type FormatDatetimeProps } from '@renderer/providers/UserProvider';
 
 import { type User } from '@elek-io/core';
 
+import type { UseQueryResultNoError } from './useQueryNoError';
+
 export type UserContextValue = {
-  userQuery: UseQueryResult<User | null>;
+  userQuery: UseQueryResultNoError<User | null>;
   formatDatetime: (props: FormatDatetimeProps) => {
     relative: string;
     absolute: string;

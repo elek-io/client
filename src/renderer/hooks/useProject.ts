@@ -1,4 +1,3 @@
-import type { UseQueryResult } from '@tanstack/react-query';
 import { createContext, useContext } from 'react';
 
 import type { UserContextValue } from '@renderer/hooks/useUser';
@@ -6,9 +5,11 @@ import { type TranslateContentProps } from '@renderer/providers/ProjectProvider'
 
 import type { Project } from '@elek-io/core';
 
+import type { UseQueryResultNoError } from './useQueryNoError';
+
 export type ProjectContextValue = UserContextValue & {
   projectId: string;
-  projectQuery: UseQueryResult<Project>;
+  projectQuery: UseQueryResultNoError<Project>;
   translateContent: (props: TranslateContentProps) => string;
 };
 
