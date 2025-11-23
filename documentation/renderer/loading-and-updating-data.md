@@ -148,6 +148,32 @@ return <div>{collection.name}</div>;
 
 See the hook's JSDoc for implementation details. Errors are caught by the root `ErrorComponent` in [`routes/__root.tsx:30-84`](../../src/renderer/routes/__root.tsx).
 
+**Naming Conventions:**
+
+When destructuring `useQueryNoError`, follow these patterns based on the query operation:
+
+- `data` → Name it as the resulting object (e.g., `project`, `collection`, `entries`)
+- `isPending` → Prefix with the query operation (e.g., `isReadingProject`, `isListingProjects`, `isReadingCollection`)
+
+Always look at the `queryOptions` method used to determine the correct names:
+
+```typescript
+// queryOptions.projects.read() → reading a single project
+const { data: project, isPending: isReadingProject } = useQueryNoError(
+  queryOptions.projects.read({ id: projectId })
+);
+
+// queryOptions.projects.list() → listing multiple projects
+const { data: projects, isPending: isListingProjects } = useQueryNoError(
+  queryOptions.projects.list({ limit: 0 })
+);
+
+// queryOptions.collections.read() → reading a single collection
+const { data: collection, isPending: isReadingCollection } = useQueryNoError(
+  queryOptions.collections.read({ projectId, id: collectionId })
+);
+```
+
 ## Mutating Data
 
 ### Form Mutations with Existing Data
