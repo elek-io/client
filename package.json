@@ -39,7 +39,7 @@
     "@dnd-kit/utilities": "3.2.2",
     "@electron-toolkit/preload": "3.0.2",
     "@electron-toolkit/utils": "4.0.0",
-    "@elek-io/core": "0.15.2",
+    "@elek-io/core": "0.15.3",
     "@fontsource-variable/montserrat": "5.2.8",
     "@fontsource/roboto": "5.2.8",
     "@hookform/resolvers": "5.2.2",

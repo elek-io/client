@@ -27,8 +27,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0(electron@37.2.6)
       '@elek-io/core':
-        specifier: 0.15.2
-        version: 0.15.2(dugite@2.7.1)(typescript@5.9.3)
+        specifier: 0.15.3
+        version: 0.15.3(dugite@2.7.1)(typescript@5.9.3)
       '@fontsource-variable/montserrat':
         specifier: 5.2.8
         version: 5.2.8
@@ -616,8 +616,8 @@ packages:
     engines: {node: '>=14.14'}
     hasBin: true
 
-  '@elek-io/core@0.15.2':
-    resolution: {integrity: sha512-Mdh3o7LH7RadkKZ0QyxRJRwwMT8rbl3JNL3k2QlkABJi9hZME/WBXc1hvY+0bktxqF+lYMeUSlrt1W7OTT+KPA==}
+  '@elek-io/core@0.15.3':
+    resolution: {integrity: sha512-mF7QtNwztdYMkjW1p0DlBKZELwjsPQ8EZGwR3co7u0xWKXslHbtUxzfFcA8vXUMN6MdWrST0PMVJ5gZ0wE8msw==}
     hasBin: true
     peerDependencies:
       dugite: 2.7.1
@@ -6010,7 +6010,7 @@ snapshots:
       node-api-version: 0.2.1
       ora: 5.4.1
       read-binary-file-arch: 1.0.6
-      semver: 7.7.2
+      semver: 7.7.3
       tar: 6.2.1
       yargs: 17.7.2
     transitivePeerDependencies:
@@ -6040,7 +6040,7 @@ snapshots:
       - supports-color
     optional: true
 
-  '@elek-io/core@0.15.2(dugite@2.7.1)(typescript@5.9.3)':
+  '@elek-io/core@0.15.3(dugite@2.7.1)(typescript@5.9.3)':
     dependencies:
       '@commander-js/extra-typings': 14.0.0(commander@14.0.2)
       '@hono/node-server': 1.19.5(hono@4.10.4)
@@ -7962,7 +7962,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.7.2
+      semver: 7.7.3
       ts-api-utils: 2.1.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -8092,7 +8092,7 @@ snapshots:
       minimatch: 10.0.3
       plist: 3.1.0
       resedit: 1.7.2
-      semver: 7.7.2
+      semver: 7.7.3
       tar: 6.2.1
       temp-file: 3.4.0
       tiny-async-pool: 1.3.0
@@ -9318,7 +9318,7 @@ snapshots:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.7.2
+      semver: 7.7.3
       serialize-error: 7.0.1
     optional: true
 
@@ -10651,7 +10651,7 @@ snapshots:
 
   simple-update-notifier@2.0.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   slash@3.0.0: {}
 
