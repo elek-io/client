@@ -13,18 +13,17 @@ import {
 } from 'lucide-react';
 
 import { Skeleton } from '@renderer/components/ui/skeleton';
-import { useProjectUtil } from '@renderer/hooks/useProjectUtil';
-import { cn } from '@renderer/lib/utils';
-import { sidebarMenuButtonVariants } from '@renderer/lib/variants';
 
 import { type GitCommit } from '@elek-io/core';
+
+import { useUser } from '../hooks/useUser';
 
 export interface CommitProps extends LinkProps {
   commit: GitCommit;
 }
 
 export function Commit({ commit, ...props }: CommitProps): React.JSX.Element {
-  const { formatDatetime } = useProjectUtil();
+  const { formatDatetime } = useUser();
   let iconComponent: React.JSX.Element;
 
   switch (commit.message.method) {
@@ -51,12 +50,7 @@ export function Commit({ commit, ...props }: CommitProps): React.JSX.Element {
   }
 
   return (
-    <Link
-      // className="relative flex items-center space-x-4 rounded-md px-3 py-1 text-zinc-800 no-underline transition-colors hover:bg-zinc-300 dark:text-zinc-200 dark:hover:bg-zinc-700"
-      className={cn(sidebarMenuButtonVariants({ size: 'lg' }), 'no-underline')}
-      activeProps={{ 'data-active': true }}
-      {...props}
-    >
+    <Link activeProps={{ 'data-active': true }} {...props}>
       <div className="relative z-10 rounded-full border border-primary bg-sidebar p-2 text-sidebar-foreground">
         {commit.tag ? (
           <Tag className="absolute -right-2 -bottom-1 h-4 w-4" />
@@ -83,8 +77,8 @@ export function CommitSkeleton(): React.JSX.Element {
         <QuestionMarkIcon className="h-4 w-4" />
       </div>
       <div>
-        <Skeleton className="mb-2 h-4 w-32 rounded" />
-        <Skeleton className="h-3 w-48 rounded" />
+        <Skeleton className="mb-2 h-4 w-24 rounded" />
+        <Skeleton className="h-3 w-32 rounded" />
       </div>
     </div>
   );

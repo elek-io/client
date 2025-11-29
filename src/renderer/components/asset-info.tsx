@@ -21,7 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
-import { formatBytes, formatDatetime } from '@renderer/lib/utils';
+import { formatBytes } from '@renderer/lib/utils';
 import { useStore } from '@renderer/store';
 
 import { type Asset, type SupportedLanguage } from '@elek-io/core';

@@ -7,6 +7,8 @@ import { cn } from '@renderer/lib/utils';
 
 import { type GitCommit } from '@elek-io/core';
 
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
+
 export interface CommitHistoryProps extends HTMLAttributes<HTMLDivElement> {
   commits: GitCommit[];
   projectId: string;
@@ -21,20 +23,25 @@ export function CommitHistory({
   ...props
 }: CommitHistoryProps): React.JSX.Element {
   return (
-    <div className={cn('relative', className)} {...props}>
-      <div className="before:absolute before:ml-6 before:h-full before:border-l-2 before:border-primary" />
-      <div className="grid gap-2 py-2">
-        {commits.map((commit) => (
-          <Commit
-            key={commit.hash}
-            commit={commit}
-            disabled={disabled === true}
-            to="/projects/$projectId/history/$commitHash"
-            params={{ projectId, commitHash: commit.hash }}
-          />
-        ))}
+    <SidebarMenu>
+      <div className={cn('relative', className)} {...props}>
+        <div className="before:absolute before:ml-6 before:h-full before:border-l-2 before:border-primary" />
+        <div className="grid gap-2 py-2">
+          {commits.map((commit) => (
+            <SidebarMenuItem key={commit.hash}>
+              <SidebarMenuButton className="no-underline" size="lg" asChild>
+                <Commit
+                  commit={commit}
+                  disabled={disabled === true}
+                  to="/projects/$projectId/history/$commitHash"
+                  params={{ projectId, commitHash: commit.hash }}
+                />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </div>
       </div>
-    </div>
+    </SidebarMenu>
   );
 }
 

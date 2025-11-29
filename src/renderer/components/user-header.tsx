@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Fragment } from 'react/jsx-runtime';
@@ -11,9 +10,9 @@ import {
   BreadcrumbSeparator,
 } from '@renderer/components/ui/breadcrumb';
 import { Button } from '@renderer/components/ui/button';
-import { queryOptions } from '@renderer/queries';
 import { useStore } from '@renderer/store';
 
+import { useUser } from '../hooks/useUser';
 import { ButtonGroup } from './ui/button-group';
 import { UserDropdown, UserDropdownSkeleton } from './user-dropdown';
 
@@ -21,11 +20,13 @@ export function UserHeader(): React.JSX.Element {
   const router = useRouter();
   const routerState = useRouterState();
   const {
-    data: user,
-    isPending: isUserPending,
-    isError: isUserError,
-    error: userError,
-  } = useQuery(queryOptions.user.get());
+    userQuery: {
+      data: user,
+      isPending: isUserPending,
+      isError: isUserError,
+      error: userError,
+    },
+  } = useUser();
   const breadcrumbLookupMap = useStore(
     (storeState) => storeState.breadcrumbLookupMap
   );

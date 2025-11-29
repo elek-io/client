@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useProject } from '@root/src/renderer/hooks/useProject';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 
 import {
@@ -8,35 +8,22 @@ import {
 import { Page } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
-import { queryOptions } from '@renderer/queries';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,
 });
 
 function ProjectDashboardPage(): React.JSX.Element {
-  const { projectId } = Route.useParams();
   const router = useRouter();
   const {
-    data: project,
-    isPending: isProjectPending,
-    isError: isProjectError,
-    error: projectError,
-  } = useQuery(queryOptions.projects.read({ id: projectId }));
-
-  if (isProjectError) {
-    throw projectError;
-  }
+    projectQuery: { data: project, isPending: isProjectPending },
+  } = useProject();
 
   function Description(): React.JSX.Element {
     return <>The Dashboard gives you an overview of your project.</>;
   }
 
   function LatestChangesActions(): React.JSX.Element {
-    if (isProjectError) {
-      throw projectError;
-    }
-
     return (
       <>
         {isProjectPending ? null : (
@@ -81,7 +68,6 @@ function ProjectDashboardPage(): React.JSX.Element {
             <CommitHistory
               projectId={project.id}
               commits={project.fullHistory.slice(0, 5)}
-              language="en"
             />
           )}
         </PageSection>

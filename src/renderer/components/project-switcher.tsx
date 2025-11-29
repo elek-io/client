@@ -1,6 +1,5 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowLeftIcon, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
@@ -23,21 +22,16 @@ import { queryOptions } from '@renderer/queries';
 
 import type { Project } from '@elek-io/core';
 
+import { useQueryNoError } from '../hooks/useQueryNoError';
+
 export function ProjectSwitcher({
   project,
 }: {
   project: Project;
 }): React.JSX.Element {
-  const {
-    data: projects,
-    isPending: isProjectsPending,
-    isError: isProjectsError,
-    error: projectsError,
-  } = useQuery(queryOptions.projects.list({ limit: 5 }));
-
-  if (isProjectsError) {
-    throw projectsError;
-  }
+  const { data: projects, isPending: isListingProjects } = useQueryNoError(
+    queryOptions.projects.list({ limit: 5 })
+  );
 
   return (
     <SidebarMenu>
@@ -67,7 +61,7 @@ export function ProjectSwitcher({
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Projects
             </DropdownMenuLabel>
-            {isProjectsPending
+            {isListingProjects
               ? [1, 2, 3].map((key) => (
                   <div className="flex items-center gap-2 p-2" key={key}>
                     <Skeleton className="flex size-6 items-center justify-center rounded-md border" />

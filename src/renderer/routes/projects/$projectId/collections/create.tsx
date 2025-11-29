@@ -1,13 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useProject } from '@root/src/renderer/hooks/useProject';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+import { useEffect, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
 import { translatableDefaultNull } from '@renderer/components/pages/util';
 import { Button } from '@renderer/components/ui/button';
-import { useStore } from '@renderer/store';
+import queryOptions from '@renderer/queries/options';
 
 import {
   type CreateCollectionProps,
@@ -22,28 +24,25 @@ export const Route = createFileRoute('/projects/$projectId/collections/create')(
 
 function ProjectCollectionCreate(): ReactElement {
   const router = useRouter();
-  const context = Route.useRouteContext();
-  const addNotification = useStore((state) => state.addNotification);
-  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
+  const { projectId } = Route.useParams();
+  const {
+    projectQuery: { data: project },
+  } = useProject();
+  const { mutateAsync: createCollection, isPending: isCreatingCollection } =
+    useMutation(queryOptions.collections.create);
 
   const createCollectionForm = useForm<CreateCollectionProps>({
     resolver: async (data, context, options) => {
       return zodResolver(createCollectionSchema)(data, context, options);
     },
     defaultValues: {
-      projectId: context.project.id,
+      projectId,
       icon: 'home',
       name: {
-        singular: translatableDefaultNull(
-          context.project.settings.language.supported
-        ),
-        plural: translatableDefaultNull(
-          context.project.settings.language.supported
-        ),
+        singular: {},
+        plural: {},
       },
-      description: translatableDefaultNull(
-        context.project.settings.language.supported
-      ),
+      description: {},
       slug: {
         singular: '',
         plural: '',
@@ -51,6 +50,30 @@ function ProjectCollectionCreate(): ReactElement {
       fieldDefinitions: [],
     },
   });
+
+  // Reset form with Project data when it loads
+  useEffect(() => {
+    if (project) {
+      createCollectionForm.reset({
+        projectId,
+        icon: 'home',
+        name: {
+          singular: translatableDefaultNull(
+            project.settings.language.supported
+          ),
+          plural: translatableDefaultNull(project.settings.language.supported),
+        },
+        description: translatableDefaultNull(
+          project.settings.language.supported
+        ),
+        slug: {
+          singular: '',
+          plural: '',
+        },
+        fieldDefinitions: [],
+      });
+    }
+  }, [projectId, project, createCollectionForm]);
 
   function Description(): ReactElement {
     return (
@@ -76,40 +99,15 @@ function ProjectCollectionCreate(): ReactElement {
     );
   }
 
-  const onCreate: SubmitHandler<CreateCollectionProps> = async (
-    createCollectionProps
-  ) => {
-    setIsCreatingCollection(true);
-    try {
-      const collection = await context.core.collections.create(
-        createCollectionProps
-      );
-      setIsCreatingCollection(false);
-      addNotification({
-        intent: 'success',
-        title: 'Created new collection',
-        description: 'You can now create Entries for this new Collection.',
-      });
-      await router.navigate({
-        to: '/projects/$projectId/collections/$collectionId',
-        params: {
-          projectId: context.project.id,
-          collectionId: collection.id,
-        },
-      });
-    } catch (error) {
-      setIsCreatingCollection(false);
-      await context.core.logger.error({
-        source: 'desktop',
-        message: 'Failed to create new collection',
-        meta: { error },
-      });
-      addNotification({
-        intent: 'danger',
-        title: 'Failed to create new collection',
-        description: 'There was an error creating the new Collection.',
-      });
-    }
+  const onCreate: SubmitHandler<CreateCollectionProps> = async (props) => {
+    const collection = await createCollection(props);
+    await router.navigate({
+      to: '/projects/$projectId/collections/$collectionId',
+      params: {
+        projectId,
+        collectionId: collection.id,
+      },
+    });
   };
 
   return (
@@ -117,11 +115,9 @@ function ProjectCollectionCreate(): ReactElement {
       title="Create a new Collection"
       actions={<Actions />}
       description={<Description />}
-      supportedLanguages={context.project.settings.language.supported}
-      defaultLanguage={context.project.settings.language.default}
+      project={project}
       collectionForm={createCollectionForm}
       onFormSubmit={onCreate}
-      translateContent={context.translateContent}
     />
   );
 }

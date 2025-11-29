@@ -185,7 +185,7 @@ When building forms to update existing data, we need to handle the loading state
 **Example:** See [`routes/user/profile.tsx:178`](../../src/renderer/routes/user/profile.tsx)
 
 ```typescript
-const { data: user, isPending: isUserPending } = useQuery(
+const { data: user, isPending: isGettingUser } = useQuery(
   queryOptions.user.get()
 );
 
@@ -195,12 +195,8 @@ const setUserForm = useForm<SetUserProps>({
 
 // Update form when data loads
 useEffect(() => {
-  if (user) {
-    setUserForm.reset({
-      name: user.name,
-      email: user.email,
-      // ... other fields
-    });
+  if (isGettingUser === false) {
+    setUserForm.reset(user);
   }
 }, [user, setUserForm]);
 

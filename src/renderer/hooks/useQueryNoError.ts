@@ -28,6 +28,8 @@ export type UseQueryResultNoError<
  * We therefore would have to manually check for errors every time we use useQuery
  * with `throwOnError: true`, just to satisfy TypeScript.
  *
+ * @see https://github.com/TanStack/query/discussions/6805
+ *
  * This hook wraps useQuery and throws the error if it exists, so that the returned type
  * no longer includes the error state.
  *

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useProject } from '@root/src/renderer/hooks/useProject';
 import { useMutation } from '@tanstack/react-query';
 import {
   DownloadIcon,
@@ -54,7 +55,6 @@ import {
 } from '@renderer/components/ui/item';
 import { Skeleton } from '@renderer/components/ui/skeleton';
 import { Textarea } from '@renderer/components/ui/textarea';
-import { useProjectUtil } from '@renderer/hooks/useProjectUtil';
 import { formatBytes } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
@@ -75,7 +75,7 @@ import {
 export function AssetTeaser(
   props: Asset & { projectId: string }
 ): React.JSX.Element {
-  const { formatDatetime } = useProjectUtil();
+  const { formatDatetime } = useProject();
   const { mutateAsync: saveAsset } = useMutation(queryOptions.assets.save);
   const { mutateAsync: updateAsset } = useMutation(queryOptions.assets.update);
   const [isUpdateAssetDialogOpen, setIsUpdateAssetDialogOpen] =
@@ -205,7 +205,9 @@ export function AssetTeaser(
                 <DialogDescription>{props.description}</DialogDescription>
               </DialogHeader>
 
-              <AssetDisplay {...props} />
+              <DialogBody>
+                <AssetDisplay {...props} />
+              </DialogBody>
             </DialogContent>
           </Dialog>
 
@@ -230,11 +232,11 @@ export function AssetTeaser(
               </DialogHeader>
 
               <DialogBody>
-                <Item>
+                <Item className="flex-col">
                   <div className="m-auto aspect-4/3 size-48">
                     <AssetDisplay {...props} static />
                   </div>
-                  <ItemContent>
+                  <ItemContent className="w-full p-0">
                     <Form {...updateAssetForm}>
                       <form
                         onSubmit={updateAssetForm.handleSubmit(onAssetUpdate)}

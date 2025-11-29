@@ -4,24 +4,25 @@ import { CommitAuthor } from '@renderer/components/commit-author';
 import {
   Card,
   CardAction,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@renderer/components/ui/card';
 
-import { type GitCommit, type SupportedLanguage } from '@elek-io/core';
+import { type GitCommit } from '@elek-io/core';
+
+import { Skeleton } from './ui/skeleton';
 
 export interface DiffContainerProps {
   type: 'create' | 'before' | 'after' | 'delete';
   commit: GitCommit;
-  language: SupportedLanguage;
   children: React.ReactNode;
 }
 
 export function DiffContainer({
   type,
   commit,
-  language,
   children,
 }: DiffContainerProps): ReactElement {
   return (
@@ -32,13 +33,31 @@ export function DiffContainer({
         <CardTitle>
           {commit.message.method} {commit.message.reference.objectType}
         </CardTitle>
-        <CardDescription>{commit.hash}</CardDescription>
         <CardAction>
-          <CommitAuthor commit={commit} language={language} />
+          <CommitAuthor commit={commit} />
         </CardAction>
       </CardHeader>
 
-      {children}
+      <CardContent className="grid gap-6">{children}</CardContent>
+    </Card>
+  );
+}
+
+export function DiffContainerSkeleton(): React.JSX.Element {
+  return (
+    <Card className="col-span-6">
+      <CardHeader>
+        <CardTitle>Loading...</CardTitle>
+        <CardDescription />
+        <CardAction />
+      </CardHeader>
+
+      <CardContent className="grid gap-6">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-8 w-1/2" />
+      </CardContent>
     </Card>
   );
 }

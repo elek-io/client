@@ -1,4 +1,3 @@
-import { type ReactElement } from 'react';
 import {
   type FieldValues,
   type SubmitHandler,
@@ -12,9 +11,10 @@ import {
   type CreateEntryProps,
   type FieldDefinition,
   type SupportedLanguage,
-  type TranslatableString,
   type UpdateEntryProps,
 } from '@elek-io/core';
+
+import { Skeleton } from '../ui/skeleton';
 
 interface CreateUpdateEntryPageProps<TFieldValues extends FieldValues>
   extends PageProps {
@@ -22,21 +22,19 @@ interface CreateUpdateEntryPageProps<TFieldValues extends FieldValues>
   fieldDefinitions: FieldDefinition[];
   supportedLanguages: SupportedLanguage[];
   defaultLanguage: SupportedLanguage;
-  translateContent(key: string, record: TranslatableString): string;
   onFormSubmit: SubmitHandler<TFieldValues>;
 }
 
-function CreateUpdateEntryPage({
+export function CreateUpdateEntryPage({
   entryForm,
   fieldDefinitions,
   supportedLanguages,
   defaultLanguage,
-  translateContent,
   onFormSubmit,
   ...props
 }: CreateUpdateEntryPageProps<
   CreateEntryProps | UpdateEntryProps
->): ReactElement {
+>): React.JSX.Element {
   return (
     <Page {...props}>
       <Form {...entryForm}>
@@ -50,7 +48,6 @@ function CreateUpdateEntryPage({
                   form={entryForm}
                   name={`values.${index}.content.${defaultLanguage}`}
                   supportedLanguages={supportedLanguages}
-                  translateContent={translateContent}
                 />
               );
             })}
@@ -61,4 +58,18 @@ function CreateUpdateEntryPage({
   );
 }
 
-export { CreateUpdateEntryPage };
+export function CreateUpdateEntryPageSkeleton(
+  props: PageProps
+): React.JSX.Element {
+  return (
+    <Page {...props}>
+      <div className="grid grid-cols-12 gap-x-4 gap-y-8 p-6 sm:gap-x-6 xl:gap-x-8">
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
+    </Page>
+  );
+}

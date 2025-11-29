@@ -44,8 +44,9 @@ import type {
   FieldDefinition,
   FieldType,
   SupportedLanguage,
-  TranslatableString,
 } from '@elek-io/core';
+
+import { useProject } from '../../hooks/useProject';
 
 const Form = FormProvider;
 
@@ -405,7 +406,6 @@ export interface FormComponentFromFieldDefinitionTranslatableProps<
 > extends FormComponentFromFieldDefinitionProps<TFieldValues> {
   form: UseFormReturn<TFieldValues, TContext, TTransformedValues>;
   supportedLanguages: SupportedLanguage[];
-  translateContent(key: string, record: TranslatableString): string;
 }
 
 /**
@@ -424,10 +424,10 @@ function FormComponentFromFieldDefinitionTranslatable<
   field,
   fieldDefinition,
   supportedLanguages,
-  translateContent,
   className,
   ...props
 }: FormComponentFromFieldDefinitionTranslatableProps<TFieldValues>): React.ReactElement {
+  const { translateContent } = useProject();
   const nameArray = field.name.split('.');
   const currentLanguage = nameArray[nameArray.length - 1] as SupportedLanguage;
   const baseName = field.name
@@ -482,17 +482,17 @@ function FormComponentFromFieldDefinitionTranslatable<
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {translateContent(
-                    'fieldDefinition.label',
-                    fieldDefinition.label
-                  )}
+                  {translateContent({
+                    key: 'fieldDefinition.label',
+                    record: fieldDefinition.label,
+                  })}
                 </DialogTitle>
                 {fieldDefinition.description !== null ? (
                   <DialogDescription>
-                    {translateContent(
-                      'fieldDefinition.description',
-                      fieldDefinition.description
-                    )}
+                    {translateContent({
+                      key: 'fieldDefinition.description',
+                      record: fieldDefinition.description,
+                    })}
                   </DialogDescription>
                 ) : null}
               </DialogHeader>
@@ -545,7 +545,6 @@ interface FormFieldFromDefinitionProps<TFieldValues extends FieldValues> {
   form: UseFormReturn<TFieldValues>;
   name: FieldPath<TFieldValues>;
   supportedLanguages: SupportedLanguage[];
-  translateContent(key: string, record: TranslatableString): string;
   isDraggable?: boolean;
   isEditable?: boolean;
   onDelete?: (fieldDefinition: FieldDefinition) => void;
@@ -560,13 +559,14 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
   form,
   name,
   fieldDefinition,
-  translateContent,
   supportedLanguages,
   isDraggable = false,
   isEditable = false,
   onDelete,
   className,
 }: FormFieldFromDefinitionProps<TFieldValues>): React.ReactElement {
+  const { translateContent } = useProject();
+
   return (
     <FormField
       control={form.control}
@@ -615,7 +615,10 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
           </div>
           <div className="flex w-full flex-col gap-2">
             <FormLabel isRequired={fieldDefinition.isRequired}>
-              {translateContent('fieldDefinition.label', fieldDefinition.label)}
+              {translateContent({
+                key: 'fieldDefinition.label',
+                record: fieldDefinition.label,
+              })}
             </FormLabel>
             <FormControl>
               <FormComponentFromFieldDefinitionTranslatable
@@ -623,15 +626,14 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                 field={field}
                 fieldDefinition={fieldDefinition}
                 supportedLanguages={supportedLanguages}
-                translateContent={translateContent}
               />
             </FormControl>
             {fieldDefinition.description !== null ? (
               <FormDescription>
-                {translateContent(
-                  'fieldDefinition.description',
-                  fieldDefinition.description
-                )}
+                {translateContent({
+                  key: 'fieldDefinition.description',
+                  record: fieldDefinition.description,
+                })}
               </FormDescription>
             ) : null}
             <FormMessage />

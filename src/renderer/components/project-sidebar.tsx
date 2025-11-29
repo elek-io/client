@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Link, type ToPathOption } from '@tanstack/react-router';
 import {
   Layers,
@@ -37,7 +37,8 @@ import {
 } from '@renderer/components/ui/sidebar';
 import { queryOptions } from '@renderer/queries';
 
-import type { Project } from '@elek-io/core';
+import { useProject } from '../hooks/useProject';
+import { useQueryNoError } from '../hooks/useQueryNoError';
 
 const projectNavigation: {
   name: string;
@@ -93,18 +94,22 @@ function ProjectNavigation(): React.JSX.Element {
   );
 }
 
-export function ProjectSidebar({
-  project,
-}: {
-  project: Project;
-}): React.JSX.Element {
+export function ProjectSidebar(): React.JSX.Element {
+  const {
+    projectId,
+    projectQuery: { data: project, isPending: isProjectPending },
+  } = useProject();
   const {
     data: projectChanges,
     isFetching: isFetchingProjectChanges,
     refetch: refetchProjectChanges,
-  } = useQuery(queryOptions.projects.getChanges(project));
+  } = useQueryNoError(queryOptions.projects.getChanges(projectId, project));
   const { mutateAsync: synchronizeProject, isPending: isSynchronizingProject } =
     useMutation(queryOptions.projects.synchronize);
+
+  if (isProjectPending) {
+    return <ProjectSidebarSkeleton />;
+  }
 
   return (
     <Sidebar>

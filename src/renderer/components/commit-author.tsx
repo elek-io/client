@@ -1,9 +1,9 @@
 'use client';
 
+import { useProject } from '@root/src/renderer/hooks/useProject';
 import type { ReactElement } from 'react';
 
 import { Avatar } from '@renderer/components/ui/avatar';
-import { useProjectUtil } from '@renderer/hooks/useProjectUtil';
 
 import { type GitCommit } from '@elek-io/core';
 
@@ -12,7 +12,7 @@ export interface CommitAuthorProps {
 }
 
 export function CommitAuthor({ commit }: CommitAuthorProps): ReactElement {
-  const { formatDatetime } = useProjectUtil();
+  const { formatDatetime } = useProject();
   return (
     <div className="inline-flex items-center justify-center text-zinc-800 dark:text-zinc-200">
       <Avatar name={commit.author.name} className="mr-2 text-sm" />

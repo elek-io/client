@@ -1,5 +1,5 @@
-import { Plus, Trash } from 'lucide-react';
-import { type ReactElement, useRef, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { type ReactElement, useEffect, useRef, useState } from 'react';
 import {
   type FieldValues,
   type SubmitHandler,
@@ -20,15 +20,6 @@ import {
 import { Page, type PageProps } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@renderer/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -59,11 +50,10 @@ import {
 
 import {
   type CreateCollectionProps,
-  type DeleteCollectionProps,
   type FieldType,
   FieldTypeSchema,
+  type Project,
   type SupportedLanguage,
-  type TranslatableString,
   type UpdateCollectionProps,
   supportedIconSchema,
 } from '@elek-io/core';
@@ -72,20 +62,15 @@ export interface CreateUpdateCollectionPageProps<
   TFieldValues extends FieldValues,
 > extends PageProps {
   collectionForm: UseFormReturn<TFieldValues>;
-  supportedLanguages: SupportedLanguage[];
-  defaultLanguage: SupportedLanguage;
-  translateContent(key: string, record: TranslatableString): string;
+  project?: Project | undefined;
   onFormSubmit: SubmitHandler<TFieldValues>;
-  onCollectionDelete?: SubmitHandler<DeleteCollectionProps>;
 }
 
 export const CreateUpdateCollectionPage = ({
   collectionForm,
-  supportedLanguages,
-  defaultLanguage,
-  translateContent,
+  project,
   onFormSubmit,
-  onCollectionDelete,
+  children,
   ...props
 }: CreateUpdateCollectionPageProps<
   CreateCollectionProps | UpdateCollectionProps
@@ -94,16 +79,19 @@ export const CreateUpdateCollectionPage = ({
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
-  const collectionFormProps = collectionForm.getValues();
+  const [defaultLanguage, setDefaultLanguage] =
+    useState<SupportedLanguage>('en');
+  const [supportedLanguages, setSupportedLanguages] = useState<
+    SupportedLanguage[]
+  >(['en']);
 
-  /**
-   * Type Guard to check if we are in "update" mode
-   */
-  function isUpdatingCollection(
-    collectionFormProps: CreateCollectionProps | UpdateCollectionProps
-  ): collectionFormProps is UpdateCollectionProps {
-    return 'id' in collectionFormProps;
-  }
+  // Reset form with user data when it loads
+  useEffect(() => {
+    if (project) {
+      setDefaultLanguage(project.settings.language.default);
+      setSupportedLanguages(project.settings.language.supported);
+    }
+  }, [project]);
 
   const fieldDefinitions = useFieldArray({
     control: collectionForm.control, // control props comes from useForm (optional: if you are using FormContext)
@@ -120,113 +108,115 @@ export const CreateUpdateCollectionPage = ({
     <Page {...props}>
       <Form {...collectionForm}>
         <form onSubmit={collectionForm.handleSubmit(onFormSubmit)}>
-          <div className="space-y-6 p-6">
-            <div className="grid grid-cols-12 items-start gap-6">
-              <FormField
-                control={collectionForm.control}
-                name="icon"
-                render={({ field }) => (
-                  <FormItem className="col-span-12 sm:col-span-2">
-                    <FormLabel isRequired>Icon</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {supportedIconSchema.options.map((option) => {
-                            return (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+          <fieldset disabled={project === undefined}>
+            <div className="space-y-6 p-6">
+              <div className="grid grid-cols-12 items-start gap-6">
+                <FormField
+                  control={collectionForm.control}
+                  name="icon"
+                  render={({ field }) => (
+                    <FormItem className="col-span-12 sm:col-span-2">
+                      <FormLabel isRequired>Icon</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {supportedIconSchema.options.map((option) => {
+                              return (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={collectionForm.control}
-                name={`name.plural.${defaultLanguage}`}
-                render={({ field }) => (
-                  <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel isRequired>Collection name (Plural)</FormLabel>
-                    <FormControl>
-                      <TranslatableFormInput
-                        title="Collection name (Plural)"
-                        description='The name of your new collection. Choose a short name in plural that explains the content of the collection - e.g. "Blogposts".'
-                        type="text"
-                        field={field}
-                        errors={collectionForm.formState.errors}
-                        supportedLanguages={supportedLanguages}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      The name of your new collection. Choose a short name in
-                      plural that explains the content of the collection - e.g.
-                      &quot;Blogposts&quot;.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={collectionForm.control}
+                  name={`name.plural.${defaultLanguage}`}
+                  render={({ field }) => (
+                    <FormItem className="col-span-12 sm:col-span-5">
+                      <FormLabel isRequired>Collection name (Plural)</FormLabel>
+                      <FormControl>
+                        <TranslatableFormInput
+                          title="Collection name (Plural)"
+                          description='The name of your new collection. Choose a short name in plural that explains the content of the collection - e.g. "Blogposts".'
+                          type="text"
+                          field={field}
+                          errors={collectionForm.formState.errors}
+                          supportedLanguages={supportedLanguages}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The name of your new collection. Choose a short name in
+                        plural that explains the content of the collection -
+                        e.g. &quot;Blogposts&quot;.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={collectionForm.control}
-                name={`name.singular.${defaultLanguage}`}
-                render={({ field }) => (
-                  <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel isRequired>Entry name (Singluar)</FormLabel>
-                    <FormControl>
-                      <TranslatableFormInput
-                        title="Entry name (Singluar)"
-                        description='The name of each Entry inside your new Collection. Choose a short name in singluar - e.g. "Blogpost".'
-                        type="text"
-                        field={field}
-                        errors={collectionForm.formState.errors}
-                        supportedLanguages={supportedLanguages}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      The name of each Entry inside your new Collection. Choose
-                      a short name in singluar - e.g. &quot;Blogpost&quot;.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={collectionForm.control}
+                  name={`name.singular.${defaultLanguage}`}
+                  render={({ field }) => (
+                    <FormItem className="col-span-12 sm:col-span-5">
+                      <FormLabel isRequired>Entry name (Singluar)</FormLabel>
+                      <FormControl>
+                        <TranslatableFormInput
+                          title="Entry name (Singluar)"
+                          description='The name of each Entry inside your new Collection. Choose a short name in singluar - e.g. "Blogpost".'
+                          type="text"
+                          field={field}
+                          errors={collectionForm.formState.errors}
+                          supportedLanguages={supportedLanguages}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The name of each Entry inside your new Collection.
+                        Choose a short name in singluar - e.g.
+                        &quot;Blogpost&quot;.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={collectionForm.control}
-                name={`description.${defaultLanguage}`}
-                render={({ field }) => (
-                  <FormItem className="col-span-12 sm:col-span-12">
-                    <FormLabel isRequired>Description</FormLabel>
-                    <FormControl>
-                      <TranslatableFormTextarea
-                        title="Description"
-                        description="A description of what this new Collection is used for."
-                        field={field}
-                        errors={collectionForm.formState.errors}
-                        supportedLanguages={supportedLanguages}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      A description of what this new Collection is used for.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                <FormField
+                  control={collectionForm.control}
+                  name={`description.${defaultLanguage}`}
+                  render={({ field }) => (
+                    <FormItem className="col-span-12 sm:col-span-12">
+                      <FormLabel isRequired>Description</FormLabel>
+                      <FormControl>
+                        <TranslatableFormTextarea
+                          title="Description"
+                          description="A description of what this new Collection is used for."
+                          field={field}
+                          errors={collectionForm.formState.errors}
+                          supportedLanguages={supportedLanguages}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        A description of what this new Collection is used for.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            {/* <FormField
+              {/* <FormField
               control={collectionForm.control}
               name={`slug.plural`}
               render={({ field }) => (
@@ -245,7 +235,7 @@ export const CreateUpdateCollectionPage = ({
               )}
             /> */}
 
-            {/* <FormField
+              {/* <FormField
               control={collectionForm.control}
               name={`slug.singular`}
               render={({ field }) => (
@@ -263,174 +253,129 @@ export const CreateUpdateCollectionPage = ({
                 </FormItem>
               )}
             /> */}
-          </div>
-
-          <PageSection
-            title="Define this Collections Fields"
-            description="Add Fields to structure the Collections content and define how users interact with those Fields."
-            actions={
-              <Sheet
-                open={isAddFieldDefinitionSheetOpen}
-                onOpenChange={setIsAddFieldDefinitionSheetOpen}
-              >
-                <SheetTrigger asChild>
-                  <Button
-                    Icon={Plus}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setIsAddFieldDefinitionSheetOpen(true);
-                    }}
-                  >
-                    Add Field
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
-                //
-                // onInteractOutside={(event) => {
-                //   console.log(event);
-                //   event.preventDefault();
-                // }}
-                // overlayChildren={
-                //   fieldDefinitionFormRef.current && (
-                //     <fieldDefinitionFormRef.current.getExampleFormField
-                //       fieldType={selectedFieldType}
-                //     />
-                //   )
-                // }
-                >
-                  <SheetHeader>
-                    <SheetTitle>Add a Field to this Collection</SheetTitle>
-                    <SheetDescription>
-                      Adding Fields to your Collection will enable users to
-                      enter data that follows the boundries you&apos;ve set.
-                    </SheetDescription>
-                    <FormItem>
-                      <FormLabel isRequired>Input type</FormLabel>
-                      <Select
-                        value={selectedFieldType}
-                        onValueChange={(value: FieldType) =>
-                          setSelectedFieldType(value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FieldTypeSchema.options.map((option) => {
-                            return (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        The type of input the user is able to enter for this
-                        Field.
-                      </FormDescription>
-                    </FormItem>
-                  </SheetHeader>
-
-                  <SheetBody>
-                    <FieldDefinitionForm
-                      ref={fieldDefinitionFormRef}
-                      fieldDefinitions={fieldDefinitions}
-                      translateContent={translateContent}
-                      setIsAddFieldDefinitionSheetOpen={
-                        setIsAddFieldDefinitionSheetOpen
-                      }
-                      fieldType={selectedFieldType}
-                      supportedLanguages={supportedLanguages}
-                      defaultLanguage={defaultLanguage}
-                    />
-                  </SheetBody>
-
-                  <SheetFooter>
-                    <Button className="w-full" onClick={addFieldDefinition}>
-                      Add definition
-                    </Button>
-                  </SheetFooter>
-                </SheetContent>
-              </Sheet>
-            }
-          >
-            <div className="mt-6 grid grid-cols-12 gap-6">
-              <SortableFieldArray fieldArray={fieldDefinitions}>
-                {fieldDefinitions.fields.map((fieldDefinition, index) => {
-                  return (
-                    <DraggableComponent
-                      key={fieldDefinition.id}
-                      id={fieldDefinition.id}
-                    >
-                      <FormFieldFromDefinition
-                        fieldDefinition={fieldDefinition}
-                        form={collectionForm}
-                        // @ts-ignore This is only to display the field, not to actually edit anything but the order of the fields
-                        name={`currentFields.field-${index}.content`}
-                        supportedLanguages={supportedLanguages}
-                        translateContent={translateContent}
-                        isDraggable
-                        isEditable
-                        onDelete={(fieldDefinition) => {
-                          const index = fieldDefinitions.fields.findIndex(
-                            (field) => field.id === fieldDefinition.id
-                          );
-                          fieldDefinitions.remove(index);
-                        }}
-                      />
-                    </DraggableComponent>
-                  );
-                })}
-              </SortableFieldArray>
             </div>
-          </PageSection>
-          {isUpdatingCollection(collectionFormProps) && onCollectionDelete ? (
-            <PageSection title="Danger Zone">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm leading-6 font-medium">
-                    Delete this Collection
-                  </p>
-                </div>
-                <div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="destructive">
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete Collection
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Are you sure?</DialogTitle>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button type="button" variant="secondary">
-                            No, I&apos;ve changed my mind
-                          </Button>
-                        </DialogClose>
-                        <Button
-                          variant="destructive"
-                          onClick={() =>
-                            onCollectionDelete({
-                              projectId: collectionFormProps.projectId,
-                              id: collectionFormProps.id,
-                            })
+
+            <PageSection
+              title="Define this Collections Fields"
+              description="Add Fields to structure the Collections content and define how users interact with those Fields."
+              actions={
+                <Sheet
+                  open={isAddFieldDefinitionSheetOpen}
+                  onOpenChange={setIsAddFieldDefinitionSheetOpen}
+                >
+                  <SheetTrigger asChild>
+                    <Button
+                      Icon={Plus}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setIsAddFieldDefinitionSheetOpen(true);
+                      }}
+                    >
+                      Add Field
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                  // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
+                  //
+                  // onInteractOutside={(event) => {
+                  //   console.log(event);
+                  //   event.preventDefault();
+                  // }}
+                  // overlayChildren={
+                  //   fieldDefinitionFormRef.current && (
+                  //     <fieldDefinitionFormRef.current.getExampleFormField
+                  //       fieldType={selectedFieldType}
+                  //     />
+                  //   )
+                  // }
+                  >
+                    <SheetHeader>
+                      <SheetTitle>Add a Field to this Collection</SheetTitle>
+                      <SheetDescription>
+                        Adding Fields to your Collection will enable users to
+                        enter data that follows the boundries you&apos;ve set.
+                      </SheetDescription>
+                      <FormItem>
+                        <FormLabel isRequired>Input type</FormLabel>
+                        <Select
+                          value={selectedFieldType}
+                          onValueChange={(value: FieldType) =>
+                            setSelectedFieldType(value)
                           }
                         >
-                          <Trash className="mr-2 h-4 w-4" />
-                          Yes, delete this Collection
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FieldTypeSchema.options.map((option) => {
+                              return (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          The type of input the user is able to enter for this
+                          Field.
+                        </FormDescription>
+                      </FormItem>
+                    </SheetHeader>
+
+                    <SheetBody>
+                      <FieldDefinitionForm
+                        ref={fieldDefinitionFormRef}
+                        fieldDefinitions={fieldDefinitions}
+                        setIsAddFieldDefinitionSheetOpen={
+                          setIsAddFieldDefinitionSheetOpen
+                        }
+                        fieldType={selectedFieldType}
+                        supportedLanguages={supportedLanguages}
+                        defaultLanguage={defaultLanguage}
+                      />
+                    </SheetBody>
+
+                    <SheetFooter>
+                      <Button className="w-full" onClick={addFieldDefinition}>
+                        Add definition
+                      </Button>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
+              }
+            >
+              <div className="mt-6 grid grid-cols-12 gap-6">
+                <SortableFieldArray fieldArray={fieldDefinitions}>
+                  {fieldDefinitions.fields.map((fieldDefinition, index) => {
+                    return (
+                      <DraggableComponent
+                        key={fieldDefinition.id}
+                        id={fieldDefinition.id}
+                      >
+                        <FormFieldFromDefinition
+                          fieldDefinition={fieldDefinition}
+                          form={collectionForm}
+                          // @ts-ignore This is only to display the field, not to actually edit anything but the order of the fields
+                          name={`currentFields.field-${index}.content`}
+                          supportedLanguages={supportedLanguages}
+                          isDraggable
+                          isEditable
+                          onDelete={(fieldDefinition) => {
+                            const index = fieldDefinitions.fields.findIndex(
+                              (field) => field.id === fieldDefinition.id
+                            );
+                            fieldDefinitions.remove(index);
+                          }}
+                        />
+                      </DraggableComponent>
+                    );
+                  })}
+                </SortableFieldArray>
               </div>
             </PageSection>
-          ) : null}
+            {children}
+          </fieldset>
         </form>
       </Form>
     </Page>

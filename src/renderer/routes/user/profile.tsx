@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { type ReactElement, useEffect } from 'react';
@@ -37,16 +37,21 @@ import {
   supportedLanguageSchema,
 } from '@elek-io/core';
 
+import { useQueryNoError } from '../../hooks/useQueryNoError';
+import { useUser } from '../../hooks/useUser';
+
 export const Route = createFileRoute('/user/profile')({
   component: UserProfilePage,
 });
 
 function UserProfilePage(): ReactElement {
   const router = useRouter();
-  const { data: user, isPending: isUserPending } = useQuery(
-    queryOptions.user.get()
+  const {
+    userQuery: { data: user, isPending: isUserPending },
+  } = useUser();
+  const { data: isLocalApiRunning } = useQueryNoError(
+    queryOptions.api.isRunning()
   );
-  const { data: isLocalApiRunning } = useQuery(queryOptions.api.isRunning());
   const { mutateAsync: startApi } = useMutation(queryOptions.api.start);
   const { mutateAsync: stopApi } = useMutation(queryOptions.api.stop);
   const { mutateAsync: setUser, isPending: isSettingUser } = useMutation(
@@ -71,16 +76,7 @@ function UserProfilePage(): ReactElement {
   // Reset form with user data when it loads
   useEffect(() => {
     if (user) {
-      setUserForm.reset({
-        userType: 'local',
-        name: user.name,
-        email: user.email,
-        language: user.language,
-        localApi: {
-          port: user.localApi.port,
-          isEnabled: user.localApi.isEnabled,
-        },
-      });
+      setUserForm.reset(user);
     }
   }, [user, setUserForm]);
 
@@ -320,12 +316,7 @@ function UserProfilePage(): ReactElement {
             description="This is how a change made by you will look like based on the information you've given on the left."
             standalone
           >
-            <CommitHistory
-              projectId="1"
-              commits={[exampleCommit]}
-              language={setUserForm.watch('language')}
-              disabled
-            />
+            <CommitHistory projectId="1" commits={[exampleCommit]} disabled />
           </PageSection>
         </aside>
       </div>

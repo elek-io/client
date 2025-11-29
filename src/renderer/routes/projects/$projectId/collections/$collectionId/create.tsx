@@ -1,16 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useProject } from '@root/src/renderer/hooks/useProject';
+import { useQueryNoError } from '@root/src/renderer/hooks/useQueryNoError';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+import React, { useEffect, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
-import { CreateUpdateEntryPage } from '@renderer/components/pages/create-update-entry-page';
+import {
+  CreateUpdateEntryPage,
+  CreateUpdateEntryPageSkeleton,
+} from '@renderer/components/pages/create-update-entry-page';
 import {
   translatableDefaultEmptyArray,
   translatableDefaultNull,
 } from '@renderer/components/pages/util';
 import { Button } from '@renderer/components/ui/button';
-import { useStore } from '@renderer/store';
+import queryOptions from '@renderer/queries/options';
 
 import {
   type CreateEntryProps,
@@ -23,40 +29,42 @@ export const Route = createFileRoute(
   component: CreateEntryPage,
 });
 
-function CreateEntryPage(): ReactElement {
+function CreateEntryPage(): React.JSX.Element {
   const router = useRouter();
-  const routeContext = Route.useRouteContext();
-  const [isCreatingEntry, setIsCreatingEntry] = useState(false);
-  const addNotification = useStore((state) => state.addNotification);
-  const generatedCreateEntrySchema = getCreateEntrySchemaFromFieldDefinitions(
-    routeContext.currentCollection.fieldDefinitions
+  const { projectId, collectionId } = Route.useParams();
+  const {
+    projectQuery: { data: project, isPending: isReadingProject },
+    translateContent,
+  } = useProject();
+  const { data: collection, isPending: isReadingCollection } = useQueryNoError(
+    queryOptions.collections.read({
+      projectId: projectId,
+      id: collectionId,
+    })
   );
-
+  const { mutateAsync: createEntry, isPending: isCreatingEntry } = useMutation(
+    queryOptions.entries.create
+  );
+  const generatedCreateEntrySchema =
+    isReadingCollection === false
+      ? getCreateEntrySchemaFromFieldDefinitions(collection.fieldDefinitions)
+      : getCreateEntrySchemaFromFieldDefinitions([]);
   const createEntryForm = useForm<CreateEntryProps>({
-    resolver: async (data, context, options) => {
-      await routeContext.core.logger.debug({
-        source: 'desktop',
-        message: 'Create Entry form data',
-        meta: { data },
-      });
-      const validationResult = await zodResolver(generatedCreateEntrySchema)(
-        // @ts-expect-error TS does not know the at runtime generated value schema and assumes it's an empty array
-        data,
-        context,
-        options
-      );
-      await routeContext.core.logger.debug({
-        source: 'desktop',
-        message: 'Create Entry form validation result',
-        meta: { validationResult },
-      });
-      return validationResult;
-    },
+    resolver: zodResolver(generatedCreateEntrySchema),
     defaultValues: {
-      projectId: routeContext.project.id,
-      collectionId: routeContext.currentCollection.id,
-      values: routeContext.currentCollection.fieldDefinitions.map(
-        (definition) => {
+      projectId: projectId,
+      collectionId: collectionId,
+      values: [],
+    },
+  });
+
+  // Reset form with Project and Collection data when it loads
+  useEffect(() => {
+    if (isReadingProject === false && isReadingCollection === false) {
+      createEntryForm.reset({
+        projectId: projectId,
+        collectionId: collectionId,
+        values: collection.fieldDefinitions.map((definition) => {
           switch (definition.valueType) {
             case 'boolean':
             case 'number':
@@ -66,7 +74,7 @@ function CreateEntryPage(): ReactElement {
                 fieldDefinitionId: definition.id,
                 valueType: definition.valueType,
                 content: translatableDefaultNull(
-                  routeContext.project.settings.language.supported
+                  project.settings.language.supported
                 ),
               };
 
@@ -76,7 +84,7 @@ function CreateEntryPage(): ReactElement {
                 fieldDefinitionId: definition.id,
                 valueType: definition.valueType,
                 content: translatableDefaultEmptyArray(
-                  routeContext.project.settings.language.supported
+                  project.settings.language.supported
                 ),
               };
 
@@ -86,23 +94,48 @@ function CreateEntryPage(): ReactElement {
                 `Unsupported valueType "${definition.valueType}" while setting form state defaults for creating the Entry`
               );
           }
-        }
-      ),
-    },
-  });
+        }),
+      });
+    }
+  }, [
+    projectId,
+    collectionId,
+    project,
+    collection,
+    isReadingProject,
+    isReadingCollection,
+    createEntryForm,
+  ]);
 
-  const title = `Create a new ${routeContext.translateContent(
-    'currentCollection.name',
-    routeContext.currentCollection.name.singular
-  )}`;
+  const onCreateEntry: SubmitHandler<CreateEntryProps> = async (props) => {
+    await createEntry(props);
+    await router.navigate({
+      to: '/projects/$projectId/collections/$collectionId',
+      params: {
+        projectId,
+        collectionId,
+      },
+    });
+  };
+
+  const title = `Create a new ${
+    collection
+      ? translateContent({
+          key: 'currentCollection.name',
+          record: collection.name.singular,
+        })
+      : 'Entry'
+  }`;
 
   function Description(): ReactElement {
     return (
       <>
-        {routeContext.translateContent(
-          'currentCollection.description',
-          routeContext.currentCollection.description
-        )}
+        {collection
+          ? translateContent({
+              key: 'currentCollection.description',
+              record: collection.description,
+            })
+          : ''}
       </>
     );
   }
@@ -117,62 +150,37 @@ function CreateEntryPage(): ReactElement {
           onClick={createEntryForm.handleSubmit(onCreateEntry)}
         >
           Create{' '}
-          {routeContext.translateContent(
-            'currentCollection.name.singular',
-            routeContext.currentCollection.name.singular
-          )}
+          {collection
+            ? translateContent({
+                key: 'currentCollection.name.singular',
+                record: collection.name.singular,
+              })
+            : 'Entry'}
         </Button>
       </>
     );
   }
 
-  const onCreateEntry: SubmitHandler<CreateEntryProps> = async (props) => {
-    setIsCreatingEntry(true);
-
-    try {
-      await routeContext.core.entries.create(props);
-      setIsCreatingEntry(false);
-      addNotification({
-        intent: 'success',
-        title: `Created new ${routeContext.translateContent(
-          'currentCollection.name',
-          routeContext.currentCollection.name.singular
-        )}`,
-        description: 'The Entry has been created.',
-      });
-      await router.navigate({
-        to: '/projects/$projectId/collections/$collectionId',
-        params: {
-          projectId: routeContext.project.id,
-          collectionId: routeContext.currentCollection.id,
-        },
-      });
-    } catch (error) {
-      setIsCreatingEntry(false);
-      await routeContext.core.logger.error({
-        source: 'desktop',
-        message: 'Failed to create new Entry',
-        meta: { error },
-      });
-      addNotification({
-        intent: 'danger',
-        title: 'Failed to create new Entry',
-        description: 'There was an error creating the new Entry.',
-      });
-    }
-  };
-
-  return (
-    <CreateUpdateEntryPage
-      title={title}
-      description={<Description />}
-      actions={<Actions />}
-      entryForm={createEntryForm}
-      fieldDefinitions={routeContext.currentCollection.fieldDefinitions}
-      supportedLanguages={routeContext.project.settings.language.supported}
-      defaultLanguage={routeContext.project.settings.language.default}
-      translateContent={routeContext.translateContent}
-      onFormSubmit={onCreateEntry}
-    />
-  );
+  if (project && collection) {
+    return (
+      <CreateUpdateEntryPage
+        title={title}
+        description={<Description />}
+        actions={<Actions />}
+        entryForm={createEntryForm}
+        fieldDefinitions={collection.fieldDefinitions}
+        supportedLanguages={project.settings.language.supported}
+        defaultLanguage={project.settings.language.default}
+        onFormSubmit={onCreateEntry}
+      />
+    );
+  } else {
+    return (
+      <CreateUpdateEntryPageSkeleton
+        title="Loading..."
+        description={<></>}
+        actions={<></>}
+      />
+    );
+  }
 }

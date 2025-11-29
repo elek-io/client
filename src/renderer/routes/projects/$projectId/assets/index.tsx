@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQueryNoError } from '@root/src/renderer/hooks/useQueryNoError';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 
@@ -25,12 +26,7 @@ export const Route = createFileRoute('/projects/$projectId/assets/')({
 
 function ProjectAssetsPage(): React.JSX.Element {
   const { projectId } = Route.useParams();
-  const {
-    data: assets,
-    isPending: isAssetsPending,
-    isError: isAssetsError,
-    error: assetsError,
-  } = useQuery(
+  const { data: assets, isPending: isListingAssets } = useQueryNoError(
     queryOptions.assets.list({
       projectId: projectId,
       limit: 0,
@@ -93,10 +89,6 @@ function ProjectAssetsPage(): React.JSX.Element {
     await Promise.all(assetPromises);
   }
 
-  if (isAssetsError) {
-    throw assetsError;
-  }
-
   return (
     <Page
       title="Assets"
@@ -104,7 +96,7 @@ function ProjectAssetsPage(): React.JSX.Element {
       actions={<Actions />}
       layout="bare"
     >
-      {isAssetsPending ? (
+      {isListingAssets ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-5 xl:gap-6">
           {[1, 2, 3, 4, 5].map((i) => (
             <AssetTeaserSkeleton key={i} />

@@ -21,11 +21,11 @@ import {
 } from '@renderer/components/ui/sidebar';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
-  component: ProjectCollectionsLayout,
+  component: ProjectSettingsLayout,
 });
 
-function ProjectCollectionsLayout(): ReactElement {
-  const context = Route.useRouteContext();
+function ProjectSettingsLayout(): ReactElement {
+  const { projectId } = Route.useParams();
   const settingsNavigation: {
     name: string;
     to: ToPathOption;
@@ -59,7 +59,7 @@ function ProjectCollectionsLayout(): ReactElement {
                         <Link
                           to={item.to}
                           params={{
-                            projectId: context.project.id,
+                            projectId,
                           }}
                           activeProps={{ 'data-active': true }}
                         >

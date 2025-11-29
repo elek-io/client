@@ -1,5 +1,5 @@
 import queryOptions from '@root/src/renderer/queries/options';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { DownloadCloud, Plus } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
@@ -40,18 +40,15 @@ import {
 
 import { type CloneProjectProps } from '@elek-io/core';
 
+import { useQueryNoError } from '../../hooks/useQueryNoError';
+
 export const Route = createFileRoute('/projects/')({
   component: ListProjectsPage,
 });
 
 function ListProjectsPage(): ReactElement {
   const router = useRouter();
-  const {
-    data: projects,
-    isPending: isProjectsPending,
-    isError: isProjectsError,
-    error: projectsError,
-  } = useQuery(
+  const { data: projects, isPending: isListingProjects } = useQueryNoError(
     queryOptions.projects.list({
       limit: 0,
     })
@@ -100,10 +97,6 @@ function ListProjectsPage(): ReactElement {
     );
   }
 
-  if (isProjectsError) {
-    throw projectsError;
-  }
-
   return (
     <>
       <Page
@@ -112,7 +105,7 @@ function ListProjectsPage(): ReactElement {
         actions={<Actions />}
         layout="bare"
       >
-        {isProjectsPending ? (
+        {isListingProjects ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3, 4, 5].map((i) => {
               return <ProjectCardSkeleton key={i} />;

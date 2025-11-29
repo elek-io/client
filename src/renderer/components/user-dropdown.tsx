@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { Moon, Sun, ChevronDown, ExternalLinkIcon } from 'lucide-react';
 
@@ -26,11 +26,14 @@ import { queryOptions } from '@renderer/queries';
 
 import type { User } from '@elek-io/core';
 
+import { useQueryNoError } from '../hooks/useQueryNoError';
 import { Switch } from './ui/switch';
 
 export function UserDropdown({ user }: { user: User }): React.JSX.Element {
   const router = useRouter();
-  const { data: isLocalApiRunning } = useQuery(queryOptions.api.isRunning());
+  const { data: isLocalApiRunning } = useQueryNoError(
+    queryOptions.api.isRunning()
+  );
   const { mutateAsync: startApi, isPending: isStartingApi } = useMutation(
     queryOptions.api.start
   );

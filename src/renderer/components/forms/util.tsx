@@ -51,7 +51,6 @@ export interface FieldDefinitionFormProps {
   setIsAddFieldDefinitionSheetOpen: React.Dispatch<
     React.SetStateAction<boolean>
   >;
-  translateContent: (key: string, record: TranslatableString) => string;
 }
 
 export interface FieldDefinitionFormRef {
@@ -220,7 +219,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={numberFieldDefinitionFormState}
                 fieldDefinition={numberFieldDefinitionFormState.watch()}
                 name="exampleFields.number.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -230,7 +228,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={rangeFieldDefinitionFormState}
                 fieldDefinition={rangeFieldDefinitionFormState.watch()}
                 name="exampleFields.range.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -240,7 +237,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={textFieldDefinitionFormState}
                 fieldDefinition={textFieldDefinitionFormState.watch()}
                 name="exampleFields.text.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -250,7 +246,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={textareaFieldDefinitionFormState}
                 fieldDefinition={textareaFieldDefinitionFormState.watch()}
                 name="exampleFields.textarea.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -260,7 +255,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={toggleFieldDefinitionFormState}
                 fieldDefinition={toggleFieldDefinitionFormState.watch()}
                 name="exampleFields.toggle.content"
-                translateContent={props.translateContent}
               />
             );
           case 'asset':
