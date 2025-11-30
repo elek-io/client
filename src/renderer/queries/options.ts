@@ -33,7 +33,7 @@ export default {
       onSuccess: (createdProject, _variables, _onMutateResult, context) => {
         // Add Project to cache individually
         context.client.setQueryData(
-          ['projects', createdProject.id],
+          ['projects', createdProject.id, 'current'],
           createdProject
         );
 
@@ -56,7 +56,7 @@ export default {
         queryKey: [
           'projects',
           props.id,
-          props.commitHash ? props.commitHash : undefined,
+          props.commitHash === undefined ? 'current' : props.commitHash,
         ],
         queryFn: async () => {
           return await window.ipc.core.projects.read(props);
@@ -73,7 +73,7 @@ export default {
       onSuccess: (updatedProject, _variables, _onMutateResult, context) => {
         // Update Project in cache individually
         context.client.setQueryData(
-          ['projects', updatedProject.id],
+          ['projects', updatedProject.id, 'current'],
           updatedProject
         );
 
@@ -104,7 +104,10 @@ export default {
       },
       onSuccess: (_deletedProject, variables, _onMutateResult, context) => {
         // Remove Project from cache individually
-        context.client.setQueryData(['projects', variables.id], undefined);
+        context.client.setQueryData(
+          ['projects', variables.id, 'current'],
+          undefined
+        );
 
         // And update the Projects list cache too
         context.client.setQueryData(
@@ -131,7 +134,10 @@ export default {
           // Cache each project individually too
           // so that we can access them directly without refetching later
           projects.list.forEach((project) => {
-            queryClient.setQueryData(['projects', project.id], project);
+            queryClient.setQueryData(
+              ['projects', project.id, 'current'],
+              project
+            );
           });
 
           return projects;
@@ -148,7 +154,7 @@ export default {
       onSuccess: (clonedProject, _variables, _onMutateResult, context) => {
         // Add Project to cache individually
         context.client.setQueryData(
-          ['projects', clonedProject.id],
+          ['projects', clonedProject.id, 'current'],
           clonedProject
         );
 
@@ -169,7 +175,7 @@ export default {
     getChanges: (projectId: string, project?: Project) =>
       queryOptions({
         enabled: project !== undefined && project.remoteOriginUrl !== null,
-        queryKey: ['projects', projectId, 'changes'],
+        queryKey: ['projects', projectId, 'current', 'changes'],
         queryFn: async () => {
           return await window.ipc.core.projects.getChanges({
             id: projectId,
@@ -190,7 +196,7 @@ export default {
         // On synchronization anything inside the Project may have changed
         // so we invalidate it entirely
         await context.client.invalidateQueries({
-          queryKey: ['projects'],
+          queryKey: ['projects', variables.id],
           refetchType: 'all',
         });
       },
@@ -202,11 +208,11 @@ export default {
         method: 'update',
         objectType: 'project',
       },
-      onSuccess: async (_data, _variables, _onMutateResult, context) => {
+      onSuccess: async (_data, variables, _onMutateResult, context) => {
         // Remote origin URL is part of the Project data
         // so we invalidate it entirely
         await context.client.invalidateQueries({
-          queryKey: ['projects'],
+          queryKey: ['projects', variables.id],
           refetchType: 'all',
         });
       },

@@ -16,7 +16,7 @@ export const Route = createFileRoute('/projects/$projectId/dashboard')({
 function ProjectDashboardPage(): React.JSX.Element {
   const router = useRouter();
   const {
-    projectQuery: { data: project, isPending: isProjectPending },
+    projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
 
   function Description(): React.JSX.Element {
@@ -26,7 +26,7 @@ function ProjectDashboardPage(): React.JSX.Element {
   function LatestChangesActions(): React.JSX.Element {
     return (
       <>
-        {isProjectPending ? null : (
+        {isReadingProject ? null : (
           <Button
             onClick={async () =>
               router.navigate({
@@ -62,7 +62,7 @@ function ProjectDashboardPage(): React.JSX.Element {
           className="lg:col-span-1"
           standalone
         >
-          {isProjectPending ? (
+          {isReadingProject ? (
             <CommitHistorySkeleton />
           ) : (
             <CommitHistory

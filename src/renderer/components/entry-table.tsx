@@ -271,7 +271,6 @@ export function EntryTableSkeleton(): React.JSX.Element {
       <div className="h-8 w-1/4 rounded bg-zinc-200 dark:bg-zinc-700" />
       <div className="mt-4 space-y-2">
         {[1, 2, 3, 4, 5].map((i) => (
-          // eslint-disable-next-line react/no-array-index-key
           <div
             key={i}
             className="h-10 w-full rounded bg-zinc-200 dark:bg-zinc-700"

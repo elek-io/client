@@ -75,8 +75,8 @@ export function AssetDisplay(
       <div className="flex aspect-4/3 basis-full">
         <video
           muted
-          controls={!props.static}
-          autoPlay={!props.static}
+          controls={props.static === true ? false : true}
+          autoPlay={props.static === true ? false : true}
           className={cn('', props.className)}
         >
           <source src={absolutePath} type={props.mimeType} />
@@ -90,8 +90,8 @@ export function AssetDisplay(
       <div className="flex aspect-4/3 basis-full">
         <audio
           muted
-          controls={!props.static}
-          autoPlay={!props.static}
+          controls={props.static === true ? false : true}
+          autoPlay={props.static === true ? false : true}
           className={cn('', props.className)}
         >
           <source src={absolutePath} type={props.mimeType} />

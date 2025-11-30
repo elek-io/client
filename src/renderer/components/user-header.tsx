@@ -22,12 +22,7 @@ export function UserHeader(): React.JSX.Element {
   const router = useRouter();
   const routerState = useRouterState();
   const {
-    userQuery: {
-      data: user,
-      isPending: isUserPending,
-      isError: isUserError,
-      error: userError,
-    },
+    userQuery: { data: user, isPending: isGettingUser },
   } = useUser();
   const breadcrumbLookupMap = useStore(
     (storeState) => storeState.breadcrumbLookupMap
@@ -84,10 +79,6 @@ export function UserHeader(): React.JSX.Element {
       };
     });
 
-  if (isUserError) {
-    throw userError;
-  }
-
   return (
     <div className="flex w-full border-b bg-sidebar">
       <div className="flex w-60 shrink-0 border-r p-2" />
@@ -127,7 +118,7 @@ export function UserHeader(): React.JSX.Element {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        {isUserPending ? (
+        {isGettingUser ? (
           <UserDropdownSkeleton />
         ) : user === null ? null : (
           <UserDropdown user={user} />

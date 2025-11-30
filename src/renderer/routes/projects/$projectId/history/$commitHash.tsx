@@ -3,7 +3,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Tag } from 'lucide-react';
 import { useEffect, useState, type ReactElement } from 'react';
 
-import { AssetInfo } from '@renderer/components/asset-info';
 import { CollectionDiff } from '@renderer/components/collection-diff';
 import {
   DiffContainer,

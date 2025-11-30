@@ -13,7 +13,7 @@ export const Route = createFileRoute('/projects/$projectId/collections')({
 
 function ProjectCollectionsLayout(): ReactElement {
   const { projectId } = Route.useParams();
-  const { data: collections, isPending: isCollectionsPending } =
+  const { data: collections, isPending: isListingCollections } =
     useQueryNoError(
       queryOptions.collections.list({
         projectId,
@@ -23,7 +23,7 @@ function ProjectCollectionsLayout(): ReactElement {
 
   return (
     <div className="flex h-full">
-      {isCollectionsPending ? (
+      {isListingCollections ? (
         <CollectionsSidebarSkeleton projectId={projectId} />
       ) : (
         <CollectionsSidebar projectId={projectId} collections={collections} />

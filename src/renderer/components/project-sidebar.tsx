@@ -96,7 +96,7 @@ function ProjectNavigation(): React.JSX.Element {
 export function ProjectSidebar(): React.JSX.Element {
   const {
     projectId,
-    projectQuery: { data: project, isPending: isProjectPending },
+    projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
   const {
     data: projectChanges,
@@ -106,7 +106,7 @@ export function ProjectSidebar(): React.JSX.Element {
   const { mutateAsync: synchronizeProject, isPending: isSynchronizingProject } =
     useMutation(queryOptions.projects.synchronize);
 
-  if (isProjectPending) {
+  if (isReadingProject) {
     return <ProjectSidebarSkeleton />;
   }
 

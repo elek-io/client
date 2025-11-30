@@ -46,7 +46,7 @@ export const Route = createFileRoute('/user/profile')({
 function UserProfilePage(): ReactElement {
   const router = useRouter();
   const {
-    userQuery: { data: user, isPending: isUserPending },
+    userQuery: { data: user, isPending: isGettingUser },
   } = useUser();
   const { data: isLocalApiRunning } = useQueryNoError(
     queryOptions.api.isRunning()
@@ -170,7 +170,7 @@ function UserProfilePage(): ReactElement {
         <Card className="py-0 lg:col-span-2">
           <Form {...setUserForm}>
             <form>
-              <fieldset disabled={isUserPending}>
+              <fieldset disabled={isGettingUser}>
                 <PageSection
                   title="Local User"
                   description="Fill out your information below and watch it influence how your future changes will look like on the right."
