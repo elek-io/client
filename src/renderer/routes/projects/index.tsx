@@ -37,10 +37,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 
 import { type CloneProjectProps } from '@elek-io/core';
-
-import { useQueryNoError } from '../../hooks/useQueryNoError';
 
 export const Route = createFileRoute('/projects/')({
   component: ListProjectsPage,

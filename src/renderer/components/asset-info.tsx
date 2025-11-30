@@ -22,11 +22,10 @@ import {
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
 import { formatBytes } from '@renderer/lib/utils';
+import queryOptions from '@renderer/queries/options';
 import { useStore } from '@renderer/store';
 
 import { type Asset, type SupportedLanguage } from '@elek-io/core';
-
-import queryOptions from '../queries/options';
 
 export interface AssetInfoProps {
   projectId: string;

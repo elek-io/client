@@ -53,8 +53,15 @@ import {
   ItemHeader,
   ItemTitle,
 } from '@renderer/components/ui/item';
+import { Separator } from '@renderer/components/ui/separator';
 import { Skeleton } from '@renderer/components/ui/skeleton';
 import { Textarea } from '@renderer/components/ui/textarea';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@renderer/components/ui/tooltip';
 import { formatBytes } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
@@ -63,14 +70,6 @@ import {
   type Asset,
   type UpdateAssetProps,
 } from '@elek-io/core';
-
-import { Separator } from './ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './ui/tooltip';
 
 export function AssetTeaser(
   props: Asset & { projectId: string }

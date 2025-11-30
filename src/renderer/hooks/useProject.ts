@@ -1,11 +1,10 @@
 import { createContext, useContext } from 'react';
 
+import type { UseQueryResultNoError } from '@renderer/hooks/useQueryNoError';
 import type { UserContextValue } from '@renderer/hooks/useUser';
 import { type TranslateContentProps } from '@renderer/providers/ProjectProvider';
 
 import type { Project } from '@elek-io/core';
-
-import type { UseQueryResultNoError } from './useQueryNoError';
 
 export type ProjectContextValue = UserContextValue & {
   projectId: string;

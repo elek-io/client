@@ -35,10 +35,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@renderer/components/ui/sidebar';
+import { useProject } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
-
-import { useProject } from '../hooks/useProject';
-import { useQueryNoError } from '../hooks/useQueryNoError';
 
 const projectNavigation: {
   name: string;

@@ -3,11 +3,14 @@
 import { type HTMLAttributes } from 'react';
 
 import { Commit, CommitSkeleton } from '@renderer/components/commit';
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@renderer/components/ui/sidebar';
 import { cn } from '@renderer/lib/utils';
 
 import { type GitCommit } from '@elek-io/core';
-
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
 
 export interface CommitHistoryProps extends HTMLAttributes<HTMLDivElement> {
   commits: GitCommit[];

@@ -28,6 +28,8 @@ import {
   SelectValue,
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { useUser } from '@renderer/hooks/useUser';
 import { queryOptions } from '@renderer/queries';
 
 import {
@@ -36,9 +38,6 @@ import {
   setUserSchema,
   supportedLanguageSchema,
 } from '@elek-io/core';
-
-import { useQueryNoError } from '../../hooks/useQueryNoError';
-import { useUser } from '../../hooks/useUser';
 
 export const Route = createFileRoute('/user/profile')({
   component: UserProfilePage,

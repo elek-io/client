@@ -1,12 +1,11 @@
 import React from 'react';
 
 import { ProjectContext } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { useUser } from '@renderer/hooks/useUser';
 import queryOptions from '@renderer/queries/options';
 
 import type { TranslatableString } from '@elek-io/core';
-
-import { useQueryNoError } from '../hooks/useQueryNoError';
 
 export interface TranslateContentProps {
   key: string;

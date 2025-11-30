@@ -9,6 +9,7 @@ import {
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
+import { Button } from '@renderer/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -32,11 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from '@renderer/components/ui/table';
+import { useProject } from '@renderer/hooks/useProject';
 
 import type { Collection, Entry, PaginatedList, Project } from '@elek-io/core';
-
-import { useProject } from '../hooks/useProject';
-import { Button } from './ui/button';
 
 export function EntryTable({
   project,

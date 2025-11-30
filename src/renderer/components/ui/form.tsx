@@ -38,6 +38,7 @@ import {
   FormItemContext,
   useFormField,
 } from '@renderer/hooks/useFormField';
+import { useProject } from '@renderer/hooks/useProject';
 import { cn, fieldWidth } from '@renderer/lib/utils';
 
 import type {
@@ -45,8 +46,6 @@ import type {
   FieldType,
   SupportedLanguage,
 } from '@elek-io/core';
-
-import { useProject } from '../../hooks/useProject';
 
 const Form = FormProvider;
 

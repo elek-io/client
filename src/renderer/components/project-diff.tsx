@@ -13,11 +13,10 @@ import {
   SelectValue,
 } from '@renderer/components/ui/select';
 import { Textarea } from '@renderer/components/ui/textarea';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
 import { type GitCommit, type Project } from '@elek-io/core';
-
-import { useQueryNoError } from '../hooks/useQueryNoError';
-import { queryOptions } from '../queries';
 
 function ProjectDiffForm({ project }: { project: Project }): React.JSX.Element {
   return (

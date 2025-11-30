@@ -6,6 +6,7 @@ import {
 
 import { Page, type PageProps } from '@renderer/components/page';
 import { Form, FormFieldFromDefinition } from '@renderer/components/ui/form';
+import { Skeleton } from '@renderer/components/ui/skeleton';
 
 import {
   type CreateEntryProps,
@@ -13,8 +14,6 @@ import {
   type SupportedLanguage,
   type UpdateEntryProps,
 } from '@elek-io/core';
-
-import { Skeleton } from '../ui/skeleton';
 
 interface CreateUpdateEntryPageProps<TFieldValues extends FieldValues>
   extends PageProps {

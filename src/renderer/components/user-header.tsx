@@ -10,11 +10,13 @@ import {
   BreadcrumbSeparator,
 } from '@renderer/components/ui/breadcrumb';
 import { Button } from '@renderer/components/ui/button';
+import { ButtonGroup } from '@renderer/components/ui/button-group';
+import {
+  UserDropdown,
+  UserDropdownSkeleton,
+} from '@renderer/components/user-dropdown';
+import { useUser } from '@renderer/hooks/useUser';
 import { useStore } from '@renderer/store';
-
-import { useUser } from '../hooks/useUser';
-import { ButtonGroup } from './ui/button-group';
-import { UserDropdown, UserDropdownSkeleton } from './user-dropdown';
 
 export function UserHeader(): React.JSX.Element {
   const router = useRouter();

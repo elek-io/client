@@ -1,11 +1,10 @@
 import { format, formatDistanceToNow } from 'date-fns';
 import React from 'react';
 
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { UserContext } from '@renderer/hooks/useUser';
 import { importedLocales } from '@renderer/lib/utils';
 import queryOptions from '@renderer/queries/options';
-
-import { useQueryNoError } from '../hooks/useQueryNoError';
 
 export interface FormatDatetimeProps {
   datetime: string | null | undefined;

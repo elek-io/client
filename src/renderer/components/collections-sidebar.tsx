@@ -14,11 +14,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@renderer/components/ui/sidebar';
+import { Skeleton } from '@renderer/components/ui/skeleton';
+import { useProject } from '@renderer/hooks/useProject';
 
 import type { Collection, PaginatedList } from '@elek-io/core';
-
-import { useProject } from '../hooks/useProject';
-import { Skeleton } from './ui/skeleton';
 
 export function CollectionsSidebar({
   projectId,

@@ -19,10 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@renderer/components/ui/dropdown-menu';
+import { Skeleton } from '@renderer/components/ui/skeleton';
 
 import type { Project } from '@elek-io/core';
-
-import { Skeleton } from './ui/skeleton';
 
 function ProjectCard({ project }: { project: Project }): React.JSX.Element {
   return (

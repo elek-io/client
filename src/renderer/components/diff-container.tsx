@@ -9,10 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@renderer/components/ui/card';
+import { Skeleton } from '@renderer/components/ui/skeleton';
 
 import { type GitCommit } from '@elek-io/core';
-
-import { Skeleton } from './ui/skeleton';
 
 export interface DiffContainerProps {
   type: 'create' | 'before' | 'after' | 'delete';

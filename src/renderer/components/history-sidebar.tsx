@@ -1,6 +1,10 @@
 import React from 'react';
 
 import {
+  CommitHistory,
+  CommitHistorySkeleton,
+} from '@renderer/components/commit-history';
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -11,8 +15,6 @@ import {
 } from '@renderer/components/ui/sidebar';
 
 import type { Project } from '@elek-io/core';
-
-import { CommitHistory, CommitHistorySkeleton } from './commit-history';
 
 export function HistorySidebar({
   project,

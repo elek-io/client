@@ -21,13 +21,12 @@ import {
   DropdownMenuTrigger,
 } from '@renderer/components/ui/dropdown-menu';
 import { Skeleton } from '@renderer/components/ui/skeleton';
+import { Switch } from '@renderer/components/ui/switch';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { useTheme, type Theme } from '@renderer/hooks/useTheme';
 import { queryOptions } from '@renderer/queries';
 
 import type { User } from '@elek-io/core';
-
-import { useQueryNoError } from '../hooks/useQueryNoError';
-import { Switch } from './ui/switch';
 
 export function UserDropdown({ user }: { user: User }): React.JSX.Element {
   const router = useRouter();

@@ -13,10 +13,9 @@ import {
 } from 'lucide-react';
 
 import { Skeleton } from '@renderer/components/ui/skeleton';
+import { useUser } from '@renderer/hooks/useUser';
 
 import { type GitCommit } from '@elek-io/core';
-
-import { useUser } from '../hooks/useUser';
 
 export interface CommitProps extends LinkProps {
   commit: GitCommit;

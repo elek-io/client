@@ -18,11 +18,10 @@ import {
   SidebarMenuItem,
 } from '@renderer/components/ui/sidebar';
 import { Skeleton } from '@renderer/components/ui/skeleton';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
 import type { Project } from '@elek-io/core';
-
-import { useQueryNoError } from '../hooks/useQueryNoError';
 
 export function ProjectSwitcher({
   project,

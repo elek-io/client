@@ -1,10 +1,9 @@
 import { createContext, useContext } from 'react';
 
+import type { UseQueryResultNoError } from '@renderer/hooks/useQueryNoError';
 import { type FormatDatetimeProps } from '@renderer/providers/UserProvider';
 
 import { type User } from '@elek-io/core';
-
-import type { UseQueryResultNoError } from './useQueryNoError';
 
 export type UserContextValue = {
   userQuery: UseQueryResultNoError<User | null>;
