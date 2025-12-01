@@ -68,9 +68,8 @@ function ProjectSettingsGeneralPage(): ReactElement {
   const { mutateAsync: updateProject, isPending: isUpdatingProject } =
     useMutation(queryOptions.projects.update);
 
-  const { mutateAsync: deleteProject } = useMutation(
-    queryOptions.projects.delete
-  );
+  const { mutateAsync: deleteProject, isPending: isDeletingProject } =
+    useMutation(queryOptions.projects.delete);
 
   function Description(): ReactElement {
     return <>Here you will be able to tweak this project to your liking</>;
@@ -146,6 +145,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
                   <Button
                     Icon={Trash}
                     variant="destructive"
+                    isLoading={isDeletingProject}
                     onClick={() => onDelete({ id: projectId })}
                   >
                     Yes, delete this Project
