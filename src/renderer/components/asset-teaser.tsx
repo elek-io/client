@@ -62,7 +62,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
-import { formatBytes } from '@renderer/lib/utils';
+import { cn, formatBytes } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
 import {
@@ -72,7 +72,7 @@ import {
 } from '@elek-io/core';
 
 export function AssetTeaser(
-  props: Asset & { projectId: string }
+  props: Asset & { projectId: string; className?: string }
 ): React.JSX.Element {
   const { formatDatetime } = useProject();
   const { mutateAsync: saveAsset } = useMutation(queryOptions.assets.save);
@@ -149,7 +149,7 @@ export function AssetTeaser(
   };
 
   return (
-    <Item variant="outline">
+    <Item variant="outline" className={cn(props.className)}>
       <ItemHeader>
         <AssetDisplay {...props} static className="rounded-t-md" />
       </ItemHeader>

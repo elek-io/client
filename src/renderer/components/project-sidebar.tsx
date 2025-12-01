@@ -95,14 +95,13 @@ function ProjectNavigation(): React.JSX.Element {
 
 export function ProjectSidebar(): React.JSX.Element {
   const {
-    projectId,
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
   const {
     data: projectChanges,
     isFetching: isFetchingProjectChanges,
     refetch: refetchProjectChanges,
-  } = useQueryNoError(queryOptions.projects.getChanges(projectId, project));
+  } = useQueryNoError(queryOptions.projects.getChanges(project));
   const { mutateAsync: synchronizeProject, isPending: isSynchronizingProject } =
     useMutation(queryOptions.projects.synchronize);
 

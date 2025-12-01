@@ -1,60 +1,203 @@
-import type { ReactElement } from 'react';
-
-import { DisabledFieldFromDefinition } from '@renderer/components/forms/util';
-import { FormItem } from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
-import { Label } from '@renderer/components/ui/label';
-import { Textarea } from '@renderer/components/ui/textarea';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
 
 import {
-  type Collection,
-  type SupportedLanguage,
-  type TranslatableString,
+  DiffContainer,
+  DiffContainerSkeleton,
+} from '@renderer/components/diff-container';
+import { CollectionForm } from '@renderer/components/forms/collection-form';
+import { translatableDefaultNull } from '@renderer/components/pages/util';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
+
+import {
+  updateCollectionSchema,
+  type GitCommit,
+  type Project,
+  type UpdateCollectionProps,
 } from '@elek-io/core';
 
-export interface CollectionDiffProps {
-  collection: Collection;
-  language: SupportedLanguage;
-  translateContent: (key: string, record: TranslatableString) => string;
-}
-
 export function CollectionDiff({
-  collection,
-  language,
-  translateContent,
-}: CollectionDiffProps): ReactElement {
-  return (
-    <>
-      <div className="flex flex-col gap-6 p-6">
-        <FormItem>
-          <Label isRequired>Collection name (Plural)</Label>
-          <Input value={collection.name.plural[language]} disabled />
-        </FormItem>
+  project,
+  commit,
+}: {
+  project: Project;
+  commit: GitCommit;
+}): React.JSX.Element {
+  // Derive commitBefore during render with useMemo
+  const commitBefore = useMemo(() => {
+    if (commit.message.method === 'create') {
+      return undefined;
+    }
 
-        <FormItem>
-          <Label isRequired>Entry name (Singular)</Label>
-          <Input value={collection.name.singular[language]} disabled />
-        </FormItem>
+    const collectionCommitHistory = project.fullHistory.filter(
+      (commitFromHistory) =>
+        commitFromHistory.message.reference.objectType === 'collection' &&
+        commitFromHistory.message.reference.id === commit.message.reference.id
+    );
+    const currentCommitIndex = collectionCommitHistory.findIndex(
+      (commitFromHistory) => commitFromHistory.hash === commit.hash
+    );
+    const previousCommit = collectionCommitHistory.at(currentCommitIndex + 1);
 
-        <FormItem>
-          <Label isRequired>Description</Label>
-          <Textarea value={collection.description[language]} disabled />
-        </FormItem>
-      </div>
+    if (!previousCommit) {
+      throw new Error(
+        `No previous commit found for Collection "${commit.message.reference.id}" ` +
+          `before "${commit.message.method}" at commit ${commit.hash}`
+      );
+    }
 
-      <section className="border-t border-zinc-200 p-6 dark:border-zinc-800">
-        <h3 className="text-sm leading-6 font-semibold">Fields</h3>
-        <div className="grid grid-cols-12 gap-x-4 gap-y-8 p-6 sm:gap-x-6 xl:gap-x-8">
-          {collection.fieldDefinitions.map((definition) => (
-            <DisabledFieldFromDefinition
-              key={definition.id}
-              fieldDefinition={definition}
-              translateContent={translateContent}
-              value=""
-            />
-          ))}
-        </div>
-      </section>
-    </>
-  );
+    return previousCommit;
+  }, [commit, project.fullHistory]);
+
+  // Derive commitAfter during render with useMemo
+  const commitAfter = useMemo(() => {
+    if (commit.message.method === 'delete') {
+      return undefined;
+    }
+    return commit;
+  }, [commit]);
+
+  const { data: collectionBefore, isPending: isReadingCollectionBefore } =
+    useQueryNoError({
+      ...queryOptions.collections.read({
+        projectId: project.id,
+        id: commit.message.reference.id,
+        commitHash: commitBefore?.hash,
+      }),
+      enabled: commitBefore !== undefined,
+    });
+
+  const collectionFormBefore = useForm<UpdateCollectionProps>({
+    resolver: zodResolver(updateCollectionSchema),
+    defaultValues: {
+      projectId: project.id,
+      icon: 'home',
+      name: {
+        singular: translatableDefaultNull(project.settings.language.supported),
+        plural: translatableDefaultNull(project.settings.language.supported),
+      },
+      description: translatableDefaultNull(project.settings.language.supported),
+      slug: {
+        singular: '',
+        plural: '',
+      },
+      fieldDefinitions: [],
+    },
+  });
+
+  useEffect(() => {
+    if (isReadingCollectionBefore === false) {
+      collectionFormBefore.reset(collectionBefore);
+    }
+  }, [isReadingCollectionBefore, collectionFormBefore, collectionBefore]);
+
+  const { data: collectionAfter, isPending: isReadingCollectionAfter } =
+    useQueryNoError({
+      ...queryOptions.collections.read({
+        projectId: project.id,
+        id: commit.message.reference.id,
+        commitHash: commitAfter?.hash,
+      }),
+      enabled: commitAfter !== undefined,
+    });
+
+  const collectionFormAfter = useForm<UpdateCollectionProps>({
+    resolver: zodResolver(updateCollectionSchema),
+    defaultValues: {
+      projectId: project.id,
+      icon: 'home',
+      name: {
+        singular: translatableDefaultNull(project.settings.language.supported),
+        plural: translatableDefaultNull(project.settings.language.supported),
+      },
+      description: translatableDefaultNull(project.settings.language.supported),
+      slug: {
+        singular: '',
+        plural: '',
+      },
+      fieldDefinitions: [],
+    },
+  });
+
+  useEffect(() => {
+    if (isReadingCollectionAfter === false) {
+      collectionFormAfter.reset(collectionAfter);
+    }
+  }, [isReadingCollectionAfter, collectionFormAfter, collectionAfter]);
+
+  // Show loading skeleton while queries are pending
+  if (
+    (commitBefore && isReadingCollectionBefore) ||
+    (commitAfter && isReadingCollectionAfter)
+  ) {
+    // Show appropriate number of skeletons based on operation
+    if (commitBefore && commitAfter) {
+      // Update operation - show 2 skeletons
+      return (
+        <>
+          <DiffContainerSkeleton />
+          <DiffContainerSkeleton />
+        </>
+      );
+    }
+    // Create or delete operation - show 1 centered skeleton
+    return <DiffContainerSkeleton centered />;
+  }
+
+  // Handle create operation
+  if (!commitBefore && commitAfter) {
+    return (
+      <DiffContainer type="create" commit={commitAfter}>
+        <CollectionForm
+          project={project}
+          collectionForm={collectionFormAfter}
+          onFormSubmit={() => {}}
+          isViewOnly
+        />
+      </DiffContainer>
+    );
+  }
+
+  // Handle delete operation
+  if (!commitAfter && commitBefore) {
+    return (
+      <DiffContainer type="delete" commit={commitBefore}>
+        <CollectionForm
+          project={project}
+          collectionForm={collectionFormBefore}
+          onFormSubmit={() => {}}
+          isViewOnly
+        />
+      </DiffContainer>
+    );
+  }
+
+  // Handle update operation (both commits exist)
+  if (commitBefore && commitAfter) {
+    return (
+      <>
+        <DiffContainer type="before" commit={commitBefore}>
+          <CollectionForm
+            project={project}
+            collectionForm={collectionFormBefore}
+            onFormSubmit={() => {}}
+            isViewOnly
+          />
+        </DiffContainer>
+
+        <DiffContainer type="after" commit={commitAfter}>
+          <CollectionForm
+            project={project}
+            collectionForm={collectionFormAfter}
+            onFormSubmit={() => {}}
+            isViewOnly
+          />
+        </DiffContainer>
+      </>
+    );
+  }
+
+  return <></>;
 }

@@ -24,27 +24,42 @@ export function DiffContainer({
   commit,
   children,
 }: DiffContainerProps): ReactElement {
+  function title(): string {
+    switch (type) {
+      case 'create':
+        return 'Created';
+      case 'before':
+        return 'Before';
+      case 'after':
+        return 'After';
+      case 'delete':
+        return 'Deleted';
+    }
+  }
+
   return (
     <Card
       className={`col-span-6 ${type === 'create' || type === 'delete' ? 'col-start-3' : ''}`}
     >
       <CardHeader>
-        <CardTitle>
-          {commit.message.method} {commit.message.reference.objectType}
-        </CardTitle>
+        <CardTitle>{title()}</CardTitle>
         <CardAction>
           <CommitAuthor commit={commit} />
         </CardAction>
       </CardHeader>
 
-      <CardContent className="grid gap-6">{children}</CardContent>
+      <CardContent className="grid gap-6 px-0">{children}</CardContent>
     </Card>
   );
 }
 
-export function DiffContainerSkeleton(): React.JSX.Element {
+export function DiffContainerSkeleton({
+  centered = false,
+}: {
+  centered?: boolean;
+}): React.JSX.Element {
   return (
-    <Card className="col-span-6">
+    <Card className={`col-span-6 ${centered ? 'col-start-3' : ''}`}>
       <CardHeader>
         <CardTitle>Loading...</CardTitle>
         <CardDescription />

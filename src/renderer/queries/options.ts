@@ -2,6 +2,7 @@ import { mutationOptions, queryOptions } from '@tanstack/react-query';
 
 import {
   type Asset,
+  type BaseFile,
   type Collection,
   type Entry,
   type ListAssetsProps,
@@ -17,6 +18,65 @@ import {
 } from '@elek-io/core';
 
 import { queryClient } from './client';
+
+/**
+ * Helper function to merge an object into a paginated list.
+ *
+ * Used in mutation onSuccess handlers to update list caches when
+ * an individual object is created or updated.
+ */
+function mergeListWithObject<T extends BaseFile>(
+  oldList: PaginatedList<T> | undefined,
+  object: T,
+  method?: 'update' | 'delete'
+): PaginatedList<T> {
+  if (!oldList) {
+    // No list exists yet, create a new one with just the object
+    return {
+      total: 1,
+      limit: 0,
+      offset: 0,
+      list: [object],
+    };
+  }
+
+  if (oldList.list.find((oldObject) => oldObject.id === object.id)) {
+    if (method === undefined) {
+      throw new Error(
+        'mergeListWithObject: method must be provided when object exists in the list'
+      );
+    }
+
+    if (method === 'update') {
+      // Object exists in the list, update it
+      return {
+        ...oldList,
+        list: oldList.list.map((oldObject) => {
+          if (oldObject.id === object.id) {
+            return object;
+          }
+          return oldObject;
+        }),
+      };
+    } else {
+      // Object exists in the list, remove it
+      return {
+        total: oldList.total - 1,
+        limit: oldList.limit,
+        offset: oldList.offset,
+        list: oldList.list.filter((oldObject) => oldObject.id !== object.id),
+      };
+    }
+  } else {
+    // Object does not exist in the list, add it
+    return {
+      total: oldList.total + 1,
+      limit: oldList.limit,
+      offset: oldList.offset,
+      list: [...oldList.list, object],
+    };
+  }
+}
 
 /**
  * Query and Mutation options for Tanstack Query that wrap IPC calls to the main process.
@@ -38,16 +98,9 @@ export default {
         );
 
         // And update the Projects list cache too
-        context.client.setQueryData(
-          ['projects'],
-          (old: PaginatedList<Project> | undefined) => {
-            return {
-              total: old ? old.total + 1 : 1,
-              limit: old ? old.limit : 0,
-              offset: old ? old.offset : 0,
-              list: [...(old ? old.list : []), createdProject],
-            };
-          }
+        context.client.setQueryData<PaginatedList<Project>>(
+          ['projects', 'list'],
+          (oldList) => mergeListWithObject(oldList, createdProject)
         );
       },
     }),
@@ -78,20 +131,9 @@ export default {
         );
 
         // And update the Projects list cache too
-        context.client.setQueryData(
-          ['projects'],
-          (old: PaginatedList<Project>) => {
-            return {
-              total: old.total,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.map((oldProject) =>
-                oldProject.id === updatedProject.id
-                  ? updatedProject
-                  : oldProject
-              ),
-            };
-          }
+        context.client.setQueryData<PaginatedList<Project>>(
+          ['projects', 'list'],
+          (oldList) => mergeListWithObject(oldList, updatedProject, 'update')
         );
       },
     }),
@@ -110,24 +152,20 @@ export default {
         );
 
         // And update the Projects list cache too
-        context.client.setQueryData(
-          ['projects'],
-          (old: PaginatedList<Project>) => {
-            return {
-              total: old.total - 1,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.filter(
-                (oldProject) => oldProject.id !== variables.id
-              ),
-            };
-          }
+        context.client.setQueryData<PaginatedList<Project>>(
+          ['projects', 'list'],
+          (oldList) =>
+            mergeListWithObject(
+              oldList,
+              { id: variables.id } as Project,
+              'delete'
+            )
         );
       },
     }),
     list: (props?: ListProjectsProps) =>
       queryOptions({
-        queryKey: ['projects'],
+        queryKey: ['projects', 'list'],
         queryFn: async () => {
           const projects = await window.ipc.core.projects.list(props);
 
@@ -159,31 +197,23 @@ export default {
         );
 
         // And update the Projects list cache too
-        context.client.setQueryData(
-          ['projects'],
-          (old: PaginatedList<Project> | undefined) => {
-            return {
-              total: old ? old.total + 1 : 1,
-              limit: old ? old.limit : 0,
-              offset: old ? old.offset : 0,
-              list: [...(old ? old.list : []), clonedProject],
-            };
-          }
+        context.client.setQueryData<PaginatedList<Project>>(
+          ['projects', 'list'],
+          (oldList) => mergeListWithObject(oldList, clonedProject)
         );
       },
     }),
-    getChanges: (projectId: string, project?: Project) =>
+    getChanges: (project?: Project) =>
       queryOptions({
         enabled: project !== undefined && project.remoteOriginUrl !== null,
-        queryKey: ['projects', projectId, 'current', 'changes'],
+        queryKey: ['projects', project?.id, 'current', 'changes'],
         queryFn: async () => {
           return await window.ipc.core.projects.getChanges({
-            id: projectId,
+            id: project!.id,
           });
         },
         throwOnError: true,
-        // Refetch the data every 3 minutes
-        refetchInterval: 180000,
+        refetchInterval: 180000, // Refetch changes every 3 minutes
       }),
     synchronize: mutationOptions({
       mutationFn: window.ipc.core.projects.synchronize,
@@ -195,6 +225,10 @@ export default {
       onSuccess: async (_data, variables, _onMutateResult, context) => {
         // On synchronization anything inside the Project may have changed
         // so we invalidate it entirely
+        await context.client.invalidateQueries({
+          queryKey: ['projects', 'list'],
+          refetchType: 'all',
+        });
         await context.client.invalidateQueries({
           queryKey: ['projects', variables.id],
           refetchType: 'all',
@@ -211,6 +245,10 @@ export default {
       onSuccess: async (_data, variables, _onMutateResult, context) => {
         // Remote origin URL is part of the Project data
         // so we invalidate it entirely
+        await context.client.invalidateQueries({
+          queryKey: ['projects', 'list'],
+          refetchType: 'all',
+        });
         await context.client.invalidateQueries({
           queryKey: ['projects', variables.id],
           refetchType: 'all',
@@ -232,29 +270,31 @@ export default {
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             createdCollection.id,
+            'current',
           ],
           createdCollection
         );
 
         // And update the Collections list cache too
-        context.client.setQueryData(
-          ['projects', variables.projectId, 'collections'],
-          (old: PaginatedList<Collection> | undefined) => {
-            return {
-              total: old ? old.total + 1 : 1,
-              limit: old ? old.limit : 0,
-              offset: old ? old.offset : 0,
-              list: [...(old ? old.list : []), createdCollection],
-            };
-          }
+        context.client.setQueryData<PaginatedList<Collection>>(
+          ['projects', variables.projectId, 'current', 'collections', 'list'],
+          (oldList) => mergeListWithObject(oldList, createdCollection)
         );
       },
     }),
     read: (props: ReadCollectionProps) =>
       queryOptions({
-        queryKey: ['projects', props.projectId, 'collections', props.id],
+        queryKey: [
+          'projects',
+          props.projectId,
+          'current',
+          'collections',
+          props.id,
+          props.commitHash === undefined ? 'current' : props.commitHash,
+        ],
         queryFn: async () => {
           return await window.ipc.core.collections.read(props);
         },
@@ -273,27 +313,18 @@ export default {
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             updatedCollection.id,
+            'current',
           ],
           updatedCollection
         );
 
         // And update the Collections list cache too
-        context.client.setQueryData(
-          ['projects', variables.projectId, 'collections'],
-          (old: PaginatedList<Collection>) => {
-            return {
-              total: old.total,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.map((oldCollection) =>
-                oldCollection.id === updatedCollection.id
-                  ? updatedCollection
-                  : oldCollection
-              ),
-            };
-          }
+        context.client.setQueryData<PaginatedList<Collection>>(
+          ['projects', variables.projectId, 'current', 'collections', 'list'],
+          (oldList) => mergeListWithObject(oldList, updatedCollection, 'update')
         );
       },
     }),
@@ -307,29 +338,38 @@ export default {
       onSuccess: (_deletedCollection, variables, _onMutateResult, context) => {
         // Remove Collection from cache individually
         context.client.setQueryData(
-          ['projects', variables.projectId, 'collections', variables.id],
+          [
+            'projects',
+            variables.projectId,
+            'current',
+            'collections',
+            variables.id,
+            'current',
+          ],
           undefined
         );
 
         // And update the Collections list cache too
-        context.client.setQueryData(
-          ['projects', variables.projectId, 'collections'],
-          (old: PaginatedList<Collection>) => {
-            return {
-              total: old.total - 1,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.filter(
-                (oldCollection) => oldCollection.id !== variables.id
-              ),
-            };
-          }
+        context.client.setQueryData<PaginatedList<Collection>>(
+          ['projects', variables.projectId, 'current', 'collections', 'list'],
+          (oldList) =>
+            mergeListWithObject(
+              oldList,
+              { id: variables.id } as Collection,
+              'delete'
+            )
         );
       },
     }),
     list: (props: ListCollectionsProps) =>
       queryOptions({
-        queryKey: ['projects', props.projectId, 'collections'],
+        queryKey: [
+          'projects',
+          props.projectId,
+          'current',
+          'collections',
+          'list',
+        ],
         queryFn: async () => {
           const collections = await window.ipc.core.collections.list(props);
 
@@ -337,7 +377,14 @@ export default {
           // so that we can access them directly without refetching later
           collections.list.forEach((collection) => {
             queryClient.setQueryData(
-              ['projects', props.projectId, 'collections', collection.id],
+              [
+                'projects',
+                props.projectId,
+                'current',
+                'collections',
+                collection.id,
+                'current',
+              ],
               collection
             );
           });
@@ -358,27 +405,34 @@ export default {
       onSuccess: (createdAsset, variables, _onMutateResult, context) => {
         // Add Asset to cache individually
         context.client.setQueryData(
-          ['projects', variables.projectId, 'assets', createdAsset.id],
+          [
+            'projects',
+            variables.projectId,
+            'current',
+            'assets',
+            createdAsset.id,
+            'current',
+          ],
           createdAsset
         );
 
         // And update the Assets list cache too
-        context.client.setQueryData(
-          ['projects', variables.projectId, 'assets'],
-          (old: PaginatedList<Asset> | undefined) => {
-            return {
-              total: old ? old.total + 1 : 1,
-              limit: old ? old.limit : 0,
-              offset: old ? old.offset : 0,
-              list: [...(old ? old.list : []), createdAsset],
-            };
-          }
+        context.client.setQueryData<PaginatedList<Asset>>(
+          ['projects', variables.projectId, 'current', 'assets', 'list'],
+          (oldList) => mergeListWithObject(oldList, createdAsset)
         );
       },
     }),
     read: (props: ReadAssetProps) =>
       queryOptions({
-        queryKey: ['projects', props.projectId, 'assets', props.id],
+        queryKey: [
+          'projects',
+          props.projectId,
+          'current',
+          'assets',
+          props.id,
+          props.commitHash === undefined ? 'current' : props.commitHash,
+        ],
         queryFn: async () => {
           return await window.ipc.core.assets.read(props);
         },
@@ -394,23 +448,21 @@ export default {
       onSuccess: (updatedAsset, variables, _onMutateResult, context) => {
         // Update Asset in cache individually
         context.client.setQueryData(
-          ['projects', variables.projectId, 'assets', updatedAsset.id],
+          [
+            'projects',
+            variables.projectId,
+            'current',
+            'assets',
+            updatedAsset.id,
+            'current',
+          ],
           updatedAsset
         );
 
         // And update the Assets list cache too
-        context.client.setQueryData(
-          ['projects', variables.projectId, 'assets'],
-          (old: PaginatedList<Asset>) => {
-            return {
-              total: old.total,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.map((oldAsset) =>
-                oldAsset.id === updatedAsset.id ? updatedAsset : oldAsset
-              ),
-            };
-          }
+        context.client.setQueryData<PaginatedList<Asset>>(
+          ['projects', variables.projectId, 'current', 'assets', 'list'],
+          (oldList) => mergeListWithObject(oldList, updatedAsset, 'update')
         );
       },
     }),
@@ -424,21 +476,26 @@ export default {
       onSuccess: (_deletedAsset, variables, _onMutateResult, context) => {
         // Remove Asset from cache individually
         context.client.setQueryData(
-          ['projects', variables.projectId, 'assets', variables.id],
+          [
+            'projects',
+            variables.projectId,
+            'current',
+            'assets',
+            variables.id,
+            'current',
+          ],
           undefined
         );
 
         // And update the Assets list cache too
-        context.client.setQueryData(
-          ['projects', variables.projectId, 'assets'],
-          (old: PaginatedList<Asset>) => {
-            return {
-              total: old.total - 1,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.filter((oldAsset) => oldAsset.id !== variables.id),
-            };
-          }
+        context.client.setQueryData<PaginatedList<Asset>>(
+          ['projects', variables.projectId, 'current', 'assets', 'list'],
+          (oldList) =>
+            mergeListWithObject(
+              oldList,
+              { id: variables.id } as Asset,
+              'delete'
+            )
         );
       },
     }),
@@ -452,7 +509,7 @@ export default {
     }),
     list: (props: ListAssetsProps) =>
       queryOptions({
-        queryKey: ['projects', props.projectId, 'assets'],
+        queryKey: ['projects', props.projectId, 'current', 'assets', 'list'],
         queryFn: async () => {
           const assets = await window.ipc.core.assets.list(props);
 
@@ -460,7 +517,14 @@ export default {
           // so that we can access them directly without refetching later
           assets.list.forEach((asset) => {
             queryClient.setQueryData(
-              ['projects', props.projectId, 'assets', asset.id],
+              [
+                'projects',
+                props.projectId,
+                'current',
+                'assets',
+                asset.id,
+                'current',
+              ],
               asset
             );
           });
@@ -484,31 +548,30 @@ export default {
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             variables.collectionId,
+            'current',
             'entries',
             createdEntry.id,
+            'current',
           ],
           createdEntry
         );
 
         // And update the Entries list cache too
-        context.client.setQueryData(
+        context.client.setQueryData<PaginatedList<Entry>>(
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             variables.collectionId,
+            'current',
             'entries',
+            'list',
           ],
-          (old: PaginatedList<Entry> | undefined) => {
-            return {
-              total: old ? old.total + 1 : 1,
-              limit: old ? old.limit : 0,
-              offset: old ? old.offset : 0,
-              list: [...(old ? old.list : []), createdEntry],
-            };
-          }
+          (oldList) => mergeListWithObject(oldList, createdEntry)
         );
       },
     }),
@@ -517,10 +580,13 @@ export default {
         queryKey: [
           'projects',
           props.projectId,
+          'current',
           'collections',
           props.collectionId,
+          'current',
           'entries',
           props.id,
+          props.commitHash === undefined ? 'current' : props.commitHash,
         ],
         queryFn: async () => {
           return await window.ipc.core.entries.read(props);
@@ -540,33 +606,30 @@ export default {
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             variables.collectionId,
+            'current',
             'entries',
             updatedEntry.id,
+            'current',
           ],
           updatedEntry
         );
 
         // And update the Entries list cache too
-        context.client.setQueryData(
+        context.client.setQueryData<PaginatedList<Entry>>(
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             variables.collectionId,
+            'current',
             'entries',
+            'list',
           ],
-          (old: PaginatedList<Entry>) => {
-            return {
-              total: old.total,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.map((oldEntry) =>
-                oldEntry.id === updatedEntry.id ? updatedEntry : oldEntry
-              ),
-            };
-          }
+          (oldList) => mergeListWithObject(oldList, updatedEntry, 'update')
         );
       },
     }),
@@ -583,31 +646,35 @@ export default {
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             variables.collectionId,
+            'current',
             'entries',
             variables.id,
+            'current',
           ],
           undefined
         );
 
         // And update the Entries list cache too
-        context.client.setQueryData(
+        context.client.setQueryData<PaginatedList<Entry>>(
           [
             'projects',
             variables.projectId,
+            'current',
             'collections',
             variables.collectionId,
+            'current',
             'entries',
+            'list',
           ],
-          (old: PaginatedList<Entry>) => {
-            return {
-              total: old.total - 1,
-              limit: old.limit,
-              offset: old.offset,
-              list: old.list.filter((oldEntry) => oldEntry.id !== variables.id),
-            };
-          }
+          (oldList) =>
+            mergeListWithObject(
+              oldList,
+              { id: variables.id } as Entry,
+              'delete'
+            )
         );
       },
     }),
@@ -616,9 +683,12 @@ export default {
         queryKey: [
           'projects',
           props.projectId,
+          'current',
           'collections',
           props.collectionId,
+          'current',
           'entries',
+          'list',
         ],
         queryFn: async () => {
           const entries = await window.ipc.core.entries.list(props);
@@ -630,10 +700,13 @@ export default {
               [
                 'projects',
                 props.projectId,
+                'current',
                 'collections',
                 props.collectionId,
+                'current',
                 'entries',
                 entry.id,
+                'current',
               ],
               entry
             );

@@ -1,39 +1,201 @@
-import type { ReactElement } from 'react';
-
-import { DisabledFieldFromDefinition } from '@renderer/components/forms/util';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
 
 import {
-  type Collection,
-  type Entry,
-  type SupportedLanguage,
-  type TranslatableString,
+  DiffContainer,
+  DiffContainerSkeleton,
+} from '@renderer/components/diff-container';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
+
+import {
+  updateEntrySchema,
+  type GitCommit,
+  type Project,
+  type UpdateEntryProps,
 } from '@elek-io/core';
 
-export interface EntryDiffProps {
-  collection: Collection;
-  entry: Entry;
-  language: SupportedLanguage;
-  translateContent: (key: string, record: TranslatableString) => string;
-}
+import { EntryForm } from './forms/entry-form';
 
 export function EntryDiff({
-  collection,
-  entry,
-  language,
-  translateContent,
-}: EntryDiffProps): ReactElement {
-  return (
-    <div className="grid grid-cols-12 gap-x-4 gap-y-8 p-6 sm:gap-x-6 xl:gap-x-8">
-      {collection.fieldDefinitions.map((definition, definitionIndex) => {
-        return (
-          <DisabledFieldFromDefinition
-            key={definition.id}
-            fieldDefinition={definition}
-            translateContent={translateContent}
-            value={entry.values[definitionIndex]?.content[language]}
-          />
-        );
-      })}
-    </div>
+  project,
+  commit,
+}: {
+  project: Project;
+  commit: GitCommit;
+}): React.JSX.Element | undefined {
+  const collectionId = commit.message.reference.collectionId;
+  if (collectionId === undefined) {
+    throw new Error(
+      `Entry commit ${commit.hash} missing collectionId reference`
+    );
+  }
+
+  // Fetch collection for field definitions
+  const { data: collection, isPending: isReadingCollection } = useQueryNoError(
+    queryOptions.collections.read({ projectId: project.id, id: collectionId })
   );
+
+  // Derive commitBefore during render with useMemo
+  const commitBefore = useMemo(() => {
+    if (commit.message.method === 'create') {
+      return undefined;
+    }
+
+    const entryCommitHistory = project.fullHistory.filter(
+      (commitFromHistory) =>
+        commitFromHistory.message.reference.objectType === 'entry' &&
+        commitFromHistory.message.reference.id === commit.message.reference.id
+    );
+    const currentCommitIndex = entryCommitHistory.findIndex(
+      (commitFromHistory) => commitFromHistory.hash === commit.hash
+    );
+    const previousCommit = entryCommitHistory.at(currentCommitIndex + 1);
+
+    if (!previousCommit) {
+      throw new Error(
+        `No previous commit found for Entry "${commit.message.reference.id}" ` +
+          `before "${commit.message.method}" at commit ${commit.hash}`
+      );
+    }
+
+    return previousCommit;
+  }, [commit, project.fullHistory]);
+
+  // Derive commitAfter during render with useMemo
+  const commitAfter = useMemo(() => {
+    if (commit.message.method === 'delete') {
+      return undefined;
+    }
+    return commit;
+  }, [commit]);
+
+  const { data: entryBefore, isPending: isReadingEntryBefore } =
+    useQueryNoError({
+      ...queryOptions.entries.read({
+        projectId: project.id,
+        collectionId,
+        id: commit.message.reference.id,
+        commitHash: commitBefore?.hash,
+      }),
+      enabled: commitBefore !== undefined,
+    });
+
+  const entryFormBefore = useForm<UpdateEntryProps>({
+    resolver: zodResolver(updateEntrySchema),
+    defaultValues: {
+      projectId: project.id,
+      collectionId,
+      id: commit.message.reference.id,
+      values: [],
+    },
+  });
+
+  useEffect(() => {
+    if (isReadingEntryBefore === false) {
+      entryFormBefore.reset(entryBefore);
+    }
+  }, [isReadingEntryBefore, entryFormBefore, entryBefore]);
+
+  const { data: entryAfter, isPending: isReadingEntryAfter } = useQueryNoError({
+    ...queryOptions.entries.read({
+      projectId: project.id,
+      collectionId,
+      id: commit.message.reference.id,
+      commitHash: commitAfter?.hash,
+    }),
+    enabled: commitAfter !== undefined,
+  });
+
+  const entryFormAfter = useForm<UpdateEntryProps>({
+    resolver: zodResolver(updateEntrySchema),
+    defaultValues: {
+      projectId: project.id,
+      collectionId,
+      id: commit.message.reference.id,
+      values: [],
+    },
+  });
+
+  useEffect(() => {
+    if (isReadingEntryAfter === false) {
+      entryFormAfter.reset(entryAfter);
+    }
+  }, [isReadingEntryAfter, entryFormAfter, entryAfter]);
+
+  // Show loading skeleton while any query is pending
+  if (
+    isReadingCollection ||
+    (commitBefore && isReadingEntryBefore) ||
+    (commitAfter && isReadingEntryAfter)
+  ) {
+    // Show appropriate number of skeletons based on operation
+    if (commitBefore && commitAfter) {
+      // Update operation - show 2 skeletons
+      return (
+        <>
+          <DiffContainerSkeleton />
+          <DiffContainerSkeleton />
+        </>
+      );
+    }
+    // Create or delete operation - show 1 centered skeleton
+    return <DiffContainerSkeleton centered />;
+  }
+
+  // Handle create operation
+  if (!commitBefore && commitAfter) {
+    return (
+      <DiffContainer type="create" commit={commitAfter}>
+        <EntryForm
+          entryForm={entryFormAfter}
+          fieldDefinitions={collection.fieldDefinitions}
+          project={project}
+          onFormSubmit={() => {}}
+        />
+      </DiffContainer>
+    );
+  }
+
+  // Handle delete operation
+  if (!commitAfter && commitBefore) {
+    return (
+      <DiffContainer type="delete" commit={commitBefore}>
+        <EntryForm
+          entryForm={entryFormBefore}
+          fieldDefinitions={collection.fieldDefinitions}
+          project={project}
+          onFormSubmit={() => {}}
+        />
+      </DiffContainer>
+    );
+  }
+
+  // Handle update operation (both commits exist)
+  if (commitBefore && commitAfter) {
+    return (
+      <>
+        <DiffContainer type="before" commit={commitBefore}>
+          <EntryForm
+            entryForm={entryFormBefore}
+            fieldDefinitions={collection.fieldDefinitions}
+            project={project}
+            onFormSubmit={() => {}}
+          />
+        </DiffContainer>
+
+        <DiffContainer type="after" commit={commitAfter}>
+          <EntryForm
+            entryForm={entryFormAfter}
+            fieldDefinitions={collection.fieldDefinitions}
+            project={project}
+            onFormSubmit={() => {}}
+          />
+        </DiffContainer>
+      </>
+    );
+  }
+
+  return undefined;
 }
