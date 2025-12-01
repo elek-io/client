@@ -1,8 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  translatableDefaultEmptyArray,
-  translatableDefaultNull,
-} from '@root/src/renderer/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
@@ -14,7 +10,11 @@ import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import queryOptions from '@renderer/queries/options';
+import {
+  translatableDefaultEmptyArray,
+  translatableDefaultNull,
+} from '@renderer/lib/utils';
+import { queryOptions } from '@renderer/queries';
 
 import {
   type CreateEntryProps,

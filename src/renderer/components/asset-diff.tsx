@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { AssetTeaser } from '@renderer/components/asset-teaser';
 import {
   DiffContainer,
   DiffContainerSkeleton,
@@ -8,8 +9,6 @@ import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
 import { type GitCommit, type Project } from '@elek-io/core';
-
-import { AssetTeaser } from './asset-teaser';
 
 export function AssetDiff({
   project,

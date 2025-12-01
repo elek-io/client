@@ -10,7 +10,7 @@ import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import queryOptions from '@renderer/queries/options';
+import { queryOptions } from '@renderer/queries';
 
 import {
   getUpdateEntrySchemaFromFieldDefinitions,

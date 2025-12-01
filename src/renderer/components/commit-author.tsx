@@ -1,9 +1,9 @@
 'use client';
 
-import { useProject } from '@root/src/renderer/hooks/useProject';
 import type { ReactElement } from 'react';
 
 import { Avatar } from '@renderer/components/ui/avatar';
+import { useProject } from '@renderer/hooks/useProject';
 
 import { type GitCommit } from '@elek-io/core';
 

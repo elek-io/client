@@ -20,7 +20,7 @@ import {
 } from '@renderer/components/ui/dialog';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import queryOptions from '@renderer/queries/options';
+import { queryOptions } from '@renderer/queries';
 
 import {
   type DeleteCollectionProps,

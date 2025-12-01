@@ -1,4 +1,3 @@
-import { useQueryNoError } from '@root/src/renderer/hooks/useQueryNoError';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
@@ -16,7 +15,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@renderer/components/ui/empty';
-import queryOptions from '@renderer/queries/options';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
 import { type Asset } from '@elek-io/core';
 

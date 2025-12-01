@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useProject } from '@root/src/renderer/hooks/useProject';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
@@ -19,7 +18,8 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { Input } from '@renderer/components/ui/input';
-import queryOptions from '@renderer/queries/options';
+import { useProject } from '@renderer/hooks/useProject';
+import { queryOptions } from '@renderer/queries';
 
 import {
   type SetRemoteOriginUrlProjectProps,

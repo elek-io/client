@@ -1,4 +1,3 @@
-import { useProject } from '@root/src/renderer/hooks/useProject';
 import { createFileRoute } from '@tanstack/react-router';
 import { Tag } from 'lucide-react';
 import { useEffect, useState, type ReactElement } from 'react';
@@ -10,6 +9,7 @@ import { EntryDiff } from '@renderer/components/entry-diff';
 import { Page } from '@renderer/components/page';
 import { ProjectDiff } from '@renderer/components/project-diff';
 import { Badge } from '@renderer/components/ui/badge';
+import { useProject } from '@renderer/hooks/useProject';
 
 import { type GitCommit } from '@elek-io/core';
 

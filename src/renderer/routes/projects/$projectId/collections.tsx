@@ -1,11 +1,12 @@
+import { Outlet, createFileRoute } from '@tanstack/react-router';
+import type { ReactElement } from 'react';
+
 import {
   CollectionsSidebar,
   CollectionsSidebarSkeleton,
-} from '@root/src/renderer/components/collections-sidebar';
-import { useQueryNoError } from '@root/src/renderer/hooks/useQueryNoError';
-import { queryOptions } from '@root/src/renderer/queries';
-import { Outlet, createFileRoute } from '@tanstack/react-router';
-import type { ReactElement } from 'react';
+} from '@renderer/components/collections-sidebar';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
 export const Route = createFileRoute('/projects/$projectId/collections')({
   component: ProjectCollectionsLayout,

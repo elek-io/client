@@ -8,7 +8,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { ProjectForm } from '@renderer/components/forms/project-form';
 import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
-import queryOptions from '@renderer/queries/options';
+import { queryOptions } from '@renderer/queries';
 
 import { type CreateProjectProps, createProjectSchema } from '@elek-io/core';
 

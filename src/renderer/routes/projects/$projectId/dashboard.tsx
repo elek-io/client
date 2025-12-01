@@ -1,4 +1,3 @@
-import { useProject } from '@root/src/renderer/hooks/useProject';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 
 import {
@@ -8,6 +7,7 @@ import {
 import { Page } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
+import { useProject } from '@renderer/hooks/useProject';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,

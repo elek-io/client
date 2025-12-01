@@ -6,6 +6,7 @@ import {
   DiffContainer,
   DiffContainerSkeleton,
 } from '@renderer/components/diff-container';
+import { EntryForm } from '@renderer/components/forms/entry-form';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
@@ -15,8 +16,6 @@ import {
   type Project,
   type UpdateEntryProps,
 } from '@elek-io/core';
-
-import { EntryForm } from './forms/entry-form';
 
 export function EntryDiff({
   project,

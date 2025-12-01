@@ -1,7 +1,7 @@
-import { ProjectProvider } from '@root/src/renderer/providers/ProjectProvider';
 import { Outlet, createFileRoute } from '@tanstack/react-router';
 
 import { ProjectSidebar } from '@renderer/components/project-sidebar';
+import { ProjectProvider } from '@renderer/providers/ProjectProvider';
 
 export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectLayout,

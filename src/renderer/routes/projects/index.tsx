@@ -1,4 +1,3 @@
-import queryOptions from '@root/src/renderer/queries/options';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { DownloadCloud, Plus } from 'lucide-react';
@@ -38,6 +37,7 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import queryOptions from '@renderer/queries/options';
 
 import { type CloneProjectProps } from '@elek-io/core';
 

@@ -1,16 +1,16 @@
-import {
-  EntryTable,
-  EntryTableSkeleton,
-} from '@root/src/renderer/components/entry-table';
-import { useProject } from '@root/src/renderer/hooks/useProject';
-import { useQueryNoError } from '@root/src/renderer/hooks/useQueryNoError';
-import { queryOptions } from '@root/src/renderer/queries';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Plus, Settings } from 'lucide-react';
 import { type ReactElement } from 'react';
 
+import {
+  EntryTable,
+  EntryTableSkeleton,
+} from '@renderer/components/entry-table';
 import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
+import { useProject } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/'

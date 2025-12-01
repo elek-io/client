@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useProject } from '@root/src/renderer/hooks/useProject';
 import { useMutation } from '@tanstack/react-query';
 import {
   DownloadIcon,
@@ -62,6 +61,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
+import { useProject } from '@renderer/hooks/useProject';
 import { cn, formatBytes } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 

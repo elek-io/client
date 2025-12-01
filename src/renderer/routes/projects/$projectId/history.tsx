@@ -1,10 +1,11 @@
+import { createFileRoute, Outlet } from '@tanstack/react-router';
+import type { ReactElement } from 'react';
+
 import {
   HistorySidebar,
   HistorySidebarSkeleton,
-} from '@root/src/renderer/components/history-sidebar';
-import { useProject } from '@root/src/renderer/hooks/useProject';
-import { createFileRoute, Outlet } from '@tanstack/react-router';
-import type { ReactElement } from 'react';
+} from '@renderer/components/history-sidebar';
+import { useProject } from '@renderer/hooks/useProject';
 
 export const Route = createFileRoute('/projects/$projectId/history')({
   component: ProjectHistoryLayout,

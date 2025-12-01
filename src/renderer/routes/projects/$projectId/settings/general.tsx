@@ -20,7 +20,7 @@ import {
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
 import { useProject } from '@renderer/hooks/useProject';
-import queryOptions from '@renderer/queries/options';
+import { queryOptions } from '@renderer/queries';
 
 import {
   type DeleteProjectProps,
