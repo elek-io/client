@@ -152,6 +152,7 @@ export function EntryDiff({
           entryForm={entryFormAfter}
           fieldDefinitions={collection.fieldDefinitions}
           project={project}
+          isViewOnly
           onFormSubmit={() => {}}
         />
       </DiffContainer>
@@ -166,6 +167,7 @@ export function EntryDiff({
           entryForm={entryFormBefore}
           fieldDefinitions={collection.fieldDefinitions}
           project={project}
+          isViewOnly
           onFormSubmit={() => {}}
         />
       </DiffContainer>
@@ -181,6 +183,7 @@ export function EntryDiff({
             entryForm={entryFormBefore}
             fieldDefinitions={collection.fieldDefinitions}
             project={project}
+            isViewOnly
             onFormSubmit={() => {}}
           />
         </DiffContainer>
@@ -190,6 +193,7 @@ export function EntryDiff({
             entryForm={entryFormAfter}
             fieldDefinitions={collection.fieldDefinitions}
             project={project}
+            isViewOnly
             onFormSubmit={() => {}}
           />
         </DiffContainer>

@@ -1,14 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useProject } from '@root/src/renderer/hooks/useProject';
+import { translatableDefaultNull } from '@root/src/renderer/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { useEffect, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
-import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
-import { translatableDefaultNull } from '@renderer/components/pages/util';
+import { CollectionForm } from '@renderer/components/forms/collection-form';
+import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
+import { useProject } from '@renderer/hooks/useProject';
 import queryOptions from '@renderer/queries/options';
 
 import {
@@ -26,7 +27,7 @@ function ProjectCollectionCreate(): ReactElement {
   const router = useRouter();
   const { projectId } = Route.useParams();
   const {
-    projectQuery: { data: project },
+    projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
   const { mutateAsync: createCollection, isPending: isCreatingCollection } =
     useMutation(queryOptions.collections.create);
@@ -110,14 +111,22 @@ function ProjectCollectionCreate(): ReactElement {
     });
   };
 
+  if (isReadingProject) {
+    return <></>;
+  }
+
   return (
-    <CreateUpdateCollectionPage
+    <Page
       title="Create a new Collection"
-      actions={<Actions />}
       description={<Description />}
-      project={project}
-      collectionForm={createCollectionForm}
-      onFormSubmit={onCreate}
-    />
+      actions={<Actions />}
+    >
+      <CollectionForm
+        collectionForm={createCollectionForm}
+        project={project}
+        isViewOnly={isCreatingCollection}
+        onFormSubmit={onCreate}
+      />
+    </Page>
   );
 }

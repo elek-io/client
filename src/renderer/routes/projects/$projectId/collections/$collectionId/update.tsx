@@ -1,5 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PageSection } from '@root/src/renderer/components/page-section';
+import { useMutation } from '@tanstack/react-query';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { Check, Trash } from 'lucide-react';
+import { useEffect, type ReactElement } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+
+import { CollectionForm } from '@renderer/components/forms/collection-form';
+import { Page } from '@renderer/components/page';
+import { PageSection } from '@renderer/components/page-section';
+import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -8,17 +17,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@root/src/renderer/components/ui/dialog';
-import { useProject } from '@root/src/renderer/hooks/useProject';
-import { useQueryNoError } from '@root/src/renderer/hooks/useQueryNoError';
-import { useMutation } from '@tanstack/react-query';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check, Trash } from 'lucide-react';
-import { useEffect, type ReactElement } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
-
-import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
-import { Button } from '@renderer/components/ui/button';
+} from '@renderer/components/ui/dialog';
+import { useProject } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import queryOptions from '@renderer/queries/options';
 
 import {
@@ -37,7 +38,7 @@ function ProjectCollectionUpdate(): ReactElement {
   const router = useRouter();
   const { projectId, collectionId } = Route.useParams();
   const {
-    projectQuery: { data: project },
+    projectQuery: { data: project, isPending: isReadingProject },
     translateContent,
   } = useProject();
   const { data: collection } = useQueryNoError(
@@ -125,58 +126,62 @@ function ProjectCollectionUpdate(): ReactElement {
     });
   };
 
+  if (isReadingProject) {
+    return <></>;
+  }
+
   return (
-    <CreateUpdateCollectionPage
-      title={title}
-      actions={<Actions />}
-      description={<Description />}
-      project={project}
-      collectionForm={updateCollectionForm}
-      onFormSubmit={onUpdate}
-    >
-      <PageSection title="Danger Zone">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm leading-6 font-medium">
-              Delete this Collection
-            </p>
-          </div>
-          <div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash className="mr-2 h-4 w-4" />
-                  Delete Collection
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Are you sure?</DialogTitle>
-                </DialogHeader>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary">
-                      No, I&apos;ve changed my mind
-                    </Button>
-                  </DialogClose>
-                  <Button
-                    variant="destructive"
-                    onClick={() =>
-                      onDelete({
-                        projectId,
-                        id: collectionId,
-                      })
-                    }
-                  >
+    <Page title={title} description={<Description />} actions={<Actions />}>
+      <CollectionForm
+        collectionForm={updateCollectionForm}
+        project={project}
+        isViewOnly={isUpdatingCollection}
+        onFormSubmit={onUpdate}
+      >
+        <PageSection title="Danger Zone">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm leading-6 font-medium">
+                Delete this Collection
+              </p>
+            </div>
+            <div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="destructive">
                     <Trash className="mr-2 h-4 w-4" />
-                    Yes, delete this Collection
+                    Delete Collection
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Are you sure?</DialogTitle>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="secondary">
+                        No, I&apos;ve changed my mind
+                      </Button>
+                    </DialogClose>
+                    <Button
+                      variant="destructive"
+                      onClick={() =>
+                        onDelete({
+                          projectId,
+                          id: collectionId,
+                        })
+                      }
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Yes, delete this Collection
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
-        </div>
-      </PageSection>
-    </CreateUpdateCollectionPage>
+        </PageSection>
+      </CollectionForm>
+    </Page>
   );
 }

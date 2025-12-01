@@ -5,7 +5,8 @@ import { Check } from 'lucide-react';
 import { type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
-import { CreateUpdateProjectPage } from '@renderer/components/pages/create-update-project-page';
+import { ProjectForm } from '@renderer/components/forms/project-form';
+import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import queryOptions from '@renderer/queries/options';
 
@@ -66,13 +67,16 @@ function CreateProjectPage(): ReactElement {
   };
 
   return (
-    <CreateUpdateProjectPage
+    <Page
       title="Create a new Project"
       description={<Description />}
       actions={<Actions />}
-      projectForm={createProjectForm}
-      isLoading={isCreatingProject}
-      onFormSubmit={onCreate}
-    />
+    >
+      <ProjectForm
+        projectForm={createProjectForm}
+        isViewOnly={isCreatingProject}
+        onFormSubmit={onCreate}
+      />
+    </Page>
   );
 }

@@ -7,8 +7,8 @@ import {
   DiffContainerSkeleton,
 } from '@renderer/components/diff-container';
 import { CollectionForm } from '@renderer/components/forms/collection-form';
-import { translatableDefaultNull } from '@renderer/components/pages/util';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { translatableDefaultNull } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
 import {

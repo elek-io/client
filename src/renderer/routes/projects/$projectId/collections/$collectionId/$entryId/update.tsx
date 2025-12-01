@@ -1,17 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useProject } from '@root/src/renderer/hooks/useProject';
-import { useQueryNoError } from '@root/src/renderer/hooks/useQueryNoError';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { useEffect, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
-import {
-  CreateUpdateEntryPage,
-  CreateUpdateEntryPageSkeleton,
-} from '@renderer/components/pages/create-update-entry-page';
+import { EntryForm } from '@renderer/components/forms/entry-form';
+import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
+import { useProject } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import queryOptions from '@renderer/queries/options';
 
 import {
@@ -125,30 +123,19 @@ function UpdateEntryPage(): ReactElement {
     );
   }
 
-  if (
-    isReadingProject === false &&
-    isReadingCollection === false &&
-    isReadingEntry === false
-  ) {
-    return (
-      <CreateUpdateEntryPage
-        title={title}
-        description={<Description />}
-        actions={<Actions />}
+  if (isReadingProject || isReadingCollection) {
+    return <></>;
+  }
+
+  return (
+    <Page title={title} description={<Description />} actions={<Actions />}>
+      <EntryForm
         entryForm={updateEntryForm}
         fieldDefinitions={collection.fieldDefinitions}
-        supportedLanguages={project.settings.language.supported}
-        defaultLanguage={project.settings.language.default}
+        project={project}
+        isViewOnly={isReadingEntry || isUpdatingEntry}
         onFormSubmit={onUpdateEntry}
       />
-    );
-  } else {
-    return (
-      <CreateUpdateEntryPageSkeleton
-        title="Loading..."
-        description={<Description />}
-        actions={<Actions />}
-      />
-    );
-  }
+    </Page>
+  );
 }

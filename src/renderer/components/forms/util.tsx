@@ -12,8 +12,8 @@ import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value
 import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
 import { ToggleFieldDefinitionForm } from '@renderer/components/forms/toggle-value-definition-form';
-import { translatableDefaultNull } from '@renderer/components/pages/util';
 import { FormFieldFromDefinition } from '@renderer/components/ui/form';
+import { translatableDefaultNull } from '@renderer/lib/utils';
 
 import {
   dateFieldDefinitionSchema,
