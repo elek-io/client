@@ -96,7 +96,6 @@ function ProjectSettingsGeneralPage(): ReactElement {
 
   const onUpdate: SubmitHandler<UpdateProjectProps> = async (project) => {
     await updateProject(project);
-    await router.invalidate();
   };
 
   const onDelete: SubmitHandler<DeleteProjectProps> = async (project) => {

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProject } from '@root/src/renderer/hooks/useProject';
 import { useMutation } from '@tanstack/react-query';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { useEffect, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
@@ -33,7 +33,6 @@ export const Route = createFileRoute(
 });
 
 function ProjectSettingsVersionControlPage(): ReactElement {
-  const router = useRouter();
   const { projectId } = Route.useParams();
   const {
     projectQuery: { data: project, isPending: isReadingProject },
@@ -77,7 +76,6 @@ function ProjectSettingsVersionControlPage(): ReactElement {
     SetRemoteOriginUrlProjectProps
   > = async (props) => {
     await setRemoteOriginUrl(props);
-    await router.invalidate();
   };
 
   return (
