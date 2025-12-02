@@ -12,13 +12,11 @@ The base configuration for all queries and mutations is in [`client.ts`](../../s
 
 **Key Settings:**
 
-- `staleTime: Infinity` (line 25) - Queries remain "fresh" indefinitely and won't automatically refetch. This is appropriate for local data that only changes through user actions.
-- Automatic toast notifications for all mutations (success and failure)
-- Error and success logging to Core logger
+- `staleTime: Infinity` (line 9) - Queries remain "fresh" indefinitely and won't automatically refetch. This is appropriate for local data that only changes through user actions.
 
 ### Query and Mutation Options
 
-All `queryOptions` and `mutationOptions` are centrally defined in [`options.ts`](../../src/renderer/queries/options.ts). This file contains:
+All `queryOptions` and `mutationOptions` are centrally defined in the [`options/`](../../src/renderer/queries/options/) directory with separate files for each domain (`projectOptions.ts`, `collectionOptions.ts`, `entryOptions.ts`, `assetOptions.ts`, `userOptions.ts`, `apiOptions.ts`) and re-exported through [`queries/index.ts`](../../src/renderer/queries/index.ts). These files contain:
 
 - Typed wrappers around IPC calls
 - Query keys for cache management
@@ -40,7 +38,7 @@ For accessing the current user and project data, prefer using the `useUser()` an
 
 #### UserProvider and useUser Hook
 
-The [`UserProvider`](../../src/renderer/providers/UserProvider.tsx) wraps the entire application at the root level (see [`routes/__root.tsx:131`](../../src/renderer/routes/__root.tsx)). It provides:
+The [`UserProvider`](../../src/renderer/providers/UserProvider.tsx) wraps the entire application at the root level (see [`routes/__root.tsx:130`](../../src/renderer/routes/__root.tsx)). It provides:
 
 - `userQuery: UseQueryResult<User | null>` - The current user query result
 - `formatDatetime: (props: FormatDatetimeProps) => { relative: string; absolute: string }` - Formats datetime strings according to the user's locale
@@ -105,7 +103,7 @@ We prioritize fast, responsive UI by rendering pages immediately without waiting
 
 **Pattern:** Show Skeleton components while data loads, then replace them with actual content when ready.
 
-**Example:** See [`routes/projects/index.tsx:115-120`](../../src/renderer/routes/projects/index.tsx)
+**Example:** See [`routes/projects/index.tsx`](../../src/renderer/routes/projects/index.tsx)
 
 ```typescript
 const { data: projects, isPending } = useQuery(
@@ -131,7 +129,7 @@ This ensures the page structure renders immediately, with placeholders that are 
 
 This hook solves a TypeScript limitation where `data` is typed as `T | undefined` even with `throwOnError: true`. It manually throws errors to the error boundary and returns a narrowed type without error states.
 
-**Example:** See [`routes/projects/$projectId/collections/$collectionId/index.tsx:28-36`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/index.tsx)
+**Example:** See [`routes/projects/$projectId/collections/$collectionId/index.tsx`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/index.tsx)
 
 ```typescript
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
@@ -146,7 +144,7 @@ if (isPending) return <LoadingSkeleton />;
 return <div>{collection.name}</div>;
 ```
 
-See the hook's JSDoc for implementation details. Errors are caught by the root `ErrorComponent` in [`routes/__root.tsx:30-84`](../../src/renderer/routes/__root.tsx).
+See the hook's JSDoc for implementation details. Errors are caught by the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx).
 
 **Naming Conventions:**
 
@@ -182,7 +180,7 @@ When building forms to update existing data, we need to handle the loading state
 
 **Pattern:** Use `<fieldset disabled={isPending}>` to disable the entire form while data loads, instead of showing loading spinners or skeleton forms.
 
-**Example:** See [`routes/user/profile.tsx:178`](../../src/renderer/routes/user/profile.tsx)
+**Example:** See [`routes/user/profile.tsx`](../../src/renderer/routes/user/profile.tsx)
 
 ```typescript
 const { data: user, isPending: isGettingUser } = useQuery(
@@ -223,10 +221,10 @@ return (
 
 ### Mutation Metadata
 
-All mutations should include metadata for proper toast notifications and logging:
+All mutations should include metadata for proper toast notifications and logging. Use the `customMutationOptions` wrapper from [`util.ts`](../../src/renderer/queries/util.ts) to not only make sure the metadata is included, but also to automatically add `throwOnError: true` to propagate errors to the nearest error boundary and log all mutations with Core:
 
 ```typescript
-mutationOptions({
+customMutationOptions({
   mutationFn: async () => {
     /* ... */
   },
@@ -240,6 +238,153 @@ mutationOptions({
 
 This metadata is used by the query client to automatically display success/error toasts and log all mutations for debugging.
 
+## Cache Management
+
+### Automatic Cache Updates
+
+All mutations in the [`options/`](../../src/renderer/queries/options/) directory include `onSuccess` handlers that automatically update the cache. This ensures the UI reflects changes immediately without requiring refetches.
+
+### The `mergeListWithObject` Helper
+
+Located at [`util.ts:144-195`](../../src/renderer/queries/util.ts), this helper function merges individual objects into paginated list caches:
+
+```typescript
+function mergeListWithObject<T extends BaseFile>(
+  oldList: PaginatedList<T> | undefined,
+  object: T,
+  method?: 'update' | 'delete'
+): PaginatedList<T>;
+```
+
+**Behavior:**
+
+- **No list exists:** Creates new list with the object
+- **Object doesn't exist in list:** Adds it to the end
+- **Object exists + method='update':** Replaces the object
+- **Object exists + method='delete':** Removes the object
+
+**Usage in Mutations:**
+
+```typescript
+// Create mutation - add to list
+onSuccess: (createdProject, _variables, _result, context) => {
+  context.client.setQueryData(
+    ['projects', createdProject.id, 'current'],
+    createdProject
+  );
+  context.client.setQueryData<PaginatedList<Project>>(
+    ['projects', 'list'],
+    (oldList) => mergeListWithObject(oldList, createdProject) // Adds to list
+  );
+};
+
+// Update mutation - update in list
+onSuccess: (updatedProject, _variables, _result, context) => {
+  context.client.setQueryData(
+    ['projects', updatedProject.id, 'current'],
+    updatedProject
+  );
+  context.client.setQueryData<PaginatedList<Project>>(
+    ['projects', 'list'],
+    (oldList) => mergeListWithObject(oldList, updatedProject, 'update') // Updates in list
+  );
+};
+
+// Delete mutation - remove from list
+onSuccess: (_deletedProject, variables, _result, context) => {
+  context.client.setQueryData(['projects', variables.id, 'current'], undefined);
+  context.client.setQueryData<PaginatedList<Project>>(
+    ['projects', 'list'],
+    (oldList) =>
+      mergeListWithObject(oldList, { id: variables.id } as Project, 'delete') // Removes from list
+  );
+};
+```
+
+### Individual Cache Population from Lists
+
+List queries automatically populate individual item caches to avoid redundant fetches:
+
+**Example from project options (see [`options/projectOptions.ts`](../../src/renderer/queries/options/projectOptions.ts)):**
+
+```typescript
+list: (props?: ListProjectsProps) =>
+  queryOptions({
+    queryKey: ['projects', 'list'],
+    queryFn: async () => {
+      const projects = await window.ipc.core.projects.list(props);
+
+      // Cache each project individually too
+      // so we can access them directly without refetching later
+      projects.list.forEach((project) => {
+        queryClient.setQueryData(['projects', project.id, 'current'], project);
+      });
+
+      return projects;
+    },
+    throwOnError: true,
+  });
+```
+
+**Benefit:** When navigating to a project detail page after viewing the list, the data is already cached - no loading spinner needed.
+
+### Cache Invalidation Strategies
+
+**Two approaches for cache updates:**
+
+#### 1. Direct Cache Updates (Preferred for CRUD)
+
+Use `setQueryData` with `mergeListWithObject` for operations where you know exactly what changed:
+
+```typescript
+onSuccess: (updatedItem, variables, _result, context) => {
+  // Update both individual and list caches
+  context.client.setQueryData(['items', updatedItem.id], updatedItem);
+  context.client.setQueryData(['items', 'list'], (oldList) =>
+    mergeListWithObject(oldList, updatedItem, 'update')
+  );
+};
+```
+
+**Pros:** Instant UI updates, no network/IPC calls
+
+**Use for:** create, update, delete, user settings, API start/stop
+
+#### 2. Query Invalidation (For Unknown Scope)
+
+Use `invalidateQueries` for operations that may affect multiple caches:
+
+```typescript
+onSuccess: async (_data, variables, _result, context) => {
+  await context.client.invalidateQueries({
+    queryKey: ['projects', variables.id],
+    refetchType: 'all', // Refetch all matching queries
+  });
+};
+```
+
+**Pros:** Safe when scope is unknown, handles cascading updates
+
+**Cons:** Triggers refetches (slower), may refetch unnecessary data
+
+**Use for:** synchronize (git pull), setRemoteOriginUrl
+
+### Anti-Patterns to Avoid
+
+**Do not use `router.invalidate()` after mutations:**
+
+```typescript
+// Invalidates all queries for the route
+const onSave = async (data) => {
+  await saveMutation(data);
+  await router.invalidate(); // Too broad, redundant
+};
+```
+
+**Let mutations handle their own cache updates:**
+
+Mutations already have `onSuccess` handlers that update the necessary caches. Using `router.invalidate()` is redundant and invalidates unrelated queries.
+
 ---
 
-**Last Updated:** 2025-11-22
+**Last Updated:** 2025-12-01

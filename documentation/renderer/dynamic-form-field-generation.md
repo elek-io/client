@@ -59,7 +59,7 @@ Depending on the field type, definitions may include different properties, but c
 
 When users create or update a Collection, they use a visual editor to define the fields for that Collection type.
 
-**Location:** [`components/pages/create-update-collection-page.tsx`](../../src/renderer/components/pages/create-update-collection-page.tsx)
+**Location:** Collection forms are in [`components/forms/collection-form.tsx`](../../src/renderer/components/forms/collection-form.tsx) and used in routes like [`routes/projects/$projectId/collections/create.tsx`](../../src/renderer/routes/projects/$projectId/collections/create.tsx) and [`routes/projects/$projectId/collections/$collectionId/update.tsx`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/update.tsx)
 
 **Features:**
 
@@ -74,7 +74,7 @@ When users create or update a Collection, they use a visual editor to define the
 
 When rendering a form to create or edit an Entry, we iterate over the Collection's field definitions and render appropriate form controls for each field.
 
-**Location:** See [`components/pages/create-update-entry-page.tsx`](../../src/renderer/components/pages/create-update-entry-page.tsx) for usage.
+**Location:** Entry forms are in [`components/forms/entry-form.tsx`](../../src/renderer/components/forms/entry-form.tsx) and used in routes like [`routes/projects/$projectId/collections/$collectionId/create.tsx`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/create.tsx) and [`routes/projects/$projectId/collections/$collectionId/$entryId/update.tsx`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/$entryId/update.tsx)
 
 ### Component Architecture
 
@@ -206,4 +206,4 @@ const form = useForm({
 
 ---
 
-**Last Updated:** 2025-11-18
+**Last Updated:** 2025-12-01

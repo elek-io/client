@@ -88,11 +88,12 @@ client/
 │   └── renderer/          # React frontend
 │       ├── components/
 │       │   ├── forms/     # Dynamic form components
-│       │   ├── pages/     # Page components
 │       │   └── ui/        # UI components
 │       ├── hooks/         # React hooks
 │       ├── lib/           # Utilities
+│       ├── providers/     # Context providers (UserProvider, ProjectProvider)
 │       ├── queries/       # Data fetching, mutations and caching
+│       │   └── options/   # Query/mutation options organized by domain
 │       ├── routes/        # File-based routing
 │       │   ├── projects/
 │       │   │   ├── $projectId/
@@ -165,4 +166,4 @@ See [`src/main/index.ts:267-305`](/src/main/index.ts) for the custom protocol im
 
 ---
 
-**Last Updated:** 2025-11-18
+**Last Updated:** 2025-12-01
