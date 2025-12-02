@@ -16,7 +16,6 @@ import {
   UserDropdownSkeleton,
 } from '@renderer/components/user-dropdown';
 import { useUser } from '@renderer/hooks/useUser';
-import { useStore } from '@renderer/store';
 
 export function UserHeader(): React.JSX.Element {
   const router = useRouter();
@@ -24,9 +23,6 @@ export function UserHeader(): React.JSX.Element {
   const {
     userQuery: { data: user, isPending: isGettingUser },
   } = useUser();
-  const breadcrumbLookupMap = useStore(
-    (storeState) => storeState.breadcrumbLookupMap
-  );
   const breadcrumbs = routerState.location.pathname
     .split('/')
     .filter((value) => value) // Filter out empty values for beginning or ending slashes
@@ -64,12 +60,6 @@ export function UserHeader(): React.JSX.Element {
           break;
         default:
           break;
-      }
-
-      // Use names instead of IDs to display
-      const match = breadcrumbLookupMap.get(part);
-      if (match !== undefined) {
-        part = match;
       }
 
       return {
