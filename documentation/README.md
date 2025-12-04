@@ -20,6 +20,7 @@ Then proceed to the specific topics based on your interests or contribution goal
 
 - **[Loading and Updating Data](./renderer/loading-and-updating-data.md)** - TanStack Query patterns for data fetching and mutations
 - **[Dynamic Form Generation](./renderer/dynamic-form-field-generation.md)** - How user-defined forms work with field definitions
+- **[Breadcrumb Navigation](./renderer/breadcrumb-navigation.md)** - Route-based breadcrumb system for hierarchical navigation
 
 ## Contributing
 
@@ -40,4 +41,4 @@ When updating these docs:
 
 ---
 
-**Last Updated:** 2025-11-18
+**Last Updated:** 2025-12-04

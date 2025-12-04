@@ -1,5 +1,5 @@
 import { useMatches } from '@tanstack/react-router';
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { BreadcrumbContext } from '@renderer/hooks/useBreadcrumb';
 
@@ -18,7 +18,7 @@ export function BreadcrumbProvider({
   );
   const matches = useMatches();
 
-  const breadcrumbs = React.useMemo(() => {
+  const breadcrumbs = useMemo(() => {
     return matches
       .map((match) => {
         const crumb = breadcrumbMap.get(match.pathname);
@@ -29,7 +29,7 @@ export function BreadcrumbProvider({
       .filter((crumb): crumb is Breadcrumb => crumb !== null);
   }, [matches, breadcrumbMap]);
 
-  const setBreadcrumb = React.useCallback((path: string, label: string) => {
+  const setBreadcrumb = useCallback((path: string, label: string) => {
     setBreadcrumbMap((prev) => {
       const next = new Map(prev);
       next.set(path, { path, label });
@@ -37,7 +37,7 @@ export function BreadcrumbProvider({
     });
   }, []);
 
-  const clearBreadcrumb = React.useCallback((path: string) => {
+  const clearBreadcrumb = useCallback((path: string) => {
     setBreadcrumbMap((prev) => {
       const next = new Map(prev);
       next.delete(path);
