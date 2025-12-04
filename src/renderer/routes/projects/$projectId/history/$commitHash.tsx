@@ -21,7 +21,7 @@ export const Route = createFileRoute(
 });
 
 function ProjectHistoryCommitPage(): ReactElement {
-  const { projectId, commitHash } = Route.useParams();
+  const { commitHash } = Route.useParams();
   const {
     projectQuery: { data: project, isPending: isReadingProject },
     formatDatetime,

@@ -16,7 +16,6 @@ export const Route = createFileRoute('/projects/$projectId/dashboard')({
 
 function ProjectDashboardPage(): React.JSX.Element {
   const router = useRouter();
-  const { projectId } = Route.useParams();
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();

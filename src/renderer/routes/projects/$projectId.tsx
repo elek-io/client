@@ -10,7 +10,6 @@ export const Route = createFileRoute('/projects/$projectId')({
 });
 
 function ProjectLayoutContent(): React.JSX.Element {
-  const { projectId } = Route.useParams();
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
