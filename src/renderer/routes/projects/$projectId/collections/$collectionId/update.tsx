@@ -1,12 +1,27 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+import { Check, Trash } from 'lucide-react';
+import { useEffect, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
-import { CreateUpdateCollectionPage } from '@renderer/components/pages/create-update-collection-page';
+import { CollectionForm } from '@renderer/components/forms/collection-form';
+import { Page } from '@renderer/components/page';
+import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
-import { useStore } from '@renderer/store';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@renderer/components/ui/dialog';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
+import { useProject } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
 import {
   type DeleteCollectionProps,
@@ -22,24 +37,48 @@ export const Route = createFileRoute(
 
 function ProjectCollectionUpdate(): ReactElement {
   const router = useRouter();
-  const context = Route.useRouteContext();
-  const addNotification = useStore((state) => state.addNotification);
-  const [isUpdatingCollection, setIsUpdatingCollection] = useState(false);
-
+  const { projectId, collectionId } = Route.useParams();
+  const {
+    projectQuery: { data: project, isPending: isReadingProject },
+    translateContent,
+  } = useProject();
+  const { data: collection, isPending: isReadingCollection } = useQueryNoError(
+    queryOptions.collections.read({
+      projectId: projectId,
+      id: collectionId,
+    })
+  );
+  useBreadcrumb(Route, isReadingCollection ? undefined : 'Configure');
+  const { mutateAsync: updateCollection, isPending: isUpdatingCollection } =
+    useMutation(queryOptions.collections.update);
+  const { mutateAsync: deleteCollection } = useMutation(
+    queryOptions.collections.delete
+  );
   const updateCollectionForm = useForm<UpdateCollectionProps>({
-    resolver: async (data, context, options) => {
-      return zodResolver(updateCollectionSchema)(data, context, options);
-    },
+    resolver: zodResolver(updateCollectionSchema),
     defaultValues: {
-      ...context.currentCollection,
-      projectId: context.project.id,
+      projectId,
     },
   });
 
-  const title = `Configure ${context.translateContent(
-    'currentCollection.name.plural',
-    context.currentCollection.name.plural
-  )}`;
+  // Reset form with Collection data when it loads
+  useEffect(() => {
+    if (isReadingCollection === false) {
+      updateCollectionForm.reset({
+        ...collection,
+        projectId,
+      });
+    }
+  }, [projectId, isReadingCollection, collection, updateCollectionForm]);
+
+  const title = `Configure ${
+    isReadingCollection === false
+      ? translateContent({
+          key: 'collection.name.plural',
+          record: collection.name.plural,
+        })
+      : 'Collection'
+  }`;
 
   function Description(): ReactElement {
     return (
@@ -66,76 +105,85 @@ function ProjectCollectionUpdate(): ReactElement {
   }
 
   const onUpdate: SubmitHandler<UpdateCollectionProps> = async (collection) => {
-    setIsUpdatingCollection(true);
-    try {
-      await context.core.collections.update({
-        ...collection,
-      });
-      setIsUpdatingCollection(false);
-      await router.navigate({
-        to: '/projects/$projectId/collections/$collectionId',
-        params: {
-          projectId: context.project.id,
-          collectionId: context.currentCollection.id,
-        },
-      });
-    } catch (error) {
-      setIsUpdatingCollection(false);
-      await context.core.logger.error({
-        source: 'desktop',
-        message: 'Failed to update Collection',
-        meta: { error },
-      });
-      addNotification({
-        intent: 'danger',
-        title: 'Failed to update Collection',
-        description: 'There was an error updating the Collection.',
-      });
-    }
+    await updateCollection(collection);
+    await router.navigate({
+      to: '/projects/$projectId/collections/$collectionId',
+      params: {
+        projectId,
+        collectionId,
+      },
+    });
   };
 
   const onDelete: SubmitHandler<DeleteCollectionProps> = async (collection) => {
-    try {
-      await context.core.collections.delete({
-        projectId: context.project.id,
-        id: collection.id,
-      });
-      addNotification({
-        intent: 'success',
-        title: 'Successfully deleted Collection',
-        description: 'The Collection was successfully deleted.',
-      });
-      await router.navigate({
-        to: '/projects/$projectId/collections',
-        params: {
-          projectId: context.project.id,
-        },
-      });
-    } catch (error) {
-      await context.core.logger.error({
-        source: 'desktop',
-        message: 'Failed to delete Collection',
-        meta: { error },
-      });
-      addNotification({
-        intent: 'danger',
-        title: 'Failed to delete Collection',
-        description: 'There was an error deleting the Collection from disk.',
-      });
-    }
+    await deleteCollection({
+      projectId,
+      id: collection.id,
+    });
+    await router.navigate({
+      to: '/projects/$projectId/collections',
+      params: {
+        projectId,
+      },
+    });
   };
 
+  if (isReadingProject) {
+    return <></>;
+  }
+
   return (
-    <CreateUpdateCollectionPage
-      title={title}
-      actions={<Actions />}
-      description={<Description />}
-      supportedLanguages={context.project.settings.language.supported}
-      defaultLanguage={context.project.settings.language.default}
-      collectionForm={updateCollectionForm}
-      onFormSubmit={onUpdate}
-      onCollectionDelete={onDelete}
-      translateContent={context.translateContent}
-    />
+    <Page title={title} description={<Description />} actions={<Actions />}>
+      <CollectionForm
+        collectionForm={updateCollectionForm}
+        project={project}
+        isViewOnly={isUpdatingCollection}
+        onFormSubmit={onUpdate}
+      >
+        <PageSection title="Danger Zone">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm leading-6 font-medium">
+                Delete this Collection
+              </p>
+            </div>
+            <div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="destructive">
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete Collection
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Are you sure?</DialogTitle>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="secondary">
+                        No, I&apos;ve changed my mind
+                      </Button>
+                    </DialogClose>
+                    <Button
+                      variant="destructive"
+                      onClick={() =>
+                        onDelete({
+                          projectId,
+                          id: collectionId,
+                        })
+                      }
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Yes, delete this Collection
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </PageSection>
+      </CollectionForm>
+    </Page>
   );
 }

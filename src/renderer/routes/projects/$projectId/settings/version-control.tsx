@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { useMutation } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+import { useEffect, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { Page } from '@renderer/components/page';
@@ -17,7 +18,9 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { Input } from '@renderer/components/ui/input';
-import { useStore } from '@renderer/store';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
+import { useProject } from '@renderer/hooks/useProject';
+import { queryOptions } from '@renderer/queries';
 
 import {
   type SetRemoteOriginUrlProjectProps,
@@ -31,11 +34,15 @@ export const Route = createFileRoute(
 });
 
 function ProjectSettingsVersionControlPage(): ReactElement {
-  const router = useRouter();
-  const context = Route.useRouteContext();
-  const addNotification = useStore((state) => state.addNotification);
-  const [isSettingRemoteOriginUrl, setIsSettingRemoteOriginUrl] =
-    useState(false);
+  const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'Version Control');
+  const {
+    projectQuery: { data: project, isPending: isReadingProject },
+  } = useProject();
+  const {
+    mutateAsync: setRemoteOriginUrl,
+    isPending: isSettingRemoteOriginUrl,
+  } = useMutation(queryOptions.projects.setRemoteOriginUrl);
   const remoteOriginUrlForm = useForm<SetRemoteOriginUrlProjectProps>({
     resolver: async (data, context, options) => {
       return zodResolver(setRemoteOriginUrlProjectSchema)(
@@ -45,13 +52,19 @@ function ProjectSettingsVersionControlPage(): ReactElement {
       );
     },
     defaultValues: {
-      id: context.project.id,
-      url:
-        context.project.remoteOriginUrl !== null
-          ? context.project.remoteOriginUrl
-          : '',
+      id: projectId,
+      url: '',
     },
   });
+  // Reset form with Project data when it loads
+  useEffect(() => {
+    if (isReadingProject === false) {
+      remoteOriginUrlForm.reset({
+        id: project.id,
+        url: project.remoteOriginUrl !== null ? project.remoteOriginUrl : '',
+      });
+    }
+  }, [project, isReadingProject, remoteOriginUrlForm]);
 
   function Description(): ReactElement {
     return <></>;
@@ -64,29 +77,7 @@ function ProjectSettingsVersionControlPage(): ReactElement {
   const onSetRemoteOriginUrl: SubmitHandler<
     SetRemoteOriginUrlProjectProps
   > = async (props) => {
-    try {
-      setIsSettingRemoteOriginUrl(true);
-      await context.core.projects.setRemoteOriginUrl(props);
-      setIsSettingRemoteOriginUrl(false);
-      addNotification({
-        intent: 'success',
-        title: 'Successfully updated Project remote',
-        description: 'The Project was successfully updated.',
-      });
-      await router.invalidate();
-    } catch (error) {
-      setIsSettingRemoteOriginUrl(false);
-      await context.core.logger.error({
-        source: 'desktop',
-        message: 'Failed to update Project remote',
-        meta: { error },
-      });
-      addNotification({
-        intent: 'danger',
-        title: 'Failed to update Project remote',
-        description: 'There was an error updating the Project.',
-      });
-    }
+    await setRemoteOriginUrl(props);
   };
 
   return (

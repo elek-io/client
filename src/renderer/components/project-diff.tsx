@@ -1,66 +1,190 @@
-import type { ReactElement } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
 
-import { Chip } from '@renderer/components/ui/chip';
-import { FormItem } from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
-import { Label } from '@renderer/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@renderer/components/ui/select';
-import { Textarea } from '@renderer/components/ui/textarea';
+  DiffContainer,
+  DiffContainerSkeleton,
+} from '@renderer/components/diff-container';
+import { ProjectForm } from '@renderer/components/forms/project-form';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
-import { type Project } from '@elek-io/core';
+import {
+  updateProjectSchema,
+  type GitCommit,
+  type Project,
+  type UpdateProjectProps,
+} from '@elek-io/core';
 
-export interface ProjectDiffProps {
+export function ProjectDiff({
+  project,
+  commit,
+}: {
   project: Project;
-}
+  commit: GitCommit;
+}): React.JSX.Element {
+  // Derive commitBefore during render with useMemo
+  const commitBefore = useMemo(() => {
+    if (commit.message.method === 'create') {
+      return undefined;
+    }
 
-export function ProjectDiff({ project }: ProjectDiffProps): ReactElement {
-  return (
-    <>
-      <FormItem>
-        <Label isRequired>Project name</Label>
-        <Input value={project.name} disabled />
-      </FormItem>
+    const projectCommitHistory = project.fullHistory.filter(
+      (commitFromHistory) =>
+        commitFromHistory.message.reference.objectType === 'project' &&
+        commitFromHistory.message.reference.id === commit.message.reference.id
+    );
+    const currentCommitIndex = projectCommitHistory.findIndex(
+      (commitFromHistory) => commitFromHistory.hash === commit.hash
+    );
+    const previousCommit = projectCommitHistory.at(currentCommitIndex + 1);
 
-      <FormItem>
-        <Label isRequired={false}>Project description</Label>
-        <Textarea value={project.description} disabled />
-      </FormItem>
+    if (!previousCommit) {
+      throw new Error(
+        `No previous commit found for Project "${commit.message.reference.id}" ` +
+          `before "${commit.message.method}" at commit ${commit.hash}`
+      );
+    }
 
-      <FormItem>
-        <Label isRequired>Supported languages</Label>
-        <ul className="flex flex-wrap">
-          {project.settings.language.supported.map((language) => {
-            return (
-              <li key={language} className="mr-2 mb-2">
-                <Chip>{language}</Chip>
-              </li>
-            );
-          })}
-        </ul>
-      </FormItem>
+    return previousCommit;
+  }, [commit, project.fullHistory]);
 
-      <FormItem>
-        <Label isRequired>Default language</Label>
-        <Select value={project.settings.language.default} disabled>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem
-              key={project.settings.language.default}
-              value={project.settings.language.default}
-            >
-              {project.settings.language.default}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormItem>
-    </>
-  );
+  // Derive commitAfter during render with useMemo
+  const commitAfter = useMemo(() => {
+    if (commit.message.method === 'delete') {
+      return undefined;
+    }
+    return commit;
+  }, [commit]);
+
+  const { data: projectBefore, isPending: isReadingProjectBefore } =
+    useQueryNoError({
+      ...queryOptions.projects.read({
+        id: project.id,
+        commitHash: commitBefore?.hash,
+      }),
+      enabled: commitBefore !== undefined,
+    });
+
+  const projectFormBefore = useForm<UpdateProjectProps>({
+    resolver: zodResolver(updateProjectSchema),
+    defaultValues: {
+      id: project.id,
+      name: '',
+      description: '',
+      settings: {
+        language: {
+          default: 'en',
+          supported: ['en'],
+        },
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (isReadingProjectBefore === false) {
+      projectFormBefore.reset(projectBefore);
+    }
+  }, [isReadingProjectBefore, projectFormBefore, projectBefore]);
+
+  const { data: projectAfter, isPending: isReadingProjectAfter } =
+    useQueryNoError({
+      ...queryOptions.projects.read({
+        id: project.id,
+        commitHash: commitAfter?.hash,
+      }),
+      enabled: commitAfter !== undefined,
+    });
+
+  const projectFormAfter = useForm<UpdateProjectProps>({
+    resolver: zodResolver(updateProjectSchema),
+    defaultValues: {
+      id: project.id,
+      name: '',
+      description: '',
+      settings: {
+        language: {
+          default: 'en',
+          supported: ['en'],
+        },
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (isReadingProjectAfter === false) {
+      projectFormAfter.reset(projectAfter);
+    }
+  }, [isReadingProjectAfter, projectFormAfter, projectAfter]);
+
+  // Show loading skeleton while queries are pending
+  if (
+    (commitBefore && isReadingProjectBefore) ||
+    (commitAfter && isReadingProjectAfter)
+  ) {
+    // Show appropriate number of skeletons based on operation
+    if (commitBefore && commitAfter) {
+      // Update operation - show 2 skeletons
+      return (
+        <>
+          <DiffContainerSkeleton />
+          <DiffContainerSkeleton />
+        </>
+      );
+    }
+    // Create or delete operation - show 1 centered skeleton
+    return <DiffContainerSkeleton centered />;
+  }
+
+  // Handle create operation
+  if (!commitBefore && commitAfter) {
+    return (
+      <DiffContainer type="create" commit={commitAfter}>
+        <ProjectForm
+          projectForm={projectFormAfter}
+          isViewOnly
+          onFormSubmit={() => {}}
+        />
+      </DiffContainer>
+    );
+  }
+
+  // Handle delete operation
+  if (!commitAfter && commitBefore) {
+    return (
+      <DiffContainer type="delete" commit={commitBefore}>
+        <ProjectForm
+          projectForm={projectFormBefore}
+          isViewOnly
+          onFormSubmit={() => {}}
+        />
+      </DiffContainer>
+    );
+  }
+
+  // Handle update operation (both commits exist)
+  if (commitBefore && commitAfter) {
+    return (
+      <>
+        <DiffContainer type="before" commit={commitBefore}>
+          <ProjectForm
+            projectForm={projectFormBefore}
+            isViewOnly
+            onFormSubmit={() => {}}
+          />
+        </DiffContainer>
+
+        <DiffContainer type="after" commit={commitAfter}>
+          <ProjectForm
+            projectForm={projectFormAfter}
+            isViewOnly
+            onFormSubmit={() => {}}
+          />
+        </DiffContainer>
+      </>
+    );
+  }
+
+  return <></>;
 }

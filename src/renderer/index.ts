@@ -16,7 +16,6 @@ import {
 } from '@sentry/react';
 import { createHashHistory, createRouter } from '@tanstack/react-router';
 
-import { ipc } from '@renderer/ipc';
 import { routeTree } from '@renderer/routeTree.gen';
 
 // Create a new router instance
@@ -24,10 +23,10 @@ const hashHistory = createHashHistory(); // Use hash based routing since in prod
 const router = createRouter({
   routeTree,
   history: hashHistory,
-  context: { electron: ipc.electron, core: ipc.core },
+  context: {},
 });
 router.subscribe('onBeforeLoad', (event) => {
-  void ipc.core.logger.info({
+  void window.ipc.core.logger.info({
     source: 'desktop',
     message: `Client navigating from "${event.fromLocation?.href}" to "${event.toLocation.href}"`,
   });

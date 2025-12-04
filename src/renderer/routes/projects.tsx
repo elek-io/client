@@ -1,29 +1,14 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import type { ReactElement } from 'react';
 
-import { UserHeader } from '@renderer/components/user-header';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 
 export const Route = createFileRoute('/projects')({
-  beforeLoad: async ({ context }) => {
-    const user = await context.core.user.get();
-    if (!user) {
-      throw redirect({
-        to: '/user/profile',
-      });
-    }
-
-    return { user };
-  },
   component: ProjectsLayout,
 });
 
 function ProjectsLayout(): ReactElement {
-  const { user } = Route.useRouteContext();
+  useBreadcrumb(Route, 'Projects');
 
-  return (
-    <>
-      <UserHeader user={user} />
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 }

@@ -1,23 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+import { type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
+import { ProjectForm } from '@renderer/components/forms/project-form';
 import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
-import { Textarea } from '@renderer/components/ui/textarea';
-import { useStore } from '@renderer/store';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
+import { queryOptions } from '@renderer/queries';
 
 import { type CreateProjectProps, createProjectSchema } from '@elek-io/core';
 
@@ -27,18 +19,22 @@ export const Route = createFileRoute('/projects/create')({
 
 function CreateProjectPage(): ReactElement {
   const router = useRouter();
-  const context = Route.useRouteContext();
-  const addNotification = useStore((state) => state.addNotification);
-  const [isCreatingProject, setCreatingProject] = useState(false);
+  useBreadcrumb(Route, 'Create');
   const createProjectForm = useForm<CreateProjectProps>({
-    resolver: async (data, context, options) => {
-      return zodResolver(createProjectSchema)(data, context, options);
-    },
+    resolver: zodResolver(createProjectSchema),
     defaultValues: {
       name: '',
       description: '',
+      settings: {
+        language: {
+          default: 'en',
+          supported: ['en'],
+        },
+      },
     },
   });
+  const { mutateAsync: createProject, isPending: isCreatingProject } =
+    useMutation(queryOptions.projects.create);
 
   function Description(): ReactElement {
     return (
@@ -65,33 +61,11 @@ function CreateProjectPage(): ReactElement {
   }
 
   const onCreate: SubmitHandler<CreateProjectProps> = async (project) => {
-    try {
-      setCreatingProject(true);
-      const newProject = await context.core.projects.create({
-        ...project,
-      });
-      addNotification({
-        intent: 'success',
-        title: 'Successfully created Project',
-        description: `The Project "${project.name}" was successfully created.`,
-      });
-      await router.navigate({
-        to: '/projects/$projectId',
-        params: { projectId: newProject.id },
-      });
-    } catch (error) {
-      setCreatingProject(false);
-      await context.core.logger.error({
-        source: 'desktop',
-        message: 'Failed to create Project',
-        meta: { error },
-      });
-      addNotification({
-        intent: 'danger',
-        title: 'Failed to create Project',
-        description: 'There was an error creating the Project on disk.',
-      });
-    }
+    const newProject = await createProject(project);
+    await router.navigate({
+      to: '/projects/$projectId',
+      params: { projectId: newProject.id },
+    });
   };
 
   return (
@@ -100,43 +74,11 @@ function CreateProjectPage(): ReactElement {
       description={<Description />}
       actions={<Actions />}
     >
-      <Form {...createProjectForm}>
-        <form onSubmit={createProjectForm.handleSubmit(onCreate)}>
-          <div className="space-y-4 p-6">
-            <div className="grid grid-cols-12 gap-6">
-              <FormField
-                control={createProjectForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="col-span-12">
-                    <FormLabel isRequired>Project name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={createProjectForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem className="col-span-12">
-                    <FormLabel isRequired>Project description</FormLabel>
-                    <FormControl>
-                      <Textarea {...field} />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-        </form>
-      </Form>
+      <ProjectForm
+        projectForm={createProjectForm}
+        isViewOnly={isCreatingProject}
+        onFormSubmit={onCreate}
+      />
     </Page>
   );
 }

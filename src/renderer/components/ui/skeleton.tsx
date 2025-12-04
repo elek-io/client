@@ -5,11 +5,11 @@ import { cn } from '@renderer/lib/utils';
 function Skeleton({
   className,
   ...props
-}: React.ComponentProps<'div'>): React.JSX.Element {
+}: React.ComponentProps<'span'>): React.JSX.Element {
   return (
-    <div
+    <span
       data-slot="skeleton"
-      className={cn('animate-pulse rounded-md bg-accent', className)}
+      className={cn('block animate-pulse rounded-md bg-accent', className)}
       {...props}
     />
   );

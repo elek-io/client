@@ -3,9 +3,8 @@ import type * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { XIcon } from 'lucide-react';
 import * as React from 'react';
 
+import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { cn } from '@renderer/lib/utils';
-
-import { ScrollArea } from './scroll-area';
 
 function Sheet({
   ...props

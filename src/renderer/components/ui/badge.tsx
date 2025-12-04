@@ -40,17 +40,37 @@ function RemoteOriginBadge({
     remoteOriginUrl: string | null;
   }): React.JSX.Element {
   if (remoteOriginUrl !== null) {
-    const url = new URL(remoteOriginUrl);
+    let hostname: string;
+    let path: string;
 
-    const HostIcon = url.hostname.includes('github.com')
+    // Parse SSH URLs (git@host:path) vs HTTPS URLs (https://host/path)
+    if (remoteOriginUrl.startsWith('git@')) {
+      // SSH format: git@github.com:user/repo.git
+      const match = remoteOriginUrl.match(/^git@([^:]+):(.+)$/);
+      if (match !== null && match[1] !== undefined && match[2] !== undefined) {
+        hostname = match[1];
+        path = match[2];
+      } else {
+        // Fallback for malformed SSH URLs
+        hostname = 'unknown';
+        path = remoteOriginUrl;
+      }
+    } else {
+      // HTTPS/HTTP format
+      const url = new URL(remoteOriginUrl);
+      hostname = url.hostname;
+      path = url.pathname.startsWith('/')
+        ? url.pathname.slice(1)
+        : url.pathname;
+    }
+
+    const HostIcon = hostname.includes('github.com')
       ? GithubIcon
-      : url.hostname.includes('gitlab.com')
+      : hostname.includes('gitlab.com')
         ? GitlabIcon
         : FolderGit2Icon;
 
-    let path = url.pathname.startsWith('/')
-      ? url.pathname.slice(1)
-      : url.pathname;
+    // Remove .git extension if present
     path = path.endsWith('.git') ? path.slice(0, -4) : path;
 
     return (

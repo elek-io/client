@@ -41,8 +41,8 @@ export default defineConfig({
       tanstackRouter({
         target: 'react',
         autoCodeSplitting: true,
-        routesDirectory: '@renderer/routes',
-        generatedRouteTree: '@renderer/routeTree.gen.ts',
+        routesDirectory: './src/renderer/routes',
+        generatedRouteTree: './src/renderer/routeTree.gen.ts',
       }),
       viteReact(),
       tailwindcss(),

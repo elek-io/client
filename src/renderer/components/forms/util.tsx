@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   forwardRef,
-  useId,
   useImperativeHandle,
   type ReactElement,
   type Ref,
@@ -13,14 +12,8 @@ import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value
 import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
 import { ToggleFieldDefinitionForm } from '@renderer/components/forms/toggle-value-definition-form';
-import { translatableDefaultNull } from '@renderer/components/pages/util';
 import { FormFieldFromDefinition } from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
-import { Label } from '@renderer/components/ui/label';
-import { Slider } from '@renderer/components/ui/slider';
-import { Switch } from '@renderer/components/ui/switch';
-import { Textarea } from '@renderer/components/ui/textarea';
-import { fieldWidth } from '@renderer/lib/utils';
+import { translatableDefaultNull } from '@renderer/lib/utils';
 
 import {
   dateFieldDefinitionSchema,
@@ -40,7 +33,6 @@ import {
   type TextareaFieldDefinition,
   type TextFieldDefinition,
   type ToggleFieldDefinition,
-  type TranslatableString,
 } from '@elek-io/core';
 
 export interface FieldDefinitionFormProps {
@@ -51,7 +43,6 @@ export interface FieldDefinitionFormProps {
   setIsAddFieldDefinitionSheetOpen: React.Dispatch<
     React.SetStateAction<boolean>
   >;
-  translateContent: (key: string, record: TranslatableString) => string;
 }
 
 export interface FieldDefinitionFormRef {
@@ -220,7 +211,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={numberFieldDefinitionFormState}
                 fieldDefinition={numberFieldDefinitionFormState.watch()}
                 name="exampleFields.number.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -230,7 +220,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={rangeFieldDefinitionFormState}
                 fieldDefinition={rangeFieldDefinitionFormState.watch()}
                 name="exampleFields.range.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -240,7 +229,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={textFieldDefinitionFormState}
                 fieldDefinition={textFieldDefinitionFormState.watch()}
                 name="exampleFields.text.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -250,7 +238,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={textareaFieldDefinitionFormState}
                 fieldDefinition={textareaFieldDefinitionFormState.watch()}
                 name="exampleFields.textarea.content"
-                translateContent={props.translateContent}
                 supportedLanguages={props.supportedLanguages}
               />
             );
@@ -260,7 +247,6 @@ export const FieldDefinitionForm = forwardRef(
                 form={toggleFieldDefinitionFormState}
                 fieldDefinition={toggleFieldDefinitionFormState.watch()}
                 name="exampleFields.toggle.content"
-                translateContent={props.translateContent}
               />
             );
           case 'asset':
@@ -339,161 +325,3 @@ export const FieldDefinitionForm = forwardRef(
   }
 );
 FieldDefinitionForm.displayName = 'FieldDefinitionForm';
-
-interface DisabledInputFromDefinitionProps {
-  id: string;
-  'aria-describedby': string;
-  fieldDefinition: FieldDefinition;
-  value?: string | number | boolean | undefined;
-}
-
-function DisabledInputFromDefinition({
-  id,
-  'aria-describedby': ariaDescribedBy,
-  fieldDefinition,
-  value,
-}: DisabledInputFromDefinitionProps): ReactElement {
-  switch (fieldDefinition.fieldType) {
-    case 'text':
-      if (typeof value !== 'string') {
-        throw new Error(
-          `Expected value to be a string, but got "${typeof value}"`
-        );
-      }
-      return (
-        <Input
-          id={id}
-          aria-describedby={ariaDescribedBy}
-          type="text"
-          value={value}
-          disabled
-        />
-      );
-    case 'textarea':
-      if (typeof value !== 'string') {
-        throw new Error(
-          `Expected value to be a string, but got "${typeof value}"`
-        );
-      }
-      return (
-        <Textarea
-          id={id}
-          aria-describedby={ariaDescribedBy}
-          value={value}
-          disabled
-        />
-      );
-    case 'number':
-      if (typeof value !== 'number') {
-        throw new Error(
-          `Expected value to be a number, but got "${typeof value}"`
-        );
-      }
-      return (
-        <Input
-          id={id}
-          aria-describedby={ariaDescribedBy}
-          type="number"
-          value={value}
-          disabled
-        />
-      );
-    case 'range':
-      if (typeof value !== 'number') {
-        throw new Error(
-          `Expected value to be a number, but got "${typeof value}"`
-        );
-      }
-      return (
-        <Slider
-          id={id}
-          aria-describedby={ariaDescribedBy}
-          value={value ? [value] : []}
-          step={1} // @todo Core needs to support this too
-          disabled
-        />
-      );
-    case 'toggle':
-      if (typeof value !== 'boolean') {
-        throw new Error(
-          `Expected value to be a boolean, but got "${typeof value}"`
-        );
-      }
-      return (
-        <Switch
-          id={id}
-          aria-describedby={ariaDescribedBy}
-          checked={value}
-          disabled
-        />
-      );
-    case 'asset':
-    case 'entry':
-    case 'datetime':
-    case 'date':
-    case 'email':
-    case 'url':
-    case 'ipv4':
-    case 'time':
-    case 'telephone':
-    default:
-      throw new Error(
-        `Unsupported Entry definition FieldType "${fieldDefinition.fieldType}"`
-      );
-  }
-}
-
-interface DisabledFieldFromDefinitionProps {
-  fieldDefinition: FieldDefinition;
-  translateContent: (key: string, record: TranslatableString) => string;
-  value: string | number | boolean;
-}
-
-/**
- * Used to render a disabled Field based on a FieldDefinition to view it's value
- *
- * @note Does not connect to a form context.
- * If you need a usable form field, use FormFieldFromDefinition instead.
- */
-export function DisabledFieldFromDefinition({
-  fieldDefinition,
-  translateContent,
-  value,
-}: DisabledFieldFromDefinitionProps): ReactElement {
-  const inputId = useId();
-  const descriptionId = useId();
-
-  return (
-    <div
-      className={`col-span-12 grid gap-2 ${fieldWidth(fieldDefinition.inputWidth)}`}
-    >
-      <Label
-        htmlFor={inputId}
-        isRequired={
-          'isRequired' in fieldDefinition ? fieldDefinition.isRequired : false
-        }
-      >
-        {translateContent('fieldDefinition.label', fieldDefinition.label)}
-      </Label>
-
-      <DisabledInputFromDefinition
-        id={inputId}
-        aria-describedby={descriptionId}
-        fieldDefinition={fieldDefinition}
-        value={value}
-      />
-
-      {fieldDefinition.description ? (
-        <p
-          id={descriptionId}
-          className="text-sm text-zinc-500 dark:text-zinc-400"
-        >
-          {translateContent(
-            'fieldDefinition.description',
-            fieldDefinition.description
-          )}
-        </p>
-      ) : null}
-    </div>
-  );
-}

@@ -19,13 +19,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@renderer/components/ui/sidebar';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
-  component: ProjectCollectionsLayout,
+  component: ProjectSettingsLayout,
 });
 
-function ProjectCollectionsLayout(): ReactElement {
-  const context = Route.useRouteContext();
+function ProjectSettingsLayout(): ReactElement {
+  const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'Settings');
   const settingsNavigation: {
     name: string;
     to: ToPathOption;
@@ -59,7 +61,7 @@ function ProjectCollectionsLayout(): ReactElement {
                         <Link
                           to={item.to}
                           params={{
-                            projectId: context.project.id,
+                            projectId,
                           }}
                           activeProps={{ 'data-active': true }}
                         >

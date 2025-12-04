@@ -195,7 +195,7 @@ class Main {
       // Load the static index.html directly
       await window.loadFile(Path.join(__dirname, `../renderer/index.html`));
       // Uncomment to debug a production build
-      // window.webContents.openDevTools();
+      window.webContents.openDevTools();
     } else {
       // Client is in development
       if (this.rendererUrl === undefined) {

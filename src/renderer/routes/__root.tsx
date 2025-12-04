@@ -1,3 +1,4 @@
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   type ErrorComponentProps,
   Outlet,
@@ -13,8 +14,11 @@ import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/sonner';
+import { UserHeader } from '@renderer/components/user-header';
+import { BreadcrumbProvider } from '@renderer/providers/BreadcrumbProvider';
+import { UserProvider } from '@renderer/providers/UserProvider';
 
-export interface RouterContext extends ContextBridgeApi {}
+export interface RouterContext {}
 
 // Use the routerContext to create your root route
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -25,9 +29,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
   const router = useRouter();
-  const { electron, core } = Route.useRouteContext();
 
-  void core.logger.error({
+  void window.ipc.core.logger.error({
     source: 'desktop',
     message: `Uncaught route error: ${error.message}`,
     meta: { error: { message: error.message, stack: error.stack } },
@@ -64,7 +67,7 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
 
   return (
     <>
-      <AppHeader electron={electron} />
+      <AppHeader />
       <Page title="Error" description={<Description />} actions={<Actions />}>
         <div className="p-6">
           <p>{error.message}</p>
@@ -82,7 +85,6 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
 
 function NotFoundComponent(): ReactElement {
   const router = useRouter();
-  const { electron } = Route.useRouteContext();
 
   function Description(): ReactElement {
     return <>You&apos;ve tried accessing a route that could not be found.</>;
@@ -108,7 +110,7 @@ function NotFoundComponent(): ReactElement {
 
   return (
     <>
-      <AppHeader electron={electron} />
+      <AppHeader />
       <Page
         title="Not Found"
         description={<Description />}
@@ -125,14 +127,16 @@ function NotFoundComponent(): ReactElement {
 }
 
 function RootComponent(): ReactElement {
-  const { electron } = Route.useRouteContext();
-
   return (
-    <>
-      <AppHeader electron={electron} />
-      <Outlet />
-      <Toaster />
-      <TanStackRouterDevtools position="bottom-right" />
-    </>
+    <UserProvider>
+      <BreadcrumbProvider>
+        <AppHeader />
+        <UserHeader />
+        <Outlet />
+        <Toaster />
+        <TanStackRouterDevtools position="bottom-right" initialIsOpen={false} />
+        <ReactQueryDevtools position="bottom" initialIsOpen={false} />
+      </BreadcrumbProvider>
+    </UserProvider>
   );
 }

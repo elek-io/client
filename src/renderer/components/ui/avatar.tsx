@@ -30,6 +30,24 @@ function Avatar({
   );
 }
 
+function AvatarSkeleton({
+  className,
+  ...props
+}: React.ComponentProps<typeof AvatarPrimitive.Root>): React.JSX.Element {
+  return (
+    <AvatarPrimitive.Root
+      data-slot="avatar"
+      className={cn(
+        'relative flex size-8 shrink-0 overflow-hidden rounded-full',
+        className
+      )}
+      {...props}
+    >
+      <AvatarFallback />
+    </AvatarPrimitive.Root>
+  );
+}
+
 function AvatarImage({
   className,
   ...props
@@ -59,4 +77,4 @@ function AvatarFallback({
   );
 }
 
-export { Avatar, AvatarImage, AvatarFallback };
+export { Avatar, AvatarImage, AvatarFallback, AvatarSkeleton };

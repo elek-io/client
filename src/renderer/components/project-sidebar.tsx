@@ -1,4 +1,4 @@
-import type { UseQueryResult } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Link, type ToPathOption } from '@tanstack/react-router';
 import {
   Layers,
@@ -14,7 +14,10 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { ProjectSwitcher } from '@renderer/components/project-switcher';
+import {
+  ProjectSwitcher,
+  ProjectSwitcherSkeleton,
+} from '@renderer/components/project-switcher';
 import { Button } from '@renderer/components/ui/button';
 import {
   ButtonGroup,
@@ -32,12 +35,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@renderer/components/ui/sidebar';
-
-import type { GitCommit, Project } from '@elek-io/core';
+import { useProject } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
 const projectNavigation: {
   name: string;
-  to: ToPathOption;
+  to: ToPathOption; // @todo fix type
   icon: LucideIcon;
 }[] = [
   {
@@ -67,20 +71,44 @@ const projectNavigation: {
   },
 ];
 
-export function ProjectSidebar({
-  project,
-  projectChangesQuery,
-  isSynchronizing,
-  onSynchronize,
-}: {
-  project: Project;
-  projectChangesQuery: UseQueryResult<{
-    ahead: GitCommit[];
-    behind: GitCommit[];
-  }>;
-  isSynchronizing: boolean;
-  onSynchronize: () => Promise<void>;
-}): React.JSX.Element {
+function ProjectNavigation(): React.JSX.Element {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {projectNavigation.map((item) => (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton asChild>
+                <Link to={item.to} activeProps={{ 'data-active': true }}>
+                  <item.icon />
+                  <span>{item.name}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+
+export function ProjectSidebar(): React.JSX.Element {
+  const {
+    projectQuery: { data: project, isPending: isReadingProject },
+  } = useProject();
+  const {
+    data: projectChanges,
+    isFetching: isFetchingProjectChanges,
+    refetch: refetchProjectChanges,
+  } = useQueryNoError(queryOptions.projects.getChanges(project));
+  const { mutateAsync: synchronizeProject, isPending: isSynchronizingProject } =
+    useMutation(queryOptions.projects.synchronize);
+
+  if (isReadingProject) {
+    return <ProjectSidebarSkeleton />;
+  }
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -92,14 +120,16 @@ export function ProjectSidebar({
             <ButtonGroup className="w-full">
               <Button
                 className="flex-1"
-                onClick={onSynchronize}
-                isLoading={isSynchronizing}
+                onClick={async () =>
+                  await synchronizeProject({ id: project.id })
+                }
+                isLoading={isSynchronizingProject}
                 disabled={
-                  projectChangesQuery.isFetching ||
-                  isSynchronizing ||
-                  projectChangesQuery.data === undefined ||
-                  (projectChangesQuery.data.ahead.length === 0 &&
-                    projectChangesQuery.data.behind.length === 0)
+                  isFetchingProjectChanges ||
+                  isSynchronizingProject ||
+                  projectChanges === undefined ||
+                  (projectChanges.ahead.length === 0 &&
+                    projectChanges.behind.length === 0)
                 }
                 Icon={ArrowDownUp}
               >
@@ -107,42 +137,40 @@ export function ProjectSidebar({
               </Button>
               <ButtonGroupSeparator />
               <Button
-                onClick={async () => await projectChangesQuery.refetch()}
-                disabled={projectChangesQuery.isFetching || isSynchronizing}
+                onClick={async () => await refetchProjectChanges()}
+                disabled={isFetchingProjectChanges || isSynchronizingProject}
                 Icon={RefreshCw}
               />
             </ButtonGroup>
             <p className="mt-2 text-center text-xs font-medium text-zinc-400">
-              {projectChangesQuery.isFetching ? (
+              {isFetchingProjectChanges ? (
                 'Loading'
               ) : (
                 <span className="flex items-center justify-center">
                   <DownloadCloud className="mr-1 h-4 w-4" />
-                  {projectChangesQuery.data?.behind.length}
+                  {projectChanges?.behind.length}
                   <UploadCloud className="mr-1 ml-4 h-4 w-4" />
-                  {projectChangesQuery.data?.ahead.length}
+                  {projectChanges?.ahead.length}
                 </span>
               )}
             </p>
           </SidebarGroup>
         ) : null}
-        <SidebarGroup>
-          <SidebarGroupLabel>Project</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {projectNavigation.map((item) => (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.to} activeProps={{ 'data-active': true }}>
-                      <item.icon />
-                      <span>{item.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <ProjectNavigation />
+      </SidebarContent>
+      <SidebarFooter />
+    </Sidebar>
+  );
+}
+
+export function ProjectSidebarSkeleton(): React.JSX.Element {
+  return (
+    <Sidebar>
+      <SidebarHeader>
+        <ProjectSwitcherSkeleton />
+      </SidebarHeader>
+      <SidebarContent>
+        <ProjectNavigation />
       </SidebarContent>
       <SidebarFooter />
     </Sidebar>
