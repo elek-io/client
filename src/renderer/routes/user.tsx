@@ -3,12 +3,12 @@ import type { ReactElement } from 'react';
 
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 
-export const Route = createFileRoute('/projects')({
-  component: ProjectsLayout,
+export const Route = createFileRoute('/user')({
+  component: UserLayout,
 });
 
-function ProjectsLayout(): ReactElement {
-  useBreadcrumb(Route, 'Projects');
+function UserLayout(): ReactElement {
+  useBreadcrumb(Route, 'User');
 
   return <Outlet />;
 }

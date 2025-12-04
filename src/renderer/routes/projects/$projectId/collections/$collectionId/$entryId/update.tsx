@@ -8,6 +8,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { EntryForm } from '@renderer/components/forms/entry-form';
 import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
@@ -26,6 +27,7 @@ export const Route = createFileRoute(
 function UpdateEntryPage(): ReactElement {
   const router = useRouter();
   const { projectId, collectionId, entryId } = Route.useParams();
+  useBreadcrumb(Route, 'Update');
   const {
     projectQuery: { data: project, isPending: isReadingProject },
     translateContent,

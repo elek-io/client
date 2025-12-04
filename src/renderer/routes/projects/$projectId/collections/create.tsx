@@ -8,6 +8,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { CollectionForm } from '@renderer/components/forms/collection-form';
 import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { translatableDefaultNull } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
@@ -26,6 +27,7 @@ export const Route = createFileRoute('/projects/$projectId/collections/create')(
 function ProjectCollectionCreate(): ReactElement {
   const router = useRouter();
   const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'Create');
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();

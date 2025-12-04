@@ -15,6 +15,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@renderer/components/ui/empty';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
@@ -26,6 +27,7 @@ export const Route = createFileRoute('/projects/$projectId/assets/')({
 
 function ProjectAssetsPage(): React.JSX.Element {
   const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'Assets');
   const { data: assets, isPending: isListingAssets } = useQueryNoError(
     queryOptions.assets.list({
       projectId: projectId,

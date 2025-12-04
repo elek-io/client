@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from '@renderer/components/ui/form';
 import { Input } from '@renderer/components/ui/input';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { queryOptions } from '@renderer/queries';
 
@@ -34,6 +35,7 @@ export const Route = createFileRoute(
 
 function ProjectSettingsVersionControlPage(): ReactElement {
   const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'Version Control');
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();

@@ -1,4 +1,4 @@
-import { Link, useRouter, useRouterState } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Fragment } from 'react/jsx-runtime';
 
@@ -15,59 +15,15 @@ import {
   UserDropdown,
   UserDropdownSkeleton,
 } from '@renderer/components/user-dropdown';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useUser } from '@renderer/hooks/useUser';
 
 export function UserHeader(): React.JSX.Element {
   const router = useRouter();
-  const routerState = useRouterState();
   const {
     userQuery: { data: user, isPending: isGettingUser },
   } = useUser();
-  const breadcrumbs = routerState.location.pathname
-    .split('/')
-    .filter((value) => value) // Filter out empty values for beginning or ending slashes
-    .map((part, index, array) => {
-      const path = array.slice(0, index + 1).join('/');
-
-      // @todo add translation for static breadcrumb parts
-      switch (part) {
-        case 'projects':
-          part = 'Projects';
-          break;
-        case 'dashboard':
-          part = 'Dashboard';
-          break;
-        case 'assets':
-          part = 'Assets';
-          break;
-        case 'collections':
-          part = 'Collections';
-          break;
-        case 'settings':
-          part = 'Settings';
-          break;
-        case 'create':
-          part = 'Create';
-          break;
-        case 'update':
-          part = 'Update';
-          break;
-        case 'general':
-          part = 'General';
-          break;
-        case 'en':
-          part = 'English'; // @todo mapping between locale ID and localized name
-          break;
-        default:
-          break;
-      }
-
-      return {
-        part,
-        path: `/${path}`,
-        full: routerState.location.pathname,
-      };
-    });
+  const { breadcrumbs } = useBreadcrumb();
 
   return (
     <div className="flex w-full border-b bg-sidebar">
@@ -99,7 +55,7 @@ export function UserHeader(): React.JSX.Element {
                 <Fragment key={crumb.path}>
                   <BreadcrumbItem>
                     <BreadcrumbLink asChild>
-                      <Link to={crumb.path}>{crumb.part}</Link>
+                      <Link to={crumb.path}>{crumb.label}</Link>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   {array.length !== index + 1 && <BreadcrumbSeparator />}

@@ -19,6 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@renderer/components/ui/sidebar';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 
 export const Route = createFileRoute('/projects/$projectId/settings')({
   component: ProjectSettingsLayout,
@@ -26,6 +27,7 @@ export const Route = createFileRoute('/projects/$projectId/settings')({
 
 function ProjectSettingsLayout(): ReactElement {
   const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'Settings');
   const settingsNavigation: {
     name: string;
     to: ToPathOption;

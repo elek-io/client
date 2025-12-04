@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { queryOptions } from '@renderer/queries';
 
@@ -35,6 +36,7 @@ export const Route = createFileRoute('/projects/$projectId/settings/general')({
 function ProjectSettingsGeneralPage(): ReactElement {
   const router = useRouter();
   const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'General');
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();

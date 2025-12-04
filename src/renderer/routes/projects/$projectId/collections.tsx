@@ -5,6 +5,7 @@ import {
   CollectionsSidebar,
   CollectionsSidebarSkeleton,
 } from '@renderer/components/collections-sidebar';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/projects/$projectId/collections')({
 
 function ProjectCollectionsLayout(): ReactElement {
   const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'Collections');
   const { data: collections, isPending: isListingCollections } =
     useQueryNoError(
       queryOptions.collections.list({

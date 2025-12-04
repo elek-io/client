@@ -7,6 +7,7 @@ import {
 import { Page } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
@@ -15,9 +16,11 @@ export const Route = createFileRoute('/projects/$projectId/dashboard')({
 
 function ProjectDashboardPage(): React.JSX.Element {
   const router = useRouter();
+  const { projectId } = Route.useParams();
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
+  useBreadcrumb(Route, 'Dashboard');
 
   function Description(): React.JSX.Element {
     return <>The Dashboard gives you an overview of your project.</>;

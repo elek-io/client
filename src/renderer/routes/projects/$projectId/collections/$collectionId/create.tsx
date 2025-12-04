@@ -8,6 +8,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { EntryForm } from '@renderer/components/forms/entry-form';
 import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import {
@@ -40,6 +41,7 @@ function CreateEntryPage(): React.JSX.Element {
       id: collectionId,
     })
   );
+  useBreadcrumb(Route, isReadingCollection ? undefined : 'Create');
   const { mutateAsync: createEntry, isPending: isCreatingEntry } = useMutation(
     queryOptions.entries.create
   );

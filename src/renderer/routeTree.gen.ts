@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UserRouteImport } from './routes/user'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UserIndexRouteImport } from './routes/user/index'
@@ -36,6 +37,11 @@ import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdRouteImport } f
 import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdIndexRouteImport } from './routes/projects/$projectId/collections/$collectionId/$entryId/index'
 import { Route as ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRouteImport } from './routes/projects/$projectId/collections/$collectionId/$entryId/update'
 
+const UserRoute = UserRouteImport.update({
+  id: '/user',
+  path: '/user',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectsRoute = ProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
@@ -47,9 +53,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const UserIndexRoute = UserIndexRouteImport.update({
-  id: '/user/',
-  path: '/user/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => UserRoute,
 } as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   id: '/',
@@ -57,9 +63,9 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   getParentRoute: () => ProjectsRoute,
 } as any)
 const UserProfileRoute = UserProfileRouteImport.update({
-  id: '/user/profile',
-  path: '/user/profile',
-  getParentRoute: () => rootRouteImport,
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => UserRoute,
 } as any)
 const ProjectsCreateRoute = ProjectsCreateRouteImport.update({
   id: '/create',
@@ -188,11 +194,12 @@ const ProjectsProjectIdCollectionsCollectionIdEntryIdUpdateRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRouteWithChildren
+  '/user': typeof UserRouteWithChildren
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/create': typeof ProjectsCreateRoute
   '/user/profile': typeof UserProfileRoute
   '/projects/': typeof ProjectsIndexRoute
-  '/user': typeof UserIndexRoute
+  '/user/': typeof UserIndexRoute
   '/projects/$projectId/collections': typeof ProjectsProjectIdCollectionsRouteWithChildren
   '/projects/$projectId/dashboard': typeof ProjectsProjectIdDashboardRoute
   '/projects/$projectId/history': typeof ProjectsProjectIdHistoryRouteWithChildren
@@ -239,6 +246,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/projects': typeof ProjectsRouteWithChildren
+  '/user': typeof UserRouteWithChildren
   '/projects/$projectId': typeof ProjectsProjectIdRouteWithChildren
   '/projects/create': typeof ProjectsCreateRoute
   '/user/profile': typeof UserProfileRoute
@@ -269,11 +277,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/projects'
+    | '/user'
     | '/projects/$projectId'
     | '/projects/create'
     | '/user/profile'
     | '/projects/'
-    | '/user'
+    | '/user/'
     | '/projects/$projectId/collections'
     | '/projects/$projectId/dashboard'
     | '/projects/$projectId/history'
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/projects'
+    | '/user'
     | '/projects/$projectId'
     | '/projects/create'
     | '/user/profile'
@@ -348,12 +358,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProjectsRoute: typeof ProjectsRouteWithChildren
-  UserProfileRoute: typeof UserProfileRoute
-  UserIndexRoute: typeof UserIndexRoute
+  UserRoute: typeof UserRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/user': {
+      id: '/user'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof UserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects': {
       id: '/projects'
       path: '/projects'
@@ -370,10 +386,10 @@ declare module '@tanstack/react-router' {
     }
     '/user/': {
       id: '/user/'
-      path: '/user'
-      fullPath: '/user'
+      path: '/'
+      fullPath: '/user/'
       preLoaderRoute: typeof UserIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof UserRoute
     }
     '/projects/': {
       id: '/projects/'
@@ -384,10 +400,10 @@ declare module '@tanstack/react-router' {
     }
     '/user/profile': {
       id: '/user/profile'
-      path: '/user/profile'
+      path: '/profile'
       fullPath: '/user/profile'
       preLoaderRoute: typeof UserProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof UserRoute
     }
     '/projects/create': {
       id: '/projects/create'
@@ -675,11 +691,22 @@ const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
   ProjectsRouteChildren,
 )
 
+interface UserRouteChildren {
+  UserProfileRoute: typeof UserProfileRoute
+  UserIndexRoute: typeof UserIndexRoute
+}
+
+const UserRouteChildren: UserRouteChildren = {
+  UserProfileRoute: UserProfileRoute,
+  UserIndexRoute: UserIndexRoute,
+}
+
+const UserRouteWithChildren = UserRoute._addFileChildren(UserRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProjectsRoute: ProjectsRouteWithChildren,
-  UserProfileRoute: UserProfileRoute,
-  UserIndexRoute: UserIndexRoute,
+  UserRoute: UserRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

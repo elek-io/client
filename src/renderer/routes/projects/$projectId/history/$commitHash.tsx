@@ -9,6 +9,7 @@ import { EntryDiff } from '@renderer/components/entry-diff';
 import { Page } from '@renderer/components/page';
 import { ProjectDiff } from '@renderer/components/project-diff';
 import { Badge } from '@renderer/components/ui/badge';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 
 import { type GitCommit } from '@elek-io/core';
@@ -20,11 +21,18 @@ export const Route = createFileRoute(
 });
 
 function ProjectHistoryCommitPage(): ReactElement {
-  const { commitHash } = Route.useParams();
+  const { projectId, commitHash } = Route.useParams();
   const {
     projectQuery: { data: project, isPending: isReadingProject },
+    formatDatetime,
   } = useProject();
   const [commit, setCommit] = useState<GitCommit | null>(null);
+  useBreadcrumb(
+    Route,
+    commit
+      ? `${commit.message.method} ${commit.message.reference.objectType} (${formatDatetime({ datetime: commit.datetime }).relative})`
+      : undefined
+  );
 
   useEffect(() => {
     if (isReadingProject === false) {

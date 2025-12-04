@@ -15,6 +15,7 @@ import { Button } from '@renderer/components/ui/button';
 import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area';
 import { Toaster } from '@renderer/components/ui/sonner';
 import { UserHeader } from '@renderer/components/user-header';
+import { BreadcrumbProvider } from '@renderer/providers/BreadcrumbProvider';
 import { UserProvider } from '@renderer/providers/UserProvider';
 
 export interface RouterContext {}
@@ -128,12 +129,14 @@ function NotFoundComponent(): ReactElement {
 function RootComponent(): ReactElement {
   return (
     <UserProvider>
-      <AppHeader />
-      <UserHeader />
-      <Outlet />
-      <Toaster />
-      <TanStackRouterDevtools position="bottom-right" initialIsOpen={false} />
-      <ReactQueryDevtools position="bottom" initialIsOpen={false} />
+      <BreadcrumbProvider>
+        <AppHeader />
+        <UserHeader />
+        <Outlet />
+        <Toaster />
+        <TanStackRouterDevtools position="bottom-right" initialIsOpen={false} />
+        <ReactQueryDevtools position="bottom" initialIsOpen={false} />
+      </BreadcrumbProvider>
     </UserProvider>
   );
 }

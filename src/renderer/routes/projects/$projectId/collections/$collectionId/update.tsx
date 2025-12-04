@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
@@ -41,12 +42,13 @@ function ProjectCollectionUpdate(): ReactElement {
     projectQuery: { data: project, isPending: isReadingProject },
     translateContent,
   } = useProject();
-  const { data: collection } = useQueryNoError(
+  const { data: collection, isPending: isReadingCollection } = useQueryNoError(
     queryOptions.collections.read({
       projectId: projectId,
       id: collectionId,
     })
   );
+  useBreadcrumb(Route, isReadingCollection ? undefined : 'Configure');
   const { mutateAsync: updateCollection, isPending: isUpdatingCollection } =
     useMutation(queryOptions.collections.update);
   const { mutateAsync: deleteCollection } = useMutation(
@@ -61,16 +63,16 @@ function ProjectCollectionUpdate(): ReactElement {
 
   // Reset form with Collection data when it loads
   useEffect(() => {
-    if (collection) {
+    if (isReadingCollection === false) {
       updateCollectionForm.reset({
         ...collection,
         projectId,
       });
     }
-  }, [projectId, collection, updateCollectionForm]);
+  }, [projectId, isReadingCollection, collection, updateCollectionForm]);
 
   const title = `Configure ${
-    collection
+    isReadingCollection === false
       ? translateContent({
           key: 'collection.name.plural',
           record: collection.name.plural,

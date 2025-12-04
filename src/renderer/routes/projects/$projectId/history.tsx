@@ -5,6 +5,7 @@ import {
   HistorySidebar,
   HistorySidebarSkeleton,
 } from '@renderer/components/history-sidebar';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 
 export const Route = createFileRoute('/projects/$projectId/history')({
@@ -12,6 +13,8 @@ export const Route = createFileRoute('/projects/$projectId/history')({
 });
 
 function ProjectHistoryLayout(): ReactElement {
+  const { projectId } = Route.useParams();
+  useBreadcrumb(Route, 'History');
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();

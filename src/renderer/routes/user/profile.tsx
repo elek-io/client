@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@renderer/components/ui/select';
 import { Switch } from '@renderer/components/ui/switch';
+import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { useUser } from '@renderer/hooks/useUser';
 import { queryOptions } from '@renderer/queries';
@@ -45,6 +46,7 @@ export const Route = createFileRoute('/user/profile')({
 
 function UserProfilePage(): ReactElement {
   const router = useRouter();
+  useBreadcrumb(Route, 'Profile');
   const {
     userQuery: { data: user, isPending: isGettingUser },
   } = useUser();
