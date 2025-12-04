@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@sentry/cli'
+  - '@tailwindcss/oxide'
+  - dugite
+  - electron
+  - electron-winstaller
+  - esbuild

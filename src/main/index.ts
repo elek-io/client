@@ -1,9 +1,11 @@
-import ElekIoCore from '@elek-io/core';
-import * as Sentry from '@sentry/electron/main';
+import {
+  init as sentryInit,
+  captureException as sentryCaptureException,
+} from '@sentry/electron/main';
 import {
   app,
   BrowserWindow,
-  BrowserWindowConstructorOptions,
+  type BrowserWindowConstructorOptions,
   dialog,
   ipcMain,
   net,
@@ -12,7 +14,11 @@ import {
   shell,
 } from 'electron';
 import Path from 'path';
+
+import ElekIoCore from '@elek-io/core';
+
 import icon from '../../resources/icon.png?asset';
+
 // import { updateElectronApp } from 'update-electron-app';
 
 export class SecurityError extends Error {
@@ -23,13 +29,14 @@ export class SecurityError extends Error {
   }
 }
 
-Sentry.init({
+sentryInit({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
-  enableRendererProfiling: true,
+  enableRendererProfiling: true, // @see https://docs.sentry.io/platforms/javascript/guides/electron/profiling/
 });
 
 class Main {
   public readonly customFileProtocol: string = 'elek-io-local-file';
+  private readonly rendererUrl = process.env['ELECTRON_RENDERER_URL'];
   private allowedHostnamesToLoadInternal: string[] = [];
   private allowedHostnamesToLoadExternal: string[] = [
     this.customFileProtocol,
@@ -42,10 +49,8 @@ class Main {
 
   constructor() {
     // Allow the vite dev server to do HMR in development
-    if (app.isPackaged === false && process.env['ELECTRON_RENDERER_URL']) {
-      this.allowedHostnamesToLoadInternal.push(
-        process.env['ELECTRON_RENDERER_URL']
-      );
+    if (app.isPackaged === false && this.rendererUrl !== undefined) {
+      this.allowedHostnamesToLoadInternal.push(this.rendererUrl);
     }
 
     // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -54,8 +59,12 @@ class Main {
     // }
 
     // Register app events
-    app.on('ready', () => this.onAppReady());
-    app.on('activate', () => this.onAppActivate());
+    app.on('ready', () => {
+      void this.onAppReady();
+    });
+    app.on('activate', () => {
+      void this.onAppActivate();
+    });
     app.on('window-all-closed', () => this.onAppAllWindowsClosed());
     app.on('web-contents-created', (event, webContents) =>
       this.onAppWebContentsCreated(event, webContents)
@@ -132,14 +141,17 @@ class Main {
         false
       ) {
         const errorMessage = `Prevented navigation to untrusted, external URL "${parsedUrl.toString()}" from "${webContents.getURL()}"`;
-        Sentry.captureException(new SecurityError(errorMessage));
-        this.core?.logger.error(errorMessage);
+        sentryCaptureException(new SecurityError(errorMessage));
+        this.core?.logger.error({
+          source: 'desktop',
+          message: errorMessage,
+        });
 
         return { action: 'deny' };
       }
 
       setImmediate(() => {
-        shell.openExternal(url);
+        void shell.openExternal(url);
       });
       return { action: 'deny' };
     });
@@ -181,17 +193,19 @@ class Main {
     if (app.isPackaged) {
       // Client is in production
       // Load the static index.html directly
-      window.loadFile(Path.join(__dirname, `../renderer/index.html`));
+      await window.loadFile(Path.join(__dirname, `../renderer/index.html`));
       // Uncomment to debug a production build
-      // window.webContents.openDevTools();
+      window.webContents.openDevTools();
     } else {
       // Client is in development
-      const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
-      if (!rendererUrl) {
+      if (this.rendererUrl === undefined) {
         throw new Error(`"process.env['ELECTRON_RENDERER_URL']" is empty`);
       }
-      console.log('Loading frontend in development by URL:', rendererUrl);
-      window.loadURL(rendererUrl);
+      this.core?.logger.info({
+        source: 'desktop',
+        message: `Loading frontend in development by URL: ${this.rendererUrl}`,
+      });
+      await window.loadURL(this.rendererUrl);
       window.webContents.openDevTools();
     }
 
@@ -244,8 +258,11 @@ class Main {
     ) {
       event.preventDefault();
       const errorMessage = `Prevented navigation to untrusted, internal URL "${parsedUrl.toString()}" from "${window.webContents.getURL()}"`;
-      Sentry.captureException(new SecurityError(errorMessage));
-      this.core?.logger.error(errorMessage);
+      sentryCaptureException(new SecurityError(errorMessage));
+      this.core?.logger.error({
+        source: 'desktop',
+        message: errorMessage,
+      });
     }
   }
 
@@ -260,7 +277,7 @@ class Main {
       );
 
       if (!this.core) {
-        Sentry.captureException(
+        sentryCaptureException(
           new Error(
             'Trying to handle custom file protocol but Core is not initialized.'
           )
@@ -272,7 +289,7 @@ class Main {
         absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false &&
         absoluteFilePath.startsWith(this.core.util.pathTo.tmp) === false
       ) {
-        Sentry.captureException(
+        sentryCaptureException(
           new SecurityError(
             `Tried to load file "${absoluteFilePath}" outside of Projects directory.`
           )
@@ -304,7 +321,6 @@ class Main {
       'core:logger:info': core.logger.info.bind(core.logger),
       'core:logger:warn': core.logger.warn.bind(core.logger),
       'core:logger:error': core.logger.error.bind(core.logger),
-      'core:logger:read': core.logger.read.bind(core.logger),
       'core:user:get': core.user.get.bind(core.user),
       'core:user:set': core.user.set.bind(core.user),
       'core:projects:count': core.projects.count.bind(core.projects),

@@ -1,15 +1,209 @@
-# Dynamic form field generation
-Handling predefined forms that stay the same is straight forward. We simply use the correct input component and attach it to the forms field. But when it comes to user defined forms it gets tricky. We want to be able to define a form field in a way that it can be rendered dynamically. This means we need to define what type of input it is, what label and description it has, if it is required and so on. This is done using field definitions. A field definition is simply a JSON object that contains all the necessary information to render a form field.
+# Dynamic Form Field Generation
 
-When a user creates a Collection he can define those field definitions. When the form is rendered we loop over the field definitions and render the corresponding input component based on what is defined in the field definition. This way we can create forms dynamically based on user defined field definitions.
+## Overview
 
-## Component overview
-The following components are used:
-- The [`Input`](/src/renderer/src/components/ui/input.tsx), [`Textarea`](/src/renderer/src/components/ui/textarea.tsx), [`Switch`](/src/renderer/src/components/ui/switch.tsx), [`Slider`](/src/renderer/src/components/ui/slider.tsx) and [`Select`](/src/renderer/src/components/ui/select.tsx) are basic HTML inputs with added styling and [Radix UI primitives](https://www.radix-ui.com/primitives) for accessibility.
-- The components [`FormInputField`, `FormTextareaField`, `FormRangeField` and others](/src/renderer/src/components/ui/form.tsx) wrap the corresponding basic HTML component and transform the value the user put in (e.g. in case of an Input of type "number" to a number) before handing it back to the attached forms field. This is done because the inputs value internally is always a string. But this does become a problem when the form requires the type to be a number. It also returns null instead of an empty string if the user does not put in a value since a form can allow for strings with a minimum lenght and null but an empty string should fail the validation.
-- The [`FormComponentFromFieldDefinition`](/src/renderer/src/components/ui/form.tsx) simply takes a fieldDefinition and renders a component based on it.
-- The [`FormComponentFromFieldDefinitionTranslatable`](/src/renderer/src/components/ui/form.tsx) extends the FormComponentFromFieldDefinition. If there are multiple supported languages, it renders a button next to the field that opens a dialog where translations for all supported languages can be entered.
-- Finally, the [`FormFieldFromDefinition`](/src/renderer/src/components/ui/form.tsx) wraps the FormComponentFromFieldDefinitionTranslatable in a FormItem and adds a label, description and validation message. This is the component that should be used when rendering a form field based on a field definition.
+Static forms with predefined fields are straightforward to implement. However, elek.io allows users to define their own content structures through Collections, which means forms must be generated dynamically based on user-defined schemas.
 
-## Validating generated forms
-All validation of user input is done using [Zod](https://zod.dev/). elek.io Core provides [predefined Zod schemas for all supported field types](https://github.com/elek-io/core/blob/main/src/schema/fieldSchema.ts). When a user creates a Collection and defines field definitions, elek.io Core can generate a Zod schema for the Values based on the field definitions with [`getValueSchemaFromFieldDefinition` as well as full schema generation for creating and updating Entries `getCreateEntrySchemaFromFieldDefinitions` and `getUpdateEntrySchemaFromFieldDefinitions`](https://github.com/elek-io/core/blob/main/src/schema/schemaFromFieldDefinition.ts). This schema can then be used in conjunction with the [React Hook Form Zod resolver](https://react-hook-form.com/get-started#SchemaValidation) to validate the user input before the form is submitted and provide feedback to the user if the input is invalid.
+**Why Dynamic Forms?**
+
+Users need the flexibility to create custom content types without modifying code. For example:
+
+- A blog might need: title (text), content (textarea), published (boolean)
+- A product catalog might need: name (text), price (number), inStock (boolean), images (file)
+- An event calendar might need: title (text), date (date), location (text)
+
+We can't hardcode these forms since they are user-defined, instead we use **field definitions** to describe each field's properties, allowing the UI to render appropriate form controls dynamically.
+
+## Field Definitions
+
+A field definition is a JSON object that contains all necessary information to render and validate a form field.
+
+**Example field definition for a blog post title:**
+
+```typescript
+{
+  id: '467e57ea-e04a-44a7-b34b-684ed3ba6f49',
+  valueType: 'string',        // Data type for validation
+  fieldType: 'text',          // UI component to render
+  label: {                    // Label with translations
+    en: 'Title',
+    de: 'Titel',
+  },
+  description: {              // Description with translations
+    en: 'A short title for the Entry',
+    de: 'Ein kurzer Titel für den Eintrag',
+  },
+  min: null,                  // Minimum length (for strings/arrays)
+  max: 100,                   // Maximum length
+  defaultValue: null,         // Default value when creating new Entry
+  inputWidth: '12',           // Grid column width (1-12)
+  isDisabled: false,          // Whether field is read-only
+  isRequired: true,           // Whether field must be filled
+  isUnique: false,            // Whether value must be unique across Entries
+}
+```
+
+**Key Properties:**
+
+Depending on the field type, definitions may include different properties, but common ones are:
+
+- `id`: Unique identifier for this field
+- `valueType`: The data type (`string`, `number`, `boolean`, etc.) - used for validation
+- `fieldType`: The UI component type (`text`, `textarea`, `number`, `switch`, `select`, etc.)
+- `label` / `description`: Translatable strings for multiple languages that help users understand the field's purpose
+- `min` / `max`: Validation constraints
+- `isRequired`: Whether the field must have a value
+- `inputWidth`: Responsive grid width (using 12-column grid)
+
+## Creating Field Definitions via a Collection
+
+When users create or update a Collection, they use a visual editor to define the fields for that Collection type.
+
+**Location:** Collection forms are in [`components/forms/collection-form.tsx`](../../src/renderer/components/forms/collection-form.tsx) and used in routes like [`routes/projects/$projectId/collections/create.tsx`](../../src/renderer/routes/projects/$projectId/collections/create.tsx) and [`routes/projects/$projectId/collections/$collectionId/update.tsx`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/update.tsx)
+
+**Features:**
+
+- Add, remove, and reorder fields via drag-and-drop
+- Select field type (text, textarea, number, boolean, select, etc.)
+- Set labels and descriptions with multi-language support
+- Configure validation rules (min/max length, required, unique)
+- Set default values and input width
+- Preview how the form will look to content editors
+
+## Rendering Dynamic Forms
+
+When rendering a form to create or edit an Entry, we iterate over the Collection's field definitions and render appropriate form controls for each field.
+
+**Location:** Entry forms are in [`components/forms/entry-form.tsx`](../../src/renderer/components/forms/entry-form.tsx) and used in routes like [`routes/projects/$projectId/collections/$collectionId/create.tsx`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/create.tsx) and [`routes/projects/$projectId/collections/$collectionId/$entryId/update.tsx`](../../src/renderer/routes/projects/$projectId/collections/$collectionId/$entryId/update.tsx)
+
+### Component Architecture
+
+The dynamic form rendering system is built with layered components, each adding functionality:
+
+#### Base UI Components
+
+Located in [`components/ui/`](../../src/renderer/components/ui/):
+
+- **`Input`**, **`Textarea`**, **`Switch`**, **`Slider`**, **`Select`**: Basic HTML form controls with styling and [Radix UI primitives](https://www.radix-ui.com/primitives) for accessibility
+- These are the fundamental building blocks used across the application
+
+#### Form Field Components
+
+Located in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx):
+
+**1. `FormComponentFromFieldDefinition`** (line ~290)
+
+- Takes a field definition and renders the appropriate input component
+- Handles value transformation (e.g., converting string inputs to numbers)
+- Returns `null` for empty values instead of empty strings (important for validation)
+- Maps `fieldType` to the correct UI component
+
+**2. `FormComponentFromFieldDefinitionTranslatable`** (line ~420)
+
+- Extends `FormComponentFromFieldDefinition`
+- Adds multi-language support for translatable fields
+- Renders a dialog for entering translations in all supported languages
+- Shows language switcher button next to field
+
+**3. `FormFieldFromDefinition`** (recommended entry point)
+
+- Use this component when rendering form fields from definitions
+- Wraps `FormComponentFromFieldDefinitionTranslatable` with:
+  - Label (with required indicator)
+  - Description text
+  - Validation error messages
+  - Proper spacing and layout
+
+### Example Usage
+
+```typescript
+import { FormFieldFromDefinition } from '@renderer/components/ui/form';
+
+// In your component:
+const collection = /* ... Collection with fieldDefinitions ... */;
+
+return (
+  <Form {...form}>
+    <form>
+      {collection.fieldDefinitions.map((fieldDef) => (
+        <FormFieldFromDefinition
+          key={fieldDef.id}
+          fieldDefinition={fieldDef}
+          control={form.control}
+          supportedLanguages={['en', 'de']}
+        />
+      ))}
+    </form>
+  </Form>
+);
+```
+
+## Validation with Zod
+
+All user input validation uses [Zod](https://zod.dev/), a TypeScript-first schema validation library.
+
+### Schema Generation
+
+**Source:** [@elek-io/core](https://github.com/elek-io/core)
+
+Core provides utilities to convert field definitions into Zod schemas:
+
+- **`getValueSchemaFromFieldDefinition()`**: Generates a Zod schema for a single field
+- See [schema generation utilities](https://github.com/elek-io/core/blob/main/src/schema/schemaFromFieldDefinition.ts) for more functions
+
+**Example:**
+
+```typescript
+import { getValueSchemaFromFieldDefinition } from '@elek-io/core';
+
+const fieldDefinition = {
+  valueType: 'string',
+  min: 5,
+  max: 100,
+  isRequired: true,
+  // ...
+};
+
+// Generated schema validates:
+// - Type is string
+// - Length between 5-100 characters
+// - Field is required (not null/undefined)
+const schema = getValueSchemaFromFieldDefinition(fieldDefinition);
+```
+
+### Form Validation
+
+Use the generated Zod schema with [React Hook Form's Zod resolver](https://react-hook-form.com/get-started#SchemaValidation):
+
+```typescript
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { getUpdateEntrySchemaFromFieldDefinitions } from '@elek-io/core';
+
+const collection = /* ... */;
+
+// Generate schema from all field definitions
+const schema = getUpdateEntrySchemaFromFieldDefinitions(
+  collection.fieldDefinitions
+);
+
+// Create form with validation
+const form = useForm({
+  resolver: zodResolver(schema),
+  defaultValues: { /* ... */ }
+});
+
+// Form validates automatically and shows error messages via FormMessage component
+```
+
+**Benefits:**
+
+- Type-safe form data (inferred from generated Zod schema)
+- Automatic validation based on field definitions
+- Consistent validation between frontend and backend
+- User-friendly error messages
+- Prevents invalid data from reaching Core
+
+---
+
+**Last Updated:** 2025-12-01
