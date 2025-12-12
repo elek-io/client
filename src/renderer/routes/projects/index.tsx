@@ -4,7 +4,6 @@ import { DownloadCloud, Plus } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
-import { FormInput } from '@renderer/components/form-input';
 import { Page } from '@renderer/components/page';
 import {
   ProjectCard,
@@ -32,6 +31,7 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -152,7 +152,7 @@ function ListProjectsPage(): ReactElement {
                     <FormItem>
                       <FormLabel isRequired>URL</FormLabel>
                       <FormControl>
-                        <FormInput field={field} type="text" />
+                        <FormInputField field={field} type="text" />
                       </FormControl>
                       <FormDescription />
                       <FormMessage />

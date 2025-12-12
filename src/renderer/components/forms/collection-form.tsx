@@ -11,7 +11,6 @@ import {
   DraggableComponent,
   SortableFieldArray,
 } from '@renderer/components/drag-and-drop';
-import { TranslatableFormInput } from '@renderer/components/form-input';
 import { TranslatableFormTextarea } from '@renderer/components/form-textarea';
 import {
   FieldDefinitionForm,
@@ -28,6 +27,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  TranslatableFormInputField,
 } from '@renderer/components/ui/form';
 import {
   Select,
@@ -131,7 +131,7 @@ export const CollectionForm = ({
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired>Collection name (Plural)</FormLabel>
                     <FormControl>
-                      <TranslatableFormInput
+                      <TranslatableFormInputField
                         title="Collection name (Plural)"
                         description='The name of your new collection. Choose a short name in plural that explains the content of the collection - e.g. "Blogposts".'
                         type="text"
@@ -157,7 +157,7 @@ export const CollectionForm = ({
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired>Entry name (Singluar)</FormLabel>
                     <FormControl>
-                      <TranslatableFormInput
+                      <TranslatableFormInputField
                         title="Entry name (Singluar)"
                         description='The name of each Entry inside your new Collection. Choose a short name in singluar - e.g. "Blogpost".'
                         type="text"

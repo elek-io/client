@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
 
-import { FormInput } from '@renderer/components/form-input';
 import { FormTextarea } from '@renderer/components/form-textarea';
 import {
   DefaultFieldDefinitionForm,
@@ -11,6 +10,7 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -54,7 +54,7 @@ const TextareaFieldDefinitionForm = ({
                 <FormItem>
                   <FormLabel isRequired={false}>Minimum</FormLabel>
                   <FormControl>
-                    <FormInput field={field} type="number" />
+                    <FormInputField field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The minimum number of characters the user is able to enter.
@@ -70,7 +70,7 @@ const TextareaFieldDefinitionForm = ({
                 <FormItem>
                   <FormLabel isRequired={false}>Maximum</FormLabel>
                   <FormControl>
-                    <FormInput field={field} type="number" />
+                    <FormInputField field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The maximum number of characters the user is able to enter.

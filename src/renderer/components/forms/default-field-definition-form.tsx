@@ -1,7 +1,6 @@
 import { Fragment, type HTMLAttributes, type ReactElement } from 'react';
 import { type FieldValues, type UseFormReturn } from 'react-hook-form';
 
-import { TranslatableFormInput } from '@renderer/components/form-input';
 import { TranslatableFormTextarea } from '@renderer/components/form-textarea';
 import {
   FormControl,
@@ -10,6 +9,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  TranslatableFormInputField,
 } from '@renderer/components/ui/form';
 import {
   Select,
@@ -52,7 +52,7 @@ const DefaultFieldDefinitionForm = ({
           <FormItem>
             <FormLabel isRequired>Label</FormLabel>
             <FormControl>
-              <TranslatableFormInput
+              <TranslatableFormInputField
                 title="Label"
                 description='The label is displayed above the input Field and should
                       indicate what the user is supposed to enter. For example

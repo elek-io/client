@@ -10,8 +10,10 @@ import {
   FormProvider,
   type ControllerProps,
   type ControllerRenderProps,
+  type FieldErrors,
   type FieldPath,
   type FieldValues,
+  type Path,
   type UseFormReturn,
 } from 'react-hook-form';
 
@@ -160,7 +162,7 @@ function FormMessage({
   );
 }
 
-interface FormInputFieldProps<
+export interface FormInputFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends React.ComponentProps<'input'> {
@@ -175,7 +177,7 @@ interface FormInputFieldProps<
  * It also returns null instead of an empty string
  * if the user did not put in a value.
  */
-function FormInputField<TFieldValues extends FieldValues>({
+export function FormInputField<TFieldValues extends FieldValues>({
   field,
   type,
   ...props
@@ -198,6 +200,126 @@ function FormInputField<TFieldValues extends FieldValues>({
       onChange={(event) => field.onChange(transform(event.target.value))}
       {...props}
     />
+  );
+}
+
+export interface TranslatableFormInputFieldProps<T extends FieldValues>
+  extends FormInputFieldProps<T> {
+  title: string;
+  description: string;
+  supportedLanguages: SupportedLanguage[];
+  errors: FieldErrors;
+}
+
+/**
+ * Renders a FormInputField component with additional button to manage translations
+ *
+ * @todo TranslatableFormInputField and TranslatableFormTextarea are almost identical. Consider refactoring to reduce duplication.
+ */
+export function TranslatableFormInputField<T extends FieldValues>({
+  title,
+  description,
+  field,
+  supportedLanguages,
+  className,
+  type,
+  errors,
+  ...props
+}: TranslatableFormInputFieldProps<T>): React.ReactElement {
+  const currentLanguage = field.name.split('.').pop() as SupportedLanguage;
+  const baseName = field.name.split('.').slice(0, -1).join('.');
+
+  /**
+   * Returns true if there are errors in the translations for the current field
+   * other than the current language.
+   */
+  function hasErrorsInTranslations(): boolean {
+    // Traverse the errors object to reach the base field errors
+    let fieldErrors: unknown = errors;
+    for (const segment of baseName.split('.')) {
+      if (
+        fieldErrors === null ||
+        fieldErrors === undefined ||
+        typeof fieldErrors !== 'object'
+      ) {
+        return false;
+      }
+      fieldErrors = fieldErrors[segment];
+    }
+
+    if (
+      fieldErrors === null ||
+      fieldErrors === undefined ||
+      typeof fieldErrors !== 'object'
+    ) {
+      return false;
+    }
+
+    // Check for errors in other languages
+    return supportedLanguages.some(
+      (language) =>
+        language !== currentLanguage && fieldErrors[language] !== undefined
+    );
+  }
+
+  return (
+    <>
+      {supportedLanguages.length > 1 ? (
+        <div className={cn('flex items-center', className)}>
+          <FormInputField
+            field={field}
+            type={type}
+            className="rounded-r-none"
+            {...props}
+          />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="secondary"
+                className="rounded-l-none"
+                aria-invalid={hasErrorsInTranslations()}
+              >
+                <LanguagesIcon className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{title}</DialogTitle>
+                <DialogDescription>{description}</DialogDescription>
+              </DialogHeader>
+
+              <DialogBody>
+                {supportedLanguages.map((language) => {
+                  return (
+                    <FormField
+                      key={language}
+                      name={`${baseName}.${language}` as Path<T>}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel isRequired>{language}</FormLabel>
+                          <FormControl>
+                            <FormInputField field={field} type={type} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  );
+                })}
+              </DialogBody>
+
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="secondary">Done</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      ) : (
+        <FormInputField field={field} type={type} />
+      )}
+    </>
   );
 }
 

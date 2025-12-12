@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
 
-import { FormInput } from '@renderer/components/form-input';
 import {
   DefaultFieldDefinitionForm,
   type DefaultFieldDefinitionFormProps,
@@ -10,6 +9,7 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -35,7 +35,7 @@ const NumberFieldDefinitionForm = ({
               <FormItem>
                 <FormLabel isRequired={false}>Default value</FormLabel>
                 <FormControl>
-                  <FormInput field={field} type="number" />
+                  <FormInputField field={field} type="number" />
                 </FormControl>
                 <FormDescription>
                   The initial value for the field.
@@ -53,7 +53,7 @@ const NumberFieldDefinitionForm = ({
                 <FormItem>
                   <FormLabel isRequired={false}>Minimum</FormLabel>
                   <FormControl>
-                    <FormInput field={field} type="number" />
+                    <FormInputField field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The minimum Value the user is able to enter.
@@ -69,7 +69,7 @@ const NumberFieldDefinitionForm = ({
                 <FormItem>
                   <FormLabel isRequired={false}>Maximum</FormLabel>
                   <FormControl>
-                    <FormInput field={field} type="number" />
+                    <FormInputField field={field} type="number" />
                   </FormControl>
                   <FormDescription>
                     The maximum Value the user is able to enter.
