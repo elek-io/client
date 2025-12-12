@@ -1,7 +1,6 @@
 import { Fragment, type HTMLAttributes, type ReactElement } from 'react';
 import { type FieldValues, type UseFormReturn } from 'react-hook-form';
 
-import { TranslatableFormTextarea } from '@renderer/components/form-textarea';
 import {
   FormControl,
   FormDescription,
@@ -10,6 +9,7 @@ import {
   FormLabel,
   FormMessage,
   TranslatableFormInputField,
+  TranslatableFormTextareaField,
 } from '@renderer/components/ui/form';
 import {
   Select,
@@ -81,7 +81,7 @@ const DefaultFieldDefinitionForm = ({
           <FormItem>
             <FormLabel isRequired>Description</FormLabel>
             <FormControl>
-              <TranslatableFormTextarea
+              <TranslatableFormTextareaField
                 title="Description"
                 description="Describe what to input into this field. This text will be
               displayed under the field to guide users."

@@ -11,7 +11,6 @@ import {
   DraggableComponent,
   SortableFieldArray,
 } from '@renderer/components/drag-and-drop';
-import { TranslatableFormTextarea } from '@renderer/components/form-textarea';
 import {
   FieldDefinitionForm,
   type FieldDefinitionFormRef,
@@ -28,6 +27,7 @@ import {
   FormLabel,
   FormMessage,
   TranslatableFormInputField,
+  TranslatableFormTextareaField,
 } from '@renderer/components/ui/form';
 import {
   Select,
@@ -182,7 +182,7 @@ export const CollectionForm = ({
                   <FormItem className="col-span-12 sm:col-span-12">
                     <FormLabel isRequired>Description</FormLabel>
                     <FormControl>
-                      <TranslatableFormTextarea
+                      <TranslatableFormTextareaField
                         title="Description"
                         description="A description of what this new Collection is used for."
                         field={field}

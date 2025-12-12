@@ -214,7 +214,7 @@ export interface TranslatableFormInputFieldProps<T extends FieldValues>
 /**
  * Renders a FormInputField component with additional button to manage translations
  *
- * @todo TranslatableFormInputField and TranslatableFormTextarea are almost identical. Consider refactoring to reduce duplication.
+ * @todo TranslatableFormInputField and TranslatableFormTextareaField are almost identical. Consider refactoring to reduce duplication.
  */
 export function TranslatableFormInputField<T extends FieldValues>({
   title,
@@ -354,6 +354,126 @@ function FormTextareaField<TFieldValues extends FieldValues>({
       onChange={(event) => field.onChange(transform(event.target.value))}
       {...props}
     />
+  );
+}
+
+export interface TranslatableFormTextareaFieldProps<T extends FieldValues>
+  extends FormTextareaFieldProps<T> {
+  title: string;
+  description: string;
+  supportedLanguages: SupportedLanguage[];
+  errors: FieldErrors;
+}
+
+/**
+ * Renders a FormTextarea component with additional button to manage translations
+ *
+ * @todo TranslatableFormTextareaField and TranslatableFormInputField are almost identical. Consider refactoring to reduce duplication.
+ */
+export function TranslatableFormTextareaField<T extends FieldValues>({
+  title,
+  description,
+  field,
+  supportedLanguages,
+  className,
+  errors,
+  ...props
+}: TranslatableFormTextareaFieldProps<T>): React.ReactElement {
+  const currentLanguage = field.name.split('.').pop() as SupportedLanguage;
+  const baseName = field.name.split('.').slice(0, -1).join('.');
+
+  /**
+   * Returns true if there are errors in the translations for the current field
+   * other than the current language.
+   */
+  function hasErrorsInTranslations(): boolean {
+    // Traverse the errors object to reach the base field errors
+    let fieldErrors: unknown = errors;
+    for (const segment of baseName.split('.')) {
+      if (
+        fieldErrors === null ||
+        fieldErrors === undefined ||
+        typeof fieldErrors !== 'object'
+      ) {
+        return false;
+      }
+      fieldErrors = fieldErrors[segment];
+    }
+
+    if (
+      fieldErrors === null ||
+      fieldErrors === undefined ||
+      typeof fieldErrors !== 'object'
+    ) {
+      return false;
+    }
+
+    // Check for errors in other languages
+    return supportedLanguages.some(
+      (language) =>
+        language !== currentLanguage && fieldErrors[language] !== undefined
+    );
+  }
+
+  return (
+    <>
+      {supportedLanguages.length > 1 ? (
+        <div className={cn('flex', className)}>
+          <FormTextareaField
+            field={field}
+            className="rounded-r-none"
+            {...props}
+          />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="secondary"
+                className="h-full rounded-l-none"
+                aria-invalid={hasErrorsInTranslations()}
+              >
+                <LanguagesIcon className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{title}</DialogTitle>
+                <DialogDescription>{description}</DialogDescription>
+              </DialogHeader>
+
+              <DialogBody>
+                {supportedLanguages.map((language) => {
+                  return (
+                    <FormField
+                      key={language}
+                      name={
+                        `${field.name.split('.').slice(0, -1).join('.')}.${language}` as Path<T>
+                      }
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel isRequired={false}>{language}</FormLabel>
+                          <FormControl>
+                            <FormTextareaField field={field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  );
+                })}
+              </DialogBody>
+
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="secondary">Done</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      ) : (
+        <FormTextareaField field={field} />
+      )}
+    </>
   );
 }
 
