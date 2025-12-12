@@ -175,3 +175,12 @@
 .window-not-draggable-area {
   app-region: no-drag;
 }
+
+/*
+  Hide the default calendar button of date input fields
+*/
+input[type='date']::-webkit-inner-spin-button,
+input[type='date']::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}

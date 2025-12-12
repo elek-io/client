@@ -123,6 +123,7 @@ function ProjectCollectionCreate(): ReactElement {
       description={<Description />}
       actions={<Actions />}
     >
+      {JSON.stringify(createCollectionForm.watch())}
       <CollectionForm
         collectionForm={createCollectionForm}
         project={project}

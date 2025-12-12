@@ -1,9 +1,10 @@
 import { Slot } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
 import { Separator } from '@renderer/components/ui/separator';
 import { cn } from '@renderer/lib/utils';
+import { itemMediaVariants, itemVariants } from '@renderer/lib/variants';
 
 function ItemGroup({
   className,
@@ -33,22 +34,6 @@ function ItemSeparator({
   );
 }
 
-const itemVariants = cva(
-  'group/item flex items-center border border-transparent text-sm rounded-md transition-colors [a]:hover:bg-accent/50 [a]:transition-colors duration-100 flex-wrap outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-  {
-    variants: {
-      variant: {
-        default: 'bg-transparent',
-        outline: 'border-border',
-        muted: 'bg-muted/50',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  }
-);
-
 function Item({
   className,
   variant = 'default',
@@ -68,23 +53,6 @@ function Item({
     />
   );
 }
-
-const itemMediaVariants = cva(
-  'flex shrink-0 items-center justify-center gap-2 group-has-[[data-slot=item-description]]/item:self-start [&_svg]:pointer-events-none group-has-[[data-slot=item-description]]/item:translate-y-0.5',
-  {
-    variants: {
-      variant: {
-        default: 'bg-transparent',
-        icon: "size-8 border rounded-sm bg-muted [&_svg:not([class*='size-'])]:size-4",
-        image:
-          'size-10 rounded-sm overflow-hidden [&_img]:size-full [&_img]:object-cover',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  }
-);
 
 function ItemMedia({
   className,

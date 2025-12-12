@@ -7,6 +7,7 @@ import {
 } from 'react';
 import { useForm, type UseFieldArrayReturn } from 'react-hook-form';
 
+import { DateFieldDefinitionForm } from '@renderer/components/forms/date-value-definition-form';
 import { NumberFieldDefinitionForm } from '@renderer/components/forms/number-value-definition-form';
 import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value-definition-form';
 import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
@@ -74,7 +75,7 @@ export const FieldDefinitionForm = forwardRef(
       },
     });
 
-    const _dateFieldDefinitionFormState = useForm<DateFieldDefinition>({
+    const dateFieldDefinitionFormState = useForm<DateFieldDefinition>({
       resolver: zodResolver(dateFieldDefinitionSchema),
       defaultValues: {
         ...FieldDefinitionBaseDefaults,
@@ -192,6 +193,14 @@ export const FieldDefinitionForm = forwardRef(
           case 'entry':
           case 'datetime':
           case 'date':
+            return await dateFieldDefinitionFormState.handleSubmit(
+              (dateDefinition) => {
+                props.fieldDefinitions.append(dateDefinition);
+                props.setIsAddFieldDefinitionSheetOpen(false);
+                dateFieldDefinitionFormState.reset();
+                dateFieldDefinitionFormState.setValue('id', uuid());
+              }
+            )();
           case 'email':
           case 'url':
           case 'ipv4':
@@ -314,6 +323,14 @@ export const FieldDefinitionForm = forwardRef(
       case 'entry':
       case 'datetime':
       case 'date':
+        return (
+          <DateFieldDefinitionForm
+            form={dateFieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
       case 'email':
       case 'url':
       case 'ipv4':

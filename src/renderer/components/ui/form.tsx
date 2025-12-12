@@ -47,6 +47,9 @@ import type {
   SupportedLanguage,
 } from '@elek-io/core';
 
+import { DatePicker } from './date-picker';
+import { InputGroup, InputGroupAddon } from './input-group';
+
 const Form = FormProvider;
 
 const FormField = <
@@ -232,6 +235,72 @@ function FormTextareaField<TFieldValues extends FieldValues>({
   );
 }
 
+interface FormDateFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> extends React.ComponentProps<'input'> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+}
+
+/**
+ * Special variant of the Input component
+ * that uses the custom DatePicker component.
+ */
+function FormDateField<TFieldValues extends FieldValues>({
+  field,
+  className,
+  ...props
+}: FormDateFieldProps<TFieldValues>): React.ReactElement {
+  const dateFromValue = React.useMemo(() => {
+    if (typeof field.value === 'string' && field.value !== '') {
+      const parsedDate = new Date(field.value);
+      return isNaN(parsedDate.getTime()) ? null : parsedDate;
+    }
+    return null;
+  }, [field.value]);
+
+  function dateToString(date: Date | null): string {
+    if (date === null) {
+      return '';
+    }
+
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate()
+    ).padStart(2, '0')}`;
+  }
+
+  return (
+    <InputGroup>
+      <Input
+        data-slot="input-group-control"
+        className={cn(
+          'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent',
+          className
+        )}
+        {...field}
+        {...props}
+        value={field.value ?? ''}
+        onChange={(event) => {
+          field.onChange(event.target.value || null);
+        }}
+        type="date"
+      />
+      <InputGroupAddon align="inline-end">
+        <DatePicker
+          variant="ghost"
+          size="xs"
+          date={dateFromValue}
+          setDate={(value) => {
+            const newDate =
+              typeof value === 'function' ? value(dateFromValue) : value;
+            field.onChange(dateToString(newDate));
+          }}
+        />
+      </InputGroupAddon>
+    </InputGroup>
+  );
+}
+
 interface FormRangeFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -386,6 +455,19 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
         />
       );
     case 'date':
+      return (
+        <FormDateField
+          defaultValue={
+            fieldDefinition.defaultValue !== null
+              ? fieldDefinition.defaultValue
+              : undefined
+          }
+          required={fieldDefinition.isRequired}
+          disabled={fieldDefinition.isDisabled}
+          field={field}
+          {...props}
+        />
+      );
     case 'time':
     case 'datetime':
     case 'ipv4':
@@ -651,5 +733,6 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  FormDateField,
   FormFieldFromDefinition,
 };
