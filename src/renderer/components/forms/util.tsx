@@ -8,32 +8,41 @@ import {
 import { useForm, type UseFieldArrayReturn } from 'react-hook-form';
 
 import { DateFieldDefinitionForm } from '@renderer/components/forms/date-value-definition-form';
+import { EmailFieldDefinitionForm } from '@renderer/components/forms/email-value-definition-form';
 import { NumberFieldDefinitionForm } from '@renderer/components/forms/number-value-definition-form';
 import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value-definition-form';
+import { TelephoneFieldDefinitionForm } from '@renderer/components/forms/telephone-value-definition-form';
 import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
 import { ToggleFieldDefinitionForm } from '@renderer/components/forms/toggle-value-definition-form';
+import { UrlFieldDefinitionForm } from '@renderer/components/forms/url-value-definition-form';
 import { FormFieldFromDefinition } from '@renderer/components/ui/form';
 import { translatableDefault } from '@renderer/lib/utils';
 
 import {
   dateFieldDefinitionSchema,
+  emailFieldDefinitionSchema,
   numberFieldDefinitionSchema,
   rangeFieldDefinitionSchema,
+  telephoneFieldDefinitionSchema,
   textareaFieldDefinitionSchema,
   textFieldDefinitionSchema,
   toggleFieldDefinitionSchema,
+  urlFieldDefinitionSchema,
   uuid,
   type DateFieldDefinition,
+  type EmailFieldDefinition,
   type FieldDefinition,
   type FieldDefinitionBase,
   type FieldType,
   type NumberFieldDefinition,
   type RangeFieldDefinition,
   type SupportedLanguage,
+  type TelephoneFieldDefinition,
   type TextareaFieldDefinition,
   type TextFieldDefinition,
   type ToggleFieldDefinition,
+  type UrlFieldDefinition,
 } from '@elek-io/core';
 
 export interface FieldDefinitionFormProps {
@@ -88,6 +97,41 @@ export const FieldDefinitionForm = forwardRef(
         id: uuid(),
         valueType: 'string',
         fieldType: 'date',
+        defaultValue: null,
+      },
+    });
+
+    const emailFieldDefinitionFormState = useForm<EmailFieldDefinition>({
+      resolver: zodResolver(emailFieldDefinitionSchema),
+      defaultValues: {
+        ...FieldDefinitionBaseDefaults,
+        id: uuid(),
+        valueType: 'string',
+        fieldType: 'email',
+        defaultValue: null,
+      },
+    });
+
+    const telephoneFieldDefinitionFormState = useForm<TelephoneFieldDefinition>(
+      {
+        resolver: zodResolver(telephoneFieldDefinitionSchema),
+        defaultValues: {
+          ...FieldDefinitionBaseDefaults,
+          id: uuid(),
+          valueType: 'string',
+          fieldType: 'telephone',
+          defaultValue: null,
+        },
+      }
+    );
+
+    const urlFieldDefinitionFormState = useForm<UrlFieldDefinition>({
+      resolver: zodResolver(urlFieldDefinitionSchema),
+      defaultValues: {
+        ...FieldDefinitionBaseDefaults,
+        id: uuid(),
+        valueType: 'string',
+        fieldType: 'url',
         defaultValue: null,
       },
     });
@@ -208,10 +252,34 @@ export const FieldDefinitionForm = forwardRef(
               }
             )();
           case 'email':
+            return await emailFieldDefinitionFormState.handleSubmit(
+              (emailDefinition) => {
+                props.fieldDefinitions.append(emailDefinition);
+                props.setIsAddFieldDefinitionSheetOpen(false);
+                dateFieldDefinitionFormState.reset();
+                dateFieldDefinitionFormState.setValue('id', uuid());
+              }
+            )();
           case 'url':
+            return await urlFieldDefinitionFormState.handleSubmit(
+              (urlDefinition) => {
+                props.fieldDefinitions.append(urlDefinition);
+                props.setIsAddFieldDefinitionSheetOpen(false);
+                urlFieldDefinitionFormState.reset();
+                urlFieldDefinitionFormState.setValue('id', uuid());
+              }
+            )();
           case 'ipv4':
           case 'time':
           case 'telephone':
+            return await telephoneFieldDefinitionFormState.handleSubmit(
+              (telephoneDefinition) => {
+                props.fieldDefinitions.append(telephoneDefinition);
+                props.setIsAddFieldDefinitionSheetOpen(false);
+                telephoneFieldDefinitionFormState.reset();
+                telephoneFieldDefinitionFormState.setValue('id', uuid());
+              }
+            )();
           default:
             throw new Error(
               `Tried to validate unsupported fieldType "${props.fieldType}" of Value definition`
@@ -338,10 +406,34 @@ export const FieldDefinitionForm = forwardRef(
           />
         );
       case 'email':
+        return (
+          <EmailFieldDefinitionForm
+            form={emailFieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
       case 'url':
+        return (
+          <UrlFieldDefinitionForm
+            form={urlFieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
       case 'ipv4':
       case 'time':
       case 'telephone':
+        return (
+          <TelephoneFieldDefinitionForm
+            form={telephoneFieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
       default:
         throw new Error(`Unsupported definition form "${props.fieldType}"`);
     }
