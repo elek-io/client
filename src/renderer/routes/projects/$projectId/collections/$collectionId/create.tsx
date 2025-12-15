@@ -11,10 +11,7 @@ import { Button } from '@renderer/components/ui/button';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import {
-  translatableDefaultEmptyArray,
-  translatableDefaultNull,
-} from '@renderer/lib/utils';
+import { translatableDefault } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
 import {
@@ -73,9 +70,10 @@ function CreateEntryPage(): React.JSX.Element {
                 objectType: 'value',
                 fieldDefinitionId: definition.id,
                 valueType: definition.valueType,
-                content: translatableDefaultNull(
-                  project.settings.language.supported
-                ),
+                content: translatableDefault({
+                  supportedLanguages: project.settings.language.supported,
+                  defaultValue: definition.defaultValue,
+                }),
               };
 
             case 'reference':
@@ -83,9 +81,10 @@ function CreateEntryPage(): React.JSX.Element {
                 objectType: 'value',
                 fieldDefinitionId: definition.id,
                 valueType: definition.valueType,
-                content: translatableDefaultEmptyArray(
-                  project.settings.language.supported
-                ),
+                content: translatableDefault({
+                  supportedLanguages: project.settings.language.supported,
+                  defaultValue: [],
+                }),
               };
 
             default:

@@ -32,11 +32,12 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormTextareaField,
 } from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
 import {
   Popover,
   PopoverContent,
@@ -49,7 +50,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@renderer/components/ui/select';
-import { Textarea } from '@renderer/components/ui/textarea';
 
 import {
   supportedLanguageSchema,
@@ -98,7 +98,7 @@ export function ProjectForm({
                     <FormItem className="col-span-12">
                       <FormLabel isRequired>Project name</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <FormInputField field={field} type="text" />
                       </FormControl>
                       <FormDescription />
                       <FormMessage />
@@ -113,7 +113,7 @@ export function ProjectForm({
                     <FormItem className="col-span-12">
                       <FormLabel isRequired>Project description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} />
+                        <FormTextareaField field={field} />
                       </FormControl>
                       <FormDescription />
                       <FormMessage />

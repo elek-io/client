@@ -10,7 +10,7 @@ import { Page } from '@renderer/components/page';
 import { Button } from '@renderer/components/ui/button';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
-import { translatableDefaultNull } from '@renderer/lib/utils';
+import { translatableDefault } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
 import {
@@ -61,14 +61,19 @@ function ProjectCollectionCreate(): ReactElement {
         projectId,
         icon: 'home',
         name: {
-          singular: translatableDefaultNull(
-            project.settings.language.supported
-          ),
-          plural: translatableDefaultNull(project.settings.language.supported),
+          singular: translatableDefault({
+            supportedLanguages: project.settings.language.supported,
+            defaultValue: null,
+          }),
+          plural: translatableDefault({
+            supportedLanguages: project.settings.language.supported,
+            defaultValue: null,
+          }),
         },
-        description: translatableDefaultNull(
-          project.settings.language.supported
-        ),
+        description: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: null,
+        }),
         slug: {
           singular: '',
           plural: '',

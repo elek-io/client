@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
 
-import { FormTextarea } from '@renderer/components/form-textarea';
 import {
   DefaultFieldDefinitionForm,
   type DefaultFieldDefinitionFormProps,
@@ -14,6 +13,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormTextareaField,
 } from '@renderer/components/ui/form';
 
 import { type TextareaFieldDefinition } from '@elek-io/core';
@@ -36,7 +36,7 @@ const TextareaFieldDefinitionForm = ({
               <FormItem>
                 <FormLabel isRequired={false}>Default value</FormLabel>
                 <FormControl>
-                  <FormTextarea field={field} />
+                  <FormTextareaField field={field} />
                 </FormControl>
                 <FormDescription>
                   The initial value for the field.

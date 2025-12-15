@@ -8,7 +8,7 @@ import {
 } from '@renderer/components/diff-container';
 import { CollectionForm } from '@renderer/components/forms/collection-form';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import { translatableDefaultNull } from '@renderer/lib/utils';
+import { translatableDefault } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
 import {
@@ -75,10 +75,19 @@ export function CollectionDiff({
       projectId: project.id,
       icon: 'home',
       name: {
-        singular: translatableDefaultNull(project.settings.language.supported),
-        plural: translatableDefaultNull(project.settings.language.supported),
+        singular: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: null,
+        }),
+        plural: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: null,
+        }),
       },
-      description: translatableDefaultNull(project.settings.language.supported),
+      description: translatableDefault({
+        supportedLanguages: project.settings.language.supported,
+        defaultValue: null,
+      }),
       slug: {
         singular: '',
         plural: '',
@@ -109,10 +118,19 @@ export function CollectionDiff({
       projectId: project.id,
       icon: 'home',
       name: {
-        singular: translatableDefaultNull(project.settings.language.supported),
-        plural: translatableDefaultNull(project.settings.language.supported),
+        singular: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: null,
+        }),
+        plural: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: null,
+        }),
       },
-      description: translatableDefaultNull(project.settings.language.supported),
+      description: translatableDefault({
+        supportedLanguages: project.settings.language.supported,
+        defaultValue: null,
+      }),
       slug: {
         singular: '',
         plural: '',

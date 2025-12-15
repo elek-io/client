@@ -323,7 +323,7 @@ export function TranslatableFormInputField<T extends FieldValues>({
   );
 }
 
-interface FormTextareaFieldProps<
+export interface FormTextareaFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends React.ComponentProps<'textarea'> {
@@ -336,7 +336,7 @@ interface FormTextareaFieldProps<
  * if the user did not put in a value and hands
  * it back to the given form field.
  */
-function FormTextareaField<TFieldValues extends FieldValues>({
+export function FormTextareaField<TFieldValues extends FieldValues>({
   field,
   ...props
 }: FormTextareaFieldProps<TFieldValues>): React.ReactElement {
@@ -513,13 +513,13 @@ function FormDateField<TFieldValues extends FieldValues>({
 
   return (
     <InputGroup>
-      <Input
+      <FormInputField
+        field={field}
         data-slot="input-group-control"
         className={cn(
           'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent',
           className
         )}
-        {...field}
         {...props}
         value={field.value ?? ''}
         onChange={(event) => {
@@ -699,15 +699,15 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
     case 'date':
       return (
         <FormDateField
-          defaultValue={
-            fieldDefinition.defaultValue !== null
-              ? fieldDefinition.defaultValue
-              : undefined
-          }
           required={fieldDefinition.isRequired}
           disabled={fieldDefinition.isDisabled}
           field={field}
           {...props}
+          value={
+            fieldDefinition.defaultValue !== null
+              ? fieldDefinition.defaultValue
+              : undefined
+          }
         />
       );
     case 'time':

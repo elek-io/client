@@ -13,11 +13,11 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { queryOptions } from '@renderer/queries';
@@ -110,7 +110,7 @@ function ProjectSettingsVersionControlPage(): ReactElement {
                   <FormItem className="col-span-12">
                     <FormLabel isRequired>Remote URL</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <FormInputField field={field} type="url" />
                     </FormControl>
                     <FormDescription />
                     <FormMessage />

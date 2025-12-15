@@ -14,7 +14,7 @@ import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-d
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
 import { ToggleFieldDefinitionForm } from '@renderer/components/forms/toggle-value-definition-form';
 import { FormFieldFromDefinition } from '@renderer/components/ui/form';
-import { translatableDefaultNull } from '@renderer/lib/utils';
+import { translatableDefault } from '@renderer/lib/utils';
 
 import {
   dateFieldDefinitionSchema,
@@ -54,8 +54,14 @@ export interface FieldDefinitionFormRef {
 export const FieldDefinitionForm = forwardRef(
   (props: FieldDefinitionFormProps, ref: Ref<FieldDefinitionFormRef>) => {
     const FieldDefinitionBaseDefaults: Omit<FieldDefinitionBase, 'id'> = {
-      label: translatableDefaultNull(props.supportedLanguages),
-      description: translatableDefaultNull(props.supportedLanguages),
+      label: translatableDefault({
+        supportedLanguages: props.supportedLanguages,
+        defaultValue: null,
+      }),
+      description: translatableDefault({
+        supportedLanguages: props.supportedLanguages,
+        defaultValue: null,
+      }),
       isRequired: true,
       isDisabled: false,
       isUnique: false,

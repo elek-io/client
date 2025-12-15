@@ -39,11 +39,12 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormTextareaField,
 } from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
 import {
   Item,
   ItemContent,
@@ -54,7 +55,6 @@ import {
 } from '@renderer/components/ui/item';
 import { Separator } from '@renderer/components/ui/separator';
 import { Skeleton } from '@renderer/components/ui/skeleton';
-import { Textarea } from '@renderer/components/ui/textarea';
 import {
   Tooltip,
   TooltipContent,
@@ -248,7 +248,7 @@ export function AssetTeaser(
                               <FormItem className="col-span-12">
                                 <FormLabel isRequired>Asset name</FormLabel>
                                 <FormControl>
-                                  <Input {...field} />
+                                  <FormInputField field={field} type="text" />
                                 </FormControl>
                                 <FormDescription />
                                 <FormMessage />
@@ -265,7 +265,7 @@ export function AssetTeaser(
                                   Asset description
                                 </FormLabel>
                                 <FormControl>
-                                  <Textarea {...field} />
+                                  <FormTextareaField field={field} />
                                 </FormControl>
                                 <FormDescription />
                                 <FormMessage />
