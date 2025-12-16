@@ -44,6 +44,26 @@ jobs:
       #   sarif_file: ../electronegativity_results
       - name: Build
         run: pnpm run build
+      - name: Run E2E tests (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm run test
+      - name: Run E2E tests (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: pnpm run test
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ matrix.platform }}
+          path: playwright-report/
+          retention-days: 30
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results-${{ matrix.platform }}
+          path: test-results/
+          retention-days: 7
       # Uncomment if necessary
       # For example to inspect the build applications
       - name: Upload artifact
