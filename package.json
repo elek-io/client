@@ -87,6 +87,7 @@
     "@electron-toolkit/eslint-config-ts": "3.1.0",
     "@electron-toolkit/tsconfig": "2.0.0",
     "@eslint/js": "9.37.0",
+    "@faker-js/faker": "10.1.0",
     "@hookform/devtools": "4.4.0",
     "@playwright/test": "1.57.0",
     "@redux-devtools/extension": "3.3.0",
