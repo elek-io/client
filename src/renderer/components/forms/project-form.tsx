@@ -136,7 +136,7 @@ export function ProjectForm({
                       <FormItem className="col-span-6">
                         <FormLabel isRequired>Supported</FormLabel>
                         <FormControl>
-                          <div>
+                          <div aria-label="Supported languages">
                             <ul className="flex flex-wrap">
                               {field.value.map((language, index) => {
                                 return (
@@ -189,14 +189,14 @@ export function ProjectForm({
                             {isViewOnly ? null : (
                               <Popover>
                                 <PopoverTrigger asChild>
-                                  <Button role="combobox">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add language
-                                  </Button>
+                                  <Button role="combobox">Add language</Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[200px] p-0">
                                   <Command>
-                                    <CommandInput placeholder="Search language..." />
+                                    <CommandInput
+                                      aria-label="Search supported languages"
+                                      placeholder="Search language..."
+                                    />
                                     <CommandEmpty>
                                       No framework found.
                                     </CommandEmpty>
@@ -272,7 +272,10 @@ export function ProjectForm({
                     );
 
                     return (
-                      <FormItem className="col-span-6">
+                      <FormItem
+                        className="col-span-6"
+                        aria-label="Default language"
+                      >
                         <FormLabel isRequired>Default</FormLabel>
                         <Select
                           value={field.value}

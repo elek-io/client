@@ -1,8 +1,15 @@
 import { expect } from '@playwright/test';
 
 import { test } from '../fixtures/electronApp';
+import { NavigationHelper } from '../helpers/navigation';
 
 test.describe('App Initialization', () => {
+  let navigationHelper: NavigationHelper;
+
+  test.beforeEach(async ({ mainWindow }) => {
+    navigationHelper = new NavigationHelper(mainWindow);
+  });
+
   test('should be able to launch the app successfully', async ({
     electronApp,
     mainWindow,
@@ -19,10 +26,6 @@ test.describe('App Initialization', () => {
     // Verify title contains app name
     await expect(mainWindow).toHaveTitle(/^elek\.io/);
 
-    // Get current URL hash
-    const hash = await mainWindow.evaluate(() => window.location.hash);
-
-    // Verify we're on the projects page (or root which redirects to projects)
-    expect(hash === '#/projects').toBe(true);
+    await navigationHelper.verifyCurrentRouteHash('#/projects');
   });
 });

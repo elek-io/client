@@ -32,6 +32,7 @@ export const Page = forwardRef<HTMLElement, PageProps>(
         onDragLeave={props.onDragLeave}
         onDragEnter={props.onDragEnter}
         onDrop={props.onDrop}
+        aria-label="Page"
       >
         <div className="relative bg-linear-to-br from-cyan-50 to-50% pb-32 dark:from-cyan-950">
           <div className="relative container mx-auto">

@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import {
   test as base,
   type ElectronApplication,
@@ -63,8 +64,18 @@ export const test = base.extend<{
     // Use the window in tests
     await use(window);
 
-    // After each test, check for console errors and warnings
+    // Collect accessibility scan results
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const accessibilityScanResults = await new AxeBuilder({
+      page: window,
+    })
+      .setLegacyMode()
+      .analyze();
+
+    // After each test, check for console errors and warnings as well as accessibility violations
     expect(errors).toHaveLength(0);
     expect(warnings).toHaveLength(0);
+    // @todo Enable accessibility checks once issues are resolved
+    // expect(accessibilityScanResults.violations).toHaveLength(0);
   },
 });
