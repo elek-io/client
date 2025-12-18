@@ -1,5 +1,4 @@
 import { Cross2Icon } from '@radix-ui/react-icons';
-import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import {
   type FieldValues,
