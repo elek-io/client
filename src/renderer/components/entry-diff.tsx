@@ -36,13 +36,23 @@ export function EntryDiff({
     queryOptions.collections.read({ projectId: project.id, id: collectionId })
   );
 
+  // Fetch the Project's full history to find the commit before this one
+  const { data: history, isPending: isReadingHistory } = useQueryNoError(
+    queryOptions.projects.history({ id: project.id })
+  );
+
   // Derive commitBefore during render with useMemo
   const commitBefore = useMemo(() => {
     if (commit.message.method === 'create') {
       return undefined;
     }
 
-    const entryCommitHistory = project.fullHistory.filter(
+    // History not loaded yet, the loading skeleton is shown below
+    if (!history) {
+      return undefined;
+    }
+
+    const entryCommitHistory = history.fullHistory.filter(
       (commitFromHistory) =>
         commitFromHistory.message.reference.objectType === 'entry' &&
         commitFromHistory.message.reference.id === commit.message.reference.id
@@ -60,7 +70,7 @@ export function EntryDiff({
     }
 
     return previousCommit;
-  }, [commit, project.fullHistory]);
+  }, [commit, history]);
 
   // Derive commitAfter during render with useMemo
   const commitAfter = useMemo(() => {
@@ -126,6 +136,7 @@ export function EntryDiff({
   // Show loading skeleton while any query is pending
   if (
     isReadingCollection ||
+    isReadingHistory ||
     (commitBefore && isReadingEntryBefore) ||
     (commitAfter && isReadingEntryAfter)
   ) {

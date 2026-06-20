@@ -17,13 +17,23 @@ export function AssetDiff({
   project: Project;
   commit: GitCommit;
 }): React.JSX.Element | undefined {
+  // Fetch the Project's full history to find the commit before this one
+  const { data: history, isPending: isReadingHistory } = useQueryNoError(
+    queryOptions.projects.history({ id: project.id })
+  );
+
   // Derive commitBefore during render with useMemo
   const commitBefore = useMemo(() => {
     if (commit.message.method === 'create') {
       return undefined;
     }
 
-    const assetCommitHistory = project.fullHistory.filter(
+    // History not loaded yet, the loading skeleton is shown below
+    if (!history) {
+      return undefined;
+    }
+
+    const assetCommitHistory = history.fullHistory.filter(
       (commitFromHistory) =>
         commitFromHistory.message.reference.objectType === 'asset' &&
         commitFromHistory.message.reference.id === commit.message.reference.id
@@ -41,7 +51,7 @@ export function AssetDiff({
     }
 
     return previousCommit;
-  }, [commit, project.fullHistory]);
+  }, [commit, history]);
 
   // Derive commitAfter during render with useMemo
   const commitAfter = useMemo(() => {
@@ -72,6 +82,7 @@ export function AssetDiff({
 
   // Show loading skeleton while queries are pending
   if (
+    isReadingHistory ||
     (commitBefore && isReadingAssetBefore) ||
     (commitAfter && isReadingAssetAfter)
   ) {

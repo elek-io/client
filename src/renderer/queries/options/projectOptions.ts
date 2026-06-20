@@ -4,6 +4,7 @@ import type {
   ListProjectsProps,
   PaginatedList,
   Project,
+  ProjectHistoryProps,
   ReadProjectProps,
 } from '@elek-io/core';
 
@@ -41,6 +42,14 @@ export const projectOptions = {
       ],
       queryFn: async () => {
         return await window.ipc.core.projects.read(props);
+      },
+      throwOnError: true,
+    }),
+  history: (props: ProjectHistoryProps) =>
+    queryOptions({
+      queryKey: ['projects', props.id, 'history'],
+      queryFn: async () => {
+        return await window.ipc.core.projects.history(props);
       },
       throwOnError: true,
     }),

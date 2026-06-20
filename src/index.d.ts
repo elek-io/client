@@ -48,6 +48,7 @@ declare global {
         count: ElekIoCore['projects']['count'];
         list: ElekIoCore['projects']['list'];
         read: ElekIoCore['projects']['read'];
+        history: ElekIoCore['projects']['history'];
         update: ElekIoCore['projects']['update'];
         getChanges: ElekIoCore['projects']['getChanges'];
         synchronize: ElekIoCore['projects']['synchronize'];
