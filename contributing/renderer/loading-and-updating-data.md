@@ -23,6 +23,53 @@ All `queryOptions` and `mutationOptions` are centrally defined in the [`options/
 - Automatic cache updates on mutations - Mutations automatically update related queries' cache data. For example, when you create a Project, both the individual Project cache AND the Projects list cache are updated without requiring a refetch.
 - Metadata for toast notifications (method and objectType)
 
+### Query Key Structure
+
+Query keys follow a consistent hierarchy so individual items, lists and historical states can be cached and invalidated independently. Each level is followed by a state marker (`'current'` for HEAD or a commit hash for a historical state), and list queries end in `'list'`:
+
+```typescript
+// all projects
+['projects', 'list'];
+
+// a project at HEAD / at a specific commit
+['projects', projectId, 'current'];
+['projects', projectId, commitHash];
+
+// uncommitted git changes of a project
+['projects', projectId, 'current', 'changes'];
+
+// collections in a project
+['projects', projectId, 'current', 'collections', 'list'];
+
+// a collection at HEAD
+['projects', projectId, 'current', 'collections', collectionId, 'current'];
+
+// entries in a collection
+[
+  'projects',
+  projectId,
+  'current',
+  'collections',
+  collectionId,
+  'current',
+  'entries',
+  'list',
+];
+
+// an entry at HEAD
+[
+  'projects',
+  projectId,
+  'current',
+  'collections',
+  collectionId,
+  'current',
+  'entries',
+  entryId,
+  'current',
+];
+```
+
 ## Querying Data
 
 ### Using Context Providers for User and Project Data
@@ -38,9 +85,9 @@ For accessing the current user and project data, prefer using the `useUser()` an
 
 #### UserProvider and useUser Hook
 
-The [`UserProvider`](../../src/renderer/providers/UserProvider.tsx) wraps the entire application at the root level (see [`routes/__root.tsx:130`](../../src/renderer/routes/__root.tsx)). It provides:
+The [`UserProvider`](../../src/renderer/providers/UserProvider.tsx) wraps the entire application at the root level (see [`routes/__root.tsx:131`](../../src/renderer/routes/__root.tsx)). It provides:
 
-- `userQuery: UseQueryResult<User | null>` - The current user query result
+- `userQuery: UseQueryResultNoError<User | null>` - The current user query result
 - `formatDatetime: (props: FormatDatetimeProps) => { relative: string; absolute: string }` - Formats datetime strings according to the user's locale
 
 **Example:** See [`components/user-header.tsx`](../../src/renderer/components/user-header.tsx)
@@ -68,11 +115,11 @@ function UserHeader() {
 
 #### ProjectProvider and useProject Hook
 
-The [`ProjectProvider`](../../src/renderer/providers/ProjectProvider.tsx) wraps all project-specific routes (see [`routes/projects/$projectId.tsx:14`](../../src/renderer/routes/projects/$projectId.tsx)). It provides:
+The [`ProjectProvider`](../../src/renderer/providers/ProjectProvider.tsx) wraps all project-specific routes (see [`routes/projects/$projectId.tsx:32`](../../src/renderer/routes/projects/$projectId.tsx)). It provides:
 
 - `projectId: string` - The current project ID from the route
-- `projectQuery: UseQueryResult<Project>` - The current project query result
-- `userQuery: UseQueryResult<User | null>` - The current user query result (inherited from UserProvider)
+- `projectQuery: UseQueryResultNoError<Project>` - The current project query result
+- `userQuery: UseQueryResultNoError<User | null>` - The current user query result (inherited from UserProvider)
 - `formatDatetime: (props: FormatDatetimeProps) => { relative: string; absolute: string }` - Datetime formatter (inherited from UserProvider)
 - `translateContent: (props: TranslateContentProps) => string` - Translates user-defined content to the current user's language, falling back to the project's default language, then English
 
@@ -83,14 +130,14 @@ import { useProject } from '@renderer/hooks/useProject';
 
 function ProjectSettings() {
   const { projectQuery, translateContent } = useProject();
+  const { data: project, isPending: isReadingProject } = projectQuery;
 
-  // Access project data
-  const project = projectQuery.data;
+  if (isReadingProject) return <LoadingSkeleton />;
 
-  // Translate content
+  // project (and its name) is now defined
   const title = translateContent({
     key: 'project.title',
-    record: project?.name // TranslatableString object
+    record: project.name, // TranslatableString object
   });
 
   return <h1>{title}</h1>;
@@ -106,13 +153,13 @@ We prioritize fast, responsive UI by rendering pages immediately without waiting
 **Example:** See [`routes/projects/index.tsx`](../../src/renderer/routes/projects/index.tsx)
 
 ```typescript
-const { data: projects, isPending } = useQuery(
+const { data: projects, isPending: isListingProjects } = useQueryNoError(
   queryOptions.projects.list({ limit: 0 })
 );
 
 return (
   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-    {isPending
+    {isListingProjects
       ? [1, 2, 3, 4, 5].map((i) => <ProjectCardSkeleton key={i} />)
       : projects.list.map((project) => (
           <ProjectCard key={project.id} project={project} />
@@ -146,6 +193,8 @@ return <div>{collection.name}</div>;
 
 See the hook's JSDoc for implementation details. Errors are caught by the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx).
 
+For fetching a variable-length list of same-typed queries (for example one `entries.list` per Collection), use the sibling [`useQueriesNoError`](../../src/renderer/hooks/useQueriesNoError.ts) hook, which applies the same error narrowing to an array of query options.
+
 **Naming Conventions:**
 
 When destructuring `useQueryNoError`, follow these patterns based on the query operation:
@@ -172,6 +221,18 @@ const { data: collection, isPending: isReadingCollection } = useQueryNoError(
 );
 ```
 
+**Component props vs query state:**
+
+Query state uses `isPending` (TanStack Query's term). The `Button` component, however, accepts an `isLoading` prop for component API consistency. Both are intentional - pass the query's pending state into the button's `isLoading` prop:
+
+```typescript
+const { mutateAsync: createProject, isPending: isCreatingProject } = useMutation(
+  queryOptions.projects.create
+);
+
+<Button isLoading={isCreatingProject}>Create</Button>;
+```
+
 ## Mutating Data
 
 ### Form Mutations with Existing Data
@@ -183,17 +244,18 @@ When building forms to update existing data, we need to handle the loading state
 **Example:** See [`routes/user/profile.tsx`](../../src/renderer/routes/user/profile.tsx)
 
 ```typescript
-const { data: user, isPending: isGettingUser } = useQuery(
-  queryOptions.user.get()
-);
+// Source the user from the useUser() hook (see "Using Context Providers" above)
+const {
+  userQuery: { data: user, isPending: isGettingUser },
+} = useUser();
 
 const setUserForm = useForm<SetUserProps>({
   defaultValues: { /* ... */ }
 });
 
-// Update form when data loads
+// Reset the form with user data once it loads
 useEffect(() => {
-  if (isGettingUser === false) {
+  if (user) {
     setUserForm.reset(user);
   }
 }, [user, setUserForm]);
@@ -201,7 +263,7 @@ useEffect(() => {
 return (
   <Form {...setUserForm}>
     <form>
-      <fieldset disabled={isUserPending}>
+      <fieldset disabled={isGettingUser}>
         {/* Form fields here - automatically disabled while loading */}
         <FormField name="name" /* ... */ />
         <FormField name="email" /* ... */ />
@@ -385,6 +447,10 @@ const onSave = async (data) => {
 
 Mutations already have `onSuccess` handlers that update the necessary caches. Using `router.invalidate()` is redundant and invalidates unrelated queries.
 
----
+## Error Handling
 
-**Last Updated:** 2025-12-01
+The client handles errors in three layers:
+
+1. **Route error boundaries** - the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx) catches all unhandled errors, logs them to the Core logger, and shows a friendly error page with a way back to the projects list. Sentry capture for React errors is wired separately, via Sentry's `reactErrorHandler` passed to `ReactDOM.createRoot` in [`app.tsx`](../../src/renderer/app.tsx) (Sentry itself is initialized in [`index.ts`](../../src/renderer/index.ts)).
+2. **Query and mutation errors** - `throwOnError: true` is set by default (via `useQueryNoError` and `customMutationOptions`), so query errors bubble to the nearest error boundary and mutation failures additionally show a toast through the global handler.
+3. **Core logger** - all errors, mutations and navigations are logged through Core, accessible via `window.ipc.core.logger`.

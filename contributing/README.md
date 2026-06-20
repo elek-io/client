@@ -3,7 +3,7 @@
 Welcome to the elek.io Client developer documentation. This guide will help you understand the codebase architecture and development patterns.
 
 > [!NOTE]
-> If your main interest is using Projects content inside your own applications, you can skip to the [Consuming Content Locally](./consuming-content-locally.md) section.
+> This folder documents how to **contribute to** elek.io Client. If instead you want to consume your Projects' content inside your own applications, see the [@elek-io/core documentation](https://github.com/elek-io/core). Core ships its full guides (content export, local API, API client generation) both in its repository and in the package's `docs` folder.
 
 ## Prerequisites
 
@@ -18,9 +18,12 @@ Welcome to the elek.io Client developer documentation. This guide will help you 
 
 Then proceed to the specific topics based on your interests or contribution goals:
 
+- **[Routing](./renderer/routing.md)** - File-based routing, layout routes, hash history, and why data is fetched in components rather than route guards
 - **[Loading and Updating Data](./renderer/loading-and-updating-data.md)** - TanStack Query patterns for data fetching and mutations
-- **[Dynamic Form Generation](./renderer/dynamic-form-field-generation.md)** - How user-defined forms work with field definitions
+- **[Dynamic Form Field Generation](./renderer/dynamic-form-field-generation.md)** - How user-defined forms work with field definitions
 - **[Breadcrumb Navigation](./renderer/breadcrumb-navigation.md)** - Route-based breadcrumb system for hierarchical navigation
+- **[Theming and Styling](./renderer/theming-and-styling.md)** - shadcn/ui components, Tailwind v4 CSS configuration, and dark mode
+- **[Internationalization](./renderer/internationalization.md)** - translations, datetime locales, and multi-language form state
 
 ## Contributing
 
@@ -29,7 +32,6 @@ When updating these docs:
 - Keep code examples up-to-date with actual implementation
 - Include file references with line numbers where relevant
 - Add practical examples for complex concepts
-- Update the "Last Updated" date at the bottom of each document
 
 ## Additional Resources
 
@@ -38,7 +40,3 @@ When updating these docs:
 - [React Hook Form Documentation](https://react-hook-form.com/get-started)
 - [shadcn/ui Documentation](https://ui.shadcn.com/docs)
 - [@elek-io/core Repository](https://github.com/elek-io/core)
-
----
-
-**Last Updated:** 2025-12-04

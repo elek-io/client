@@ -16,7 +16,7 @@ The breadcrumb system consists of three main parts:
 ### BreadcrumbProvider (`src/renderer/providers/BreadcrumbProvider.tsx`)
 
 The provider manages breadcrumb state using a Map and TanStack Router's `useMatches()` hook.
-It's `setBreadcrumb()` method adds a new breadcrumb to the map, using path as the key.
+Its `setBreadcrumb()` method adds a new breadcrumb to the map, using path as the key.
 
 When computing the current breadcrumbs, it iterates over the active route matches provided by `useMatches()`. Each match contains (along with other properties) the `routeId` and `pathname`.
 E.g. if you are currently at `/projects/32ba1a3c-c775-4ff0-b5cd-08c71edfe18b/dashboard`, the matches would be:
@@ -38,12 +38,14 @@ E.g. if you are currently at `/projects/32ba1a3c-c775-4ff0-b5cd-08c71edfe18b/das
 
 For each match, it looks up the corresponding breadcrumb in its internal map by `pathname` to build the breadcrumb trail, returning an ordered array of breadcrumbs.
 
-**Provider Location:** Wraps the entire application in `src/renderer/routes/__root.tsx:18`
+**Provider Location:** Rendered inside `RootComponent` in `src/renderer/routes/__root.tsx`, nested within `UserProvider`:
 
 ```tsx
-<BreadcrumbProvider>
-  <UserProvider>{/* App content */}</UserProvider>
-</BreadcrumbProvider>
+<UserProvider>
+  <BreadcrumbProvider>
+    {/* AppHeader, UserHeader, Outlet, ... */}
+  </BreadcrumbProvider>
+</UserProvider>
 ```
 
 ### useBreadcrumb Hook (`src/renderer/hooks/useBreadcrumb.ts`)
@@ -63,7 +65,7 @@ function useBreadcrumb(
 ): BreadcrumbContextValue;
 ```
 
-The hook takes an optional `route` (returned value of `createFileRoute()`) and `label`. If provided, it uses the providers `setBreadcrumb()` method to register the current path of `route.pathname` with the given `label`.
+The hook takes an optional `route` (the value returned by `createFileRoute()`) and `label`. When both are provided, it finds the active route match whose `routeId` equals `route.id`, then registers that match's resolved `pathname` with the given `label` via the provider's `setBreadcrumb()` method. It does not read `route.pathname` directly, because a parameterized route (for example `$projectId`) has no resolved path on the route object itself. A label of `undefined` or `''` skips registration (useful while data loads), and the breadcrumb is removed again when the route unmounts.
 
 ## Usage Patterns
 
@@ -140,7 +142,3 @@ export function UserHeader(): React.JSX.Element {
   );
 }
 ```
-
----
-
-**Last Updated:** 2025-12-04
