@@ -1,5 +1,14 @@
-import { Fragment, type HTMLAttributes, type ReactElement } from 'react';
-import { type FieldValues, type UseFormReturn } from 'react-hook-form';
+import {
+  Fragment,
+  useEffect,
+  type HTMLAttributes,
+  type ReactElement,
+} from 'react';
+import {
+  useWatch,
+  type FieldValues,
+  type UseFormReturn,
+} from 'react-hook-form';
 
 import {
   FormControl,
@@ -11,6 +20,7 @@ import {
   TranslatableFormInputField,
   TranslatableFormTextareaField,
 } from '@renderer/components/ui/form';
+import { Input } from '@renderer/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -22,7 +32,8 @@ import { Separator } from '@renderer/components/ui/separator';
 import { Switch } from '@renderer/components/ui/switch';
 
 import {
-  FieldWidthSchema,
+  fieldWidthSchema,
+  slug,
   type FieldDefinition,
   type FieldType,
   type SupportedLanguage,
@@ -43,6 +54,17 @@ const DefaultFieldDefinitionForm = ({
   children,
   fieldType,
 }: DefaultFieldDefinitionFormProps<FieldDefinition>): ReactElement => {
+  const labelValue = useWatch({
+    control: form.control,
+    name: `label.${currentLanguage}`,
+  });
+  // Auto-generate the slug from the label until the user edits the slug manually
+  useEffect(() => {
+    if (form.getFieldState('slug').isDirty === false) {
+      form.setValue('slug', slug(labelValue ?? ''));
+    }
+  }, [form, labelValue]);
+
   return (
     <Fragment>
       <FormField
@@ -68,6 +90,24 @@ const DefaultFieldDefinitionForm = ({
               The label is displayed above the input Field and should indicate
               what the user is supposed to enter. For example &quot;Title&quot;,
               &quot;Date of birth&quot; or &quot;Summary&quot;.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="slug"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel isRequired>Slug</FormLabel>
+            <FormControl>
+              <Input type="text" {...field} />
+            </FormControl>
+            <FormDescription>
+              The technical key this Field&apos;s Values are stored under. It is
+              generated from the label until edited manually.
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -111,7 +151,7 @@ const DefaultFieldDefinitionForm = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FieldWidthSchema.options.map((option) => {
+                  {fieldWidthSchema.options.map((option) => {
                     return (
                       <SelectItem key={option} value={option}>
                         {option} / 12

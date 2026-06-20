@@ -63,16 +63,16 @@ function ProjectCollectionCreate(): ReactElement {
         name: {
           singular: translatableDefault({
             supportedLanguages: project.settings.language.supported,
-            defaultValue: null,
+            defaultValue: '',
           }),
           plural: translatableDefault({
             supportedLanguages: project.settings.language.supported,
-            defaultValue: null,
+            defaultValue: '',
           }),
         },
         description: translatableDefault({
           supportedLanguages: project.settings.language.supported,
-          defaultValue: null,
+          defaultValue: '',
         }),
         slug: {
           singular: '',

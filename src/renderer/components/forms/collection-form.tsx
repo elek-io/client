@@ -23,6 +23,7 @@ import {
   FormDescription,
   FormField,
   FormFieldFromDefinition,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -50,7 +51,7 @@ import {
 import {
   type CreateCollectionProps,
   type FieldType,
-  FieldTypeSchema,
+  fieldTypeSchema,
   type Project,
   type UpdateCollectionProps,
   supportedIconSchema,
@@ -199,14 +200,14 @@ export const CollectionForm = ({
               />
             </div>
 
-            {/* <FormField
+            <FormField
               control={collectionForm.control}
-              name={`slug.plural`}
+              name="slug.plural"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Collection-Slug</FormLabel>
+                  <FormLabel isRequired>Collection-Slug</FormLabel>
                   <FormControl>
-                    <Input placeholder="blogposts" {...field} />
+                    <FormInputField field={field} type="text" />
                   </FormControl>
                   <FormDescription>
                     A lowercase version without any special characters of the
@@ -216,16 +217,16 @@ export const CollectionForm = ({
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
 
-            {/* <FormField
+            <FormField
               control={collectionForm.control}
-              name={`slug.singular`}
+              name="slug.singular"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Entry-Slug</FormLabel>
+                  <FormLabel isRequired>Entry-Slug</FormLabel>
                   <FormControl>
-                    <Input placeholder="blogpost" {...field} />
+                    <FormInputField field={field} type="text" />
                   </FormControl>
                   <FormDescription>
                     A lowercase version without any special characters of the
@@ -235,7 +236,7 @@ export const CollectionForm = ({
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
           </div>
 
           <PageSection
@@ -293,7 +294,7 @@ export const CollectionForm = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {FieldTypeSchema.options.map((option) => {
+                            {fieldTypeSchema.options.map((option) => {
                               return (
                                 <SelectItem key={option} value={option}>
                                   {option}

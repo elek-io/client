@@ -57,7 +57,7 @@ function ProjectDashboardPage(): React.JSX.Element {
             <code>{JSON.stringify(project, null, 2)}</code>
           </pre>
         </PageSection>
-        <PageSection
+        {/* <PageSection
           title="Latest changes"
           description="View the latest changes made to the project."
           actions={<LatestChangesActions />}
@@ -72,7 +72,7 @@ function ProjectDashboardPage(): React.JSX.Element {
               commits={project.fullHistory.slice(0, 5)}
             />
           )}
-        </PageSection>
+        </PageSection> */}
       </div>
     </Page>
   );

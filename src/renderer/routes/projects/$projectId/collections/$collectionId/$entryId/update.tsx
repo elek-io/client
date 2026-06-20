@@ -48,15 +48,19 @@ function UpdateEntryPage(): ReactElement {
   const { mutateAsync: updateEntry, isPending: isUpdatingEntry } = useMutation(
     queryOptions.entries.update
   );
-  const generatedUpdateEntrySchema = collection
-    ? getUpdateEntrySchemaFromFieldDefinitions(collection.fieldDefinitions)
-    : getUpdateEntrySchemaFromFieldDefinitions([]);
+  const generatedUpdateEntrySchema =
+    collection && project
+      ? getUpdateEntrySchemaFromFieldDefinitions(
+          collection.fieldDefinitions,
+          project.settings.language.supported
+        )
+      : getUpdateEntrySchemaFromFieldDefinitions([], []);
 
   const updateEntryForm = useForm<UpdateEntryProps>({
     resolver: zodResolver(generatedUpdateEntrySchema),
     defaultValues: {
       id: entryId,
-      values: [],
+      values: {},
     },
   });
 

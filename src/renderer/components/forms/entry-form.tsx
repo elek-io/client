@@ -41,7 +41,7 @@ export function EntryForm({
                   key={fieldDefinition.id}
                   fieldDefinition={fieldDefinition}
                   form={entryForm}
-                  name={`values.${index}.content.${project.settings.language.default}`}
+                  name={`values.${fieldDefinition.slug}.content.${project.settings.language.default}`}
                   supportedLanguages={project.settings.language.supported}
                 />
               );

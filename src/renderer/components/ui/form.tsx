@@ -3,7 +3,15 @@
 import type * as SliderPrimitive from '@radix-ui/react-slider';
 import { Slot } from '@radix-ui/react-slot';
 import type * as SwitchPrimitive from '@radix-ui/react-switch';
-import { EditIcon, LanguagesIcon, TrashIcon } from 'lucide-react';
+import {
+  CheckIcon,
+  EditIcon,
+  ImagePlusIcon,
+  LanguagesIcon,
+  ListPlusIcon,
+  TrashIcon,
+  XIcon,
+} from 'lucide-react';
 import * as React from 'react';
 import {
   Controller,
@@ -17,6 +25,7 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 
+import { AssetDisplay } from '@renderer/components/asset-display';
 import { DragHandle } from '@renderer/components/drag-and-drop';
 import { Button } from '@renderer/components/ui/button';
 import {
@@ -41,12 +50,22 @@ import {
   useFormField,
 } from '@renderer/hooks/useFormField';
 import { useProject } from '@renderer/hooks/useProject';
+import { useQueriesNoError } from '@renderer/hooks/useQueriesNoError';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { cn, fieldWidth } from '@renderer/lib/utils';
+import { queryOptions } from '@renderer/queries';
 
 import type {
+  Asset,
+  AssetFieldDefinition,
+  Collection,
+  Entry,
+  EntryFieldDefinition,
   FieldDefinition,
   FieldType,
   SupportedLanguage,
+  ValueContentReferenceToAsset,
+  ValueContentReferenceToEntry,
 } from '@elek-io/core';
 
 import { DatePicker } from './date-picker';
@@ -584,6 +603,466 @@ function FormToggleField<TFieldValues extends FieldValues>({
   );
 }
 
+interface FormAssetFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+  fieldDefinition: AssetFieldDefinition;
+  disabled?: boolean;
+  required?: boolean;
+}
+
+/**
+ * Form field component for selecting one or multiple existing Assets.
+ * Opens a dialog to browse and select assets from the project.
+ * The field value is an array of ValueContentReferenceToAsset objects.
+ */
+function FormAssetField<TFieldValues extends FieldValues>({
+  field,
+  fieldDefinition,
+  disabled,
+}: FormAssetFieldProps<TFieldValues>): React.ReactElement {
+  const { projectId } = useProject();
+  const { data: assetList, isPending: isReadingAssets } = useQueryNoError(
+    queryOptions.assets.list({ projectId, limit: 0 })
+  );
+
+  const selectedRefs: ValueContentReferenceToAsset[] = Array.isArray(
+    field.value
+  )
+    ? field.value
+    : [];
+
+  const selectedIds = new Set(selectedRefs.map((ref) => ref.id));
+
+  const maxReached =
+    fieldDefinition.max !== null && selectedRefs.length >= fieldDefinition.max;
+
+  function toggleAsset(asset: Asset): void {
+    if (selectedIds.has(asset.id)) {
+      field.onChange(
+        selectedRefs.filter((ref) => ref.id !== asset.id) as typeof field.value
+      );
+    } else if (!maxReached) {
+      field.onChange([
+        ...selectedRefs,
+        { id: asset.id, objectType: 'asset' as const },
+      ] as typeof field.value);
+    }
+  }
+
+  function removeAsset(assetId: string): void {
+    field.onChange(
+      selectedRefs.filter((ref) => ref.id !== assetId) as typeof field.value
+    );
+  }
+
+  // Resolve selected refs to full Asset objects for display
+  const selectedAssets: Asset[] = isReadingAssets
+    ? []
+    : selectedRefs
+        .map((ref) => assetList.list.find((a) => a.id === ref.id))
+        .filter((a): a is Asset => a !== undefined);
+
+  return (
+    <div className="space-y-3">
+      {selectedAssets.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          {selectedAssets.map((asset) => (
+            <div
+              key={asset.id}
+              className="group relative overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700"
+            >
+              <AssetDisplay {...asset} static className="aspect-4/3" />
+              <div className="truncate px-2 py-1 text-xs text-muted-foreground">
+                {asset.name}
+              </div>
+              {disabled !== true && (
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-1 right-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                  onClick={() => removeAsset(asset.id)}
+                  type="button"
+                  Icon={XIcon}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            variant="secondary"
+            type="button"
+            disabled={disabled === true || maxReached}
+            Icon={ImagePlusIcon}
+          >
+            Select Assets
+            {fieldDefinition.min !== null || fieldDefinition.max !== null ? (
+              <span className="ml-1 text-muted-foreground">
+                ({selectedRefs.length}
+                {fieldDefinition.max !== null
+                  ? ` / ${fieldDefinition.max}`
+                  : ''}
+                )
+              </span>
+            ) : null}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Select Assets</DialogTitle>
+            <DialogDescription>
+              {fieldDefinition.max !== null
+                ? `Select up to ${fieldDefinition.max} asset${fieldDefinition.max !== 1 ? 's' : ''}.`
+                : 'Select one or more assets.'}
+              {fieldDefinition.min !== null
+                ? ` At least ${fieldDefinition.min} required.`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogBody>
+            {isReadingAssets ? (
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => {
+                  const key = `skeleton-${String(i)}`;
+                  return (
+                    <div
+                      key={key}
+                      className="aspect-4/3 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800"
+                    />
+                  );
+                })}
+              </div>
+            ) : assetList.list.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                No assets available. Add assets to the project first.
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {assetList.list.map((asset) => {
+                  const isSelected = selectedIds.has(asset.id);
+                  const isDisabledOption = !isSelected && maxReached;
+
+                  return (
+                    <button
+                      key={asset.id}
+                      type="button"
+                      disabled={isDisabledOption}
+                      onClick={() => toggleAsset(asset)}
+                      className={cn(
+                        'relative cursor-pointer overflow-hidden rounded-md border-2 transition-all',
+                        isSelected
+                          ? 'border-primary ring-2 ring-primary/20'
+                          : 'border-zinc-200 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500',
+                        isDisabledOption && 'cursor-not-allowed opacity-50'
+                      )}
+                    >
+                      <AssetDisplay {...asset} static />
+                      <div className="truncate px-2 py-1 text-xs text-muted-foreground">
+                        {asset.name}
+                      </div>
+                      {isSelected === true ? (
+                        <div className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <CheckIcon className="h-3 w-3" />
+                        </div>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </DialogBody>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">Done</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+interface FormEntryFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+  fieldDefinition: EntryFieldDefinition;
+  disabled?: boolean;
+  required?: boolean;
+}
+
+/**
+ * Form field component for selecting one or multiple existing Entries.
+ * Opens a dialog to browse and select entries from allowed collections.
+ * The field value is an array of ValueContentReferenceToEntry objects.
+ */
+function FormEntryField<TFieldValues extends FieldValues>({
+  field,
+  fieldDefinition,
+  disabled,
+}: FormEntryFieldProps<TFieldValues>): React.ReactElement {
+  const { projectId, translateContent } = useProject();
+  const { data: collectionList, isPending: isReadingCollections } =
+    useQueryNoError(queryOptions.collections.list({ projectId, limit: 0 }));
+
+  // Filter collections based on ofCollections restriction
+  const allowedCollections: Collection[] = isReadingCollections
+    ? []
+    : fieldDefinition.ofCollections.length > 0
+      ? collectionList.list.filter((c) =>
+          fieldDefinition.ofCollections.includes(c.id)
+        )
+      : collectionList.list;
+
+  // Fetch entries for each allowed collection
+  const entryQueries = useQueriesNoError(
+    allowedCollections.map((c) =>
+      queryOptions.entries.list({ projectId, collectionId: c.id, limit: 0 })
+    )
+  );
+
+  const isReadingEntries = entryQueries.some((q) => q.isPending);
+
+  // Build a flat list of all available entries with their collection context
+  const availableEntries: Array<{ entry: Entry; collection: Collection }> = [];
+  if (isReadingEntries === false) {
+    allowedCollections.forEach((collection, index) => {
+      const entryQuery = entryQueries[index];
+      if (entryQuery !== undefined && entryQuery.isPending === false) {
+        entryQuery.data.list.forEach((entry) => {
+          availableEntries.push({ entry, collection });
+        });
+      }
+    });
+  }
+
+  const selectedRefs: ValueContentReferenceToEntry[] = Array.isArray(
+    field.value
+  )
+    ? field.value
+    : [];
+
+  const selectedIds = new Set(selectedRefs.map((ref) => ref.id));
+
+  const maxReached =
+    fieldDefinition.max !== null && selectedRefs.length >= fieldDefinition.max;
+
+  function toggleEntry(entryId: string): void {
+    if (selectedIds.has(entryId)) {
+      field.onChange(
+        selectedRefs.filter((ref) => ref.id !== entryId) as typeof field.value
+      );
+    } else if (maxReached === false) {
+      field.onChange([
+        ...selectedRefs,
+        { id: entryId, objectType: 'entry' as const },
+      ] as typeof field.value);
+    }
+  }
+
+  function removeEntry(entryId: string): void {
+    field.onChange(
+      selectedRefs.filter((ref) => ref.id !== entryId) as typeof field.value
+    );
+  }
+
+  /**
+   * Returns a human-readable label for an entry by extracting the first
+   * string value from its content, or falls back to a truncated ID.
+   */
+  function getEntryLabel(entry: Entry): string {
+    for (const value in entry.values) {
+      if (entry.values[value]?.valueType === 'string') {
+        const content = Object.values(entry.values[value].content).find(
+          (v) => typeof v === 'string' && v.length > 0
+        );
+        if (content !== undefined) {
+          return String(content);
+        }
+      }
+    }
+    return entry.id.slice(0, 8);
+  }
+
+  // Resolve selected refs to entries with collection context for display
+  const selectedEntries = selectedRefs
+    .map((ref) => {
+      const found = availableEntries.find((ae) => ae.entry.id === ref.id);
+      return found !== undefined ? found : null;
+    })
+    .filter(
+      (item): item is { entry: Entry; collection: Collection } => item !== null
+    );
+
+  // Group available entries by collection for the picker dialog
+  const entriesByCollection = allowedCollections.map((collection, index) => ({
+    collection,
+    entries:
+      isReadingEntries === false &&
+      entryQueries[index] !== undefined &&
+      entryQueries[index].isPending === false
+        ? entryQueries[index].data.list
+        : [],
+  }));
+
+  return (
+    <div className="space-y-3">
+      {selectedEntries.length > 0 && (
+        <div className="space-y-1">
+          {selectedEntries.map(({ entry, collection }) => (
+            <div
+              key={entry.id}
+              className="group flex items-center justify-between rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-700"
+            >
+              <div className="min-w-0 flex-1">
+                <span className="text-sm font-medium">
+                  {getEntryLabel(entry)}
+                </span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {translateContent({
+                    key: 'collection.name.singular',
+                    record: collection.name.singular,
+                  })}
+                </span>
+              </div>
+              {disabled !== true && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                  onClick={() => removeEntry(entry.id)}
+                  type="button"
+                  Icon={XIcon}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            variant="secondary"
+            type="button"
+            disabled={disabled === true || maxReached}
+            Icon={ListPlusIcon}
+          >
+            Select Entries
+            {fieldDefinition.min !== null || fieldDefinition.max !== null ? (
+              <span className="ml-1 text-muted-foreground">
+                ({selectedRefs.length}
+                {fieldDefinition.max !== null
+                  ? ` / ${fieldDefinition.max}`
+                  : ''}
+                )
+              </span>
+            ) : null}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Select Entries</DialogTitle>
+            <DialogDescription>
+              {fieldDefinition.max !== null
+                ? `Select up to ${fieldDefinition.max} ${fieldDefinition.max !== 1 ? 'entries' : 'entry'}.`
+                : 'Select one or more entries.'}
+              {fieldDefinition.min !== null
+                ? ` At least ${fieldDefinition.min} required.`
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogBody>
+            {isReadingCollections === true || isReadingEntries === true ? (
+              <div className="space-y-2">
+                {Array.from({ length: 6 }).map((_, i) => {
+                  const key = `skeleton-${String(i)}`;
+                  return (
+                    <div
+                      key={key}
+                      className="h-10 animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-800"
+                    />
+                  );
+                })}
+              </div>
+            ) : availableEntries.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                No entries available. Create entries in the allowed collections
+                first.
+              </p>
+            ) : (
+              <div className="space-y-6">
+                {entriesByCollection.map(({ collection, entries }) => {
+                  if (entries.length === 0) return null;
+                  return (
+                    <div key={collection.id}>
+                      <h4 className="mb-2 text-sm font-medium text-muted-foreground">
+                        {translateContent({
+                          key: 'collection.name.plural',
+                          record: collection.name.plural,
+                        })}
+                      </h4>
+                      <div className="space-y-1">
+                        {entries.map((entry) => {
+                          const isSelected = selectedIds.has(entry.id);
+                          const isDisabledOption =
+                            isSelected === false && maxReached;
+
+                          return (
+                            <button
+                              key={entry.id}
+                              type="button"
+                              disabled={isDisabledOption}
+                              onClick={() => toggleEntry(entry.id)}
+                              className={cn(
+                                'flex w-full items-center rounded-md border-2 px-3 py-2 text-left transition-all',
+                                isSelected === true
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-zinc-200 hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500',
+                                isDisabledOption === true &&
+                                  'cursor-not-allowed opacity-50'
+                              )}
+                            >
+                              <span className="min-w-0 flex-1 truncate text-sm">
+                                {getEntryLabel(entry)}
+                              </span>
+                              {isSelected === true ? (
+                                <div className="ml-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                  <CheckIcon className="h-3 w-3" />
+                                </div>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </DialogBody>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">Done</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 export interface FormComponentFromFieldDefinitionProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -710,11 +1189,29 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
           }
         />
       );
+    case 'asset':
+      return (
+        <FormAssetField
+          fieldDefinition={fieldDefinition}
+          disabled={fieldDefinition.isDisabled}
+          required={fieldDefinition.isRequired}
+          field={field}
+          {...props}
+        />
+      );
+    case 'entry':
+      return (
+        <FormEntryField
+          fieldDefinition={fieldDefinition}
+          disabled={fieldDefinition.isDisabled}
+          required={fieldDefinition.isRequired}
+          field={field}
+          {...props}
+        />
+      );
     case 'time':
     case 'datetime':
     case 'ipv4':
-    case 'asset':
-    case 'entry':
       throw new Error(
         `[FormComponentFromFieldDefinition] Unsupported fieldType "${fieldDefinition.fieldType}"`
       );
@@ -975,6 +1472,8 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  FormAssetField,
+  FormEntryField,
   FormDateField,
   FormFieldFromDefinition,
 };

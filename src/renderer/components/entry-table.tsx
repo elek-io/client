@@ -58,7 +58,7 @@ export function EntryTable({
     const columns: ColumnDef<Entry>[] = collection.fieldDefinitions.map(
       (definition) => {
         return {
-          accessorKey: definition.id,
+          accessorKey: definition.slug,
           header: translateContent({
             key: 'definition.label',
             record: definition.label,
@@ -87,6 +87,12 @@ export function EntryTable({
 
     return columns;
   }
+  const fieldTypeBySlug = new Map(
+    collection.fieldDefinitions.map((definition) => [
+      definition.slug,
+      definition.fieldType,
+    ])
+  );
   const table = useReactTable({
     data: entries.list.map((entry) => {
       const row: { [x: string]: unknown } = {
@@ -95,10 +101,34 @@ export function EntryTable({
         updated: formatDatetime({ datetime: entry.updated }).relative,
       };
 
-      entry.values.map((value) => {
-        row[value.fieldDefinitionId] =
-          value.content[project.settings.language.default];
-      });
+      for (const [slug, value] of Object.entries(entry.values)) {
+        if (value.valueType === 'reference') {
+          // Reference content is an array of { id, objectType } objects,
+          // which cannot be rendered directly - show a count instead
+          const references =
+            value.content[project.settings.language.default] ?? [];
+          const fieldType = fieldTypeBySlug.get(slug);
+          const noun =
+            fieldType === 'asset'
+              ? references.length === 1
+                ? 'Asset'
+                : 'Assets'
+              : fieldType === 'entry'
+                ? references.length === 1
+                  ? 'Entry'
+                  : 'Entries'
+                : references.length === 1
+                  ? 'Reference'
+                  : 'References';
+          row[slug] =
+            references.length === 0
+              ? undefined
+              : `${String(references.length)} ${noun}`;
+        } else {
+          row[slug] = value.content[project.settings.language.default];
+        }
+      }
+
       return row;
     }),
     columns: columns(),

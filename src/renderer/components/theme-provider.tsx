@@ -11,7 +11,7 @@ type ThemeProviderProps = {
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'elek-io-desktop-theme',
+  storageKey = 'client-theme',
   ...props
 }: ThemeProviderProps): React.ReactElement {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -22,19 +22,28 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement;
 
-    root.classList.remove('light', 'dark');
+    const applyTheme = (resolved: 'light' | 'dark'): void => {
+      root.classList.remove('light', 'dark');
+      root.classList.add(resolved);
+    };
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
-
-      root.classList.add(systemTheme);
+    if (theme !== 'system') {
+      applyTheme(theme);
       return;
     }
 
-    root.classList.add(theme);
+    // While the theme is 'system', follow the OS preference live
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    applyTheme(mediaQuery.matches ? 'dark' : 'light');
+
+    const onSystemThemeChange = (event: MediaQueryListEvent): void => {
+      applyTheme(event.matches ? 'dark' : 'light');
+    };
+    mediaQuery.addEventListener('change', onSystemThemeChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', onSystemThemeChange);
+    };
   }, [theme]);
 
   const value = {

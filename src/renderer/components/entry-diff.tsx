@@ -87,7 +87,7 @@ export function EntryDiff({
       projectId: project.id,
       collectionId,
       id: commit.message.reference.id,
-      values: [],
+      values: {},
     },
   });
 
@@ -113,7 +113,7 @@ export function EntryDiff({
       projectId: project.id,
       collectionId,
       id: commit.message.reference.id,
-      values: [],
+      values: {},
     },
   });
 
