@@ -76,11 +76,11 @@ export const FieldDefinitionForm = forwardRef(
       slug: '',
       label: translatableDefault({
         supportedLanguages: props.supportedLanguages,
-        defaultValue: null,
+        defaultValue: '',
       }),
       description: translatableDefault({
         supportedLanguages: props.supportedLanguages,
-        defaultValue: null,
+        defaultValue: '',
       }),
       isRequired: true,
       isDisabled: false,

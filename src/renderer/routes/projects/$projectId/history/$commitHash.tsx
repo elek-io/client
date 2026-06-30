@@ -61,7 +61,6 @@ function ProjectHistoryCommitPage(): ReactElement {
 
     switch (commit.message.reference.objectType) {
       case 'value':
-      case 'sharedValue':
         return <></>;
       case 'project':
         return <ProjectDiff project={project} commit={commit} />;
@@ -84,7 +83,13 @@ function ProjectHistoryCommitPage(): ReactElement {
             <br />
             <Badge className="relative mt-2" variant="secondary">
               <Tag className="absolute -right-3 -bottom-2 h-4 w-4" />
-              {commit.tag.message}
+              {commit.tag.message.type === 'upgrade'
+                ? `Core ${commit.tag.message.coreVersion}`
+                : `${
+                    commit.tag.message.type === 'release'
+                      ? 'Release'
+                      : 'Preview'
+                  } ${commit.tag.message.version}`}
             </Badge>
           </>
         ) : null}

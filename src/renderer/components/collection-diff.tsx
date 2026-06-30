@@ -87,16 +87,16 @@ export function CollectionDiff({
       name: {
         singular: translatableDefault({
           supportedLanguages: project.settings.language.supported,
-          defaultValue: null,
+          defaultValue: '',
         }),
         plural: translatableDefault({
           supportedLanguages: project.settings.language.supported,
-          defaultValue: null,
+          defaultValue: '',
         }),
       },
       description: translatableDefault({
         supportedLanguages: project.settings.language.supported,
-        defaultValue: null,
+        defaultValue: '',
       }),
       slug: {
         singular: '',
@@ -130,16 +130,16 @@ export function CollectionDiff({
       name: {
         singular: translatableDefault({
           supportedLanguages: project.settings.language.supported,
-          defaultValue: null,
+          defaultValue: '',
         }),
         plural: translatableDefault({
           supportedLanguages: project.settings.language.supported,
-          defaultValue: null,
+          defaultValue: '',
         }),
       },
       description: translatableDefault({
         supportedLanguages: project.settings.language.supported,
-        defaultValue: null,
+        defaultValue: '',
       }),
       slug: {
         singular: '',
