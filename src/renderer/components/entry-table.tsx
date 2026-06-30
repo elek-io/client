@@ -35,7 +35,13 @@ import {
 } from '@renderer/components/ui/table';
 import { useProject } from '@renderer/hooks/useProject';
 
-import type { Collection, Entry, PaginatedList, Project } from '@elek-io/core';
+import {
+  flattenFieldDefinitions,
+  type Collection,
+  type Entry,
+  type PaginatedList,
+  type Project,
+} from '@elek-io/core';
 
 export function EntryTable({
   project,
@@ -55,17 +61,17 @@ export function EntryTable({
   });
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   function columns(): ColumnDef<Entry>[] {
-    const columns: ColumnDef<Entry>[] = collection.fieldDefinitions.map(
-      (definition) => {
-        return {
-          accessorKey: definition.slug,
-          header: translateContent({
-            key: 'definition.label',
-            record: definition.label,
-          }),
-        };
-      }
-    );
+    const columns: ColumnDef<Entry>[] = flattenFieldDefinitions(
+      collection.fieldDefinitions
+    ).map((definition) => {
+      return {
+        accessorKey: definition.slug,
+        header: translateContent({
+          key: 'definition.label',
+          record: definition.label,
+        }),
+      };
+    });
 
     columns.push(
       {
@@ -88,7 +94,7 @@ export function EntryTable({
     return columns;
   }
   const fieldTypeBySlug = new Map(
-    collection.fieldDefinitions.map((definition) => [
+    flattenFieldDefinitions(collection.fieldDefinitions).map((definition) => [
       definition.slug,
       definition.fieldType,
     ])

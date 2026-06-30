@@ -14,6 +14,7 @@ import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
 import {
+  flattenFieldDefinitions,
   getUpdateEntrySchemaFromFieldDefinitions,
   type UpdateEntryProps,
 } from '@elek-io/core';
@@ -51,7 +52,7 @@ function UpdateEntryPage(): ReactElement {
   const generatedUpdateEntrySchema =
     collection && project
       ? getUpdateEntrySchemaFromFieldDefinitions(
-          collection.fieldDefinitions,
+          flattenFieldDefinitions(collection.fieldDefinitions),
           project.settings.language.supported
         )
       : getUpdateEntrySchemaFromFieldDefinitions([], []);

@@ -18,6 +18,11 @@ import {
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
 import {
+  FieldGroup,
+  FieldLegend,
+  FieldSet,
+} from '@renderer/components/ui/field';
+import {
   Form,
   FormControl,
   FormDescription,
@@ -47,6 +52,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@renderer/components/ui/sheet';
+import { useProject } from '@renderer/hooks/useProject';
 
 import {
   type CreateCollectionProps,
@@ -74,6 +80,7 @@ export const CollectionForm = ({
 }: CollectionFormProps<
   CreateCollectionProps | UpdateCollectionProps
 >): ReactElement => {
+  const { translateContent } = useProject();
   const fieldDefinitionFormRef = useRef<FieldDefinitionFormRef>(null);
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
@@ -336,6 +343,41 @@ export const CollectionForm = ({
             <div className="mt-6 grid grid-cols-12 gap-6">
               <SortableFieldArray fieldArray={fieldDefinitions}>
                 {fieldDefinitions.fields.map((fieldDefinition, index) => {
+                  // Groups are presentational, render their member fields inside
+                  // a labeled FieldSet. Group authoring is not supported yet, so
+                  // the members are shown read-only as a preview.
+                  if ('isGroup' in fieldDefinition) {
+                    return (
+                      <DraggableComponent
+                        key={fieldDefinition.id}
+                        id={fieldDefinition.id}
+                      >
+                        <FieldSet className="col-span-12">
+                          <FieldLegend>
+                            {translateContent({
+                              key: 'fieldDefinitionGroup.label',
+                              record: fieldDefinition.label,
+                            })}
+                          </FieldLegend>
+                          <FieldGroup className="grid grid-cols-12 gap-6">
+                            {fieldDefinition.fieldDefinitions.map((member) => (
+                              <FormFieldFromDefinition
+                                key={member.id}
+                                fieldDefinition={member}
+                                form={collectionForm}
+                                // @ts-ignore This is only to display the field
+                                name={`currentFields.field-${member.id}.content`}
+                                supportedLanguages={
+                                  project.settings.language.supported
+                                }
+                              />
+                            ))}
+                          </FieldGroup>
+                        </FieldSet>
+                      </DraggableComponent>
+                    );
+                  }
+
                   return (
                     <DraggableComponent
                       key={fieldDefinition.id}

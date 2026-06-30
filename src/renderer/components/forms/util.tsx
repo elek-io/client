@@ -91,8 +91,12 @@ export const FieldDefinitionForm = forwardRef(
     // Core throws on duplicate slugs when saving the Collection,
     // so reject them here where the user can still correct the slug
     const isDuplicateSlug = (definitionSlug: string): boolean =>
-      props.fieldDefinitions.fields.some(
-        (field) => field.slug === definitionSlug
+      props.fieldDefinitions.fields.some((field) =>
+        'isGroup' in field
+          ? field.fieldDefinitions.some(
+              (member) => member.slug === definitionSlug
+            )
+          : field.slug === definitionSlug
       );
     const duplicateSlugError = (
       definitionSlug: string

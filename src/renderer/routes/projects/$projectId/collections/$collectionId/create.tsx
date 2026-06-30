@@ -16,6 +16,7 @@ import { queryOptions } from '@renderer/queries';
 
 import {
   type CreateEntryProps,
+  flattenFieldDefinitions,
   getCreateEntrySchemaFromFieldDefinitions,
 } from '@elek-io/core';
 
@@ -45,7 +46,7 @@ function CreateEntryPage(): React.JSX.Element {
   const generatedCreateEntrySchema =
     isReadingProject === false && isReadingCollection === false
       ? getCreateEntrySchemaFromFieldDefinitions(
-          collection.fieldDefinitions,
+          flattenFieldDefinitions(collection.fieldDefinitions),
           project.settings.language.supported
         )
       : getCreateEntrySchemaFromFieldDefinitions([], []);
@@ -65,7 +66,7 @@ function CreateEntryPage(): React.JSX.Element {
         projectId: projectId,
         collectionId: collectionId,
         values: Object.fromEntries(
-          collection.fieldDefinitions.map((definition) => {
+          flattenFieldDefinitions(collection.fieldDefinitions).map((definition) => {
             switch (definition.valueType) {
               case 'boolean':
               case 'number':
@@ -97,7 +98,6 @@ function CreateEntryPage(): React.JSX.Element {
 
               default:
                 throw new Error(
-                  // @ts-expect-error Since usually it's not reachable
                   `Unsupported valueType "${definition.valueType}" while setting form state defaults for creating the Entry`
                 );
             }
