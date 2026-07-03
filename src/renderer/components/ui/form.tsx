@@ -215,7 +215,7 @@ export function FormInputField<TFieldValues extends FieldValues>({
     <Input
       type={type === 'telephone' ? 'tel' : type}
       {...field}
-      value={field.value !== null ? field.value : ''} // The value can now also be null but the input can't handle it, so we set a default empty string instead
+      value={field.value ?? ''} // Content can be null (cleared) or undefined (language absent from the partial record); the input needs a string either way
       onChange={(event) => field.onChange(transform(event.target.value))}
       {...props}
     />
@@ -263,7 +263,7 @@ export function TranslatableFormInputField<T extends FieldValues>({
       ) {
         return false;
       }
-      fieldErrors = fieldErrors[segment];
+      fieldErrors = (fieldErrors as Record<string, unknown>)[segment];
     }
 
     if (
@@ -277,7 +277,8 @@ export function TranslatableFormInputField<T extends FieldValues>({
     // Check for errors in other languages
     return supportedLanguages.some(
       (language) =>
-        language !== currentLanguage && fieldErrors[language] !== undefined
+        language !== currentLanguage &&
+        (fieldErrors as Record<string, unknown>)[language] !== undefined
     );
   }
 
@@ -369,7 +370,7 @@ export function FormTextareaField<TFieldValues extends FieldValues>({
   return (
     <Textarea
       {...field}
-      value={field.value !== null ? field.value : ''} // The value can now also be null but the input can't handle it, so we set a default empty string instead
+      value={field.value ?? ''} // Content can be null (cleared) or undefined (language absent from the partial record); the input needs a string either way
       onChange={(event) => field.onChange(transform(event.target.value))}
       {...props}
     />
@@ -416,7 +417,7 @@ export function TranslatableFormTextareaField<T extends FieldValues>({
       ) {
         return false;
       }
-      fieldErrors = fieldErrors[segment];
+      fieldErrors = (fieldErrors as Record<string, unknown>)[segment];
     }
 
     if (
@@ -430,7 +431,8 @@ export function TranslatableFormTextareaField<T extends FieldValues>({
     // Check for errors in other languages
     return supportedLanguages.some(
       (language) =>
-        language !== currentLanguage && fieldErrors[language] !== undefined
+        language !== currentLanguage &&
+        (fieldErrors as Record<string, unknown>)[language] !== undefined
     );
   }
 
@@ -575,9 +577,14 @@ function FormRangeField<TFieldValues extends FieldValues>({
 }: FormRangeFieldProps<TFieldValues>): React.ReactElement {
   return (
     <Slider
-      {...field}
-      onValueChange={(value) => field.onChange(value[0])}
       {...props}
+      name={field.name}
+      ref={field.ref}
+      onBlur={field.onBlur}
+      // Radix Slider is a range control (value is number[]), but a range Value's
+      // content is a single number, so wrap it and tolerate a null/empty content.
+      value={typeof field.value === 'number' ? [field.value] : []}
+      onValueChange={(value) => field.onChange(value[0])}
     />
   );
 }
@@ -1212,11 +1219,33 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
     case 'time':
     case 'datetime':
     case 'ipv4':
+    case 'select':
+    case 'slug':
+    case 'dynamic':
+    case 'markdown':
       throw new Error(
         `[FormComponentFromFieldDefinition] Unsupported fieldType "${fieldDefinition.fieldType}"`
       );
   }
 }
+
+// Field types FormComponentFromFieldDefinition can render. Keep in sync with the
+// switch above. FormFieldFromDefinition uses this to show a placeholder instead of
+// crashing when a Collection contains a not-yet-supported type (which can arrive via
+// Core, the API, or a migration). See contributing/not-yet-implemented.md.
+const renderableFieldTypes: ReadonlySet<FieldType> = new Set([
+  'text',
+  'textarea',
+  'number',
+  'range',
+  'toggle',
+  'asset',
+  'entry',
+  'date',
+  'email',
+  'url',
+  'telephone',
+]);
 
 export interface FormComponentFromFieldDefinitionTranslatableProps<
   TFieldValues extends FieldValues,
@@ -1276,7 +1305,8 @@ function FormComponentFromFieldDefinitionTranslatable<
     // Check for errors in other languages
     return supportedLanguages.some(
       (language) =>
-        language !== currentLanguage && fieldErrors[language] !== undefined
+        language !== currentLanguage &&
+        (fieldErrors as Record<string, unknown>)[language] !== undefined
     );
   }
 
@@ -1440,14 +1470,21 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
                 record: fieldDefinition.label,
               })}
             </FormLabel>
-            <FormControl>
-              <FormComponentFromFieldDefinitionTranslatable
-                form={form}
-                field={field}
-                fieldDefinition={fieldDefinition}
-                supportedLanguages={supportedLanguages}
-              />
-            </FormControl>
+            {renderableFieldTypes.has(fieldDefinition.fieldType) ? (
+              <FormControl>
+                <FormComponentFromFieldDefinitionTranslatable
+                  form={form}
+                  field={field}
+                  fieldDefinition={fieldDefinition}
+                  supportedLanguages={supportedLanguages}
+                />
+              </FormControl>
+            ) : (
+              <div className="rounded-md border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+                The &quot;{fieldDefinition.fieldType}&quot; field type
+                can&apos;t be displayed yet.
+              </div>
+            )}
             {fieldDefinition.description !== null ? (
               <FormDescription>
                 {translateContent({

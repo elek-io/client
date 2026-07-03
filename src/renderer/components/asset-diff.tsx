@@ -102,6 +102,9 @@ export function AssetDiff({
 
   // Handle create operation
   if (!commitBefore && commitAfter) {
+    if (assetAfter === undefined) {
+      return <DiffContainerSkeleton centered />;
+    }
     return (
       <DiffContainer type="create" commit={commitAfter}>
         <AssetTeaser
@@ -115,6 +118,9 @@ export function AssetDiff({
 
   // Handle delete operation
   if (!commitAfter && commitBefore) {
+    if (assetBefore === undefined) {
+      return <DiffContainerSkeleton centered />;
+    }
     return (
       <DiffContainer type="delete" commit={commitBefore}>
         <AssetTeaser
@@ -128,6 +134,9 @@ export function AssetDiff({
 
   // Handle update operation (both commits exist)
   if (commitBefore && commitAfter) {
+    if (assetBefore === undefined || assetAfter === undefined) {
+      return <DiffContainerSkeleton centered />;
+    }
     return (
       <>
         <DiffContainer type="before" commit={commitBefore}>

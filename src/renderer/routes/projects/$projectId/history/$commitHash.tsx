@@ -70,6 +70,7 @@ function ProjectHistoryCommitPage(): ReactElement {
         return <CollectionDiff project={project} commit={commit} />;
       case 'entry':
         return <EntryDiff project={project} commit={commit} />;
+      case 'component':
       default:
         return <>Object changes</>;
     }

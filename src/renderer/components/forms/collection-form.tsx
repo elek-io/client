@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { type ReactElement, useRef, useState } from 'react';
 import {
+  type Control,
   type FieldValues,
   type SubmitHandler,
   type UseFormReturn,
@@ -55,7 +56,7 @@ import {
 import { useProject } from '@renderer/hooks/useProject';
 
 import {
-  type CreateCollectionProps,
+  type FieldDefinitionOrGroup,
   type FieldType,
   fieldTypeSchema,
   type Project,
@@ -63,32 +64,58 @@ import {
   supportedIconSchema,
 } from '@elek-io/core';
 
-export interface CollectionFormProps<TFieldValues extends FieldValues> {
-  collectionForm: UseFormReturn<TFieldValues>;
+// Field types Core defines but the client has no definition form for yet. They are
+// shown disabled in the picker so selecting one cannot crash the sheet.
+// See contributing/not-yet-implemented.md.
+const unimplementedFieldTypes: ReadonlySet<FieldType> = new Set([
+  'datetime',
+  'ipv4',
+  'time',
+  'select',
+  'slug',
+  'dynamic',
+  'markdown',
+]);
+
+export interface CollectionFormProps<
+  TFieldValues extends FieldValues,
+  TTransformedValues extends FieldValues,
+> {
+  collectionForm: UseFormReturn<TFieldValues, unknown, TTransformedValues>;
   project: Project;
   children?: React.ReactNode;
   isViewOnly?: boolean;
-  onFormSubmit: SubmitHandler<TFieldValues>;
+  onFormSubmit: SubmitHandler<TTransformedValues>;
 }
 
-export const CollectionForm = ({
-  collectionForm,
+export function CollectionForm<
+  TFieldValues extends FieldValues,
+  TTransformedValues extends FieldValues,
+>({
+  collectionForm: genericForm,
   project,
   children,
   isViewOnly = false,
   onFormSubmit,
-}: CollectionFormProps<
-  CreateCollectionProps | UpdateCollectionProps
->): ReactElement => {
+}: CollectionFormProps<TFieldValues, TTransformedValues>): ReactElement {
   const { translateContent } = useProject();
+  // The many concrete collection fields (icon, name, description) use literal paths
+  // RHF cannot resolve for a generic T, so view the form as the collection props for
+  // those. The generic keeps the callers (create, update, diff) type-safe.
+  const collectionForm =
+    genericForm as unknown as UseFormReturn<UpdateCollectionProps>;
   const fieldDefinitionFormRef = useRef<FieldDefinitionFormRef>(null);
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
 
+  // Opaque id-rows so useFieldArray never walks the deep FieldDefinitionOrGroup
+  // union (RHF instantiation depth limit). Rows are recovered when rendering.
   const fieldDefinitions = useFieldArray({
-    control: collectionForm.control, // control props comes from useForm (optional: if you are using FormContext)
-    name: 'fieldDefinitions', // unique name for your Field Array
+    control: genericForm.control as unknown as Control<{
+      fieldDefinitions: { id: string }[];
+    }>,
+    name: 'fieldDefinitions',
   });
 
   async function addFieldDefinition(): Promise<void> {
@@ -98,8 +125,8 @@ export const CollectionForm = ({
   }
 
   return (
-    <Form {...collectionForm}>
-      <form onSubmit={collectionForm.handleSubmit(onFormSubmit)}>
+    <Form {...genericForm}>
+      <form onSubmit={genericForm.handleSubmit(onFormSubmit)}>
         <fieldset disabled={isViewOnly}>
           <div className="space-y-6 p-6">
             <div className="grid grid-cols-12 items-start gap-6">
@@ -303,7 +330,11 @@ export const CollectionForm = ({
                           <SelectContent>
                             {fieldTypeSchema.options.map((option) => {
                               return (
-                                <SelectItem key={option} value={option}>
+                                <SelectItem
+                                  key={option}
+                                  value={option}
+                                  disabled={unimplementedFieldTypes.has(option)}
+                                >
                                   {option}
                                 </SelectItem>
                               );
@@ -342,7 +373,12 @@ export const CollectionForm = ({
           >
             <div className="mt-6 grid grid-cols-12 gap-6">
               <SortableFieldArray fieldArray={fieldDefinitions}>
-                {fieldDefinitions.fields.map((fieldDefinition, index) => {
+                {fieldDefinitions.fields.map((field) => {
+                  // Recover the real definition from the opaque id-row.
+                  const fieldDefinition =
+                    field as unknown as FieldDefinitionOrGroup & {
+                      id: string;
+                    };
                   // Groups are presentational, render their member fields inside
                   // a labeled FieldSet. Group authoring is not supported yet, so
                   // the members are shown read-only as a preview.
@@ -387,7 +423,7 @@ export const CollectionForm = ({
                         fieldDefinition={fieldDefinition}
                         form={collectionForm}
                         // @ts-ignore This is only to display the field, not to actually edit anything but the order of the fields
-                        name={`currentFields.field-${index}.content`}
+                        name={`currentFields.field-${fieldDefinition.id}.content`}
                         supportedLanguages={project.settings.language.supported}
                         isDraggable={isViewOnly === false}
                         isEditable={isViewOnly === false}
@@ -413,4 +449,4 @@ export const CollectionForm = ({
       </form>
     </Form>
   );
-};
+}

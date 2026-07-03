@@ -54,7 +54,7 @@ function ProjectCollectionUpdate(): ReactElement {
   const { mutateAsync: deleteCollection } = useMutation(
     queryOptions.collections.delete
   );
-  const updateCollectionForm = useForm<UpdateCollectionProps>({
+  const updateCollectionForm = useForm({
     resolver: zodResolver(updateCollectionSchema),
     defaultValues: {
       projectId,

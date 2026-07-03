@@ -1,12 +1,15 @@
 import {
   Fragment,
+  useCallback,
   useEffect,
   type HTMLAttributes,
   type ReactElement,
 } from 'react';
 import {
   useWatch,
+  type FieldPath,
   type FieldValues,
+  type PathValue,
   type UseFormReturn,
 } from 'react-hook-form';
 
@@ -34,7 +37,7 @@ import { Switch } from '@renderer/components/ui/switch';
 import {
   fieldWidthSchema,
   slug,
-  type FieldDefinition,
+  type FieldDefinitionBase,
   type FieldType,
   type SupportedLanguage,
 } from '@elek-io/core';
@@ -47,29 +50,41 @@ export interface DefaultFieldDefinitionFormProps<T extends FieldValues>
   fieldType: FieldType;
 }
 
-const DefaultFieldDefinitionForm = ({
+function DefaultFieldDefinitionForm<
+  T extends FieldDefinitionBase & FieldValues,
+>({
   form,
   currentLanguage,
   supportedLanguages,
   children,
   fieldType,
-}: DefaultFieldDefinitionFormProps<FieldDefinition>): ReactElement => {
+}: DefaultFieldDefinitionFormProps<T>): ReactElement {
+  // Every FieldDefinition shares the base fields this component edits. RHF's
+  // FieldPath cannot reduce those literal paths for an unresolved generic T, so
+  // assert them once through this helper (the tax of staying generic).
+  const base = useCallback(
+    (path: string): FieldPath<T> => path as FieldPath<T>,
+    []
+  );
   const labelValue = useWatch({
     control: form.control,
-    name: `label.${currentLanguage}`,
-  });
+    name: base(`label.${currentLanguage}`),
+  }) as string | null | undefined;
   // Auto-generate the slug from the label until the user edits the slug manually
   useEffect(() => {
-    if (form.getFieldState('slug').isDirty === false) {
-      form.setValue('slug', slug(labelValue ?? ''));
+    if (form.getFieldState(base('slug')).isDirty === false) {
+      form.setValue(
+        base('slug'),
+        slug(labelValue ?? '') as PathValue<T, FieldPath<T>>
+      );
     }
-  }, [form, labelValue]);
+  }, [form, labelValue, base]);
 
   return (
     <Fragment>
       <FormField
         control={form.control}
-        name={`label.${currentLanguage}`}
+        name={base(`label.${currentLanguage}`)}
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Label</FormLabel>
@@ -98,7 +113,7 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name="slug"
+        name={base('slug')}
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Slug</FormLabel>
@@ -116,7 +131,7 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name={`description.${currentLanguage}`}
+        name={base(`description.${currentLanguage}`)}
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Description</FormLabel>
@@ -141,7 +156,7 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name="inputWidth"
+        name={base('inputWidth')}
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Width</FormLabel>
@@ -173,7 +188,7 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name="isRequired"
+        name={base('isRequired')}
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
@@ -206,7 +221,7 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name="isUnique"
+        name={base('isUnique')}
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
@@ -223,13 +238,23 @@ const DefaultFieldDefinitionForm = ({
                     </i>
                   </>
                 )}
+                {(fieldType === 'asset' || fieldType === 'entry') && (
+                  <>
+                    <Separator className="my-2" />
+                    <i>Reference fields cannot be unique.</i>
+                  </>
+                )}
               </FormDescription>
             </div>
             <FormControl>
               <Switch
                 checked={field.value}
                 onCheckedChange={field.onChange}
-                disabled={fieldType === 'toggle'}
+                disabled={
+                  fieldType === 'toggle' ||
+                  fieldType === 'asset' ||
+                  fieldType === 'entry'
+                }
               />
             </FormControl>
           </FormItem>
@@ -238,7 +263,7 @@ const DefaultFieldDefinitionForm = ({
 
       <FormField
         control={form.control}
-        name="isDisabled"
+        name={base('isDisabled')}
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 p-3 shadow-xs dark:border-zinc-700">
             <div className="mr-4">
@@ -256,7 +281,7 @@ const DefaultFieldDefinitionForm = ({
       />
     </Fragment>
   );
-};
+}
 DefaultFieldDefinitionForm.displayName = 'DefaultFieldDefinitionForm';
 
 export { DefaultFieldDefinitionForm };

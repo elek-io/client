@@ -1,7 +1,7 @@
 'use client';
 
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { Button } from '@renderer/components/ui/button';
 import { Calendar } from '@renderer/components/ui/calendar';
@@ -20,7 +20,16 @@ export function DatePicker({
   setDate: Dispatch<SetStateAction<Date | null>>;
 }): React.JSX.Element {
   const [open, setOpen] = useState(false);
-  const [month, setMonth] = useState<Date | undefined>(date ? date : undefined);
+  const [month, setMonth] = useState<Date>(date ?? new Date());
+
+  // Keep the visible month in sync when the selected date changes from outside
+  // (a form reset or a programmatic set). User month navigation changes `month`
+  // directly, not `date`, so it is unaffected.
+  useEffect(() => {
+    if (date) {
+      setMonth(date);
+    }
+  }, [date]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

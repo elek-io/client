@@ -11,6 +11,7 @@ import { Button } from '@renderer/components/ui/button';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { defaultEntryValue } from '@renderer/lib/entry';
 import { queryOptions } from '@renderer/queries';
 
 import {
@@ -57,7 +58,7 @@ function UpdateEntryPage(): ReactElement {
         )
       : getUpdateEntrySchemaFromFieldDefinitions([], []);
 
-  const updateEntryForm = useForm<UpdateEntryProps>({
+  const updateEntryForm = useForm({
     resolver: zodResolver(generatedUpdateEntrySchema),
     defaultValues: {
       id: entryId,
@@ -67,25 +68,43 @@ function UpdateEntryPage(): ReactElement {
 
   // Reset form with Project and Collection data when it loads
   useEffect(() => {
-    if (isReadingEntry === false) {
+    if (
+      isReadingEntry === false &&
+      isReadingCollection === false &&
+      isReadingProject === false
+    ) {
+      // Hydrate a default Value for any field the Collection has gained since the
+      // Entry was created, so the form always holds a complete Value per current
+      // field definition. The Entry's own Values take precedence.
+      const values: Record<string, unknown> = { ...entry.values };
+      for (const definition of flattenFieldDefinitions(
+        collection.fieldDefinitions
+      )) {
+        if (!(definition.slug in values)) {
+          values[definition.slug] = defaultEntryValue(
+            definition,
+            project.settings.language.supported
+          );
+        }
+      }
       updateEntryForm.reset({
         ...entry,
-        // @todo Maybe we need to add missing values here
-        // values: context.currentCollection.fieldDefinitions.map(
-        //   (definition, index) => {
-        //     return {
-        //       objectType: 'value',
-        //       definitionId: definition.id,
-        //       valueType: definition.valueType,
-        //       content: context.currentEntry.values[index]?.content,
-        //     };
-        //   }
-        // ),
         projectId,
         collectionId,
+        values,
       });
     }
-  }, [collectionId, entry, isReadingEntry, projectId, updateEntryForm]);
+  }, [
+    collectionId,
+    projectId,
+    entry,
+    collection,
+    project,
+    isReadingEntry,
+    isReadingCollection,
+    isReadingProject,
+    updateEntryForm,
+  ]);
 
   const onUpdateEntry: SubmitHandler<UpdateEntryProps> = async (entry) => {
     await updateEntry(entry);

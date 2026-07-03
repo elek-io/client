@@ -27,8 +27,6 @@ import { sidebarMenuButtonVariants } from '@renderer/lib/variants';
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = '15rem';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const SIDEBAR_WIDTH_MOBILE = '18rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 

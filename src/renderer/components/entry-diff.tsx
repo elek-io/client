@@ -10,12 +10,7 @@ import { EntryForm } from '@renderer/components/forms/entry-form';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
-import {
-  updateEntrySchema,
-  type GitCommit,
-  type Project,
-  type UpdateEntryProps,
-} from '@elek-io/core';
+import { updateEntrySchema, type GitCommit, type Project } from '@elek-io/core';
 
 export function EntryDiff({
   project,
@@ -91,7 +86,7 @@ export function EntryDiff({
       enabled: commitBefore !== undefined,
     });
 
-  const entryFormBefore = useForm<UpdateEntryProps>({
+  const entryFormBefore = useForm({
     resolver: zodResolver(updateEntrySchema),
     defaultValues: {
       projectId: project.id,
@@ -117,7 +112,7 @@ export function EntryDiff({
     enabled: commitAfter !== undefined,
   });
 
-  const entryFormAfter = useForm<UpdateEntryProps>({
+  const entryFormAfter = useForm({
     resolver: zodResolver(updateEntrySchema),
     defaultValues: {
       projectId: project.id,

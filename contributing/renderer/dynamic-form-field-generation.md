@@ -57,6 +57,14 @@ Depending on the field type, definitions may include different properties, but c
 - `isRequired`: Whether the field must have a value
 - `inputWidth`: Grid column width, one of `'3'`, `'4'`, `'6'` or `'12'` (a 12-column grid)
 
+## Field definition groups
+
+A Collection's `fieldDefinitions` is a `FieldDefinitionOrGroup[]`. Besides plain field definitions it can contain presentational **groups**: `{ isGroup: true, label, description, fieldDefinitions }`, where the nested `fieldDefinitions` is a flat list of member field definitions (groups do not nest).
+
+Groups are rendered, not authored, in the client today. Wherever field definitions are shown to a user (the entry form and the collection editor) a group is rendered as a labeled `FieldSet` ([`components/ui/field.tsx`](../../src/renderer/components/ui/field.tsx)) that wraps its members. Narrow the union with `'isGroup' in fieldDefinition`.
+
+Where grouping carries no meaning - generating an Entry's Zod schema, the create-Entry defaults, and the Entry table columns - flatten the union first with Core's `flattenFieldDefinitions(fieldDefinitions)`, which drops the groups and hoists their members into a flat `FieldDefinition[]`.
+
 ## Creating Field Definitions via a Collection
 
 When users create or update a Collection, they use a visual editor to define the fields for that Collection type.
@@ -221,18 +229,24 @@ Use the generated Zod schema with [React Hook Form's Zod resolver](https://react
 ```typescript
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { getUpdateEntrySchemaFromFieldDefinitions } from '@elek-io/core';
+import {
+  flattenFieldDefinitions,
+  getUpdateEntrySchemaFromFieldDefinitions,
+} from '@elek-io/core';
 
 const collection = /* ... */;
 
 // Generate schema from all field definitions
-// (pass the Project's supported languages as the second argument)
+// fieldDefinitions is a FieldDefinitionOrGroup[], and grouping does not affect the
+// generated schema, so flatten it first (see "Field definition groups").
+// The second argument is the Project's supported languages.
 const schema = getUpdateEntrySchemaFromFieldDefinitions(
-  collection.fieldDefinitions,
+  flattenFieldDefinitions(collection.fieldDefinitions),
   project.settings.language.supported
 );
 
-// Create form with validation
+// Create form with validation. Do NOT pass an explicit useForm generic here, see
+// "Form typing" below.
 const form = useForm({
   resolver: zodResolver(schema),
   defaultValues: { /* ... */ }
@@ -240,6 +254,13 @@ const form = useForm({
 
 // Form validates automatically and shows error messages via FormMessage component
 ```
+
+### Form typing (react-hook-form + generated schemas)
+
+The generated entry and collection schemas transform a loose input into the strict `*Props` output (their `values` is a `z.pipe`, and Collections carry recursive mdast), so their `z.input` differs from their `z.output`. Two rules follow, both applied throughout the form code:
+
+- **Do not pass an explicit `useForm<...>()` generic** when the resolver comes from a generated or recursive Core schema. Let react-hook-form infer the types from `zodResolver(schema)`: the form values become the schema input (a loose `values` record) and `handleSubmit` yields the typed output (`CreateEntryProps` and so on). What actually breaks is passing the `*Props` output type as the sole generic: it makes the resolver unassignable and, for the recursive Collection schema, produces the "two unrelated types" error. A matched `useForm<z.input, unknown, z.output>` triple does type-check, even for the recursive schema, but inference is simpler and is what the code uses.
+- **Shared form components are generic over the schema input shape**, not the `*Props` union, so a concrete caller form (create, update, or a view-only diff) is assignable without variance errors. `EntryForm` / `CollectionForm` / `ProjectForm` / `DefaultFieldDefinitionForm` take `UseFormReturn<TFieldValues, unknown, TTransformedValues>` and narrow to a concrete props type internally to address literal paths (RHF's `FieldPath` cannot resolve a path for an unresolved generic). The Collection editor manages its `fieldDefinitions` field array as opaque `{ id }` rows because react-hook-form cannot type a field array whose element is the deep `FieldDefinitionOrGroup` union.
 
 **Benefits:**
 

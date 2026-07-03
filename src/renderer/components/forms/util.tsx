@@ -18,7 +18,6 @@ import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-d
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
 import { ToggleFieldDefinitionForm } from '@renderer/components/forms/toggle-value-definition-form';
 import { UrlFieldDefinitionForm } from '@renderer/components/forms/url-value-definition-form';
-import { FormFieldFromDefinition } from '@renderer/components/ui/form';
 import { translatableDefault } from '@renderer/lib/utils';
 
 import {
@@ -35,11 +34,11 @@ import {
   urlFieldDefinitionSchema,
   uuid,
   type AssetFieldDefinition,
-  type CreateCollectionProps,
   type DateFieldDefinition,
   type EmailFieldDefinition,
   type EntryFieldDefinition,
   type FieldDefinitionBase,
+  type FieldDefinitionOrGroup,
   type FieldType,
   type NumberFieldDefinition,
   type RangeFieldDefinition,
@@ -48,7 +47,6 @@ import {
   type TextareaFieldDefinition,
   type TextFieldDefinition,
   type ToggleFieldDefinition,
-  type UpdateCollectionProps,
   type UrlFieldDefinition,
 } from '@elek-io/core';
 
@@ -56,8 +54,11 @@ export interface FieldDefinitionFormProps {
   supportedLanguages: SupportedLanguage[];
   defaultLanguage: SupportedLanguage;
   fieldType: FieldType;
+  // Opaque id-rows: react-hook-form cannot type a field array whose element is the
+  // deeply nested FieldDefinitionOrGroup union (instantiation depth limit). Rows are
+  // cast back to FieldDefinitionOrGroup where read.
   fieldDefinitions: UseFieldArrayReturn<
-    CreateCollectionProps | UpdateCollectionProps,
+    { fieldDefinitions: { id: string }[] },
     'fieldDefinitions'
   >;
   setIsAddFieldDefinitionSheetOpen: React.Dispatch<
@@ -91,13 +92,15 @@ export const FieldDefinitionForm = forwardRef(
     // Core throws on duplicate slugs when saving the Collection,
     // so reject them here where the user can still correct the slug
     const isDuplicateSlug = (definitionSlug: string): boolean =>
-      props.fieldDefinitions.fields.some((field) =>
-        'isGroup' in field
-          ? field.fieldDefinitions.some(
+      props.fieldDefinitions.fields.some((field) => {
+        // Recover the real definition from the opaque id-row.
+        const definition = field as unknown as FieldDefinitionOrGroup;
+        return 'isGroup' in definition
+          ? definition.fieldDefinitions.some(
               (member) => member.slug === definitionSlug
             )
-          : field.slug === definitionSlug
-      );
+          : definition.slug === definitionSlug;
+      });
     const duplicateSlugError = (
       definitionSlug: string
     ): { type: string; message: string } => ({
@@ -361,7 +364,6 @@ export const FieldDefinitionForm = forwardRef(
                 entryFieldDefinitionFormState.setValue('id', uuid());
               }
             )();
-          case 'datetime':
           case 'date':
             return await dateFieldDefinitionFormState.handleSubmit(
               (dateDefinition) => {
@@ -410,8 +412,6 @@ export const FieldDefinitionForm = forwardRef(
                 urlFieldDefinitionFormState.setValue('id', uuid());
               }
             )();
-          case 'ipv4':
-          case 'time':
           case 'telephone':
             return await telephoneFieldDefinitionFormState.handleSubmit(
               (telephoneDefinition) => {
@@ -428,87 +428,24 @@ export const FieldDefinitionForm = forwardRef(
                 telephoneFieldDefinitionFormState.setValue('id', uuid());
               }
             )();
+          case 'datetime':
+          case 'ipv4':
+          case 'time':
+          case 'select':
+          case 'slug':
+          case 'dynamic':
+          case 'markdown':
           default:
             throw new Error(
               `Tried to validate unsupported fieldType "${props.fieldType}" of Value definition`
             );
         }
       },
-      getExampleFormField: (fieldType: FieldType) => {
-        switch (fieldType) {
-          case 'number':
-            return (
-              <FormFieldFromDefinition
-                form={numberFieldDefinitionFormState}
-                fieldDefinition={numberFieldDefinitionFormState.watch()}
-                name="exampleFields.number.content"
-                supportedLanguages={props.supportedLanguages}
-              />
-            );
-          case 'range':
-            return (
-              <FormFieldFromDefinition
-                form={rangeFieldDefinitionFormState}
-                fieldDefinition={rangeFieldDefinitionFormState.watch()}
-                name="exampleFields.range.content"
-                supportedLanguages={props.supportedLanguages}
-              />
-            );
-          case 'text':
-            return (
-              <FormFieldFromDefinition
-                form={textFieldDefinitionFormState}
-                fieldDefinition={textFieldDefinitionFormState.watch()}
-                name="exampleFields.text.content"
-                supportedLanguages={props.supportedLanguages}
-              />
-            );
-          case 'textarea':
-            return (
-              <FormFieldFromDefinition
-                form={textareaFieldDefinitionFormState}
-                fieldDefinition={textareaFieldDefinitionFormState.watch()}
-                name="exampleFields.textarea.content"
-                supportedLanguages={props.supportedLanguages}
-              />
-            );
-          case 'toggle':
-            return (
-              <FormFieldFromDefinition
-                form={toggleFieldDefinitionFormState}
-                fieldDefinition={toggleFieldDefinitionFormState.watch()}
-                name="exampleFields.toggle.content"
-              />
-            );
-          case 'asset':
-            return (
-              <FormFieldFromDefinition
-                form={assetFieldDefinitionFormState}
-                fieldDefinition={assetFieldDefinitionFormState.watch()}
-                name="exampleFields.asset.content"
-                supportedLanguages={props.supportedLanguages}
-              />
-            );
-          case 'entry':
-            return (
-              <FormFieldFromDefinition
-                form={entryFieldDefinitionFormState}
-                fieldDefinition={entryFieldDefinitionFormState.watch()}
-                name="exampleFields.entry.content"
-                supportedLanguages={props.supportedLanguages}
-              />
-            );
-          case 'datetime':
-          case 'date':
-          case 'email':
-          case 'url':
-          case 'ipv4':
-          case 'time':
-          case 'telephone':
-          default:
-            throw new Error(`Unsupported example form Field "${fieldType}"`);
-        }
-      },
+      // @todo Field preview parked until it is wired up (its only caller is
+      // commented out in collection-form). The previous version bound a preview
+      // input to a placeholder path that is not a field of the definition form,
+      // so it could not type-check. Recover it from git history when implementing.
+      getExampleFormField: () => <></>,
     }));
 
     switch (props.fieldType) {
@@ -575,7 +512,6 @@ export const FieldDefinitionForm = forwardRef(
             fieldType={props.fieldType}
           />
         );
-      case 'datetime':
       case 'date':
         return (
           <DateFieldDefinitionForm
@@ -603,8 +539,6 @@ export const FieldDefinitionForm = forwardRef(
             fieldType={props.fieldType}
           />
         );
-      case 'ipv4':
-      case 'time':
       case 'telephone':
         return (
           <TelephoneFieldDefinitionForm
@@ -614,6 +548,13 @@ export const FieldDefinitionForm = forwardRef(
             fieldType={props.fieldType}
           />
         );
+      case 'datetime':
+      case 'ipv4':
+      case 'time':
+      case 'select':
+      case 'slug':
+      case 'dynamic':
+      case 'markdown':
       default:
         throw new Error(`Unsupported definition form "${props.fieldType}"`);
     }

@@ -34,10 +34,8 @@ function ProjectCollectionCreate(): ReactElement {
   const { mutateAsync: createCollection, isPending: isCreatingCollection } =
     useMutation(queryOptions.collections.create);
 
-  const createCollectionForm = useForm<CreateCollectionProps>({
-    resolver: async (data, context, options) => {
-      return zodResolver(createCollectionSchema)(data, context, options);
-    },
+  const createCollectionForm = useForm({
+    resolver: zodResolver(createCollectionSchema),
     defaultValues: {
       projectId,
       icon: 'home',
@@ -128,7 +126,6 @@ function ProjectCollectionCreate(): ReactElement {
       description={<Description />}
       actions={<Actions />}
     >
-      {JSON.stringify(createCollectionForm.watch())}
       <CollectionForm
         collectionForm={createCollectionForm}
         project={project}

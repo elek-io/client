@@ -15,7 +15,6 @@ import {
   updateCollectionSchema,
   type GitCommit,
   type Project,
-  type UpdateCollectionProps,
 } from '@elek-io/core';
 
 export function CollectionDiff({
@@ -79,7 +78,7 @@ export function CollectionDiff({
       enabled: commitBefore !== undefined,
     });
 
-  const collectionFormBefore = useForm<UpdateCollectionProps>({
+  const collectionFormBefore = useForm({
     resolver: zodResolver(updateCollectionSchema),
     defaultValues: {
       projectId: project.id,
@@ -122,7 +121,7 @@ export function CollectionDiff({
       enabled: commitAfter !== undefined,
     });
 
-  const collectionFormAfter = useForm<UpdateCollectionProps>({
+  const collectionFormAfter = useForm({
     resolver: zodResolver(updateCollectionSchema),
     defaultValues: {
       projectId: project.id,

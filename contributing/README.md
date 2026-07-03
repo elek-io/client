@@ -25,6 +25,8 @@ Then proceed to the specific topics based on your interests or contribution goal
 - **[Theming and Styling](./renderer/theming-and-styling.md)** - shadcn/ui components, Tailwind v4 CSS configuration, and dark mode
 - **[Internationalization](./renderer/internationalization.md)** - translations, datetime locales, and multi-language form state
 
+For a running list of things Core supports but the client cannot use yet, see **[Not Yet Implemented](./not-yet-implemented.md)**. Add to it whenever you find such a gap.
+
 ## Contributing
 
 When updating these docs:

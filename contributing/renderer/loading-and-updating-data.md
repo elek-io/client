@@ -38,6 +38,9 @@ Query keys follow a consistent hierarchy so individual items, lists and historic
 // uncommitted git changes of a project
 ['projects', projectId, 'current', 'changes'];
 
+// commit history of a project
+['projects', projectId, 'history'];
+
 // collections in a project
 ['projects', projectId, 'current', 'collections', 'list'];
 
@@ -142,6 +145,17 @@ function ProjectSettings() {
 
   return <h1>{title}</h1>;
 }
+```
+
+#### Reading a Project's history
+
+A Project's commit history is not part of the Project read result. Fetch it with `queryOptions.projects.history({ id })`, which calls `core.projects.history()` through the `core:projects:history` IPC channel (exposed in [`preload/index.ts`](../../src/preload/index.ts), handled in [`main/index.ts`](../../src/main/index.ts), and typed in [`index.d.ts`](../../src/index.d.ts)). It returns a `ProjectHistoryResult` with a `history` array (changes to the Project itself, e.g. its settings) and a `fullHistory` array (every commit in the Project). The commit-detail and diff views, the history sidebar, and the dashboard's latest-changes widget all read `fullHistory` from this query.
+
+```typescript
+const { data: history } = useQueryNoError(
+  queryOptions.projects.history({ id: projectId })
+);
+// history?.fullHistory is the full git log, history?.history is Project-only changes
 ```
 
 ### Non-Blocking Page Loads

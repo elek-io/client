@@ -11,7 +11,7 @@ import { Button } from '@renderer/components/ui/button';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import { translatableDefault } from '@renderer/lib/utils';
+import { defaultEntryValues } from '@renderer/lib/entry';
 import { queryOptions } from '@renderer/queries';
 
 import {
@@ -50,7 +50,7 @@ function CreateEntryPage(): React.JSX.Element {
           project.settings.language.supported
         )
       : getCreateEntrySchemaFromFieldDefinitions([], []);
-  const createEntryForm = useForm<CreateEntryProps>({
+  const createEntryForm = useForm({
     resolver: zodResolver(generatedCreateEntrySchema),
     defaultValues: {
       projectId: projectId,
@@ -65,43 +65,9 @@ function CreateEntryPage(): React.JSX.Element {
       createEntryForm.reset({
         projectId: projectId,
         collectionId: collectionId,
-        values: Object.fromEntries(
-          flattenFieldDefinitions(collection.fieldDefinitions).map((definition) => {
-            switch (definition.valueType) {
-              case 'boolean':
-              case 'number':
-              case 'string':
-                return [
-                  definition.slug,
-                  {
-                    objectType: 'value',
-                    valueType: definition.valueType,
-                    content: translatableDefault({
-                      supportedLanguages: project.settings.language.supported,
-                      defaultValue: definition.defaultValue,
-                    }),
-                  },
-                ];
-
-              case 'reference':
-                return [
-                  definition.slug,
-                  {
-                    objectType: 'value',
-                    valueType: definition.valueType,
-                    content: translatableDefault({
-                      supportedLanguages: project.settings.language.supported,
-                      defaultValue: [],
-                    }),
-                  },
-                ];
-
-              default:
-                throw new Error(
-                  `Unsupported valueType "${definition.valueType}" while setting form state defaults for creating the Entry`
-                );
-            }
-          })
+        values: defaultEntryValues(
+          flattenFieldDefinitions(collection.fieldDefinitions),
+          project.settings.language.supported
         ),
       });
     }

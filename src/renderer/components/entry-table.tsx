@@ -43,6 +43,13 @@ import {
   type Project,
 } from '@elek-io/core';
 
+// A table row: the fixed columns plus one loosely typed cell per field slug.
+type EntryRow = {
+  id: string;
+  created: string;
+  updated: string;
+} & Record<string, unknown>;
+
 export function EntryTable({
   project,
   collection,
@@ -60,8 +67,8 @@ export function EntryTable({
     pageSize: 10, // default page size
   });
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  function columns(): ColumnDef<Entry>[] {
-    const columns: ColumnDef<Entry>[] = flattenFieldDefinitions(
+  function columns(): ColumnDef<EntryRow>[] {
+    const columns: ColumnDef<EntryRow>[] = flattenFieldDefinitions(
       collection.fieldDefinitions
     ).map((definition) => {
       return {
@@ -101,7 +108,7 @@ export function EntryTable({
   );
   const table = useReactTable({
     data: entries.list.map((entry) => {
-      const row: { [x: string]: unknown } = {
+      const row: EntryRow = {
         id: entry.id,
         created: formatDatetime({ datetime: entry.created }).relative,
         updated: formatDatetime({ datetime: entry.updated }).relative,
@@ -131,7 +138,11 @@ export function EntryTable({
               ? undefined
               : `${String(references.length)} ${noun}`;
         } else {
-          row[slug] = value.content[project.settings.language.default];
+          // Content is a per-language record for translatable values; index it by
+          // the default language.
+          row[slug] = (value.content as Record<string, unknown>)[
+            project.settings.language.default
+          ];
         }
       }
 
@@ -196,8 +207,9 @@ export function EntryTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {/* @todo this is working but of the wrong type */}
-                    {column.columnDef.header}
+                    {typeof column.columnDef.header === 'string'
+                      ? column.columnDef.header
+                      : column.id}
                   </DropdownMenuCheckboxItem>
                 );
               })}
