@@ -1,6 +1,10 @@
 import { translatableDefault } from '@renderer/lib/utils';
 
-import type { FieldDefinition, SupportedLanguage } from '@elek-io/core';
+import type {
+  FieldDefinition,
+  MdAstRoot,
+  SupportedLanguage,
+} from '@elek-io/core';
 
 /**
  * Builds the default form Value for a single field definition, in the shape the
@@ -36,8 +40,23 @@ export function defaultEntryValue(
           defaultValue: [],
         }),
       };
-    case 'component':
     case 'mdast':
+      return {
+        objectType: 'value',
+        valueType: definition.valueType,
+        content: supportedLanguages.reduce(
+          (acc, language) => {
+            // Clone per language so the trees do not share one reference
+            acc[language] =
+              definition.defaultValue === null
+                ? null
+                : structuredClone(definition.defaultValue);
+            return acc;
+          },
+          {} as Record<SupportedLanguage, MdAstRoot | null>
+        ),
+      };
+    case 'component':
     default:
       throw new Error(
         `Unsupported valueType "${definition.valueType}" while building default Entry Values`

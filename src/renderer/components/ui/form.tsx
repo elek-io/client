@@ -213,7 +213,7 @@ export function FormInputField<TFieldValues extends FieldValues>({
 
   return (
     <Input
-      type={type === 'telephone' ? 'tel' : type}
+      type={type === 'telephone' ? 'tel' : type === 'ipv4' ? 'text' : type}
       {...field}
       value={field.value ?? ''} // Content can be null (cleared) or undefined (language absent from the partial record); the input needs a string either way
       onChange={(event) => field.onChange(transform(event.target.value))}

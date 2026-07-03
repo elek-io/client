@@ -42,12 +42,20 @@ import {
   type SupportedLanguage,
 } from '@elek-io/core';
 
+// The definition-form flavor being authored. Core's 'select' fieldType is backed
+// by two schemas (string and number), so the select definition form resolves the
+// ambiguous 'select' to the active variant before it reaches this shared base.
+export type AuthorableFieldType =
+  | Exclude<FieldType, 'select'>
+  | 'stringSelect'
+  | 'numberSelect';
+
 export interface DefaultFieldDefinitionFormProps<T extends FieldValues>
   extends HTMLAttributes<HTMLFormElement> {
   form: UseFormReturn<T>;
   supportedLanguages: SupportedLanguage[];
   currentLanguage: SupportedLanguage;
-  fieldType: FieldType;
+  fieldType: AuthorableFieldType;
 }
 
 function DefaultFieldDefinitionForm<
@@ -244,6 +252,27 @@ function DefaultFieldDefinitionForm<
                     <i>Reference fields cannot be unique.</i>
                   </>
                 )}
+                {fieldType === 'slug' && (
+                  <>
+                    <Separator className="my-2" />
+                    <i>
+                      Slugs are always unique, so a single Entry can be
+                      identified by it.
+                    </i>
+                  </>
+                )}
+                {fieldType === 'numberSelect' && (
+                  <>
+                    <Separator className="my-2" />
+                    <i>Number select fields cannot be unique.</i>
+                  </>
+                )}
+                {fieldType === 'markdown' && (
+                  <>
+                    <Separator className="my-2" />
+                    <i>Markdown fields cannot be unique.</i>
+                  </>
+                )}
               </FormDescription>
             </div>
             <FormControl>
@@ -253,7 +282,10 @@ function DefaultFieldDefinitionForm<
                 disabled={
                   fieldType === 'toggle' ||
                   fieldType === 'asset' ||
-                  fieldType === 'entry'
+                  fieldType === 'entry' ||
+                  fieldType === 'slug' ||
+                  fieldType === 'numberSelect' ||
+                  fieldType === 'markdown'
                 }
               />
             </FormControl>
