@@ -21,6 +21,15 @@ Unlike Core, which publishes its library to npm from a single runner, the client
 
 CI and CD read the Node.js version from [.node-version](../.node-version) and the pnpm version from the `packageManager` field in [package.json](../package.json). Both are kept in sync with Core. Update those two files to change the toolchain, not the workflows.
 
+## Supply-chain policies
+
+pnpm 11 ships two protections that are kept at their defaults, matching Core:
+
+- `minimumReleaseAge` refuses packages published less than a day ago, and every install verifies the whole lockfile against it. If CI fails with `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`, the lockfile references releases that are too fresh, usually because it was resolved right after an upstream release. Either wait until the entries are a day old and rerun CI, or delete `pnpm-lock.yaml` and run `pnpm install` so resolution picks the newest allowed versions.
+- `blockExoticSubdeps` refuses transitive dependencies that resolve to git repositories or tarball URLs instead of the registry. If a dependency pulls one in, prefer updating it to a version that resolves from the registry over disabling the policy.
+
+Dependency build script approval lives in [pnpm-workspace.yaml](../pnpm-workspace.yaml) as an `allowBuilds` map, with a comment per entry explaining why it is allowed or denied.
+
 ## Known limitation
 
 The macOS artifact names include the architecture, so the installers from the Intel and Apple Silicon runners coexist in the release. But both runners also generate a `latest-mac.yml` with a fixed name, and the second upload overwrites the first. This breaks auto-updates for one of the two architectures. It does not matter yet because electron-updater is not wired up, but it must be solved before it is.
