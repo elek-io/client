@@ -212,7 +212,13 @@ function tableCell(node: LooseNode): MdAstTableCell {
       `Expected a tableCell inside a tableRow, got "${node.type}"`
     );
   }
-  return { type: 'tableCell', children: phrasingNodes(children(node)) };
+  // The editor's cells hold paragraphs (ProseMirror table cells are block
+  // containers), while mdast table cells hold phrasing content directly -
+  // unwrap the paragraphs, matching what remark-gfm produces
+  const phrasingChildren = children(node).flatMap((child) =>
+    child.type === 'paragraph' ? children(child) : [child]
+  );
+  return { type: 'tableCell', children: phrasingNodes(phrasingChildren) };
 }
 
 function phrasingNodes(nodes: LooseNode[]): MdAstPhrasingNode[] {
