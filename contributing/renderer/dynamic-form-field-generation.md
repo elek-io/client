@@ -93,7 +93,7 @@ One field type is special: Core backs `select` with two schemas, one for text op
 `CollectionForm` ([`forms/collection-form.tsx`](../../src/renderer/components/forms/collection-form.tsx)) renders the field-type `Select` and the editor sheet, holds the `FieldDefinitionForm` ref, and calls `addDefinition()` from the sheet's footer button.
 
 > [!NOTE]
-> The type `Select` lists every Core `fieldType`, but `FieldDefinitionForm` only implements a subset. Selecting an unimplemented type (`dynamic`, `markdown`) throws "Unsupported definition form". Adding a new field type means adding a per-type form, a `useForm()` and the matching `addDefinition` case in `util.tsx`, and confirming Core's `fieldTypeSchema` includes it.
+> The type `Select` lists every Core `fieldType`, but `FieldDefinitionForm` only implements a subset. Selecting an unimplemented type (`dynamic`) throws "Unsupported definition form". Adding a new field type means adding a per-type form, a `useForm()` and the matching `addDefinition` case in `util.tsx`, and confirming Core's `fieldTypeSchema` includes it.
 
 ## Rendering Dynamic Forms
 
@@ -131,7 +131,7 @@ The three layers that turn a field definition into a rendered field, all in [`co
 **1. `FormComponentFromFieldDefinition`** (internal, around line 1080)
 
 - Maps a field definition's `fieldType` to the correct typed field wrapper
-- Throws for field types the renderer does not support yet (`dynamic`, `markdown`)
+- Throws for field types the renderer does not support yet (`dynamic`)
 
 **2. `FormComponentFromFieldDefinitionTranslatable`** (internal, around line 1240)
 

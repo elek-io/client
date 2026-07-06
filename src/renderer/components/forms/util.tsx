@@ -11,6 +11,7 @@ import {
   type FieldPath,
   type FieldValues,
   type PathValue,
+  type Resolver,
   type UseFieldArrayReturn,
   type UseFormReturn,
 } from 'react-hook-form';
@@ -21,6 +22,10 @@ import { DatetimeFieldDefinitionForm } from '@renderer/components/forms/datetime
 import { EmailFieldDefinitionForm } from '@renderer/components/forms/email-value-definition-form';
 import { EntryFieldDefinitionForm } from '@renderer/components/forms/entry-value-definition-form';
 import { Ipv4FieldDefinitionForm } from '@renderer/components/forms/ipv4-value-definition-form';
+import {
+  MarkdownFieldDefinitionForm,
+  type MarkdownFieldDefinitionFormValues,
+} from '@renderer/components/forms/markdown-value-definition-form';
 import { NumberFieldDefinitionForm } from '@renderer/components/forms/number-value-definition-form';
 import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value-definition-form';
 import {
@@ -43,6 +48,7 @@ import {
   entryFieldDefinitionSchema,
   emailFieldDefinitionSchema,
   ipv4FieldDefinitionSchema,
+  markdownFieldDefinitionSchema,
   numberFieldDefinitionSchema,
   numberSelectFieldDefinitionSchema,
   rangeFieldDefinitionSchema,
@@ -64,6 +70,7 @@ import {
   type FieldDefinitionOrGroup,
   type FieldType,
   type Ipv4FieldDefinition,
+  type MarkdownFieldDefinition,
   type NumberFieldDefinition,
   type NumberSelectFieldDefinition,
   type RangeFieldDefinition,
@@ -144,10 +151,13 @@ export const FieldDefinitionForm = forwardRef(
     // the definition, close the sheet and reset for the next add. RHF's FieldPath
     // cannot reduce the literal paths for an unresolved generic T, so they are
     // asserted here once (same tax as DefaultFieldDefinitionForm's base helper).
+    // TTransformed covers forms whose resolver output differs from the form
+    // values (markdown pins the recursive defaultValue to null in its values).
     const submitDefinition = async <
       T extends FieldDefinitionBase & FieldValues,
+      TTransformed extends FieldDefinitionBase & FieldValues = T,
     >(
-      formState: UseFormReturn<T>
+      formState: UseFormReturn<T, unknown, TTransformed>
     ): Promise<void> => {
       await formState.handleSubmit((definition) => {
         if (isDuplicateSlug(definition.slug)) {
@@ -221,6 +231,57 @@ export const FieldDefinitionForm = forwardRef(
         valueType: 'string',
         fieldType: 'ipv4',
         defaultValue: null,
+      },
+    });
+
+    const markdownFieldDefinitionFormState = useForm<
+      MarkdownFieldDefinitionFormValues,
+      unknown,
+      MarkdownFieldDefinition
+    >({
+      // The resolver is typed over the schema input, whose recursive
+      // defaultValue tree the form values pin to null (see
+      // MarkdownFieldDefinitionFormValues). Every value the form holds is
+      // valid schema input, the Resolver generics just cannot express that.
+      resolver: zodResolver(
+        markdownFieldDefinitionSchema
+      ) as unknown as Resolver<
+        MarkdownFieldDefinitionFormValues,
+        unknown,
+        MarkdownFieldDefinition
+      >,
+      defaultValues: {
+        ...FieldDefinitionBaseDefaults,
+        id: uuid(),
+        valueType: 'mdast',
+        fieldType: 'markdown',
+        isUnique: false,
+        defaultValue: null,
+        min: null,
+        max: null,
+        // Core expects Desktop to default all features off
+        features: {
+          headings: [],
+          blockquotes: false,
+          lists: false,
+          taskListItems: false,
+          codeBlocks: false,
+          thematicBreak: false,
+          tables: false,
+          footnotes: false,
+          rawHtml: false,
+          emphasis: false,
+          strong: false,
+          inlineCode: false,
+          strikethrough: false,
+          hardLineBreaks: false,
+          externalLinks: false,
+          externalImages: false,
+          entryReferences: false,
+          assetReferences: false,
+        },
+        ofCollections: [],
+        ofAssetMimeTypes: [],
       },
     });
 
@@ -447,8 +508,9 @@ export const FieldDefinitionForm = forwardRef(
             return await submitDefinition(numberSelectFieldDefinitionFormState);
           case 'slug':
             return await submitDefinition(slugFieldDefinitionFormState);
-          case 'dynamic':
           case 'markdown':
+            return await submitDefinition(markdownFieldDefinitionFormState);
+          case 'dynamic':
           default:
             throw new Error(
               `Tried to validate unsupported fieldType "${props.fieldType}" of Value definition`
@@ -610,8 +672,16 @@ export const FieldDefinitionForm = forwardRef(
             fieldType={props.fieldType}
           />
         );
-      case 'dynamic':
       case 'markdown':
+        return (
+          <MarkdownFieldDefinitionForm
+            form={markdownFieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
+      case 'dynamic':
       default:
         throw new Error(`Unsupported definition form "${props.fieldType}"`);
     }

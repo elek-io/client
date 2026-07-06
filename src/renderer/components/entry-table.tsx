@@ -36,6 +36,7 @@ import {
 import { useProject } from '@renderer/hooks/useProject';
 
 import {
+  extractText,
   flattenFieldDefinitions,
   type Collection,
   type Entry,
@@ -137,6 +138,11 @@ export function EntryTable({
             references.length === 0
               ? undefined
               : `${String(references.length)} ${noun}`;
+        } else if (value.valueType === 'mdast') {
+          // Structured markdown content - show its plain text
+          const tree = value.content[project.settings.language.default];
+          row[slug] =
+            tree === null || tree === undefined ? undefined : extractText(tree);
         } else {
           // Content is a per-language record for translatable values; index it by
           // the default language.

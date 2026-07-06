@@ -30,6 +30,7 @@ import {
 
 import { AssetDisplay } from '@renderer/components/asset-display';
 import { DragHandle } from '@renderer/components/drag-and-drop';
+import { MarkdownEditor } from '@renderer/components/markdown/markdown-editor';
 import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
@@ -68,6 +69,8 @@ import {
   type EntryFieldDefinition,
   type FieldDefinition,
   type FieldType,
+  type MarkdownFieldDefinition,
+  type MdAstRoot,
   type NumberSelectFieldDefinition,
   type SlugFieldDefinition,
   type StringSelectFieldDefinition,
@@ -911,6 +914,44 @@ function FormSlugField<TFieldValues extends FieldValues>({
   );
 }
 
+interface FormMarkdownFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+  fieldDefinition: MarkdownFieldDefinition;
+  className?: string;
+}
+
+function isMdAstRoot(value: unknown): value is MdAstRoot {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === 'root'
+  );
+}
+
+/**
+ * Thin adapter that binds the Milkdown based MarkdownEditor to a form field.
+ * The Value is Core's mdast tree or null when empty.
+ */
+function FormMarkdownField<TFieldValues extends FieldValues>({
+  field,
+  fieldDefinition,
+  className,
+}: FormMarkdownFieldProps<TFieldValues>): React.ReactElement {
+  return (
+    <MarkdownEditor
+      value={isMdAstRoot(field.value) ? field.value : null}
+      onChange={field.onChange}
+      fieldDefinition={fieldDefinition}
+      disabled={fieldDefinition.isDisabled}
+      className={className}
+    />
+  );
+}
+
 interface FormAssetFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -1548,8 +1589,15 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
           {...props}
         />
       );
-    case 'dynamic':
     case 'markdown':
+      return (
+        <FormMarkdownField
+          fieldDefinition={fieldDefinition}
+          field={field}
+          {...props}
+        />
+      );
+    case 'dynamic':
       throw new Error(
         `[FormComponentFromFieldDefinition] Unsupported fieldType "${fieldDefinition.fieldType}"`
       );
@@ -1577,6 +1625,7 @@ const renderableFieldTypes: ReadonlySet<FieldType> = new Set([
   'ipv4',
   'select',
   'slug',
+  'markdown',
 ]);
 
 export interface FormComponentFromFieldDefinitionTranslatableProps<

@@ -15,8 +15,8 @@ Remove an entry once the feature works end to end.
 
 Core's `fieldTypeSchema` defines 18 field types. The client implements a subset.
 
-- **Working end to end** (16): `text`, `textarea`, `number`, `range`, `toggle`, `asset`, `entry`, `date`, `datetime`, `time`, `email`, `url`, `telephone`, `ipv4`, `select`, `slug`.
-- **Not yet implemented** (2): `dynamic`, `markdown`. These are shown **disabled** in the "Add Field" picker so they cannot be authored, and any that still reach the client (through Core, the API, or a migration) render as a muted placeholder instead of crashing (see [Rendering unsupported field types](#rendering-unsupported-field-types)).
+- **Working end to end** (17): `text`, `textarea`, `number`, `range`, `toggle`, `asset`, `entry`, `date`, `datetime`, `time`, `email`, `url`, `telephone`, `ipv4`, `select`, `slug`, `markdown`.
+- **Not yet implemented** (1): `dynamic`. It is shown **disabled** in the "Add Field" picker so it cannot be authored, and any that still reaches the client (through Core, the API, or a migration) renders as a muted placeholder instead of crashing (see [Rendering unsupported field types](#rendering-unsupported-field-types)).
 
 Two sets are the source of truth for "what is implemented". Keep them in sync when adding a type:
 
@@ -25,7 +25,7 @@ Two sets are the source of truth for "what is implemented". Keep them in sync wh
 
 ### What each missing type needs
 
-- **`dynamic`, `markdown`**: a definition form, a renderer, and Collection-level wiring. Core has `dynamicFieldDefinitionSchema` and `markdownFieldDefinitionSchema`. `dynamic` references Components (which the client has no support for yet), and `markdown` also needs an mdast editor and renderer.
+- **`dynamic`**: a definition form, a renderer, and Collection-level wiring. Core has `dynamicFieldDefinitionSchema`. A `dynamic` field references Components, which the client has no support for at all yet (no queries, no routes, no UI) - Components support has to land first.
 
 ### To implement a type
 
