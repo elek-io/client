@@ -112,12 +112,14 @@ Located in [`components/ui/`](../../src/renderer/components/ui/):
 
 #### Typed field wrappers
 
-Also in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx): a layer of reusable wrappers that bind a base control to React Hook Form and own value transformation - `FormInputField`, `FormTextareaField`, `FormDateField`, `FormRangeField`, `FormToggleField`, `FormAssetField`, `FormEntryField` (plus `TranslatableFormInputField` / `TranslatableFormTextareaField`).
+Also in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx): a layer of reusable wrappers that bind a base control to React Hook Form and own value transformation - `FormInputField`, `FormTextareaField`, `FormDateField`, `FormDatetimeField`, `FormRangeField`, `FormToggleField`, `FormAssetField`, `FormEntryField` (plus `TranslatableFormInputField` / `TranslatableFormTextareaField`).
 
 These wrappers carry the value contract Core expects, so do not hand-roll a raw `<Input>`:
 
 - They return `null` for empty values instead of empty strings (Core schemas use `.nullable()`, so `''` would fail validation)
 - `FormInputField` with `type="number"` coerces the string input to a number
+- `FormInputField` maps field types without an HTML input type of the same name (`telephone` to `tel`, `ipv4` to `text`, `datetime` to `datetime-local`)
+- `FormDatetimeField` converts between the ISO UTC datetime Core stores and the local time the `datetime-local` input speaks
 
 #### Field definition components
 
@@ -126,7 +128,7 @@ The three layers that turn a field definition into a rendered field, all in [`co
 **1. `FormComponentFromFieldDefinition`** (internal, around line 1080)
 
 - Maps a field definition's `fieldType` to the correct typed field wrapper
-- Throws for field types the renderer does not support yet (for example `time`, `datetime`, `ipv4`)
+- Throws for field types the renderer does not support yet (for example `select`, `slug`, `markdown`)
 
 **2. `FormComponentFromFieldDefinitionTranslatable`** (internal, around line 1240)
 

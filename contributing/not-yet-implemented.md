@@ -15,8 +15,8 @@ Remove an entry once the feature works end to end.
 
 Core's `fieldTypeSchema` defines 18 field types. The client implements a subset.
 
-- **Working end to end** (11): `text`, `textarea`, `number`, `range`, `toggle`, `asset`, `entry`, `date`, `email`, `url`, `telephone`.
-- **Not yet implemented** (7): `datetime`, `ipv4`, `time`, `select`, `slug`, `dynamic`, `markdown`. These are shown **disabled** in the "Add Field" picker so they cannot be authored, and any that still reach the client (through Core, the API, or a migration) render as a muted placeholder instead of crashing (see [Rendering unsupported field types](#rendering-unsupported-field-types)).
+- **Working end to end** (14): `text`, `textarea`, `number`, `range`, `toggle`, `asset`, `entry`, `date`, `datetime`, `time`, `email`, `url`, `telephone`, `ipv4`.
+- **Not yet implemented** (4): `select`, `slug`, `dynamic`, `markdown`. These are shown **disabled** in the "Add Field" picker so they cannot be authored, and any that still reach the client (through Core, the API, or a migration) render as a muted placeholder instead of crashing (see [Rendering unsupported field types](#rendering-unsupported-field-types)).
 
 Two sets are the source of truth for "what is implemented". Keep them in sync when adding a type:
 
@@ -25,7 +25,6 @@ Two sets are the source of truth for "what is implemented". Keep them in sync wh
 
 ### What each missing type needs
 
-- **`datetime`, `ipv4`, `time`**: a definition form and a renderer component. Core has `datetimeFieldDefinitionSchema`, `ipv4FieldDefinitionSchema`, `timeFieldDefinitionSchema`. (These used to be silently coerced to `date` / `telephone`; that coercion has been removed.)
 - **`select`, `slug`, `dynamic`, `markdown`**: a definition form, a renderer, and for some, Collection-level wiring. Core has `stringSelectFieldDefinitionSchema` / `numberSelectFieldDefinitionSchema`, `slugFieldDefinitionSchema`, `dynamicFieldDefinitionSchema`, `markdownFieldDefinitionSchema`. `slug` references sibling fields, `dynamic` references Components, and `markdown` also needs an mdast editor and renderer.
 
 ### To implement a type

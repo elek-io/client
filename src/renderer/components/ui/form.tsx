@@ -211,9 +211,19 @@ export function FormInputField<TFieldValues extends FieldValues>({
     return value;
   }
 
+  // Some field types have no matching HTML input type of the same name
+  const htmlInputType =
+    type === 'telephone'
+      ? 'tel'
+      : type === 'ipv4'
+        ? 'text'
+        : type === 'datetime'
+          ? 'datetime-local'
+          : type;
+
   return (
     <Input
-      type={type === 'telephone' ? 'tel' : type === 'ipv4' ? 'text' : type}
+      type={htmlInputType}
       {...field}
       value={field.value ?? ''} // Content can be null (cleared) or undefined (language absent from the partial record); the input needs a string either way
       onChange={(event) => field.onChange(transform(event.target.value))}
@@ -557,6 +567,93 @@ function FormDateField<TFieldValues extends FieldValues>({
             const newDate =
               typeof value === 'function' ? value(dateFromValue) : value;
             field.onChange(dateToString(newDate));
+          }}
+        />
+      </InputGroupAddon>
+    </InputGroup>
+  );
+}
+
+interface FormDatetimeFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> extends React.ComponentProps<'input'> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+}
+
+/**
+ * Special variant of the Input component for datetime Values.
+ * Core stores an ISO datetime with timezone (UTC), while the native
+ * datetime-local input speaks the user's local time without one,
+ * so this converts in both directions.
+ */
+function FormDatetimeField<TFieldValues extends FieldValues>({
+  field,
+  className,
+  ...props
+}: FormDatetimeFieldProps<TFieldValues>): React.ReactElement {
+  const dateFromValue = React.useMemo(() => {
+    if (typeof field.value === 'string' && field.value !== '') {
+      const parsedDate = new Date(field.value);
+      return isNaN(parsedDate.getTime()) ? null : parsedDate;
+    }
+    return null;
+  }, [field.value]);
+
+  function dateToLocalInputValue(date: Date | null): string {
+    if (date === null) {
+      return '';
+    }
+
+    const pad = (value: number): string => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  return (
+    <InputGroup>
+      <FormInputField
+        field={field}
+        data-slot="input-group-control"
+        className={cn(
+          'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent',
+          className
+        )}
+        {...props}
+        value={dateToLocalInputValue(dateFromValue)}
+        onChange={(event) => {
+          field.onChange(
+            event.target.value === ''
+              ? null
+              : new Date(event.target.value).toISOString()
+          );
+        }}
+        type="datetime"
+      />
+      <InputGroupAddon align="inline-end">
+        <DatePicker
+          variant="ghost"
+          size="xs"
+          date={dateFromValue}
+          setDate={(value) => {
+            const newDate =
+              typeof value === 'function' ? value(dateFromValue) : value;
+            if (newDate === null) {
+              field.onChange(null);
+              return;
+            }
+            // Picking a date keeps the already entered time of day
+            const merged = new Date(newDate);
+            if (dateFromValue !== null) {
+              merged.setHours(
+                dateFromValue.getHours(),
+                dateFromValue.getMinutes(),
+                0,
+                0
+              );
+            }
+            field.onChange(merged.toISOString());
           }}
         />
       </InputGroupAddon>
@@ -1095,6 +1192,8 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
     case 'email':
     case 'number':
     case 'url':
+    case 'ipv4':
+    case 'time':
       return (
         <FormInputField
           type={fieldDefinition.fieldType}
@@ -1216,9 +1315,15 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
           {...props}
         />
       );
-    case 'time':
     case 'datetime':
-    case 'ipv4':
+      return (
+        <FormDatetimeField
+          required={fieldDefinition.isRequired}
+          disabled={fieldDefinition.isDisabled}
+          field={field}
+          {...props}
+        />
+      );
     case 'select':
     case 'slug':
     case 'dynamic':
@@ -1242,9 +1347,12 @@ const renderableFieldTypes: ReadonlySet<FieldType> = new Set([
   'asset',
   'entry',
   'date',
+  'datetime',
+  'time',
   'email',
   'url',
   'telephone',
+  'ipv4',
 ]);
 
 export interface FormComponentFromFieldDefinitionTranslatableProps<
@@ -1512,5 +1620,6 @@ export {
   FormAssetField,
   FormEntryField,
   FormDateField,
+  FormDatetimeField,
   FormFieldFromDefinition,
 };

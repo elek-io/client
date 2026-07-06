@@ -5,17 +5,27 @@ import {
   type ReactElement,
   type Ref,
 } from 'react';
-import { useForm, type UseFieldArrayReturn } from 'react-hook-form';
+import {
+  useForm,
+  type FieldPath,
+  type FieldValues,
+  type PathValue,
+  type UseFieldArrayReturn,
+  type UseFormReturn,
+} from 'react-hook-form';
 
 import { AssetFieldDefinitionForm } from '@renderer/components/forms/asset-value-definition-form';
 import { DateFieldDefinitionForm } from '@renderer/components/forms/date-value-definition-form';
+import { DatetimeFieldDefinitionForm } from '@renderer/components/forms/datetime-value-definition-form';
 import { EmailFieldDefinitionForm } from '@renderer/components/forms/email-value-definition-form';
 import { EntryFieldDefinitionForm } from '@renderer/components/forms/entry-value-definition-form';
+import { Ipv4FieldDefinitionForm } from '@renderer/components/forms/ipv4-value-definition-form';
 import { NumberFieldDefinitionForm } from '@renderer/components/forms/number-value-definition-form';
 import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value-definition-form';
 import { TelephoneFieldDefinitionForm } from '@renderer/components/forms/telephone-value-definition-form';
 import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
+import { TimeFieldDefinitionForm } from '@renderer/components/forms/time-value-definition-form';
 import { ToggleFieldDefinitionForm } from '@renderer/components/forms/toggle-value-definition-form';
 import { UrlFieldDefinitionForm } from '@renderer/components/forms/url-value-definition-form';
 import { translatableDefault } from '@renderer/lib/utils';
@@ -23,29 +33,35 @@ import { translatableDefault } from '@renderer/lib/utils';
 import {
   assetFieldDefinitionSchema,
   dateFieldDefinitionSchema,
+  datetimeFieldDefinitionSchema,
   entryFieldDefinitionSchema,
   emailFieldDefinitionSchema,
+  ipv4FieldDefinitionSchema,
   numberFieldDefinitionSchema,
   rangeFieldDefinitionSchema,
   telephoneFieldDefinitionSchema,
   textareaFieldDefinitionSchema,
   textFieldDefinitionSchema,
+  timeFieldDefinitionSchema,
   toggleFieldDefinitionSchema,
   urlFieldDefinitionSchema,
   uuid,
   type AssetFieldDefinition,
   type DateFieldDefinition,
+  type DatetimeFieldDefinition,
   type EmailFieldDefinition,
   type EntryFieldDefinition,
   type FieldDefinitionBase,
   type FieldDefinitionOrGroup,
   type FieldType,
+  type Ipv4FieldDefinition,
   type NumberFieldDefinition,
   type RangeFieldDefinition,
   type SupportedLanguage,
   type TelephoneFieldDefinition,
   type TextareaFieldDefinition,
   type TextFieldDefinition,
+  type TimeFieldDefinition,
   type ToggleFieldDefinition,
   type UrlFieldDefinition,
 } from '@elek-io/core';
@@ -108,6 +124,33 @@ export const FieldDefinitionForm = forwardRef(
       message: `A Field with the slug "${definitionSlug}" already exists`,
     });
 
+    // Every definition form submits the same way: reject duplicate slugs, append
+    // the definition, close the sheet and reset for the next add. RHF's FieldPath
+    // cannot reduce the literal paths for an unresolved generic T, so they are
+    // asserted here once (same tax as DefaultFieldDefinitionForm's base helper).
+    const submitDefinition = async <
+      T extends FieldDefinitionBase & FieldValues,
+    >(
+      formState: UseFormReturn<T>
+    ): Promise<void> => {
+      await formState.handleSubmit((definition) => {
+        if (isDuplicateSlug(definition.slug)) {
+          formState.setError(
+            'slug' as FieldPath<T>,
+            duplicateSlugError(definition.slug)
+          );
+          return;
+        }
+        props.fieldDefinitions.append(definition);
+        props.setIsAddFieldDefinitionSheetOpen(false);
+        formState.reset();
+        formState.setValue(
+          'id' as FieldPath<T>,
+          uuid() as PathValue<T, FieldPath<T>>
+        );
+      })();
+    };
+
     const textareaFieldDefinitionFormState = useForm<TextareaFieldDefinition>({
       resolver: zodResolver(textareaFieldDefinitionSchema),
       defaultValues: {
@@ -128,6 +171,39 @@ export const FieldDefinitionForm = forwardRef(
         id: uuid(),
         valueType: 'string',
         fieldType: 'date',
+        defaultValue: null,
+      },
+    });
+
+    const datetimeFieldDefinitionFormState = useForm<DatetimeFieldDefinition>({
+      resolver: zodResolver(datetimeFieldDefinitionSchema),
+      defaultValues: {
+        ...FieldDefinitionBaseDefaults,
+        id: uuid(),
+        valueType: 'string',
+        fieldType: 'datetime',
+        defaultValue: null,
+      },
+    });
+
+    const timeFieldDefinitionFormState = useForm<TimeFieldDefinition>({
+      resolver: zodResolver(timeFieldDefinitionSchema),
+      defaultValues: {
+        ...FieldDefinitionBaseDefaults,
+        id: uuid(),
+        valueType: 'string',
+        fieldType: 'time',
+        defaultValue: null,
+      },
+    });
+
+    const ipv4FieldDefinitionFormState = useForm<Ipv4FieldDefinition>({
+      resolver: zodResolver(ipv4FieldDefinitionSchema),
+      defaultValues: {
+        ...FieldDefinitionBaseDefaults,
+        id: uuid(),
+        valueType: 'string',
+        fieldType: 'ipv4',
         defaultValue: null,
       },
     });
@@ -253,184 +329,33 @@ export const FieldDefinitionForm = forwardRef(
       addDefinition: async () => {
         switch (props.fieldType) {
           case 'text':
-            return await textFieldDefinitionFormState.handleSubmit(
-              (textDefinition) => {
-                if (isDuplicateSlug(textDefinition.slug)) {
-                  textFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(textDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(textDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                textFieldDefinitionFormState.reset();
-                textFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(textFieldDefinitionFormState);
           case 'textarea':
-            return await textareaFieldDefinitionFormState.handleSubmit(
-              (textareaDefinition) => {
-                if (isDuplicateSlug(textareaDefinition.slug)) {
-                  textareaFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(textareaDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(textareaDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                textareaFieldDefinitionFormState.reset();
-                textareaFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(textareaFieldDefinitionFormState);
           case 'number':
-            return await numberFieldDefinitionFormState.handleSubmit(
-              (numberDefinition) => {
-                if (isDuplicateSlug(numberDefinition.slug)) {
-                  numberFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(numberDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(numberDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                numberFieldDefinitionFormState.reset();
-                numberFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(numberFieldDefinitionFormState);
           case 'range':
-            return await rangeFieldDefinitionFormState.handleSubmit(
-              (rangeDefinition) => {
-                if (isDuplicateSlug(rangeDefinition.slug)) {
-                  rangeFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(rangeDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(rangeDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                rangeFieldDefinitionFormState.reset();
-                rangeFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(rangeFieldDefinitionFormState);
           case 'toggle':
-            return await toggleFieldDefinitionFormState.handleSubmit(
-              (toggleDefinition) => {
-                if (isDuplicateSlug(toggleDefinition.slug)) {
-                  toggleFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(toggleDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(toggleDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                toggleFieldDefinitionFormState.reset();
-                toggleFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(toggleFieldDefinitionFormState);
           case 'asset':
-            return await assetFieldDefinitionFormState.handleSubmit(
-              (assetDefinition) => {
-                if (isDuplicateSlug(assetDefinition.slug)) {
-                  assetFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(assetDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(assetDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                assetFieldDefinitionFormState.reset();
-                assetFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(assetFieldDefinitionFormState);
           case 'entry':
-            return await entryFieldDefinitionFormState.handleSubmit(
-              (entryDefinition) => {
-                if (isDuplicateSlug(entryDefinition.slug)) {
-                  entryFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(entryDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(entryDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                entryFieldDefinitionFormState.reset();
-                entryFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(entryFieldDefinitionFormState);
           case 'date':
-            return await dateFieldDefinitionFormState.handleSubmit(
-              (dateDefinition) => {
-                if (isDuplicateSlug(dateDefinition.slug)) {
-                  dateFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(dateDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(dateDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                dateFieldDefinitionFormState.reset();
-                dateFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
-          case 'email':
-            return await emailFieldDefinitionFormState.handleSubmit(
-              (emailDefinition) => {
-                if (isDuplicateSlug(emailDefinition.slug)) {
-                  emailFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(emailDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(emailDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                emailFieldDefinitionFormState.reset();
-                emailFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
-          case 'url':
-            return await urlFieldDefinitionFormState.handleSubmit(
-              (urlDefinition) => {
-                if (isDuplicateSlug(urlDefinition.slug)) {
-                  urlFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(urlDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(urlDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                urlFieldDefinitionFormState.reset();
-                urlFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
-          case 'telephone':
-            return await telephoneFieldDefinitionFormState.handleSubmit(
-              (telephoneDefinition) => {
-                if (isDuplicateSlug(telephoneDefinition.slug)) {
-                  telephoneFieldDefinitionFormState.setError(
-                    'slug',
-                    duplicateSlugError(telephoneDefinition.slug)
-                  );
-                  return;
-                }
-                props.fieldDefinitions.append(telephoneDefinition);
-                props.setIsAddFieldDefinitionSheetOpen(false);
-                telephoneFieldDefinitionFormState.reset();
-                telephoneFieldDefinitionFormState.setValue('id', uuid());
-              }
-            )();
+            return await submitDefinition(dateFieldDefinitionFormState);
           case 'datetime':
-          case 'ipv4':
+            return await submitDefinition(datetimeFieldDefinitionFormState);
           case 'time':
+            return await submitDefinition(timeFieldDefinitionFormState);
+          case 'email':
+            return await submitDefinition(emailFieldDefinitionFormState);
+          case 'url':
+            return await submitDefinition(urlFieldDefinitionFormState);
+          case 'telephone':
+            return await submitDefinition(telephoneFieldDefinitionFormState);
+          case 'ipv4':
+            return await submitDefinition(ipv4FieldDefinitionFormState);
           case 'select':
           case 'slug':
           case 'dynamic':
@@ -521,6 +446,33 @@ export const FieldDefinitionForm = forwardRef(
             fieldType={props.fieldType}
           />
         );
+      case 'datetime':
+        return (
+          <DatetimeFieldDefinitionForm
+            form={datetimeFieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
+      case 'time':
+        return (
+          <TimeFieldDefinitionForm
+            form={timeFieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
+      case 'ipv4':
+        return (
+          <Ipv4FieldDefinitionForm
+            form={ipv4FieldDefinitionFormState}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
       case 'email':
         return (
           <EmailFieldDefinitionForm
@@ -548,9 +500,6 @@ export const FieldDefinitionForm = forwardRef(
             fieldType={props.fieldType}
           />
         );
-      case 'datetime':
-      case 'ipv4':
-      case 'time':
       case 'select':
       case 'slug':
       case 'dynamic':
