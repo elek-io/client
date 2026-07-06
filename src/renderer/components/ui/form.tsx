@@ -250,8 +250,9 @@ export function FormInputField<TFieldValues extends FieldValues>({
   );
 }
 
-export interface TranslatableFormInputFieldProps<T extends FieldValues>
-  extends FormInputFieldProps<T> {
+export interface TranslatableFormInputFieldProps<
+  T extends FieldValues,
+> extends FormInputFieldProps<T> {
   title: string;
   description: string;
   supportedLanguages: SupportedLanguage[];
@@ -405,8 +406,9 @@ export function FormTextareaField<TFieldValues extends FieldValues>({
   );
 }
 
-export interface TranslatableFormTextareaFieldProps<T extends FieldValues>
-  extends FormTextareaFieldProps<T> {
+export interface TranslatableFormTextareaFieldProps<
+  T extends FieldValues,
+> extends FormTextareaFieldProps<T> {
   title: string;
   description: string;
   supportedLanguages: SupportedLanguage[];

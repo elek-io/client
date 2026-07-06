@@ -46,12 +46,11 @@ import {
 // by two schemas (string and number), so the select definition form resolves the
 // ambiguous 'select' to the active variant before it reaches this shared base.
 export type AuthorableFieldType =
-  | Exclude<FieldType, 'select'>
-  | 'stringSelect'
-  | 'numberSelect';
+  Exclude<FieldType, 'select'> | 'stringSelect' | 'numberSelect';
 
-export interface DefaultFieldDefinitionFormProps<T extends FieldValues>
-  extends HTMLAttributes<HTMLFormElement> {
+export interface DefaultFieldDefinitionFormProps<
+  T extends FieldValues,
+> extends HTMLAttributes<HTMLFormElement> {
   form: UseFormReturn<T>;
   supportedLanguages: SupportedLanguage[];
   currentLanguage: SupportedLanguage;
