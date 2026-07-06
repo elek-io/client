@@ -27,6 +27,7 @@ import {
   SelectFieldDefinitionForm,
   type SelectValueType,
 } from '@renderer/components/forms/select-value-definition-form';
+import { SlugFieldDefinitionForm } from '@renderer/components/forms/slug-value-definition-form';
 import { TelephoneFieldDefinitionForm } from '@renderer/components/forms/telephone-value-definition-form';
 import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
@@ -45,6 +46,7 @@ import {
   numberFieldDefinitionSchema,
   numberSelectFieldDefinitionSchema,
   rangeFieldDefinitionSchema,
+  slugFieldDefinitionSchema,
   stringSelectFieldDefinitionSchema,
   telephoneFieldDefinitionSchema,
   textareaFieldDefinitionSchema,
@@ -65,6 +67,7 @@ import {
   type NumberFieldDefinition,
   type NumberSelectFieldDefinition,
   type RangeFieldDefinition,
+  type SlugFieldDefinition,
   type StringSelectFieldDefinition,
   type SupportedLanguage,
   type TelephoneFieldDefinition,
@@ -114,18 +117,22 @@ export const FieldDefinitionForm = forwardRef(
       inputWidth: '12',
     };
 
+    // Recover the real definitions from the opaque id-rows, for the duplicate
+    // slug check and for forms that reference sibling fields.
+    const recoveredFieldDefinitions = props.fieldDefinitions.fields.map(
+      (field) => field as unknown as FieldDefinitionOrGroup
+    );
+
     // Core throws on duplicate slugs when saving the Collection,
     // so reject them here where the user can still correct the slug
     const isDuplicateSlug = (definitionSlug: string): boolean =>
-      props.fieldDefinitions.fields.some((field) => {
-        // Recover the real definition from the opaque id-row.
-        const definition = field as unknown as FieldDefinitionOrGroup;
-        return 'isGroup' in definition
+      recoveredFieldDefinitions.some((definition) =>
+        'isGroup' in definition
           ? definition.fieldDefinitions.some(
               (member) => member.slug === definitionSlug
             )
-          : definition.slug === definitionSlug;
-      });
+          : definition.slug === definitionSlug
+      );
     const duplicateSlugError = (
       definitionSlug: string
     ): { type: string; message: string } => ({
@@ -214,6 +221,22 @@ export const FieldDefinitionForm = forwardRef(
         valueType: 'string',
         fieldType: 'ipv4',
         defaultValue: null,
+      },
+    });
+
+    const slugFieldDefinitionFormState = useForm<SlugFieldDefinition>({
+      resolver: zodResolver(slugFieldDefinitionSchema),
+      defaultValues: {
+        ...FieldDefinitionBaseDefaults,
+        id: uuid(),
+        valueType: 'string',
+        fieldType: 'slug',
+        isUnique: true,
+        defaultValue: null,
+        separator: '-',
+        lowercase: true,
+        decamelize: true,
+        ofFieldDefinitions: [],
       },
     });
 
@@ -423,6 +446,7 @@ export const FieldDefinitionForm = forwardRef(
             }
             return await submitDefinition(numberSelectFieldDefinitionFormState);
           case 'slug':
+            return await submitDefinition(slugFieldDefinitionFormState);
           case 'dynamic':
           case 'markdown':
           default:
@@ -577,6 +601,15 @@ export const FieldDefinitionForm = forwardRef(
           />
         );
       case 'slug':
+        return (
+          <SlugFieldDefinitionForm
+            form={slugFieldDefinitionFormState}
+            fieldDefinitions={recoveredFieldDefinitions}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+            fieldType={props.fieldType}
+          />
+        );
       case 'dynamic':
       case 'markdown':
       default:

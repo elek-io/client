@@ -9,6 +9,7 @@ import {
   ImagePlusIcon,
   LanguagesIcon,
   ListPlusIcon,
+  RefreshCwIcon,
   TrashIcon,
   XIcon,
 } from 'lucide-react';
@@ -16,6 +17,8 @@ import * as React from 'react';
 import {
   Controller,
   FormProvider,
+  useFormContext,
+  useWatch,
   type ControllerProps,
   type ControllerRenderProps,
   type FieldErrors,
@@ -44,6 +47,7 @@ import { Label } from '@renderer/components/ui/label';
 import { Slider } from '@renderer/components/ui/slider';
 import { Switch } from '@renderer/components/ui/switch';
 import { Textarea } from '@renderer/components/ui/textarea';
+import { useFieldDefinitions } from '@renderer/hooks/useFieldDefinitions';
 import {
   FormFieldContext,
   FormItemContext,
@@ -55,19 +59,21 @@ import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { cn, fieldWidth } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
-import type {
-  Asset,
-  AssetFieldDefinition,
-  Collection,
-  Entry,
-  EntryFieldDefinition,
-  FieldDefinition,
-  FieldType,
-  NumberSelectFieldDefinition,
-  StringSelectFieldDefinition,
-  SupportedLanguage,
-  ValueContentReferenceToAsset,
-  ValueContentReferenceToEntry,
+import {
+  slug,
+  type Asset,
+  type AssetFieldDefinition,
+  type Collection,
+  type Entry,
+  type EntryFieldDefinition,
+  type FieldDefinition,
+  type FieldType,
+  type NumberSelectFieldDefinition,
+  type SlugFieldDefinition,
+  type StringSelectFieldDefinition,
+  type SupportedLanguage,
+  type ValueContentReferenceToAsset,
+  type ValueContentReferenceToEntry,
 } from '@elek-io/core';
 
 import { DatePicker } from './date-picker';
@@ -224,7 +230,7 @@ export function FormInputField<TFieldValues extends FieldValues>({
   const htmlInputType =
     type === 'telephone'
       ? 'tel'
-      : type === 'ipv4'
+      : type === 'ipv4' || type === 'slug'
         ? 'text'
         : type === 'datetime'
           ? 'datetime-local'
@@ -783,6 +789,125 @@ function FormSelectField<TFieldValues extends FieldValues>({
         ))}
       </SelectContent>
     </Select>
+  );
+}
+
+interface FormSlugFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> extends React.ComponentProps<'input'> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+  fieldDefinition: SlugFieldDefinition;
+}
+
+/**
+ * Input for slug Values. While the value is untouched (empty or still equal to
+ * the last value derived here), it follows the definition's source fields of
+ * the same language live. A stored slug is never rewritten, since keeping
+ * permalinks stable is the editor's responsibility. Manual input is made
+ * canonical on blur and a button re-derives from the sources on demand.
+ */
+function FormSlugField<TFieldValues extends FieldValues>({
+  field,
+  fieldDefinition,
+  className,
+  ...props
+}: FormSlugFieldProps<TFieldValues>): React.ReactElement {
+  const fieldDefinitions = useFieldDefinitions();
+  const { control } = useFormContext<TFieldValues>();
+  const lastDerivedRef = React.useRef<string | null>(null);
+
+  const slugOptions = {
+    separator: fieldDefinition.separator,
+    lowercase: fieldDefinition.lowercase,
+    decamelize: fieldDefinition.decamelize,
+  };
+
+  // Entry forms bind Values as values.<slug>.content.<language>
+  const language = field.name.split('.').at(-1) ?? '';
+
+  // Resolve the source ids to sibling Value paths of the same language.
+  // Outside an Entry form (no context) there is nothing to derive from.
+  const sourcePaths = React.useMemo(
+    () =>
+      fieldDefinitions === null
+        ? []
+        : (fieldDefinition.ofFieldDefinitions.flatMap((id) => {
+            const source = fieldDefinitions.find(
+              (definition) => definition.id === id
+            );
+            return source === undefined
+              ? []
+              : [`values.${source.slug}.content.${language}`];
+          }) as FieldPath<TFieldValues>[]),
+    [fieldDefinitions, fieldDefinition.ofFieldDefinitions, language]
+  );
+
+  const sourceValues = useWatch({ control, name: sourcePaths });
+  const derived = slug(
+    sourceValues
+      .map((value) => (typeof value === 'string' ? value : ''))
+      .filter((value) => value !== '')
+      .join(' '),
+    slugOptions
+  );
+  const derivedOrNull = derived === '' ? null : derived;
+
+  React.useEffect(() => {
+    if (sourcePaths.length === 0) {
+      return;
+    }
+    const current: unknown = field.value;
+    const isUntouched =
+      current === null ||
+      current === undefined ||
+      current === '' ||
+      current === lastDerivedRef.current;
+    if (isUntouched && current !== derivedOrNull) {
+      lastDerivedRef.current = derivedOrNull;
+      field.onChange(derivedOrNull);
+    }
+  }, [field, derivedOrNull, sourcePaths]);
+
+  return (
+    <InputGroup>
+      <FormInputField
+        field={field}
+        data-slot="input-group-control"
+        className={cn(
+          'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent',
+          className
+        )}
+        {...props}
+        onBlur={() => {
+          field.onBlur();
+          // Core only accepts canonical slugs for this field's configuration
+          if (typeof field.value === 'string' && field.value !== '') {
+            const canonical = slug(field.value, slugOptions);
+            if (canonical !== field.value) {
+              field.onChange(canonical === '' ? null : canonical);
+            }
+          }
+        }}
+        type="slug"
+      />
+      {sourcePaths.length > 0 ? (
+        <InputGroupAddon align="inline-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            Icon={RefreshCwIcon}
+            onClick={() => {
+              lastDerivedRef.current = derivedOrNull;
+              field.onChange(derivedOrNull);
+            }}
+          >
+            <span className="sr-only">Generate from the source Fields</span>
+          </Button>
+        </InputGroupAddon>
+      ) : null}
+    </InputGroup>
   );
 }
 
@@ -1414,6 +1539,15 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
         />
       );
     case 'slug':
+      return (
+        <FormSlugField
+          fieldDefinition={fieldDefinition}
+          required={fieldDefinition.isRequired}
+          disabled={fieldDefinition.isDisabled}
+          field={field}
+          {...props}
+        />
+      );
     case 'dynamic':
     case 'markdown':
       throw new Error(
@@ -1442,6 +1576,7 @@ const renderableFieldTypes: ReadonlySet<FieldType> = new Set([
   'telephone',
   'ipv4',
   'select',
+  'slug',
 ]);
 
 export interface FormComponentFromFieldDefinitionTranslatableProps<
@@ -1711,5 +1846,6 @@ export {
   FormDateField,
   FormDatetimeField,
   FormSelectField,
+  FormSlugField,
   FormFieldFromDefinition,
 };

@@ -68,7 +68,6 @@ import {
 // shown disabled in the picker so selecting one cannot crash the sheet.
 // See contributing/not-yet-implemented.md.
 const unimplementedFieldTypes: ReadonlySet<FieldType> = new Set([
-  'slug',
   'dynamic',
   'markdown',
 ]);

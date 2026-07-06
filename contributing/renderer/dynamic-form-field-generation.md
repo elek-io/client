@@ -93,7 +93,7 @@ One field type is special: Core backs `select` with two schemas, one for text op
 `CollectionForm` ([`forms/collection-form.tsx`](../../src/renderer/components/forms/collection-form.tsx)) renders the field-type `Select` and the editor sheet, holds the `FieldDefinitionForm` ref, and calls `addDefinition()` from the sheet's footer button.
 
 > [!NOTE]
-> The type `Select` lists every Core `fieldType`, but `FieldDefinitionForm` only implements a subset. Selecting an unimplemented type (`slug`, `dynamic`, `markdown`) throws "Unsupported definition form". Adding a new field type means adding a per-type form, a `useForm()` and the matching `addDefinition` case in `util.tsx`, and confirming Core's `fieldTypeSchema` includes it.
+> The type `Select` lists every Core `fieldType`, but `FieldDefinitionForm` only implements a subset. Selecting an unimplemented type (`dynamic`, `markdown`) throws "Unsupported definition form". Adding a new field type means adding a per-type form, a `useForm()` and the matching `addDefinition` case in `util.tsx`, and confirming Core's `fieldTypeSchema` includes it.
 
 ## Rendering Dynamic Forms
 
@@ -120,8 +120,9 @@ These wrappers carry the value contract Core expects, so do not hand-roll a raw 
 
 - They return `null` for empty values instead of empty strings (Core schemas use `.nullable()`, so `''` would fail validation)
 - `FormInputField` with `type="number"` coerces the string input to a number
-- `FormInputField` maps field types without an HTML input type of the same name (`telephone` to `tel`, `ipv4` to `text`, `datetime` to `datetime-local`)
+- `FormInputField` maps field types without an HTML input type of the same name (`telephone` to `tel`, `ipv4` and `slug` to `text`, `datetime` to `datetime-local`)
 - `FormDatetimeField` converts between the ISO UTC datetime Core stores and the local time the `datetime-local` input speaks
+- `FormSlugField` derives the slug live from its source fields (same language) while the value is empty or still equals the last derived value, so a stored slug is never rewritten. Manual input is made canonical on blur. It resolves its source ids through `useFieldDefinitions()` ([`hooks/useFieldDefinitions.ts`](../../src/renderer/hooks/useFieldDefinitions.ts)), provided by the `FieldDefinitionsProvider` ([`providers/FieldDefinitionsProvider.tsx`](../../src/renderer/providers/FieldDefinitionsProvider.tsx)) that `EntryForm` wraps its fields in - outside of it (for example the Collection editor preview) the input is simply manual
 
 #### Field definition components
 
@@ -130,7 +131,7 @@ The three layers that turn a field definition into a rendered field, all in [`co
 **1. `FormComponentFromFieldDefinition`** (internal, around line 1080)
 
 - Maps a field definition's `fieldType` to the correct typed field wrapper
-- Throws for field types the renderer does not support yet (for example `slug`, `markdown`)
+- Throws for field types the renderer does not support yet (`dynamic`, `markdown`)
 
 **2. `FormComponentFromFieldDefinitionTranslatable`** (internal, around line 1240)
 
