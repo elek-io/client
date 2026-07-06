@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   forwardRef,
   useImperativeHandle,
+  useState,
   type ReactElement,
   type Ref,
 } from 'react';
@@ -22,6 +23,10 @@ import { EntryFieldDefinitionForm } from '@renderer/components/forms/entry-value
 import { Ipv4FieldDefinitionForm } from '@renderer/components/forms/ipv4-value-definition-form';
 import { NumberFieldDefinitionForm } from '@renderer/components/forms/number-value-definition-form';
 import { RangeFieldDefinitionForm } from '@renderer/components/forms/range-value-definition-form';
+import {
+  SelectFieldDefinitionForm,
+  type SelectValueType,
+} from '@renderer/components/forms/select-value-definition-form';
 import { TelephoneFieldDefinitionForm } from '@renderer/components/forms/telephone-value-definition-form';
 import { TextFieldDefinitionForm } from '@renderer/components/forms/text-value-definition-form';
 import { TextareaFieldDefinitionForm } from '@renderer/components/forms/textarea-value-definition-form';
@@ -38,7 +43,9 @@ import {
   emailFieldDefinitionSchema,
   ipv4FieldDefinitionSchema,
   numberFieldDefinitionSchema,
+  numberSelectFieldDefinitionSchema,
   rangeFieldDefinitionSchema,
+  stringSelectFieldDefinitionSchema,
   telephoneFieldDefinitionSchema,
   textareaFieldDefinitionSchema,
   textFieldDefinitionSchema,
@@ -56,7 +63,9 @@ import {
   type FieldType,
   type Ipv4FieldDefinition,
   type NumberFieldDefinition,
+  type NumberSelectFieldDefinition,
   type RangeFieldDefinition,
+  type StringSelectFieldDefinition,
   type SupportedLanguage,
   type TelephoneFieldDefinition,
   type TextareaFieldDefinition,
@@ -208,6 +217,56 @@ export const FieldDefinitionForm = forwardRef(
       },
     });
 
+    // One 'select' fieldType, two Core schemas. Which one addDefinition
+    // validates is chosen inside the select definition form.
+    const [selectValueType, setSelectValueType] =
+      useState<SelectValueType>('string');
+
+    const stringSelectFieldDefinitionFormState =
+      useForm<StringSelectFieldDefinition>({
+        resolver: zodResolver(stringSelectFieldDefinitionSchema),
+        defaultValues: {
+          ...FieldDefinitionBaseDefaults,
+          id: uuid(),
+          valueType: 'string',
+          fieldType: 'select',
+          defaultValue: null,
+          options: [
+            {
+              value: '',
+              label: translatableDefault({
+                supportedLanguages: props.supportedLanguages,
+                defaultValue: '',
+              }),
+            },
+          ],
+        },
+      });
+
+    const numberSelectFieldDefinitionFormState =
+      useForm<NumberSelectFieldDefinition>({
+        resolver: zodResolver(numberSelectFieldDefinitionSchema),
+        defaultValues: {
+          ...FieldDefinitionBaseDefaults,
+          id: uuid(),
+          valueType: 'number',
+          fieldType: 'select',
+          isUnique: false,
+          defaultValue: null,
+          min: null,
+          max: null,
+          options: [
+            {
+              value: 0,
+              label: translatableDefault({
+                supportedLanguages: props.supportedLanguages,
+                defaultValue: '',
+              }),
+            },
+          ],
+        },
+      });
+
     const emailFieldDefinitionFormState = useForm<EmailFieldDefinition>({
       resolver: zodResolver(emailFieldDefinitionSchema),
       defaultValues: {
@@ -357,6 +416,12 @@ export const FieldDefinitionForm = forwardRef(
           case 'ipv4':
             return await submitDefinition(ipv4FieldDefinitionFormState);
           case 'select':
+            if (selectValueType === 'string') {
+              return await submitDefinition(
+                stringSelectFieldDefinitionFormState
+              );
+            }
+            return await submitDefinition(numberSelectFieldDefinitionFormState);
           case 'slug':
           case 'dynamic':
           case 'markdown':
@@ -501,6 +566,16 @@ export const FieldDefinitionForm = forwardRef(
           />
         );
       case 'select':
+        return (
+          <SelectFieldDefinitionForm
+            stringForm={stringSelectFieldDefinitionFormState}
+            numberForm={numberSelectFieldDefinitionFormState}
+            valueType={selectValueType}
+            onValueTypeChange={setSelectValueType}
+            currentLanguage={props.defaultLanguage}
+            supportedLanguages={props.supportedLanguages}
+          />
+        );
       case 'slug':
       case 'dynamic':
       case 'markdown':

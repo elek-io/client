@@ -88,10 +88,12 @@ Each field type has its own definition form so it can expose only the options th
 - **`DefaultFieldDefinitionForm`** ([`forms/default-field-definition-form.tsx`](../../src/renderer/components/forms/default-field-definition-form.tsx)) renders the fields every definition shares (label, slug, description, `inputWidth`, `isRequired`, `isUnique`, `isDisabled`) and takes the type-specific inputs as `children`. It also auto-generates the slug from the label until the user edits the slug manually.
 - **Per-type forms** (e.g. [`text-value-definition-form.tsx`](../../src/renderer/components/forms/text-value-definition-form.tsx)) wrap `DefaultFieldDefinitionForm` and add only the inputs unique to that type.
 
+One field type is special: Core backs `select` with two schemas, one for text options and one for number options. The select definition form ([`select-value-definition-form.tsx`](../../src/renderer/components/forms/select-value-definition-form.tsx)) renders a chooser for the option value type and mounts the matching variant, each with its own `useForm()` draft. `FieldDefinitionForm` holds which variant is active and its `addDefinition()` validates that variant's form. The shared base form receives the resolved variant (`stringSelect` or `numberSelect`) as its `fieldType`, which is why that prop is the widened `AuthorableFieldType` instead of Core's `FieldType`.
+
 `CollectionForm` ([`forms/collection-form.tsx`](../../src/renderer/components/forms/collection-form.tsx)) renders the field-type `Select` and the editor sheet, holds the `FieldDefinitionForm` ref, and calls `addDefinition()` from the sheet's footer button.
 
 > [!NOTE]
-> The type `Select` lists every Core `fieldType`, but `FieldDefinitionForm` only implements a subset. Selecting an unimplemented type (`slug`, `select`, `dynamic`, `markdown`) throws "Unsupported definition form". Adding a new field type means adding a per-type form, a `useForm()` and the matching `addDefinition` case in `util.tsx`, and confirming Core's `fieldTypeSchema` includes it.
+> The type `Select` lists every Core `fieldType`, but `FieldDefinitionForm` only implements a subset. Selecting an unimplemented type (`slug`, `dynamic`, `markdown`) throws "Unsupported definition form". Adding a new field type means adding a per-type form, a `useForm()` and the matching `addDefinition` case in `util.tsx`, and confirming Core's `fieldTypeSchema` includes it.
 
 ## Rendering Dynamic Forms
 
@@ -112,7 +114,7 @@ Located in [`components/ui/`](../../src/renderer/components/ui/):
 
 #### Typed field wrappers
 
-Also in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx): a layer of reusable wrappers that bind a base control to React Hook Form and own value transformation - `FormInputField`, `FormTextareaField`, `FormDateField`, `FormDatetimeField`, `FormRangeField`, `FormToggleField`, `FormAssetField`, `FormEntryField` (plus `TranslatableFormInputField` / `TranslatableFormTextareaField`).
+Also in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx): a layer of reusable wrappers that bind a base control to React Hook Form and own value transformation - `FormInputField`, `FormTextareaField`, `FormDateField`, `FormDatetimeField`, `FormSelectField`, `FormRangeField`, `FormToggleField`, `FormAssetField`, `FormEntryField` (plus `TranslatableFormInputField` / `TranslatableFormTextareaField`).
 
 These wrappers carry the value contract Core expects, so do not hand-roll a raw `<Input>`:
 
@@ -128,7 +130,7 @@ The three layers that turn a field definition into a rendered field, all in [`co
 **1. `FormComponentFromFieldDefinition`** (internal, around line 1080)
 
 - Maps a field definition's `fieldType` to the correct typed field wrapper
-- Throws for field types the renderer does not support yet (for example `select`, `slug`, `markdown`)
+- Throws for field types the renderer does not support yet (for example `slug`, `markdown`)
 
 **2. `FormComponentFromFieldDefinitionTranslatable`** (internal, around line 1240)
 

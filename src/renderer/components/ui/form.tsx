@@ -63,6 +63,8 @@ import type {
   EntryFieldDefinition,
   FieldDefinition,
   FieldType,
+  NumberSelectFieldDefinition,
+  StringSelectFieldDefinition,
   SupportedLanguage,
   ValueContentReferenceToAsset,
   ValueContentReferenceToEntry,
@@ -70,6 +72,13 @@ import type {
 
 import { DatePicker } from './date-picker';
 import { InputGroup, InputGroupAddon } from './input-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './select';
 
 const Form = FormProvider;
 
@@ -707,6 +716,76 @@ function FormToggleField<TFieldValues extends FieldValues>({
   );
 }
 
+interface FormSelectFieldProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> extends React.ComponentProps<typeof Select> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+  fieldDefinition: StringSelectFieldDefinition | NumberSelectFieldDefinition;
+  className?: string;
+}
+
+/**
+ * Renders the options of a select field definition. Items are keyed by their
+ * index because Radix forbids empty item values, which string options can hold.
+ * Selecting an item stores the option's value, so the Value keeps the correct
+ * string or number type. A "None" item clears optional fields.
+ */
+function FormSelectField<TFieldValues extends FieldValues>({
+  field,
+  fieldDefinition,
+  className,
+  ...props
+}: FormSelectFieldProps<TFieldValues>): React.ReactElement {
+  const { translateContent } = useProject();
+
+  const optionDisplay = (
+    option: (typeof fieldDefinition.options)[number]
+  ): string => {
+    const label = translateContent({
+      key: 'fieldDefinition.options.label',
+      record: option.label,
+    });
+    return label !== '' ? label : String(option.value);
+  };
+  const items = fieldDefinition.options.map((option, index) => ({
+    itemValue: String(index),
+    display: optionDisplay(option),
+  }));
+
+  const selectedIndex =
+    field.value === null || field.value === undefined
+      ? -1
+      : fieldDefinition.options.findIndex(
+          (option) => option.value === field.value
+        );
+
+  return (
+    <Select
+      {...props}
+      name={field.name}
+      value={selectedIndex === -1 ? '' : String(selectedIndex)}
+      onValueChange={(selected) =>
+        field.onChange(fieldDefinition.options[Number(selected)]?.value ?? null)
+      }
+    >
+      <SelectTrigger className={className} onBlur={field.onBlur}>
+        <SelectValue placeholder="Select an option" />
+      </SelectTrigger>
+      <SelectContent>
+        {fieldDefinition.isRequired === false ? (
+          <SelectItem value="none">None</SelectItem>
+        ) : null}
+        {items.map((item) => (
+          <SelectItem key={item.itemValue} value={item.itemValue}>
+            {item.display}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 interface FormAssetFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -1325,6 +1404,15 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
         />
       );
     case 'select':
+      return (
+        <FormSelectField
+          fieldDefinition={fieldDefinition}
+          disabled={fieldDefinition.isDisabled}
+          required={fieldDefinition.isRequired}
+          field={field}
+          {...props}
+        />
+      );
     case 'slug':
     case 'dynamic':
     case 'markdown':
@@ -1353,6 +1441,7 @@ const renderableFieldTypes: ReadonlySet<FieldType> = new Set([
   'url',
   'telephone',
   'ipv4',
+  'select',
 ]);
 
 export interface FormComponentFromFieldDefinitionTranslatableProps<
@@ -1621,5 +1710,6 @@ export {
   FormEntryField,
   FormDateField,
   FormDatetimeField,
+  FormSelectField,
   FormFieldFromDefinition,
 };
