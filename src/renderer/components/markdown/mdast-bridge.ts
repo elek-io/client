@@ -56,14 +56,16 @@ export function mdastToDoc(ctx: Ctx, root: MdAstRoot): Node {
 export function docToMdast(ctx: Ctx, doc: Node): MdAstRoot | null {
   const schema = ctx.get(schemaCtx);
   const serialized = new SerializerState(schema).run(doc).build();
-  const root = mdAstRootSchema.parse({
-    type: 'root',
-    children: blockNodes(children(serialized)),
-  });
-  if (root.children.length === 0 || isEmptyParagraphOnly(root)) {
+  const blockChildren = blockNodes(children(serialized));
+  // Checked before the parse: Core's root schema itself rejects the empty
+  // editor state, which must become null instead of a validation error
+  if (
+    blockChildren.length === 0 ||
+    isEmptyParagraphOnly({ children: blockChildren })
+  ) {
     return null;
   }
-  return root;
+  return mdAstRootSchema.parse({ type: 'root', children: blockChildren });
 }
 
 // The serializer emits loose mdast (unist) nodes whose per-type fields are

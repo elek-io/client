@@ -15,12 +15,21 @@ import { useEffect, useRef, useState, type ReactElement } from 'react';
 
 import { cn } from '@renderer/lib/utils';
 
-import type { MarkdownFieldDefinition, MdAstRoot } from '@elek-io/core';
+import { z, type MarkdownFieldDefinition, type MdAstRoot } from '@elek-io/core';
 
 import './markdown-editor.css';
 import { MarkdownToolbar } from './markdown-toolbar';
 import { docToMdast, mdastToDoc } from './mdast-bridge';
 import { buildEditorPlugins } from './plugin-assembly';
+
+// Zod errors stringify their whole issue list as the message, show only the
+// first issue's human readable part instead
+function bridgeErrorMessage(error: unknown): string {
+  if (error instanceof z.ZodError) {
+    return error.issues[0]?.message ?? error.message;
+  }
+  return error instanceof Error ? error.message : String(error);
+}
 
 export interface MarkdownEditorProps {
   value: MdAstRoot | null;
@@ -71,7 +80,7 @@ const MarkdownEditorInner = ({
       setBridgeError(null);
       onChangeRef.current(root);
     } catch (error) {
-      setBridgeError(error instanceof Error ? error.message : String(error));
+      setBridgeError(bridgeErrorMessage(error));
     }
   };
   const emitRef = useRef(emit);
@@ -133,7 +142,7 @@ const MarkdownEditorInner = ({
         lastEmittedRef.current = key;
         setBridgeError(null);
       } catch (error) {
-        setBridgeError(error instanceof Error ? error.message : String(error));
+        setBridgeError(bridgeErrorMessage(error));
       }
     });
   }, [loading, get, value]);
