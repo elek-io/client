@@ -4,6 +4,7 @@ import {
   insertHrCommand,
   toggleEmphasisCommand,
   toggleInlineCodeCommand,
+  toggleLinkCommand,
   toggleStrongCommand,
   turnIntoTextCommand,
   wrapInBlockquoteCommand,
@@ -21,9 +22,12 @@ import {
   BoldIcon,
   CodeIcon,
   HeadingIcon,
+  ImagePlusIcon,
   ItalicIcon,
+  LinkIcon,
   ListIcon,
   ListOrderedIcon,
+  ListPlusIcon,
   MinusIcon,
   PilcrowIcon,
   SquareCodeIcon,
@@ -31,7 +35,7 @@ import {
   TableIcon,
   TextQuoteIcon,
 } from 'lucide-react';
-import type { ReactElement, ReactNode } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 
 import { Button } from '@renderer/components/ui/button';
 import {
@@ -41,10 +45,16 @@ import {
   DropdownMenuTrigger,
 } from '@renderer/components/ui/dropdown-menu';
 
-import type { MarkdownFeatures } from '@elek-io/core';
+import type { MarkdownFieldDefinition } from '@elek-io/core';
+
+import { AssetReferencePicker } from './asset-reference-picker';
+import { EntryReferencePicker } from './entry-reference-picker';
+import { LinkDialog } from './link-dialog';
+import { insertAssetReferenceCommand } from './plugins/asset-reference';
+import { insertEntryReferenceCommand } from './plugins/entry-reference';
 
 export interface MarkdownToolbarProps {
-  features: MarkdownFeatures;
+  fieldDefinition: MarkdownFieldDefinition;
   disabled: boolean;
 }
 
@@ -54,10 +64,14 @@ export interface MarkdownToolbarProps {
  * editor selection survives the click.
  */
 export const MarkdownToolbar = ({
-  features,
+  fieldDefinition,
   disabled,
 }: MarkdownToolbarProps): ReactElement | null => {
+  const features = fieldDefinition.features;
   const [isLoading, getEditor] = useInstance();
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [isAssetPickerOpen, setIsAssetPickerOpen] = useState(false);
+  const [isEntryPickerOpen, setIsEntryPickerOpen] = useState(false);
 
   function run<T>(key: CmdKey<T>, payload?: T): void {
     if (isLoading) {
@@ -103,8 +117,12 @@ export const MarkdownToolbar = ({
     features.codeBlocks ||
     features.thematicBreak ||
     features.tables;
+  const hasInserters =
+    features.externalLinks ||
+    features.assetReferences ||
+    features.entryReferences;
 
-  if (!hasMarks && !hasBlocks) {
+  if (!hasMarks && !hasBlocks && !hasInserters) {
     return null;
   }
 
@@ -196,6 +214,63 @@ export const MarkdownToolbar = ({
             run(insertHrCommand.key);
           })
         : null}
+
+      {features.externalLinks
+        ? button('Link', <LinkIcon />, () => {
+            setIsLinkDialogOpen(true);
+          })
+        : null}
+      {features.assetReferences
+        ? button('Reference an Asset', <ImagePlusIcon />, () => {
+            setIsAssetPickerOpen(true);
+          })
+        : null}
+      {features.entryReferences
+        ? button('Reference an Entry', <ListPlusIcon />, () => {
+            setIsEntryPickerOpen(true);
+          })
+        : null}
+
+      {features.externalLinks ? (
+        <LinkDialog
+          open={isLinkDialogOpen}
+          onOpenChange={setIsLinkDialogOpen}
+          onConfirm={(href) => {
+            run(toggleLinkCommand.key, { href });
+            setIsLinkDialogOpen(false);
+          }}
+        />
+      ) : null}
+      {features.assetReferences ? (
+        <AssetReferencePicker
+          open={isAssetPickerOpen}
+          onOpenChange={setIsAssetPickerOpen}
+          ofAssetMimeTypes={fieldDefinition.ofAssetMimeTypes}
+          onPick={(asset) => {
+            run(insertAssetReferenceCommand.key, {
+              assetId: asset.id,
+              alt: asset.name,
+              title: null,
+            });
+            setIsAssetPickerOpen(false);
+          }}
+        />
+      ) : null}
+      {features.entryReferences ? (
+        <EntryReferencePicker
+          open={isEntryPickerOpen}
+          onOpenChange={setIsEntryPickerOpen}
+          ofCollections={fieldDefinition.ofCollections}
+          onPick={({ entry, collection, label }) => {
+            run(insertEntryReferenceCommand.key, {
+              collectionId: collection.id,
+              entryId: entry.id,
+              label,
+            });
+            setIsEntryPickerOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 };

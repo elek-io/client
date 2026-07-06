@@ -147,7 +147,7 @@ const MarkdownEditorInner = ({
       )}
     >
       <MarkdownToolbar
-        features={fieldDefinition.features}
+        fieldDefinition={fieldDefinition}
         disabled={disabled || loading}
       />
       <Milkdown />

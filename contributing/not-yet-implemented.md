@@ -23,9 +23,11 @@ Two sets are the source of truth for "what is implemented". Keep them in sync wh
 - `unimplementedFieldTypes` in [`collection-form.tsx`](../src/renderer/components/forms/collection-form.tsx) - types disabled in the picker.
 - `renderableFieldTypes` in [`ui/form.tsx`](../src/renderer/components/ui/form.tsx) - types `FormComponentFromFieldDefinition` can draw.
 
-### What each missing type needs
+### What the missing type needs
 
-- **`dynamic`**: a definition form, a renderer, and Collection-level wiring. Core has `dynamicFieldDefinitionSchema`. A `dynamic` field references Components, which the client has no support for at all yet (no queries, no routes, no UI) - Components support has to land first.
+- **Core support**: `dynamicFieldDefinitionSchema` (`valueType: 'component'`, `ofComponents` referencing Component ids, min/max item counts) and the Component object type (`componentFileSchema`, `makeComponentsContext`, `resolveOfComponents`). A dynamic Value's content is a flat array of `ComponentItem`s, not a per-language record.
+- **Client today**: the client has no Components support at all - no queries, no IPC surface, no routes, no CRUD UI. A dynamic field is disabled in the picker and renders the muted placeholder. `defaultEntryValue()` ([`lib/entry.ts`](../src/renderer/lib/entry.ts)) still throws for `valueType: 'component'`, so an entry form for a Collection that already contains a dynamic field (via Core or the API) crashes.
+- **Where to start**: Components come first - list/read queries plus routes and CRUD UI, mirroring how Collections are wired. Then the dynamic definition form (an `ofComponents` picker) and a polymorphic block editor in the entry form. Note the per-language `Translatable` wrapper in [`ui/form.tsx`](../src/renderer/components/ui/form.tsx) assumes per-language content and does not fit dynamic Values.
 
 ### To implement a type
 
@@ -38,11 +40,26 @@ Two sets are the source of truth for "what is implemented". Keep them in sync wh
 
 `FormFieldFromDefinition` ([`ui/form.tsx`](../src/renderer/components/ui/form.tsx)) checks `renderableFieldTypes` and renders a muted "can't be displayed yet" placeholder for any type it does not know. So a Collection that contains an unsupported field (from Core, the API, or a migration) does not crash the entry form, the collection editor, or a diff. The actual renderer components are still missing (see above).
 
-## Asset field definition: `ofAssetMimeTypes`
+## Field definition editing
 
-- **Core support**: `assetFieldDefinitionSchema` carries `ofAssetMimeTypes` to restrict which mime types an Asset field accepts.
-- **Client today**: the asset definition form ([`asset-value-definition-form.tsx`](../src/renderer/components/forms/asset-value-definition-form.tsx)) does not expose it, so it always stays at its default.
-- **Where to start**: add a mime type selector to the asset definition form.
+- **Core support**: `CollectionService.update` accepts any valid `fieldDefinitions` array, so definitions can be changed after creation at the data level.
+- **Client today**: definitions are add-only. The Edit pencil button `FormFieldFromDefinition` renders in the collection editor has no `onClick` ([`ui/form.tsx`](../src/renderer/components/ui/form.tsx)), and the per-type definition forms have no update mode. Only adding, reordering (drag) and deleting work.
+- **Where to start**: wire the Edit button to open the sheet with the matching per-type form hydrated from the existing definition, and replace via the field array on submit.
+- **Notes**: `select` (options lists) and `markdown` (feature toggles) raise the priority - those are the definitions users will want to revise. Editing also raises data questions Core should answer first, like what happens to stored Values referencing a removed select option.
+
+## `ofAssetMimeTypes`: asset field and markdown definition forms
+
+- **Core support**: `assetFieldDefinitionSchema` and `markdownFieldDefinitionSchema` carry `ofAssetMimeTypes` to restrict which mime types an Asset (or a markdown assetReference) may use.
+- **Client today**: neither definition form exposes it, so it always stays at its default (empty, any type). The markdown editor's asset picker already filters by it when it is set through Core or the API.
+- **Where to start**: add a mime type selector shared by [`asset-value-definition-form.tsx`](../src/renderer/components/forms/asset-value-definition-form.tsx) and [`markdown-value-definition-form.tsx`](../src/renderer/components/forms/markdown-value-definition-form.tsx).
+
+## Markdown: v1 simplifications
+
+- **Definition `defaultValue` stays null**: Core allows a default mdast tree applied to every language of a new Entry, but the definition form does not offer an editor for it. Authoring one would couple a mounted editor to the feature toggles being edited in the same form, and definitions cannot be edited afterwards anyway (see [Field definition editing](#field-definition-editing)).
+- **Entry reference labels flatten to plain text**: Core's `entryReference` node carries phrasing children, the editor stores them as a single text child. Rich formatting inside a reference label (authored via the API) is flattened to plain text when such content is edited.
+- **Deep validation errors show without detail**: min/max block counts and feature violations surface as a message under the field, but zod issues addressed at nested tree paths may only mark the field invalid without a per-node explanation.
+
+See [`renderer/markdown-editor.md`](./renderer/markdown-editor.md) for the editor's architecture.
 
 ## Field definition groups: authoring
 

@@ -123,6 +123,7 @@ These wrappers carry the value contract Core expects, so do not hand-roll a raw 
 - `FormInputField` maps field types without an HTML input type of the same name (`telephone` to `tel`, `ipv4` and `slug` to `text`, `datetime` to `datetime-local`)
 - `FormDatetimeField` converts between the ISO UTC datetime Core stores and the local time the `datetime-local` input speaks
 - `FormSlugField` derives the slug live from its source fields (same language) while the value is empty or still equals the last derived value, so a stored slug is never rewritten. Manual input is made canonical on blur. It resolves its source ids through `useFieldDefinitions()` ([`hooks/useFieldDefinitions.ts`](../../src/renderer/hooks/useFieldDefinitions.ts)), provided by the `FieldDefinitionsProvider` ([`providers/FieldDefinitionsProvider.tsx`](../../src/renderer/providers/FieldDefinitionsProvider.tsx)) that `EntryForm` wraps its fields in - outside of it (for example the Collection editor preview) the input is simply manual
+- `markdown` fields render the Milkdown based `MarkdownEditor` through a thin adapter - see [`markdown-editor.md`](./markdown-editor.md)
 
 #### Field definition components
 
