@@ -5,9 +5,11 @@
   ],
   "include": [
     "electron.vite.config.ts",
+    "playwright.config.ts",
     "src/main",
     "src/preload",
-    "src/index.d.ts"
+    "src/index.d.ts",
+    "tests"
   ],
   "compilerOptions": {
     "composite": true,

@@ -25,6 +25,7 @@ Then proceed to the specific topics based on your interests or contribution goal
 - **[Breadcrumb Navigation](./renderer/breadcrumb-navigation.md)** - Route-based breadcrumb system for hierarchical navigation
 - **[Theming and Styling](./renderer/theming-and-styling.md)** - shadcn/ui components, Tailwind v4 CSS configuration, and dark mode
 - **[Internationalization](./renderer/internationalization.md)** - translations, datetime locales, and multi-language form state
+- **[E2E Testing](./testing.md)** - Playwright tests against the packaged app, fixtures, isolation, and CI
 - **[Releasing](./releasing.md)** - versioning with changesets and how CD publishes draft GitHub Releases
 
 For a running list of things Core supports but the client cannot use yet, see **[Not Yet Implemented](./not-yet-implemented.md)**. Add to it whenever you find such a gap.

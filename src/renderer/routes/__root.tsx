@@ -1,6 +1,7 @@
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   type ErrorComponentProps,
+  HeadContent,
   Outlet,
   createRootRouteWithContext,
   useRouter,
@@ -25,6 +26,20 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   errorComponent: ErrorComponent,
   notFoundComponent: NotFoundComponent,
+  // The title lives here instead of index.html,
+  // since routes can then override it via their own head option
+  head: () => ({
+    meta: [
+      {
+        title: 'elek.io Client',
+      },
+      {
+        name: 'description',
+        content:
+          'The elek.io Client is a desktop application for Windows, macOS and Linux that allows you to manage content.',
+      },
+    ],
+  }),
 });
 
 function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
@@ -128,15 +143,21 @@ function NotFoundComponent(): ReactElement {
 
 function RootComponent(): ReactElement {
   return (
-    <UserProvider>
-      <BreadcrumbProvider>
-        <AppHeader />
-        <UserHeader />
-        <Outlet />
-        <Toaster />
-        <TanStackRouterDevtools position="bottom-right" initialIsOpen={false} />
-        <ReactQueryDevtools position="bottom" initialIsOpen={false} />
-      </BreadcrumbProvider>
-    </UserProvider>
+    <>
+      <HeadContent />
+      <UserProvider>
+        <BreadcrumbProvider>
+          <AppHeader />
+          <UserHeader />
+          <Outlet />
+          <Toaster />
+          <TanStackRouterDevtools
+            position="bottom-right"
+            initialIsOpen={false}
+          />
+          <ReactQueryDevtools position="bottom" initialIsOpen={false} />
+        </BreadcrumbProvider>
+      </UserProvider>
+    </>
   );
 }
