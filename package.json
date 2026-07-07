@@ -107,7 +107,7 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.2.0",
     "autoprefixer": "10.4.21",
-    "electron": "42.6.0",
+    "electron": "43.0.0",
     "electron-builder": "26.15.6",
     "electron-playwright-helpers": "2.1.0",
     "electron-vite": "5.0.0",

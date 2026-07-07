@@ -11,7 +11,9 @@ jobs:
       fail-fast: false
       matrix:
         # Mirrors the platforms and Node.js version @elek-io/core tests on
-        platform: [ubuntu-24.04, macos-15-intel, macos-15, windows-2025]
+        # windows-2022 is temporary, to bisect the E2E launch hang on windows-2025
+        platform:
+          [ubuntu-24.04, macos-15-intel, macos-15, windows-2025, windows-2022]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out code
@@ -37,6 +39,50 @@ jobs:
       #   sarif_file: ../electronegativity_results
       - name: Build
         run: pnpm run build
+      # Temporary diagnostics for the E2E launch hang on Windows runners:
+      # launches the exe directly to see whether it starts, prints the
+      # inspector announcement Playwright waits for, and whether Defender
+      # or crashes interfere. Remove once the hang is understood.
+      - name: Diagnose Electron launch (temporary)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = "dist\win-unpacked\elek.io Client.exe"
+          Write-Host "=== Build output"
+          Get-ChildItem dist | Select-Object Name
+          Get-Item $exe | Format-List Name, Length, LastWriteTime
+          Write-Host "app.asar exists: $(Test-Path 'dist\win-unpacked\resources\app.asar')"
+
+          Write-Host "=== Defender status"
+          Get-MpComputerStatus | Select-Object AMRunningMode, RealTimeProtectionEnabled, IoavProtectionEnabled, BehaviorMonitorEnabled | Format-List
+
+          $env:ELECTRON_ENABLE_LOGGING = "1"
+
+          Write-Host "=== 1) Plain launch, 15s"
+          $p = Start-Process -FilePath $exe -RedirectStandardOutput out1.txt -RedirectStandardError err1.txt -PassThru
+          Start-Sleep -Seconds 15
+          if ($p.HasExited) { Write-Host "exited with code $($p.ExitCode)" } else { Write-Host "still running"; taskkill /PID $p.Id /T /F }
+          Write-Host "--- stdout:"; Get-Content out1.txt -ErrorAction SilentlyContinue
+          Write-Host "--- stderr:"; Get-Content err1.txt -ErrorAction SilentlyContinue
+          Write-Host "--- wrote app data: $(Test-Path "$env:USERPROFILE\elek.io")"
+
+          Write-Host "=== 2) Launch with --inspect=0, 15s"
+          $p = Start-Process -FilePath $exe -ArgumentList "--inspect=0" -RedirectStandardOutput out2.txt -RedirectStandardError err2.txt -PassThru
+          Start-Sleep -Seconds 15
+          if ($p.HasExited) { Write-Host "exited with code $($p.ExitCode)" } else { Write-Host "still running"; taskkill /PID $p.Id /T /F }
+          Write-Host "--- stdout:"; Get-Content out2.txt -ErrorAction SilentlyContinue
+          Write-Host "--- stderr:"; Get-Content err2.txt -ErrorAction SilentlyContinue
+
+          Write-Host "=== 3) Launch with --inspect=0 --no-sandbox, 15s"
+          $p = Start-Process -FilePath $exe -ArgumentList "--inspect=0","--no-sandbox" -RedirectStandardOutput out3.txt -RedirectStandardError err3.txt -PassThru
+          Start-Sleep -Seconds 15
+          if ($p.HasExited) { Write-Host "exited with code $($p.ExitCode)" } else { Write-Host "still running"; taskkill /PID $p.Id /T /F }
+          Write-Host "--- stdout:"; Get-Content out3.txt -ErrorAction SilentlyContinue
+          Write-Host "--- stderr:"; Get-Content err3.txt -ErrorAction SilentlyContinue
+
+          Write-Host "=== Application error events (last 30 min)"
+          Get-WinEvent -FilterHashtable @{LogName='Application'; Level=2; StartTime=(Get-Date).AddMinutes(-30)} -MaxEvents 20 -ErrorAction SilentlyContinue | Format-List TimeCreated, ProviderName, Message
+          exit 0
       # Invoke the runner directly, since "pnpm run test" would rebuild
       # the app that the build step above already built
       - name: Run E2E tests (Linux)

@@ -4,10 +4,6 @@ The client is tested end to end with [Playwright](https://playwright.dev/docs/ap
 
 There is no unit test setup yet. Everything below is about E2E tests.
 
-## Electron version constraint
-
-Electron is currently pinned to the 42.x line because `electron.launch()` hangs on Windows with Electron 43.0.0. Playwright only tests against the Electron version its own CI pins (42.x for Playwright 1.61), and history shows most new Electron majors break the launch handshake at first (Electron 36, 39.2.0 and 40.2.1 all did) until a patch release fixes it. Before upgrading Electron to a new major, check that Playwright's [main branch devDependencies](https://raw.githubusercontent.com/microsoft/playwright/main/package.json) pin that major, or verify the Windows CI job passes with it.
-
 ## Running tests
 
 Tests run against the unpacked build in `dist`. The test scripts build it first, so they always test the current code:
