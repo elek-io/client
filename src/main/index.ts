@@ -62,7 +62,15 @@ class Main {
 
     // Register app events
     app.on('ready', () => {
-      void this.onAppReady();
+      void this.onAppReady().catch((error: unknown) => {
+        // Exit instead of leaving a running app without a window,
+        // otherwise initialization failures hang silently.
+        // Not using Core's logger since it may be what failed to initialize
+        // eslint-disable-next-line no-console
+        console.error('Failed to initialize the app', error);
+        sentryCaptureException(error);
+        app.exit(1);
+      });
     });
     app.on('activate', () => {
       void this.onAppActivate();

@@ -99,6 +99,19 @@ export const test = base.extend<{
       env,
     });
 
+    // Mirror the app's process output into the test output,
+    // so initialization failures in the main process are visible
+    app
+      .process()
+      .stdout?.on('data', (data: Buffer) =>
+        console.log(`[app] ${data.toString().trimEnd()}`)
+      );
+    app
+      .process()
+      .stderr?.on('data', (data: Buffer) =>
+        console.error(`[app] ${data.toString().trimEnd()}`)
+      );
+
     // Use the app in tests
     await use(app);
 
@@ -108,7 +121,9 @@ export const test = base.extend<{
 
   mainWindow: async ({ electronApp }, use) => {
     // Wait for the first window to open
-    const window = await electronApp.firstWindow();
+    // The explicit timeout makes a hang here report as a firstWindow
+    // timeout instead of a generic test timeout
+    const window = await electronApp.firstWindow({ timeout: 30000 });
 
     const errors: string[] = [];
     const warnings: string[] = [];
