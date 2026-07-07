@@ -159,6 +159,17 @@
   app-region: drag;
   /* When creating a draggable region, the dragging behavior may conflict with text selection */
   user-select: none;
+  /*
+    Keep header content out of the window controls overlay.
+    Since Electron 43 the controls follow the OS title bar layout
+    (on Linux they can sit left, right or on both sides), so the safe
+    area must come from the titlebar-area environment variables.
+    @see https://www.electronjs.org/docs/latest/breaking-changes
+  */
+  padding-left: env(titlebar-area-x, 0px);
+  padding-right: calc(
+    100% - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100%)
+  );
 }
 
 /*

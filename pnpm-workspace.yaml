@@ -10,7 +10,8 @@ allowBuilds:
   # dugite is Core's git engine. Its postinstall downloads the embedded git
   # executable, so the build must run or every git operation at runtime fails.
   dugite: true
-  # Downloads the Electron binary used by pnpm dev and pnpm start.
+  # Since Electron 42 the binary also downloads on first run, but the package
+  # still ships an install script that pnpm requires approval for.
   electron: true
   # Downloads the Squirrel.Windows binaries used when packaging for Windows.
   electron-winstaller: true
