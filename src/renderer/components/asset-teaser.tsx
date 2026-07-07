@@ -5,12 +5,15 @@ import {
   Edit2Icon,
   ExpandIcon,
   ImageIcon,
+  Replace,
   TrashIcon,
+  X,
 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 
 import { AssetDisplay } from '@renderer/components/asset-display';
+import { AssetForm } from '@renderer/components/forms/asset-form';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,16 +38,6 @@ import {
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
-import {
   Item,
   ItemContent,
   ItemDescription,
@@ -54,7 +47,6 @@ import {
 } from '@renderer/components/ui/item';
 import { Separator } from '@renderer/components/ui/separator';
 import { Skeleton } from '@renderer/components/ui/skeleton';
-import { Textarea } from '@renderer/components/ui/textarea';
 import {
   Tooltip,
   TooltipContent,
@@ -92,6 +84,7 @@ export function AssetTeaser(
       newFilePath: undefined,
     },
   });
+  const newFilePath = updateAssetForm.watch('newFilePath');
   const createdTime = formatDatetime({ datetime: props.created });
   const updatedTime = formatDatetime({ datetime: props.updated });
   const information = [
@@ -141,10 +134,41 @@ export function AssetTeaser(
     });
   }
 
+  async function onReplaceFile(): Promise<void> {
+    const result = await window.ipc.electron.dialog.showOpenDialog({
+      title: 'Select a replacement file',
+      buttonLabel: 'Replace file',
+      properties: ['openFile'],
+    });
+
+    if (result.canceled === true) {
+      return;
+    }
+
+    const filePath = result.filePaths[0];
+    if (filePath === undefined) {
+      return;
+    }
+
+    updateAssetForm.setValue('newFilePath', filePath, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }
+
   const onAssetUpdate: SubmitHandler<UpdateAssetProps> = async (
     asset
   ): Promise<void> => {
-    await updateAsset(asset);
+    const updatedAsset = await updateAsset(asset);
+    // Reset the form to the saved values so the pending file replacement is
+    // cleared and the dialog doesn't reopen in a dirty/stale state.
+    updateAssetForm.reset({
+      id: updatedAsset.id,
+      name: updatedAsset.name,
+      description: updatedAsset.description,
+      projectId: props.projectId,
+      newFilePath: undefined,
+    });
     setIsUpdateAssetDialogOpen(false);
   };
 
@@ -235,46 +259,42 @@ export function AssetTeaser(
                   <div className="m-auto aspect-4/3 size-48">
                     <AssetDisplay {...props} static />
                   </div>
-                  <ItemContent className="w-full p-0">
-                    <Form {...updateAssetForm}>
-                      <form
-                        onSubmit={updateAssetForm.handleSubmit(onAssetUpdate)}
-                      >
-                        <div className="grid grid-cols-12 gap-6">
-                          <FormField
-                            control={updateAssetForm.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem className="col-span-12">
-                                <FormLabel isRequired>Asset name</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormDescription />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
 
-                          <FormField
-                            control={updateAssetForm.control}
-                            name="description"
-                            render={({ field }) => (
-                              <FormItem className="col-span-12">
-                                <FormLabel isRequired>
-                                  Asset description
-                                </FormLabel>
-                                <FormControl>
-                                  <Textarea {...field} />
-                                </FormControl>
-                                <FormDescription />
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </form>
-                    </Form>
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      Icon={Replace}
+                      onClick={async () => onReplaceFile()}
+                    >
+                      Replace file
+                    </Button>
+                    {newFilePath !== undefined ? (
+                      <div className="flex max-w-full items-center gap-1 text-sm text-muted-foreground">
+                        <span className="line-clamp-1 break-all">
+                          New file: {newFilePath.split(/[/\\]/).pop()}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          Icon={X}
+                          onClick={() =>
+                            updateAssetForm.resetField('newFilePath')
+                          }
+                        >
+                          <span className="sr-only">Undo file replacement</span>
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <ItemContent className="w-full p-0">
+                    <AssetForm
+                      assetForm={updateAssetForm}
+                      onFormSubmit={onAssetUpdate}
+                    />
                   </ItemContent>
                 </Item>
               </DialogBody>

@@ -3,8 +3,9 @@ import * as React from 'react';
 
 import { cn, initials } from '@renderer/lib/utils';
 
-interface AvatarProps
-  extends React.ComponentProps<typeof AvatarPrimitive.Root> {
+interface AvatarProps extends React.ComponentProps<
+  typeof AvatarPrimitive.Root
+> {
   name: string;
   src?: string;
 }

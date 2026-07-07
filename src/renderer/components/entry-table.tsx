@@ -35,7 +35,21 @@ import {
 } from '@renderer/components/ui/table';
 import { useProject } from '@renderer/hooks/useProject';
 
-import type { Collection, Entry, PaginatedList, Project } from '@elek-io/core';
+import {
+  extractText,
+  flattenFieldDefinitions,
+  type Collection,
+  type Entry,
+  type PaginatedList,
+  type Project,
+} from '@elek-io/core';
+
+// A table row: the fixed columns plus one loosely typed cell per field slug.
+type EntryRow = {
+  id: string;
+  created: string;
+  updated: string;
+} & Record<string, unknown>;
 
 export function EntryTable({
   project,
@@ -54,18 +68,18 @@ export function EntryTable({
     pageSize: 10, // default page size
   });
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  function columns(): ColumnDef<Entry>[] {
-    const columns: ColumnDef<Entry>[] = collection.fieldDefinitions.map(
-      (definition) => {
-        return {
-          accessorKey: definition.id,
-          header: translateContent({
-            key: 'definition.label',
-            record: definition.label,
-          }),
-        };
-      }
-    );
+  function columns(): ColumnDef<EntryRow>[] {
+    const columns: ColumnDef<EntryRow>[] = flattenFieldDefinitions(
+      collection.fieldDefinitions
+    ).map((definition) => {
+      return {
+        accessorKey: definition.slug,
+        header: translateContent({
+          key: 'definition.label',
+          record: definition.label,
+        }),
+      };
+    });
 
     columns.push(
       {
@@ -87,18 +101,57 @@ export function EntryTable({
 
     return columns;
   }
+  const fieldTypeBySlug = new Map(
+    flattenFieldDefinitions(collection.fieldDefinitions).map((definition) => [
+      definition.slug,
+      definition.fieldType,
+    ])
+  );
   const table = useReactTable({
     data: entries.list.map((entry) => {
-      const row: { [x: string]: unknown } = {
+      const row: EntryRow = {
         id: entry.id,
         created: formatDatetime({ datetime: entry.created }).relative,
         updated: formatDatetime({ datetime: entry.updated }).relative,
       };
 
-      entry.values.map((value) => {
-        row[value.fieldDefinitionId] =
-          value.content[project.settings.language.default];
-      });
+      for (const [slug, value] of Object.entries(entry.values)) {
+        if (value.valueType === 'reference') {
+          // Reference content is an array of { id, objectType } objects,
+          // which cannot be rendered directly - show a count instead
+          const references =
+            value.content[project.settings.language.default] ?? [];
+          const fieldType = fieldTypeBySlug.get(slug);
+          const noun =
+            fieldType === 'asset'
+              ? references.length === 1
+                ? 'Asset'
+                : 'Assets'
+              : fieldType === 'entry'
+                ? references.length === 1
+                  ? 'Entry'
+                  : 'Entries'
+                : references.length === 1
+                  ? 'Reference'
+                  : 'References';
+          row[slug] =
+            references.length === 0
+              ? undefined
+              : `${String(references.length)} ${noun}`;
+        } else if (value.valueType === 'mdast') {
+          // Structured markdown content - show its plain text
+          const tree = value.content[project.settings.language.default];
+          row[slug] =
+            tree === null || tree === undefined ? undefined : extractText(tree);
+        } else {
+          // Content is a per-language record for translatable values; index it by
+          // the default language.
+          row[slug] = (value.content as Record<string, unknown>)[
+            project.settings.language.default
+          ];
+        }
+      }
+
       return row;
     }),
     columns: columns(),
@@ -160,8 +213,9 @@ export function EntryTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {/* @todo this is working but of the wrong type */}
-                    {column.columnDef.header}
+                    {typeof column.columnDef.header === 'string'
+                      ? column.columnDef.header
+                      : column.id}
                   </DropdownMenuCheckboxItem>
                 );
               })}

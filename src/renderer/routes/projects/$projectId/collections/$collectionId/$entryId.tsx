@@ -6,6 +6,8 @@ import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
+import { type DirectStringValue } from '@elek-io/core';
+
 export const Route = createFileRoute(
   '/projects/$projectId/collections/$collectionId/$entryId'
 )({
@@ -23,15 +25,18 @@ function ProjectCollectionEntryLayout(): ReactElement {
     })
   );
   // @todo Should use User defined title field instead of first value
+  const firstStringValue = isReadingEntry
+    ? undefined
+    : Object.values(entry.values).find(
+        (value): value is DirectStringValue => value.valueType === 'string'
+      );
   useBreadcrumb(
     Route,
-    isReadingEntry ||
-      entry.values[0] === undefined ||
-      entry.values[0].valueType !== 'string'
+    firstStringValue === undefined
       ? undefined
       : translateContent({
           key: 'collection.name.plural',
-          record: entry.values[0].content,
+          record: firstStringValue.content,
         })
   );
 

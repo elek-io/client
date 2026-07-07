@@ -61,6 +61,8 @@ const ipc: ContextBridgeApi = {
         ipcRenderer.invoke('core:projects:list', ...args),
       read: async (...args) =>
         ipcRenderer.invoke('core:projects:read', ...args),
+      history: async (...args) =>
+        ipcRenderer.invoke('core:projects:history', ...args),
       update: async (...args) =>
         ipcRenderer.invoke('core:projects:update', ...args),
       getChanges: async (...args) =>

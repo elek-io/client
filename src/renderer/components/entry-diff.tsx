@@ -10,12 +10,7 @@ import { EntryForm } from '@renderer/components/forms/entry-form';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
 import { queryOptions } from '@renderer/queries';
 
-import {
-  updateEntrySchema,
-  type GitCommit,
-  type Project,
-  type UpdateEntryProps,
-} from '@elek-io/core';
+import { updateEntrySchema, type GitCommit, type Project } from '@elek-io/core';
 
 export function EntryDiff({
   project,
@@ -36,13 +31,23 @@ export function EntryDiff({
     queryOptions.collections.read({ projectId: project.id, id: collectionId })
   );
 
+  // Fetch the Project's full history to find the commit before this one
+  const { data: history, isPending: isReadingHistory } = useQueryNoError(
+    queryOptions.projects.history({ id: project.id })
+  );
+
   // Derive commitBefore during render with useMemo
   const commitBefore = useMemo(() => {
     if (commit.message.method === 'create') {
       return undefined;
     }
 
-    const entryCommitHistory = project.fullHistory.filter(
+    // History not loaded yet, the loading skeleton is shown below
+    if (!history) {
+      return undefined;
+    }
+
+    const entryCommitHistory = history.fullHistory.filter(
       (commitFromHistory) =>
         commitFromHistory.message.reference.objectType === 'entry' &&
         commitFromHistory.message.reference.id === commit.message.reference.id
@@ -60,7 +65,7 @@ export function EntryDiff({
     }
 
     return previousCommit;
-  }, [commit, project.fullHistory]);
+  }, [commit, history]);
 
   // Derive commitAfter during render with useMemo
   const commitAfter = useMemo(() => {
@@ -81,13 +86,13 @@ export function EntryDiff({
       enabled: commitBefore !== undefined,
     });
 
-  const entryFormBefore = useForm<UpdateEntryProps>({
+  const entryFormBefore = useForm({
     resolver: zodResolver(updateEntrySchema),
     defaultValues: {
       projectId: project.id,
       collectionId,
       id: commit.message.reference.id,
-      values: [],
+      values: {},
     },
   });
 
@@ -107,13 +112,13 @@ export function EntryDiff({
     enabled: commitAfter !== undefined,
   });
 
-  const entryFormAfter = useForm<UpdateEntryProps>({
+  const entryFormAfter = useForm({
     resolver: zodResolver(updateEntrySchema),
     defaultValues: {
       projectId: project.id,
       collectionId,
       id: commit.message.reference.id,
-      values: [],
+      values: {},
     },
   });
 
@@ -126,6 +131,7 @@ export function EntryDiff({
   // Show loading skeleton while any query is pending
   if (
     isReadingCollection ||
+    isReadingHistory ||
     (commitBefore && isReadingEntryBefore) ||
     (commitAfter && isReadingEntryAfter)
   ) {

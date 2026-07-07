@@ -9,6 +9,8 @@ import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
+import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
+import { queryOptions } from '@renderer/queries';
 
 export const Route = createFileRoute('/projects/$projectId/dashboard')({
   component: ProjectDashboardPage,
@@ -16,9 +18,13 @@ export const Route = createFileRoute('/projects/$projectId/dashboard')({
 
 function ProjectDashboardPage(): React.JSX.Element {
   const router = useRouter();
+  const { projectId } = Route.useParams();
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
+  const { data: history } = useQueryNoError(
+    queryOptions.projects.history({ id: projectId })
+  );
   useBreadcrumb(Route, 'Dashboard');
 
   function Description(): React.JSX.Element {
@@ -64,12 +70,12 @@ function ProjectDashboardPage(): React.JSX.Element {
           className="lg:col-span-1"
           standalone
         >
-          {isReadingProject ? (
+          {history === undefined ? (
             <CommitHistorySkeleton />
           ) : (
             <CommitHistory
-              projectId={project.id}
-              commits={project.fullHistory.slice(0, 5)}
+              projectId={projectId}
+              commits={history.fullHistory.slice(0, 5)}
             />
           )}
         </PageSection>

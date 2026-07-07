@@ -6,7 +6,6 @@ import { type ReactElement, useEffect } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CommitHistory } from '@renderer/components/commit-history';
-import { FormInput } from '@renderer/components/form-input';
 import { Page } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
@@ -16,6 +15,7 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
@@ -231,7 +231,7 @@ function UserProfilePage(): ReactElement {
                         <FormItem>
                           <FormLabel isRequired>Full name</FormLabel>
                           <FormControl>
-                            <FormInput field={field} type="text" />
+                            <FormInputField field={field} type="text" />
                           </FormControl>
                           <FormDescription>
                             Your name will be used by others to identify changes
@@ -248,7 +248,7 @@ function UserProfilePage(): ReactElement {
                         <FormItem>
                           <FormLabel isRequired>Email</FormLabel>
                           <FormControl>
-                            <FormInput field={field} type="email" />
+                            <FormInputField field={field} type="email" />
                           </FormControl>
                           <FormDescription>
                             Your email allows other members of Projects to
@@ -272,7 +272,7 @@ function UserProfilePage(): ReactElement {
                         <FormItem>
                           <FormLabel isRequired>Port</FormLabel>
                           <FormControl>
-                            <FormInput field={field} type="number" />
+                            <FormInputField field={field} type="number" />
                           </FormControl>
                           <FormDescription>
                             The port used to access the local API. Make sure it

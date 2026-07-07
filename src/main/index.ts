@@ -327,6 +327,7 @@ class Main {
       'core:projects:create': core.projects.create.bind(core.projects),
       'core:projects:list': core.projects.list.bind(core.projects),
       'core:projects:read': core.projects.read.bind(core.projects),
+      'core:projects:history': core.projects.history.bind(core.projects),
       'core:projects:update': core.projects.update.bind(core.projects),
       'core:projects:getChanges': core.projects.getChanges.bind(core.projects),
       'core:projects:clone': core.projects.clone.bind(core.projects),

@@ -8,14 +8,13 @@ import {
 } from '@renderer/components/diff-container';
 import { CollectionForm } from '@renderer/components/forms/collection-form';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import { translatableDefaultNull } from '@renderer/lib/utils';
+import { translatableDefault } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
 import {
   updateCollectionSchema,
   type GitCommit,
   type Project,
-  type UpdateCollectionProps,
 } from '@elek-io/core';
 
 export function CollectionDiff({
@@ -25,13 +24,23 @@ export function CollectionDiff({
   project: Project;
   commit: GitCommit;
 }): React.JSX.Element {
+  // Fetch the Project's full history to find the commit before this one
+  const { data: history, isPending: isReadingHistory } = useQueryNoError(
+    queryOptions.projects.history({ id: project.id })
+  );
+
   // Derive commitBefore during render with useMemo
   const commitBefore = useMemo(() => {
     if (commit.message.method === 'create') {
       return undefined;
     }
 
-    const collectionCommitHistory = project.fullHistory.filter(
+    // History not loaded yet, the loading skeleton is shown below
+    if (!history) {
+      return undefined;
+    }
+
+    const collectionCommitHistory = history.fullHistory.filter(
       (commitFromHistory) =>
         commitFromHistory.message.reference.objectType === 'collection' &&
         commitFromHistory.message.reference.id === commit.message.reference.id
@@ -49,7 +58,7 @@ export function CollectionDiff({
     }
 
     return previousCommit;
-  }, [commit, project.fullHistory]);
+  }, [commit, history]);
 
   // Derive commitAfter during render with useMemo
   const commitAfter = useMemo(() => {
@@ -69,16 +78,25 @@ export function CollectionDiff({
       enabled: commitBefore !== undefined,
     });
 
-  const collectionFormBefore = useForm<UpdateCollectionProps>({
+  const collectionFormBefore = useForm({
     resolver: zodResolver(updateCollectionSchema),
     defaultValues: {
       projectId: project.id,
       icon: 'home',
       name: {
-        singular: translatableDefaultNull(project.settings.language.supported),
-        plural: translatableDefaultNull(project.settings.language.supported),
+        singular: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: '',
+        }),
+        plural: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: '',
+        }),
       },
-      description: translatableDefaultNull(project.settings.language.supported),
+      description: translatableDefault({
+        supportedLanguages: project.settings.language.supported,
+        defaultValue: '',
+      }),
       slug: {
         singular: '',
         plural: '',
@@ -103,16 +121,25 @@ export function CollectionDiff({
       enabled: commitAfter !== undefined,
     });
 
-  const collectionFormAfter = useForm<UpdateCollectionProps>({
+  const collectionFormAfter = useForm({
     resolver: zodResolver(updateCollectionSchema),
     defaultValues: {
       projectId: project.id,
       icon: 'home',
       name: {
-        singular: translatableDefaultNull(project.settings.language.supported),
-        plural: translatableDefaultNull(project.settings.language.supported),
+        singular: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: '',
+        }),
+        plural: translatableDefault({
+          supportedLanguages: project.settings.language.supported,
+          defaultValue: '',
+        }),
       },
-      description: translatableDefaultNull(project.settings.language.supported),
+      description: translatableDefault({
+        supportedLanguages: project.settings.language.supported,
+        defaultValue: '',
+      }),
       slug: {
         singular: '',
         plural: '',
@@ -129,6 +156,7 @@ export function CollectionDiff({
 
   // Show loading skeleton while queries are pending
   if (
+    isReadingHistory ||
     (commitBefore && isReadingCollectionBefore) ||
     (commitAfter && isReadingCollectionAfter)
   ) {

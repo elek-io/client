@@ -1,7 +1,21 @@
-onlyBuiltDependencies:
-  - '@sentry/cli'
-  - '@tailwindcss/oxide'
-  - dugite
-  - electron
-  - electron-winstaller
-  - esbuild
+# Build script approval for dependencies.
+# pnpm 11 removed onlyBuiltDependencies and replaced it with an allowBuilds
+# map of package -> boolean. Kept in the same style as Core's config.
+# See https://pnpm.io/settings#allowbuilds
+allowBuilds:
+  # Downloads the sentry-cli binary used by @sentry/vite-plugin during builds.
+  '@sentry/cli': true
+  # Native engine behind Tailwind v4, required by @tailwindcss/vite.
+  '@tailwindcss/oxide': true
+  # dugite is Core's git engine. Its postinstall downloads the embedded git
+  # executable, so the build must run or every git operation at runtime fails.
+  dugite: true
+  # Since Electron 42 the binary also downloads on first run, but the package
+  # still ships an install script that pnpm requires approval for.
+  electron: true
+  # Downloads the Squirrel.Windows binaries used when packaging for Windows.
+  electron-winstaller: true
+  # esbuild arrives via electron-vite and vite. Its platform binary already
+  # ships prebuilt in @esbuild/<platform>, which the JS API resolves directly,
+  # so its postinstall build is redundant. Same reasoning as in Core.
+  esbuild: false

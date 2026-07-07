@@ -46,7 +46,7 @@ if (!rootElement.innerHTML) {
 
   root.render(
     <StrictMode>
-      <ThemeProvider defaultTheme="system" storageKey="client-theme">
+      <ThemeProvider defaultTheme="system">
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
         </QueryClientProvider>

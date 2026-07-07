@@ -210,7 +210,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectId/history/$commitHash': typeof ProjectsProjectIdHistoryCommitHashRoute
   '/projects/$projectId/settings/general': typeof ProjectsProjectIdSettingsGeneralRoute
   '/projects/$projectId/settings/version-control': typeof ProjectsProjectIdSettingsVersionControlRoute
-  '/projects/$projectId/assets': typeof ProjectsProjectIdAssetsIndexRoute
+  '/projects/$projectId/assets/': typeof ProjectsProjectIdAssetsIndexRoute
   '/projects/$projectId/collections/': typeof ProjectsProjectIdCollectionsIndexRoute
   '/projects/$projectId/settings/': typeof ProjectsProjectIdSettingsIndexRoute
   '/projects/$projectId/collections/$collectionId/$entryId': typeof ProjectsProjectIdCollectionsCollectionIdEntryIdRouteWithChildren
@@ -293,7 +293,7 @@ export interface FileRouteTypes {
     | '/projects/$projectId/history/$commitHash'
     | '/projects/$projectId/settings/general'
     | '/projects/$projectId/settings/version-control'
-    | '/projects/$projectId/assets'
+    | '/projects/$projectId/assets/'
     | '/projects/$projectId/collections/'
     | '/projects/$projectId/settings/'
     | '/projects/$projectId/collections/$collectionId/$entryId'
@@ -471,7 +471,7 @@ declare module '@tanstack/react-router' {
     '/projects/$projectId/assets/': {
       id: '/projects/$projectId/assets/'
       path: '/assets'
-      fullPath: '/projects/$projectId/assets'
+      fullPath: '/projects/$projectId/assets/'
       preLoaderRoute: typeof ProjectsProjectIdAssetsIndexRouteImport
       parentRoute: typeof ProjectsProjectIdRoute
     }

@@ -2,9 +2,7 @@
 
 > A modern, offline-first content management system (CMS) and digital asset manager (DAM).
 
-[![Version](https://img.shields.io/badge/version-0.3.2-blue.svg)](https://github.com/elek-io/client/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/elek-io/client)
-[![License](https://img.shields.io/badge/license-todo-red.svg)](LICENSE)
 
 > [!IMPORTANT]  
 > elek.io Client is under active development and not yet ready for production usage! Feel free to check it out and make suggestions.
@@ -21,7 +19,7 @@ elek.io Client solves these problems by being an offline-first desktop applicati
 - **Cross-Platform**: Desktop apps for Windows, macOS, and Linux
 - **Version Control**: Every Project is a Git repository with full version history
 - **Easy backups & collaboration (optional)**: Synchronize to any Git hosting service (GitHub, GitLab, Bitbucket etc.) to work together with others and have a backup if needed
-- **Multi-Language**: Built-in support for 25 languages
+- **Multi-Language**: Built-in support for 24 languages
 - **Structured Content**: Define custom content types (Collections) with field definitions
 - **Developer-Friendly**: Local read-only OpenAPI REST API with optional typesafe TS/JS API Client generation and JSON file exports for programmatic access to your content e.g. to use with static site generators
 
@@ -33,11 +31,11 @@ Download the latest version for your platform:
 
 - **Windows**: [Download installer](https://github.com/elek-io/client/releases)
 - **macOS**: [Download DMG](https://github.com/elek-io/client/releases)
-- **Linux**: Download [AppImage](https://github.com/elek-io/client/releases) / [Snap](https://snapcraft.io/) / [DEB](https://github.com/elek-io/client/releases)
+- **Linux**: Download [AppImage](https://github.com/elek-io/client/releases) / [Snap](https://github.com/elek-io/client/releases) / [DEB](https://github.com/elek-io/client/releases)
 
 ### System Requirements
 
-Altough elek.io Client might run on older hard and software than listed below, the following is the recommended minimum:
+Although elek.io Client might run on older hard and software than listed below, the following is the recommended minimum:
 
 - **Windows**: Windows 10 or later
 - **macOS**: macOS 13.7.6 (Ventura) or later
@@ -47,4 +45,4 @@ Altough elek.io Client might run on older hard and software than listed below, t
 
 ## For Developers
 
-For insight on how elek.io Client works, please refer to the [documentation folder](documentation/overview.md).
+For insight on how elek.io Client works, please refer to the [contributing folder](contributing/README.md).

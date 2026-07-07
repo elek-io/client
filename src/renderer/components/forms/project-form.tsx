@@ -32,11 +32,12 @@ import {
   FormControl,
   FormDescription,
   FormField,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormTextareaField,
 } from '@renderer/components/ui/form';
-import { Input } from '@renderer/components/ui/input';
 import {
   Popover,
   PopoverContent,
@@ -49,30 +50,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@renderer/components/ui/select';
-import { Textarea } from '@renderer/components/ui/textarea';
 
 import {
   supportedLanguageSchema,
-  type CreateProjectProps,
   type SupportedLanguage,
   type UpdateProjectProps,
 } from '@elek-io/core';
 
-interface ProjectFormProps<TFieldValues extends FieldValues> {
-  projectForm: UseFormReturn<TFieldValues>;
+interface ProjectFormProps<
+  TFieldValues extends FieldValues,
+  TTransformedValues extends FieldValues,
+> {
+  projectForm: UseFormReturn<TFieldValues, unknown, TTransformedValues>;
   children?: React.ReactNode;
   isViewOnly?: boolean;
-  onFormSubmit: SubmitHandler<TFieldValues>;
+  onFormSubmit: SubmitHandler<TTransformedValues>;
 }
 
-export function ProjectForm({
-  projectForm,
+export function ProjectForm<
+  TFieldValues extends FieldValues,
+  TTransformedValues extends FieldValues,
+>({
+  projectForm: genericForm,
   onFormSubmit,
   children,
   isViewOnly = false,
-}: ProjectFormProps<
-  CreateProjectProps | UpdateProjectProps
->): React.JSX.Element {
+}: ProjectFormProps<TFieldValues, TTransformedValues>): React.JSX.Element {
+  // The project fields (name, description, language settings) use literal paths RHF
+  // cannot resolve for a generic T, so view the form as UpdateProjectProps for those.
+  // The generic keeps the callers (create, settings, diff) type-safe.
+  const projectForm =
+    genericForm as unknown as UseFormReturn<UpdateProjectProps>;
   const [
     isDeleteDefaultLanguageDialogOpen,
     setIsDeleteDefaultLanguageDialogOpen,
@@ -86,8 +94,8 @@ export function ProjectForm({
 
   return (
     <>
-      <Form {...projectForm}>
-        <form onSubmit={projectForm.handleSubmit(onFormSubmit)}>
+      <Form {...genericForm}>
+        <form onSubmit={genericForm.handleSubmit(onFormSubmit)}>
           <fieldset disabled={isViewOnly}>
             <div className="space-y-4 p-6">
               <div className="grid grid-cols-12 gap-6">
@@ -98,7 +106,7 @@ export function ProjectForm({
                     <FormItem className="col-span-12">
                       <FormLabel isRequired>Project name</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <FormInputField field={field} type="text" />
                       </FormControl>
                       <FormDescription />
                       <FormMessage />
@@ -113,7 +121,7 @@ export function ProjectForm({
                     <FormItem className="col-span-12">
                       <FormLabel isRequired>Project description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} />
+                        <FormTextareaField field={field} />
                       </FormControl>
                       <FormDescription />
                       <FormMessage />
@@ -216,16 +224,14 @@ export function ProjectForm({
                                             <CommandItem
                                               key={language.value}
                                               value={language.value}
-                                              onSelect={(
-                                                currentValue: SupportedLanguage
-                                              ) => {
+                                              onSelect={(currentValue) => {
                                                 projectForm.setValue(
                                                   'settings.language.supported',
                                                   [
                                                     ...projectForm.watch(
                                                       'settings.language.supported'
                                                     ),
-                                                    currentValue,
+                                                    currentValue as SupportedLanguage,
                                                   ],
                                                   {
                                                     shouldValidate: true,

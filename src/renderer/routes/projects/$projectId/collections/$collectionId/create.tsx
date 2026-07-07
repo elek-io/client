@@ -11,14 +11,12 @@ import { Button } from '@renderer/components/ui/button';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
-import {
-  translatableDefaultEmptyArray,
-  translatableDefaultNull,
-} from '@renderer/lib/utils';
+import { defaultEntryValues } from '@renderer/lib/entry';
 import { queryOptions } from '@renderer/queries';
 
 import {
   type CreateEntryProps,
+  flattenFieldDefinitions,
   getCreateEntrySchemaFromFieldDefinitions,
 } from '@elek-io/core';
 
@@ -46,15 +44,18 @@ function CreateEntryPage(): React.JSX.Element {
     queryOptions.entries.create
   );
   const generatedCreateEntrySchema =
-    isReadingCollection === false
-      ? getCreateEntrySchemaFromFieldDefinitions(collection.fieldDefinitions)
-      : getCreateEntrySchemaFromFieldDefinitions([]);
-  const createEntryForm = useForm<CreateEntryProps>({
+    isReadingProject === false && isReadingCollection === false
+      ? getCreateEntrySchemaFromFieldDefinitions(
+          flattenFieldDefinitions(collection.fieldDefinitions),
+          project.settings.language.supported
+        )
+      : getCreateEntrySchemaFromFieldDefinitions([], []);
+  const createEntryForm = useForm({
     resolver: zodResolver(generatedCreateEntrySchema),
     defaultValues: {
       projectId: projectId,
       collectionId: collectionId,
-      values: [],
+      values: {},
     },
   });
 
@@ -64,37 +65,10 @@ function CreateEntryPage(): React.JSX.Element {
       createEntryForm.reset({
         projectId: projectId,
         collectionId: collectionId,
-        values: collection.fieldDefinitions.map((definition) => {
-          switch (definition.valueType) {
-            case 'boolean':
-            case 'number':
-            case 'string':
-              return {
-                objectType: 'value',
-                fieldDefinitionId: definition.id,
-                valueType: definition.valueType,
-                content: translatableDefaultNull(
-                  project.settings.language.supported
-                ),
-              };
-
-            case 'reference':
-              return {
-                objectType: 'value',
-                fieldDefinitionId: definition.id,
-                valueType: definition.valueType,
-                content: translatableDefaultEmptyArray(
-                  project.settings.language.supported
-                ),
-              };
-
-            default:
-              throw new Error(
-                // @ts-expect-error Since usually it's not reachable
-                `Unsupported valueType "${definition.valueType}" while setting form state defaults for creating the Entry`
-              );
-          }
-        }),
+        values: defaultEntryValues(
+          flattenFieldDefinitions(collection.fieldDefinitions),
+          project.settings.language.supported
+        ),
       });
     }
   }, [

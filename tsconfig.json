@@ -5,7 +5,6 @@
     { "path": "./tsconfig.web.json" }
   ],
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@root/*": ["./*"],
       "@renderer/*": ["./src/renderer/*"]

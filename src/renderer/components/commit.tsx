@@ -10,6 +10,7 @@ import {
   Plus,
   Tag,
   Trash2,
+  Rocket,
 } from 'lucide-react';
 
 import { Skeleton } from '@renderer/components/ui/skeleton';
@@ -42,6 +43,9 @@ export function Commit({ commit, ...props }: CommitProps): React.JSX.Element {
       break;
     case 'upgrade':
       iconComponent = <CircleFadingArrowUp className="h-4 w-4" />;
+      break;
+    case 'release':
+      iconComponent = <Rocket className="h-4 w-4" />;
       break;
     default:
       iconComponent = <FileQuestion className="h-4 w-4" />;

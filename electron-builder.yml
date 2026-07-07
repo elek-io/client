@@ -21,6 +21,8 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  # Include the arch so Intel and ARM artifacts do not overwrite each other in the shared release
+  artifactName: elek-io-client-${version}-${arch}.${ext}
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -29,7 +31,7 @@ mac:
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
 dmg:
-  artifactName: elek-io-client-${version}.${ext}
+  artifactName: elek-io-client-${version}-${arch}.${ext}
 linux:
   target:
     - AppImage
@@ -39,3 +41,7 @@ linux:
 appImage:
   artifactName: elek-io-client-${version}.${ext}
 npmRebuild: false
+# Each CD runner uploads its installers and update metadata into a shared draft GitHub Release
+publish:
+  provider: github
+  releaseType: draft

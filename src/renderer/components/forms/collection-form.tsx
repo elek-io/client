@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { type ReactElement, useRef, useState } from 'react';
 import {
+  type Control,
   type FieldValues,
   type SubmitHandler,
   type UseFormReturn,
@@ -11,8 +12,6 @@ import {
   DraggableComponent,
   SortableFieldArray,
 } from '@renderer/components/drag-and-drop';
-import { TranslatableFormInput } from '@renderer/components/form-input';
-import { TranslatableFormTextarea } from '@renderer/components/form-textarea';
 import {
   FieldDefinitionForm,
   type FieldDefinitionFormRef,
@@ -20,14 +19,22 @@ import {
 import { PageSection } from '@renderer/components/page-section';
 import { Button } from '@renderer/components/ui/button';
 import {
+  FieldGroup,
+  FieldLegend,
+  FieldSet,
+} from '@renderer/components/ui/field';
+import {
   Form,
   FormControl,
   FormDescription,
   FormField,
   FormFieldFromDefinition,
+  FormInputField,
   FormItem,
   FormLabel,
   FormMessage,
+  TranslatableFormInputField,
+  TranslatableFormTextareaField,
 } from '@renderer/components/ui/form';
 import {
   Select,
@@ -46,41 +53,61 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@renderer/components/ui/sheet';
+import { useProject } from '@renderer/hooks/useProject';
 
 import {
-  type CreateCollectionProps,
+  type FieldDefinitionOrGroup,
   type FieldType,
-  FieldTypeSchema,
+  fieldTypeSchema,
   type Project,
   type UpdateCollectionProps,
   supportedIconSchema,
 } from '@elek-io/core';
 
-export interface CollectionFormProps<TFieldValues extends FieldValues> {
-  collectionForm: UseFormReturn<TFieldValues>;
+// Field types Core defines but the client has no definition form for yet. They are
+// shown disabled in the picker so selecting one cannot crash the sheet.
+// See contributing/not-yet-implemented.md.
+const unimplementedFieldTypes: ReadonlySet<FieldType> = new Set(['dynamic']);
+
+export interface CollectionFormProps<
+  TFieldValues extends FieldValues,
+  TTransformedValues extends FieldValues,
+> {
+  collectionForm: UseFormReturn<TFieldValues, unknown, TTransformedValues>;
   project: Project;
   children?: React.ReactNode;
   isViewOnly?: boolean;
-  onFormSubmit: SubmitHandler<TFieldValues>;
+  onFormSubmit: SubmitHandler<TTransformedValues>;
 }
 
-export const CollectionForm = ({
-  collectionForm,
+export function CollectionForm<
+  TFieldValues extends FieldValues,
+  TTransformedValues extends FieldValues,
+>({
+  collectionForm: genericForm,
   project,
   children,
   isViewOnly = false,
   onFormSubmit,
-}: CollectionFormProps<
-  CreateCollectionProps | UpdateCollectionProps
->): ReactElement => {
+}: CollectionFormProps<TFieldValues, TTransformedValues>): ReactElement {
+  const { translateContent } = useProject();
+  // The many concrete collection fields (icon, name, description) use literal paths
+  // RHF cannot resolve for a generic T, so view the form as the collection props for
+  // those. The generic keeps the callers (create, update, diff) type-safe.
+  const collectionForm =
+    genericForm as unknown as UseFormReturn<UpdateCollectionProps>;
   const fieldDefinitionFormRef = useRef<FieldDefinitionFormRef>(null);
   const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
     useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
 
+  // Opaque id-rows so useFieldArray never walks the deep FieldDefinitionOrGroup
+  // union (RHF instantiation depth limit). Rows are recovered when rendering.
   const fieldDefinitions = useFieldArray({
-    control: collectionForm.control, // control props comes from useForm (optional: if you are using FormContext)
-    name: 'fieldDefinitions', // unique name for your Field Array
+    control: genericForm.control as unknown as Control<{
+      fieldDefinitions: { id: string }[];
+    }>,
+    name: 'fieldDefinitions',
   });
 
   async function addFieldDefinition(): Promise<void> {
@@ -90,8 +117,8 @@ export const CollectionForm = ({
   }
 
   return (
-    <Form {...collectionForm}>
-      <form onSubmit={collectionForm.handleSubmit(onFormSubmit)}>
+    <Form {...genericForm}>
+      <form onSubmit={genericForm.handleSubmit(onFormSubmit)}>
         <fieldset disabled={isViewOnly}>
           <div className="space-y-6 p-6">
             <div className="grid grid-cols-12 items-start gap-6">
@@ -131,7 +158,7 @@ export const CollectionForm = ({
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired>Collection name (Plural)</FormLabel>
                     <FormControl>
-                      <TranslatableFormInput
+                      <TranslatableFormInputField
                         title="Collection name (Plural)"
                         description='The name of your new collection. Choose a short name in plural that explains the content of the collection - e.g. "Blogposts".'
                         type="text"
@@ -157,7 +184,7 @@ export const CollectionForm = ({
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired>Entry name (Singluar)</FormLabel>
                     <FormControl>
-                      <TranslatableFormInput
+                      <TranslatableFormInputField
                         title="Entry name (Singluar)"
                         description='The name of each Entry inside your new Collection. Choose a short name in singluar - e.g. "Blogpost".'
                         type="text"
@@ -182,7 +209,7 @@ export const CollectionForm = ({
                   <FormItem className="col-span-12 sm:col-span-12">
                     <FormLabel isRequired>Description</FormLabel>
                     <FormControl>
-                      <TranslatableFormTextarea
+                      <TranslatableFormTextareaField
                         title="Description"
                         description="A description of what this new Collection is used for."
                         field={field}
@@ -199,14 +226,14 @@ export const CollectionForm = ({
               />
             </div>
 
-            {/* <FormField
+            <FormField
               control={collectionForm.control}
-              name={`slug.plural`}
+              name="slug.plural"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Collection-Slug</FormLabel>
+                  <FormLabel isRequired>Collection-Slug</FormLabel>
                   <FormControl>
-                    <Input placeholder="blogposts" {...field} />
+                    <FormInputField field={field} type="text" />
                   </FormControl>
                   <FormDescription>
                     A lowercase version without any special characters of the
@@ -216,16 +243,16 @@ export const CollectionForm = ({
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
 
-            {/* <FormField
+            <FormField
               control={collectionForm.control}
-              name={`slug.singular`}
+              name="slug.singular"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Entry-Slug</FormLabel>
+                  <FormLabel isRequired>Entry-Slug</FormLabel>
                   <FormControl>
-                    <Input placeholder="blogpost" {...field} />
+                    <FormInputField field={field} type="text" />
                   </FormControl>
                   <FormDescription>
                     A lowercase version without any special characters of the
@@ -235,7 +262,7 @@ export const CollectionForm = ({
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
           </div>
 
           <PageSection
@@ -293,9 +320,13 @@ export const CollectionForm = ({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {FieldTypeSchema.options.map((option) => {
+                            {fieldTypeSchema.options.map((option) => {
                               return (
-                                <SelectItem key={option} value={option}>
+                                <SelectItem
+                                  key={option}
+                                  value={option}
+                                  disabled={unimplementedFieldTypes.has(option)}
+                                >
                                   {option}
                                 </SelectItem>
                               );
@@ -334,7 +365,47 @@ export const CollectionForm = ({
           >
             <div className="mt-6 grid grid-cols-12 gap-6">
               <SortableFieldArray fieldArray={fieldDefinitions}>
-                {fieldDefinitions.fields.map((fieldDefinition, index) => {
+                {fieldDefinitions.fields.map((field) => {
+                  // Recover the real definition from the opaque id-row.
+                  const fieldDefinition =
+                    field as unknown as FieldDefinitionOrGroup & {
+                      id: string;
+                    };
+                  // Groups are presentational, render their member fields inside
+                  // a labeled FieldSet. Group authoring is not supported yet, so
+                  // the members are shown read-only as a preview.
+                  if ('isGroup' in fieldDefinition) {
+                    return (
+                      <DraggableComponent
+                        key={fieldDefinition.id}
+                        id={fieldDefinition.id}
+                      >
+                        <FieldSet className="col-span-12">
+                          <FieldLegend>
+                            {translateContent({
+                              key: 'fieldDefinitionGroup.label',
+                              record: fieldDefinition.label,
+                            })}
+                          </FieldLegend>
+                          <FieldGroup className="grid grid-cols-12 gap-6">
+                            {fieldDefinition.fieldDefinitions.map((member) => (
+                              <FormFieldFromDefinition
+                                key={member.id}
+                                fieldDefinition={member}
+                                form={collectionForm}
+                                // @ts-ignore This is only to display the field
+                                name={`currentFields.field-${member.id}.content`}
+                                supportedLanguages={
+                                  project.settings.language.supported
+                                }
+                              />
+                            ))}
+                          </FieldGroup>
+                        </FieldSet>
+                      </DraggableComponent>
+                    );
+                  }
+
                   return (
                     <DraggableComponent
                       key={fieldDefinition.id}
@@ -344,7 +415,7 @@ export const CollectionForm = ({
                         fieldDefinition={fieldDefinition}
                         form={collectionForm}
                         // @ts-ignore This is only to display the field, not to actually edit anything but the order of the fields
-                        name={`currentFields.field-${index}.content`}
+                        name={`currentFields.field-${fieldDefinition.id}.content`}
                         supportedLanguages={project.settings.language.supported}
                         isDraggable={isViewOnly === false}
                         isEditable={isViewOnly === false}
@@ -370,4 +441,4 @@ export const CollectionForm = ({
       </form>
     </Form>
   );
-};
+}

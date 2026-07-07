@@ -121,16 +121,23 @@ export default [
     },
     settings: {
       react: {
-        version: 'detect',
+        // Not 'detect': eslint-plugin-react's version detection calls an API
+        // removed in eslint 10 and crashes. Pin until the fix from
+        // https://github.com/jsx-eslint/eslint-plugin-react/pull/3979 ships.
+        version: '19.2',
       },
     },
     rules: {
-      ...eslintPluginReactHooks.configs.recommended.rules,
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true },
+        {
+          allowConstantExport: true,
+          // TanStack Router's route factories wrap the route component
+          // and handle HMR for it themselves
+          extraHOCs: ['createFileRoute', 'createRootRouteWithContext'],
+        },
       ],
       // React 19 optimizations
       'react/prop-types': 'off', // Not needed with TypeScript
