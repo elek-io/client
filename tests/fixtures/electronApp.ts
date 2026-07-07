@@ -84,7 +84,10 @@ export const test = base.extend<{
     // and fail the launch with "Process failed to launch!"
     delete env['ELECTRON_RUN_AS_NODE'];
 
-    const args = [appInfo.main];
+    // No main script argument here on purpose. Packaged builds load their
+    // bundled app on their own, and passing the path stalled Electron's
+    // boot on Windows CI runners
+    const args: string[] = [];
     if (env['CI'] && process.platform === 'linux') {
       // Ubuntu runners on GitHub Actions restrict unprivileged user namespaces
       // and unpacked builds lack the SUID sandbox helper, so Electron's
