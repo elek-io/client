@@ -15,13 +15,13 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
           cache: 'pnpm'
@@ -35,12 +35,41 @@ jobs:
       #   uses: github/codeql-action/upload-sarif@v1
       # with:
       #   sarif_file: ../electronegativity_results
+      # Full package build (not build:unpack), so PR CI also verifies that
+      # electron-builder can still produce the installers. The E2E tests
+      # only use the unpacked directory this step produces alongside them
       - name: Build
         run: pnpm run build
+      # Invoke the runner directly, since "pnpm run test" would rebuild
+      # the app that the build step above already built
+      - name: Run E2E tests (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm exec playwright test
+      - name: Run E2E tests (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: pnpm exec playwright test
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report-${{ matrix.platform }}
+          path: playwright-report/
+          retention-days: 30
+      # The HTML report above embeds the trace, but not each failed test's
+      # Core data directory (the git repos and files Core wrote). preserveOutput
+      # in the Playwright config keeps only failed tests' output, so this ships
+      # just those data dirs
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-results-${{ matrix.platform }}
+          path: test-results/
+          retention-days: 7
       # Uncomment if necessary
       # For example to inspect the build applications
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: artifact_${{ matrix.platform }}
           path: |

@@ -15,9 +15,11 @@ export default [
   // Base config for all files
   ...tseslint.configs.recommended,
 
-  // Type-checked rules for all source files
+  // Type-checked rules for all source and test files. Covering tests means
+  // no-floating-promises catches an unawaited Playwright assertion, the
+  // classic E2E bug that tsc alone does not flag
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'tests/**/*.ts'],
     ...tseslint.configs.recommendedTypeChecked[0],
     languageOptions: {
       ...tseslint.configs.recommendedTypeChecked[0].languageOptions,

@@ -1,6 +1,7 @@
 import {
   init as sentryInit,
   captureException as sentryCaptureException,
+  flush as sentryFlush,
 } from '@sentry/electron/main';
 import {
   app,
@@ -32,6 +33,8 @@ export class SecurityError extends Error {
 sentryInit({
   dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
   enableRendererProfiling: true, // @see https://docs.sentry.io/platforms/javascript/guides/electron/profiling/
+  // E2E tests set NODE_ENV to prevent reporting from test runs
+  enabled: process.env['NODE_ENV'] !== 'test',
 });
 
 class Main {
@@ -60,7 +63,18 @@ class Main {
 
     // Register app events
     app.on('ready', () => {
-      void this.onAppReady();
+      void this.onAppReady().catch(async (error: unknown) => {
+        // Exit instead of leaving a running app without a window,
+        // otherwise initialization failures hang silently.
+        // Not using Core's logger since it may be what failed to initialize
+        // eslint-disable-next-line no-console
+        console.error('Failed to initialize the app', error);
+        sentryCaptureException(error);
+        // Let Sentry deliver the event before the process exits. Resolves
+        // immediately when Sentry is disabled, as it is under NODE_ENV=test
+        await sentryFlush(2000);
+        app.exit(1);
+      });
     });
     app.on('activate', () => {
       void this.onAppActivate();
@@ -195,7 +209,7 @@ class Main {
       // Load the static index.html directly
       await window.loadFile(Path.join(__dirname, `../renderer/index.html`));
       // Uncomment to debug a production build
-      window.webContents.openDevTools();
+      // window.webContents.openDevTools();
     } else {
       // Client is in development
       if (this.rendererUrl === undefined) {

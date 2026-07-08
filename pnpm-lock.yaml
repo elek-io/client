@@ -27,8 +27,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0(electron@43.0.0)
       '@elek-io/core':
-        specifier: 0.20.0
-        version: 0.20.0(dugite@3.2.2)(zod@4.4.3)
+        specifier: 0.21.0
+        version: 0.21.0(dugite@3.2.2)(zod@4.4.3)
       '@fontsource-variable/montserrat':
         specifier: 5.2.8
         version: 5.2.8
@@ -147,6 +147,9 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
     devDependencies:
+      '@axe-core/playwright':
+        specifier: 4.12.1
+        version: 4.12.1(playwright-core@1.61.1)
       '@changesets/cli':
         specifier: 2.31.0
         version: 2.31.0(@types/node@24.13.2)
@@ -162,6 +165,9 @@ importers:
       '@hookform/devtools':
         specifier: 4.4.0
         version: 4.4.0(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@playwright/test':
+        specifier: 1.61.1
+        version: 1.61.1
       '@tailwindcss/vite':
         specifier: 4.3.2
         version: 4.3.2(vite@7.3.6(@types/node@24.13.2)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
@@ -207,6 +213,9 @@ importers:
       electron-builder:
         specifier: 26.15.6
         version: 26.15.6(electron-builder-squirrel-windows@26.15.6)
+      electron-playwright-helpers:
+        specifier: 2.1.0
+        version: 2.1.0
       electron-vite:
         specifier: 5.0.0
         version: 5.0.0(vite@7.3.6(@types/node@24.13.2)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
@@ -270,6 +279,11 @@ packages:
     resolution: {integrity: sha512-SABbKiObg5dLRiTFnqiW1WWwGcg1BJfmHtT2asIBnBHg6Smy/Ms2KHc650+JI4Hw7lSkdiNebEGXpwoxfben8Q==}
     peerDependencies:
       zod: ^4.0.0
+
+  '@axe-core/playwright@4.12.1':
+    resolution: {integrity: sha512-rMd7xriptqKpP+w5265i4Hdkv2X5kbu6uiBi/B2I7uf3hieRBM3qDCfaKPtxfiYb2mKXfF+yLODJwIx+Jv1GDw==}
+    peerDependencies:
+      playwright-core: '>= 1.0.0'
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -619,8 +633,8 @@ packages:
     engines: {node: '>=14.14'}
     hasBin: true
 
-  '@elek-io/core@0.20.0':
-    resolution: {integrity: sha512-7ojAO7Lgp67w88d299iDzT0LZ9eqzbo6hA0quLu2d8xAm3bWxbT4L5UoehcD9z4HnOZQRJxbqaUWBqqo/u/kyw==}
+  '@elek-io/core@0.21.0':
+    resolution: {integrity: sha512-dz5Xw7jwNj4byqxzb2i+Fn623IbmYH7DCYqgdo4IoyXFuG8DW8NVxsFcstG4ZNjLzmPVTI0Q2KQ8jTCkWclN2Q==}
     hasBin: true
     peerDependencies:
       astro: ^6.0.0
@@ -1368,6 +1382,11 @@ packages:
   '@pkgr/core@0.3.6':
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
     engines: {node: ^14.18.0 || >=16.0.0}
+
+  '@playwright/test@1.61.1':
+    resolution: {integrity: sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@radix-ui/number@1.1.2':
     resolution: {integrity: sha512-ceTwaxc4I5IOi97DgCotl3pqiyRGvffcc0oOsE2dQYaJOFIDsDt4VWG6xEbg1QePv9QWausCEIppud/tJ1wNig==}
@@ -3117,6 +3136,9 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
+  electron-playwright-helpers@2.1.0:
+    resolution: {integrity: sha512-aQOefS1irz/Ou6IYuTE34ZLmIKVHKoTGUwkVuwu2P5iguuMTLtsg6CFImsWu0cabRPVZ1NgEpcGPumFZNDdrqA==}
+
   electron-publish@26.15.3:
     resolution: {integrity: sha512-g/2bn8YTavY4cuS5F+jOS7zmZbXXBV8KZ8yHKfJjFPoKtzBqrpCdNPxBd3tqdBwP7BVd0lGzf7Bk2s0KesWZ4Q==}
 
@@ -3469,6 +3491,11 @@ packages:
 
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
+
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -4505,6 +4532,16 @@ packages:
   pkijs@3.4.0:
     resolution: {integrity: sha512-emEcLuomt2j03vxD54giVB4SxTjnsqkU692xZOZXHDVoYyypEm+b3jpiTcc+Cf+myooc+/Ly0z01jqeNHVgJGw==}
     engines: {node: '>=16.0.0'}
+
+  playwright-core@1.61.1:
+    resolution: {integrity: sha512-h7Qlt6m4REp25qvIdvbDtVmD4LqVXfpRxhORv9L0jzETM05p4fuPJ3dKyuSXQxDSbXnmS79HAgi9589lGSpLkg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.61.1:
+    resolution: {integrity: sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   plist@3.1.0:
     resolution: {integrity: sha512-uysumyrvkUX0rX/dEVqt8gC3sTBzd4zoWfLeS29nb53imdaXVvLINYXTI2GNqzaMuvacNx4uJQ8+b3zXR0pkgQ==}
@@ -5593,6 +5630,11 @@ snapshots:
       openapi3-ts: 4.6.0
       zod: 4.4.3
 
+  '@axe-core/playwright@4.12.1(playwright-core@1.61.1)':
+    dependencies:
+      axe-core: 4.12.1
+      playwright-core: 1.61.1
+
   '@babel/code-frame@7.29.7':
     dependencies:
       '@babel/helper-validator-identifier': 7.29.7
@@ -6277,7 +6319,7 @@ snapshots:
       - supports-color
     optional: true
 
-  '@elek-io/core@0.20.0(dugite@3.2.2)(zod@4.4.3)':
+  '@elek-io/core@0.21.0(dugite@3.2.2)(zod@4.4.3)':
     dependencies:
       '@hono/node-server': 2.0.5(hono@4.12.26)
       '@hono/zod-openapi': 1.4.0(hono@4.12.26)(zod@4.4.3)
@@ -7181,6 +7223,10 @@ snapshots:
       webcrypto-core: 1.9.2
 
   '@pkgr/core@0.3.6': {}
+
+  '@playwright/test@1.61.1':
+    dependencies:
+      playwright: 1.61.1
 
   '@radix-ui/number@1.1.2': {}
 
@@ -9025,6 +9071,10 @@ snapshots:
       - electron-builder-squirrel-windows
       - supports-color
 
+  electron-playwright-helpers@2.1.0:
+    dependencies:
+      '@electron/asar': 3.4.1
+
   electron-publish@26.15.3:
     dependencies:
       '@types/fs-extra': 9.0.13
@@ -9577,6 +9627,9 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -9661,7 +9714,7 @@ snapshots:
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
-      semver: 7.7.4
+      semver: 7.8.5
       serialize-error: 7.0.1
     optional: true
 
@@ -10550,11 +10603,11 @@ snapshots:
 
   node-abi@4.33.0:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   node-api-version@0.2.1:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   node-exports-info@1.6.2:
     dependencies:
@@ -10574,7 +10627,7 @@ snapshots:
       graceful-fs: 4.2.11
       nopt: 9.0.0
       proc-log: 6.1.0
-      semver: 7.7.4
+      semver: 7.8.5
       tar: 7.5.19
       tinyglobby: 0.2.17
       undici: 6.27.0
@@ -10752,6 +10805,14 @@ snapshots:
       pvtsutils: 1.3.6
       pvutils: 1.1.5
       tslib: 2.8.1
+
+  playwright-core@1.61.1: {}
+
+  playwright@1.61.1:
+    dependencies:
+      playwright-core: 1.61.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   plist@3.1.0:
     dependencies:
