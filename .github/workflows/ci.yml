@@ -83,6 +83,7 @@ jobs:
             dist/*.dmg
             dist/*.zip
             dist/*.AppImage
-            dist/*.snap
             dist/*.deb
+            dist/*.rpm
+            dist/*.pacman
           if-no-files-found: error
