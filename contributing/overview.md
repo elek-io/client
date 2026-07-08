@@ -245,6 +245,8 @@ The app is built with [electron-vite](https://electron-vite.org/), which uses th
 - **Preload script** - CommonJS output (required by Electron's sandbox) with no external dependencies
 - **Renderer process** - the TanStack Router plugin (auto-generates `routeTree.gen.ts`), the Vite React plugin, Tailwind CSS via `@tailwindcss/vite`, and automatic code-splitting on routes
 
+For how these three builds decide what ships in the packaged app, the resulting rule for `dependencies` vs `devDependencies`, and what drives app size, see [Build and Packaging](./build-and-packaging.md).
+
 ### Known Considerations
 
 - DevTools are opened in production builds via `window.webContents.openDevTools()` in [`src/main/index.ts:198`](/src/main/index.ts) (the `app.isPackaged` branch of `createWindow`). This must be removed or guarded before a real release.
