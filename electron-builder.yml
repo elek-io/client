@@ -33,10 +33,15 @@ mac:
 dmg:
   artifactName: elek-io-client-${version}-${arch}.${ext}
 linux:
+  # All four targets are auto-updatable via electron-updater (AppImage, deb,
+  # rpm, pacman), so each one keeps in-app updates working. snap is
+  # intentionally excluded: electron-updater cannot update it (only the Snap
+  # Store can), so it would only add size without the update path.
   target:
     - AppImage
-    - snap
     - deb
+    - rpm
+    - pacman
   category: Office
 appImage:
   artifactName: elek-io-client-${version}.${ext}
