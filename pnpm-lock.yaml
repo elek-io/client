@@ -92,9 +92,6 @@ importers:
       '@sentry/react':
         specifier: 10.62.0
         version: 10.62.0(react@19.2.7)
-      '@sentry/vite-plugin':
-        specifier: 5.3.0
-        version: 5.3.0(rollup@4.62.2)
       '@tanstack/react-query':
         specifier: 5.101.2
         version: 5.101.2(react@19.2.7)
@@ -168,6 +165,9 @@ importers:
       '@playwright/test':
         specifier: 1.61.1
         version: 1.61.1
+      '@sentry/vite-plugin':
+        specifier: 5.3.0
+        version: 5.3.0(rollup@4.62.2)
       '@tailwindcss/vite':
         specifier: 4.3.2
         version: 4.3.2(vite@7.3.6(@types/node@24.13.2)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
