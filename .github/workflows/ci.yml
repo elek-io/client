@@ -24,11 +24,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
-          # Temporarily disabled: the pnpm store cache is the suspected vector
-          # for the macOS dugite symlink dereferencing. A cold store forces
-          # dugite's post-install to extract git fresh, so this run tells us
-          # whether the cache round-trip is what flattens the symlinks.
-          # cache: 'pnpm'
+          cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       # Temporary diagnostic: dugite ships its git-core commands as symlinks to
