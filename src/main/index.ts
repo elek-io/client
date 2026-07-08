@@ -1,6 +1,7 @@
 import {
   init as sentryInit,
   captureException as sentryCaptureException,
+  flush as sentryFlush,
 } from '@sentry/electron/main';
 import {
   app,
@@ -62,13 +63,16 @@ class Main {
 
     // Register app events
     app.on('ready', () => {
-      void this.onAppReady().catch((error: unknown) => {
+      void this.onAppReady().catch(async (error: unknown) => {
         // Exit instead of leaving a running app without a window,
         // otherwise initialization failures hang silently.
         // Not using Core's logger since it may be what failed to initialize
         // eslint-disable-next-line no-console
         console.error('Failed to initialize the app', error);
         sentryCaptureException(error);
+        // Let Sentry deliver the event before the process exits. Resolves
+        // immediately when Sentry is disabled, as it is under NODE_ENV=test
+        await sentryFlush(2000);
         app.exit(1);
       });
     });

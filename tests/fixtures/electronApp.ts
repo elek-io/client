@@ -8,7 +8,6 @@ import {
 } from '@playwright/test';
 import { parseElectronApp } from 'electron-playwright-helpers';
 import { existsSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
 
 /**
  * Returns the path to the unpacked build for the current platform
@@ -19,13 +18,7 @@ import { mkdir } from 'node:fs/promises';
  * the unpacked directory
  */
 function findUnpackedBuild(): string {
-  const candidates = [
-    'linux-unpacked',
-    'win-unpacked',
-    'mac-universal',
-    'mac-arm64',
-    'mac',
-  ];
+  const candidates = ['linux-unpacked', 'win-unpacked', 'mac-arm64', 'mac'];
 
   for (const candidate of candidates) {
     const path = `dist/${candidate}`;
@@ -61,12 +54,13 @@ export const test = base.extend<{
   electronApp: async ({}, use, testInfo) => {
     const appInfo = parseElectronApp(findUnpackedBuild());
 
-    // Point Core at its own empty data directory for each test, so tests
-    // start from a clean state and never touch real user data. Core reads
-    // ELEK_IO_DATA_DIR at startup (see Core's usage docs), which isolates
-    // only Core's data without redirecting the OS home directory
+    // Isolate both data stores per test, so tests start clean and never touch
+    // real user data. Core reads ELEK_IO_DATA_DIR for its project data.
+    // Electron's own userData (Chromium profile, localStorage, caches) is
+    // redirected with Chromium's --user-data-dir switch below. Core and
+    // Electron each create their directory, see testing.md
     const dataDir = testInfo.outputPath('elek-io-data');
-    await mkdir(dataDir, { recursive: true });
+    const userDataDir = testInfo.outputPath('electron-user-data');
 
     // Inherit the environment but skip undefined values,
     // since Playwright only accepts strings
@@ -83,20 +77,12 @@ export const test = base.extend<{
     // and fail the launch with "Process failed to launch!"
     delete env['ELECTRON_RUN_AS_NODE'];
 
-    // No main script argument here on purpose. Packaged builds load their
-    // bundled app on their own
-    const args: string[] = [];
-    if (env['CI'] && process.platform === 'linux') {
-      // Ubuntu runners on GitHub Actions restrict unprivileged user namespaces
-      // and unpacked builds lack the SUID sandbox helper, so Electron's
-      // sandbox cannot start there
-      args.push('--no-sandbox');
-    }
-
-    // Launch Electron app
+    // No main script argument on purpose, packaged builds load their bundled
+    // app on their own. Playwright adds --no-sandbox on Linux itself, so
+    // unpacked builds without the SUID sandbox helper run fine on CI
     const app = await electron.launch({
       executablePath: appInfo.executable,
-      args,
+      args: [`--user-data-dir=${userDataDir}`],
       env,
     });
 
@@ -120,7 +106,7 @@ export const test = base.extend<{
     await app.close();
   },
 
-  mainWindow: async ({ electronApp }, use) => {
+  mainWindow: async ({ electronApp }, use, testInfo) => {
     // Wait for the first window to open. The timeout is below the test
     // timeout, so a window that never opens reports as a firstWindow
     // timeout instead of a less specific test timeout
@@ -141,8 +127,17 @@ export const test = base.extend<{
     // Use the window in tests
     await use(window);
 
+    // Only run teardown checks when the test body passed. On a failure the
+    // window may be gone, so the axe scan would throw an unrelated error and
+    // the console assertions would just pile onto the real failure
+    if (testInfo.status !== testInfo.expectedStatus) {
+      return;
+    }
+
     // Run the accessibility scan so breakage of the axe integration
-    // surfaces early, but do not assert on the violations yet
+    // surfaces early, but do not assert on the violations yet.
+    // Legacy mode is required, since otherwise axe opens a blank aggregation
+    // page via context.newPage(), which Electron does not support
     // @todo Expect no violations once existing issues are resolved
     await new AxeBuilder({
       page: window,
@@ -150,8 +145,8 @@ export const test = base.extend<{
       .setLegacyMode()
       .analyze();
 
-    // After each test, check for console errors and warnings
-    expect(errors).toHaveLength(0);
-    expect(warnings).toHaveLength(0);
+    // Fail on any console error or warning. A single assertion, so both lists
+    // are visible when either is non-empty
+    expect({ errors, warnings }).toEqual({ errors: [], warnings: [] });
   },
 });

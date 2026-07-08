@@ -33,11 +33,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         title: 'elek.io Client',
       },
-      {
-        name: 'description',
-        content:
-          'The elek.io Client is a desktop application for Windows, macOS and Linux that allows you to manage content.',
-      },
     ],
   }),
 });

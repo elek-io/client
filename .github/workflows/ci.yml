@@ -35,6 +35,9 @@ jobs:
       #   uses: github/codeql-action/upload-sarif@v1
       # with:
       #   sarif_file: ../electronegativity_results
+      # Full package build (not build:unpack), so PR CI also verifies that
+      # electron-builder can still produce the installers. The E2E tests
+      # only use the unpacked directory this step produces alongside them
       - name: Build
         run: pnpm run build
       # Invoke the runner directly, since "pnpm run test" would rebuild
@@ -52,6 +55,10 @@ jobs:
           name: playwright-report-${{ matrix.platform }}
           path: playwright-report/
           retention-days: 30
+      # The HTML report above embeds the trace, but not each failed test's
+      # Core data directory (the git repos and files Core wrote). preserveOutput
+      # in the Playwright config keeps only failed tests' output, so this ships
+      # just those data dirs
       - name: Upload test results
         uses: actions/upload-artifact@v7
         if: failure()

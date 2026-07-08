@@ -19,5 +19,3 @@ allowBuilds:
   # ships prebuilt in @esbuild/<platform>, which the JS API resolves directly,
   # so its postinstall build is redundant. Same reasoning as in Core.
   esbuild: false
-minimumReleaseAgeExclude:
-  - '@elek-io/core@0.21.0'

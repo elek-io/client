@@ -39,26 +39,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// E2E tests set NODE_ENV to prevent reporting from test runs
-// Also skip the integrations, since they instrument even when disabled
-// and renderer profiling logs a document policy error without the
-// js-profiling header the disabled main process Sentry no longer injects
+// E2E tests set NODE_ENV to disable Sentry, so test runs do not report
+// errors, traces or replays. A disabled client also never sets up its
+// integrations, so profiling and replay stay dormant under test without
+// having to gate the integrations array here
 const sentryEnabled = window.ipc.electron.process.env['NODE_ENV'] !== 'test';
 
 init(
   {
     dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
     enabled: sentryEnabled,
-    integrations: sentryEnabled
-      ? [
-          tanstackRouterBrowserTracingIntegration(router),
-          browserProfilingIntegration(),
-          replayIntegration({
-            maskAllText: true,
-            blockAllMedia: true,
-          }),
-        ]
-      : [],
+    integrations: [
+      tanstackRouterBrowserTracingIntegration(router),
+      browserProfilingIntegration(),
+      replayIntegration({
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
+    ],
     sampleRate: 1.0, // For error events @todo change this to a lower number once more people are using Client
     tracesSampleRate: 1.0, // For tracing events @todo change this to a lower number once more people are using Client
     profilesSampleRate: 1.0, // For profiling events @todo change this to a lower number once more people are using Client
