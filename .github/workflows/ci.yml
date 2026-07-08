@@ -27,25 +27,6 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      # Temporary diagnostic: dugite ships its git-core commands as symlinks to
-      # one git binary. A healthy install keeps ~145 symlinks. If the toolchain
-      # dereferences them into full copies the git dir grows from ~70MB to
-      # ~580MB and the packaged macOS app roughly doubles. Prints the counts so
-      # we can see which platform and which action version breaks it. Never
-      # fails the build.
-      - name: Probe dugite git-core symlinks
-        shell: bash
-        continue-on-error: true
-        run: |
-          # Match both the Unix layout (git/libexec/git-core) and the Windows
-          # MinGit layout (git/mingw64/libexec/git-core)
-          dir=$(find node_modules/.pnpm -type d -path '*dugite*/libexec/git-core' 2>/dev/null | head -1)
-          if [ -z "$dir" ]; then echo "dugite git-core dir not found"; exit 0; fi
-          echo "git-core dir: $dir"
-          echo "symlinks: $(find "$dir" -type l 2>/dev/null | wc -l)"
-          echo "files:    $(find "$dir" -type f 2>/dev/null | wc -l)"
-          # Report the whole dugite git dir regardless of nesting depth
-          du -sh "${dir%%/git/*}/git" 2>/dev/null || true
       - name: Run lint, check types and formatting
         run: pnpm run lint && pnpm run check-types && pnpm run check-format
       # - name: Identify misconfigurations and security anti-patterns
