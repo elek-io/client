@@ -24,7 +24,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
-          cache: 'pnpm'
+          # Temporarily disabled: the pnpm store cache is the suspected vector
+          # for the macOS dugite symlink dereferencing. A cold store forces
+          # dugite's post-install to extract git fresh, so this run tells us
+          # whether the cache round-trip is what flattens the symlinks.
+          # cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       # Temporary diagnostic: dugite ships its git-core commands as symlinks to
@@ -37,12 +41,15 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          dir=$(find node_modules/.pnpm -type d -path '*dugite*/git/libexec/git-core' 2>/dev/null | head -1)
+          # Match both the Unix layout (git/libexec/git-core) and the Windows
+          # MinGit layout (git/mingw64/libexec/git-core)
+          dir=$(find node_modules/.pnpm -type d -path '*dugite*/libexec/git-core' 2>/dev/null | head -1)
           if [ -z "$dir" ]; then echo "dugite git-core dir not found"; exit 0; fi
           echo "git-core dir: $dir"
           echo "symlinks: $(find "$dir" -type l 2>/dev/null | wc -l)"
           echo "files:    $(find "$dir" -type f 2>/dev/null | wc -l)"
-          du -sh "$(dirname "$(dirname "$dir")")" 2>/dev/null || true
+          # Report the whole dugite git dir regardless of nesting depth
+          du -sh "${dir%%/git/*}/git" 2>/dev/null || true
       - name: Run lint, check types and formatting
         run: pnpm run lint && pnpm run check-types && pnpm run check-format
       # - name: Identify misconfigurations and security anti-patterns
