@@ -19,3 +19,10 @@ allowBuilds:
   # ships prebuilt in @esbuild/<platform>, which the JS API resolves directly,
   # so its postinstall build is redundant. Same reasoning as in Core.
   esbuild: false
+# Temporary: pnpm's default minimumReleaseAge policy (about one day) rejects
+# freshly published packages on a clean install, which is what CI runs.
+# @elek-io/core 0.21.0 was published 2026-07-08, so a fresh "pnpm install
+# --frozen-lockfile" fails the age check until roughly 2026-07-09. Remove this
+# entry once 0.21.0 has cleared the cutoff.
+minimumReleaseAgeExclude:
+  - '@elek-io/core@0.21.0'
