@@ -10,10 +10,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: 'html',
-  // Launching the packaged app and initializing Core takes a while
-  // on CI runners, especially the first launch on Windows where
-  // Defender scans the freshly built executable
-  timeout: 60000,
+  // Launching the packaged app and initializing Core takes a while,
+  // especially on CI runners
+  timeout: 30000,
 
   // Fail the build on CI if you accidentally left test.only in the source code.
   forbidOnly: !!process.env['CI'],

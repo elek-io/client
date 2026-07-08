@@ -37,64 +37,13 @@ jobs:
       #   sarif_file: ../electronegativity_results
       - name: Build
         run: pnpm run build
-      # Temporary diagnostics for the E2E launch hang on Windows runners.
-      # The app boots with Playwright's flags but hangs before starting
-      # Chromium when the test fixture's env and argument are added, so
-      # these probes bisect which single condition stalls the boot.
-      # Remove once the hang is understood.
-      - name: Diagnose Electron launch (temporary)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $exe = "dist\win-unpacked\elek.io Client.exe"
-          $flags = @("--inspect=0", "--remote-debugging-port=0")
-          $mainArg = "dist\win-unpacked\resources\app.asar\out\main\index.js"
-          $isolatedHome = Join-Path $env:RUNNER_TEMP "e2e-home"
-          New-Item -ItemType Directory -Force -Path $isolatedHome | Out-Null
-          $originalUserProfile = $env:USERPROFILE
-          $env:ELECTRON_ENABLE_LOGGING = "1"
-
-          function Invoke-LaunchProbe {
-            param($label, $arguments, $envVars)
-            Write-Host "=== $label"
-            foreach ($key in $envVars.Keys) { Set-Item -Path "env:$key" -Value $envVars[$key] }
-            Remove-Item probe-out.txt, probe-err.txt -ErrorAction SilentlyContinue
-            $p = Start-Process -FilePath $exe -ArgumentList $arguments -RedirectStandardOutput probe-out.txt -RedirectStandardError probe-err.txt -PassThru
-            Start-Sleep -Seconds 15
-            if (!$p.HasExited) { taskkill /PID $p.Id /T /F | Out-Null } else { Write-Host "exited with code $($p.ExitCode)" }
-            Start-Sleep -Seconds 1
-            $out = Get-Content probe-out.txt -Raw -ErrorAction SilentlyContinue
-            $err = Get-Content probe-err.txt -Raw -ErrorAction SilentlyContinue
-            if (($err -match "DevTools listening") -and ($out -match "Initializing")) { Write-Host "RESULT: BOOTED" } else { Write-Host "RESULT: DID NOT BOOT" }
-            Write-Host "--- stdout:"; Write-Host $out
-            Write-Host "--- stderr:"; Write-Host $err
-            foreach ($key in $envVars.Keys) {
-              if ($key -eq "USERPROFILE") { $env:USERPROFILE = $originalUserProfile }
-              else { Remove-Item "env:$key" -ErrorAction SilentlyContinue }
-            }
-          }
-
-          Invoke-LaunchProbe "A) main path argument only" ($flags + $mainArg) @{}
-          Invoke-LaunchProbe "B) NODE_ENV=test only" $flags @{ NODE_ENV = "test" }
-          Invoke-LaunchProbe "C) HOME and USERPROFILE overridden" $flags @{ HOME = $isolatedHome; USERPROFILE = $isolatedHome }
-          Invoke-LaunchProbe "D) HOME overridden only" $flags @{ HOME = $isolatedHome }
-          Invoke-LaunchProbe "E) USERPROFILE overridden only" $flags @{ USERPROFILE = $isolatedHome }
-          exit 0
       # Invoke the runner directly, since "pnpm run test" would rebuild
       # the app that the build step above already built
       - name: Run E2E tests (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" pnpm exec playwright test
-      - name: Run E2E tests (macOS)
-        if: runner.os == 'macOS'
-        run: pnpm exec playwright test
-      - name: Run E2E tests (Windows)
-        if: runner.os == 'Windows'
-        # DEBUG is temporary, to log the spawn command and every line of
-        # process output Playwright receives during the Electron launch
-        # handshake. Remove once the launch hang is understood.
-        env:
-          DEBUG: pw:api,pw:browser*
+      - name: Run E2E tests (macOS/Windows)
+        if: runner.os != 'Linux'
         run: pnpm exec playwright test
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

@@ -27,8 +27,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0(electron@43.0.0)
       '@elek-io/core':
-        specifier: 0.20.0
-        version: 0.20.0(dugite@3.2.2)(zod@4.4.3)
+        specifier: 0.21.0
+        version: 0.21.0(dugite@3.2.2)(zod@4.4.3)
       '@fontsource-variable/montserrat':
         specifier: 5.2.8
         version: 5.2.8
@@ -633,8 +633,8 @@ packages:
     engines: {node: '>=14.14'}
     hasBin: true
 
-  '@elek-io/core@0.20.0':
-    resolution: {integrity: sha512-7ojAO7Lgp67w88d299iDzT0LZ9eqzbo6hA0quLu2d8xAm3bWxbT4L5UoehcD9z4HnOZQRJxbqaUWBqqo/u/kyw==}
+  '@elek-io/core@0.21.0':
+    resolution: {integrity: sha512-dz5Xw7jwNj4byqxzb2i+Fn623IbmYH7DCYqgdo4IoyXFuG8DW8NVxsFcstG4ZNjLzmPVTI0Q2KQ8jTCkWclN2Q==}
     hasBin: true
     peerDependencies:
       astro: ^6.0.0
@@ -6319,7 +6319,7 @@ snapshots:
       - supports-color
     optional: true
 
-  '@elek-io/core@0.20.0(dugite@3.2.2)(zod@4.4.3)':
+  '@elek-io/core@0.21.0(dugite@3.2.2)(zod@4.4.3)':
     dependencies:
       '@hono/node-server': 2.0.5(hono@4.12.26)
       '@hono/zod-openapi': 1.4.0(hono@4.12.26)(zod@4.4.3)

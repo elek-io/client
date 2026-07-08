@@ -61,11 +61,12 @@ export const test = base.extend<{
   electronApp: async ({}, use, testInfo) => {
     const appInfo = parseElectronApp(findUnpackedBuild());
 
-    // Core stores all data under the home directory (~/elek.io),
-    // so point the home directory of each test to its own empty folder.
-    // That way tests start from a clean state and never touch real user data
-    const homePath = testInfo.outputPath('home');
-    await mkdir(homePath, { recursive: true });
+    // Point Core at its own empty data directory for each test, so tests
+    // start from a clean state and never touch real user data. Core reads
+    // ELEK_IO_DATA_DIR at startup (see Core's usage docs), which isolates
+    // only Core's data without redirecting the OS home directory
+    const dataDir = testInfo.outputPath('elek-io-data');
+    await mkdir(dataDir, { recursive: true });
 
     // Inherit the environment but skip undefined values,
     // since Playwright only accepts strings
@@ -76,17 +77,14 @@ export const test = base.extend<{
       }
     }
     env['NODE_ENV'] = 'test';
-    // HOME is used on Linux and macOS, USERPROFILE on Windows
-    env['HOME'] = homePath;
-    env['USERPROFILE'] = homePath;
+    env['ELEK_IO_DATA_DIR'] = dataDir;
     // Electron based terminals like the one in VSCode set this variable,
     // which would turn the launched app into a plain Node process
     // and fail the launch with "Process failed to launch!"
     delete env['ELECTRON_RUN_AS_NODE'];
 
     // No main script argument here on purpose. Packaged builds load their
-    // bundled app on their own, and passing the path stalled Electron's
-    // boot on Windows CI runners
+    // bundled app on their own
     const args: string[] = [];
     if (env['CI'] && process.platform === 'linux') {
       // Ubuntu runners on GitHub Actions restrict unprivileged user namespaces
@@ -123,10 +121,10 @@ export const test = base.extend<{
   },
 
   mainWindow: async ({ electronApp }, use) => {
-    // Wait for the first window to open
-    // The explicit timeout makes a hang here report as a firstWindow
-    // timeout instead of a generic test timeout
-    const window = await electronApp.firstWindow({ timeout: 30000 });
+    // Wait for the first window to open. The timeout is below the test
+    // timeout, so a window that never opens reports as a firstWindow
+    // timeout instead of a less specific test timeout
+    const window = await electronApp.firstWindow({ timeout: 20000 });
 
     const errors: string[] = [];
     const warnings: string[] = [];

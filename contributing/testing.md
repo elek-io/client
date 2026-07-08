@@ -32,7 +32,7 @@ Specs live in `tests/specs` and import `test` from [`tests/fixtures/electronApp.
 
 The launch does a few important things:
 
-- **Isolation**: Core stores all data under the home directory (`~/elek.io`), so each test gets its own empty home directory inside `test-results` via the `HOME` and `USERPROFILE` environment variables. Tests never touch real user data and always start from a clean state.
+- **Isolation**: each test gets its own empty Core data directory inside `test-results` via the `ELEK_IO_DATA_DIR` environment variable, which Core reads at startup (see Core's usage docs). Tests never touch real user data and always start from a clean state. An earlier version redirected the OS home directory instead, but on Windows a redirected `USERPROFILE` stalls Electron's boot before Chromium starts, so isolating only Core's data is both cleaner and avoids that hang.
 - **`NODE_ENV=test`**: both the main process and the renderer disable Sentry when they see this, so test runs do not report errors, traces or replays.
 - **`ELECTRON_RUN_AS_NODE` is removed**: Electron based terminals like the one in VSCode set it, which would turn the launched app into a plain Node process and fail the launch with `Process failed to launch!`.
 - **`--no-sandbox` on Linux CI only**: GitHub's Ubuntu runners restrict unprivileged user namespaces and unpacked builds lack the SUID sandbox helper.
