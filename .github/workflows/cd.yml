@@ -6,15 +6,21 @@ on:
       - main
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+# contents:write is needed by every job: changesets pushes commits, prepare-release
+# and build-and-upload publish to GitHub Releases. pull-requests:write is only used by the
+# changesets job to open the release pull request, so it is scoped to that job.
 permissions:
-  contents: write # Required for pushing commits via changesets action
-  pull-requests: write # Required for creating release PRs via changesets action
+  contents: write
 
 jobs:
   changesets:
     name: Create or update release pull request
     timeout-minutes: 15
     runs-on: ubuntu-24.04
+    # Opening the release pull request needs pull-requests:write, scoped to this job
+    permissions:
+      contents: write
+      pull-requests: write
     outputs:
       hasChangesets: ${{ steps.changesets.outputs.hasChangesets }}
     steps:
@@ -31,8 +37,8 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Run lint, check types and formatting
-        run: pnpm run lint && pnpm run check-types && pnpm run check-format
+      - name: Run checks
+        run: pnpm run check
       - name: Create or update pull request
         id: changesets
         uses: changesets/action@v1
@@ -42,13 +48,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  create-release:
-    name: Create the draft GitHub Release
+  prepare-release:
+    name: Prepare the draft GitHub Release
     needs: changesets
-    # Only after the release pull request has been merged, before the platform builds
+    # This runs on the release pull request merge, but also on any other push to
+    # main that carries no changesets. The step below tells the two apart.
     if: needs.changesets.outputs.hasChangesets == 'false'
     timeout-minutes: 5
     runs-on: ubuntu-24.04
+    outputs:
+      # false when this version is already released, so the platform builds are skipped
+      should_release: ${{ steps.draft.outputs.should_release }}
     steps:
       - name: Check out code
         uses: actions/checkout@v7
@@ -59,29 +69,46 @@ jobs:
       # changelog notes, so every platform runner uploads into the same populated
       # draft instead of each racing to create its own empty one.
       - name: Create or update the draft release with changelog notes
+        id: draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
           TAG="v${VERSION}"
+          # A published release for this tag means this is a changeset-free push, not
+          # a new version. Skip the build matrix instead of rebuilding and overwriting
+          # the published notes. An existing draft (a re-run) still proceeds.
+          if [ "$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null)" = "false" ]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "$TAG is already published, skipping the release build" >&2
+            exit 0
+          fi
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
           # Take this version's section from the changeset generated CHANGELOG
           NOTES=$(awk -v ver="## ${VERSION}" '
             $0 == ver {capture=1; next}
             capture && /^## / {exit}
             capture {print}
           ' CHANGELOG.md)
+          # Fail loudly rather than publish a draft with an empty body
+          if [ -z "$NOTES" ]; then
+            echo "No CHANGELOG.md section found for $TAG" >&2
+            exit 1
+          fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             printf '%s\n' "$NOTES" | gh release edit "$TAG" --notes-file -
           else
+            # Pin the tag to this built commit, so publishing the draft later tags
+            # this commit and not whatever is at the head of main at that time.
             printf '%s\n' "$NOTES" | gh release create "$TAG" \
               --draft --title "$TAG" --target "${{ github.sha }}" --notes-file -
           fi
 
-  release:
-    name: Releasing on ${{ matrix.platform }}
-    needs: [changesets, create-release]
-    # Only build once the release pull request has been merged
-    if: needs.changesets.outputs.hasChangesets == 'false'
+  build-and-upload:
+    name: Building and uploading on ${{ matrix.platform }}
+    needs: [changesets, prepare-release]
+    # Only run when prepare-release produced a fresh draft to publish into
+    if: needs.prepare-release.outputs.should_release == 'true'
     timeout-minutes: 20
     strategy:
       fail-fast: false

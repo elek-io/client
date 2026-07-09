@@ -25,6 +25,7 @@
     "check-types:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "check-types:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "check-types": "pnpm run check-types:node && pnpm run check-types:web",
+    "check": "pnpm run lint && pnpm run check-types && pnpm run check-format",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "pnpm run clean && electron-vite build && electron-builder",

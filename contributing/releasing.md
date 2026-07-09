@@ -11,14 +11,14 @@ Changes that should end up in a release need a changeset. Run `pnpm changeset` a
 The [CD workflow](../.github/workflows/cd.yml) runs on every push to `main` in three jobs:
 
 1. `changesets` runs the same checks as CI on a single Linux runner. It then creates or updates the release pull request. Only one runner does this to avoid conflicting pushes.
-2. `create-release` only runs when there are no pending changesets left, which is the push created by merging the release pull request. On a single runner it creates one draft GitHub Release named `vx.x.x` and sets its body to that version's section from [CHANGELOG.md](../CHANGELOG.md). It runs before the builds so there is exactly one draft to upload into.
-3. `release` runs after `create-release` and builds the app on every supported platform. Each runner uploads its installers and update metadata into the existing draft via electron-builder, configured in [electron-builder.yml](../electron-builder.yml). electron-builder finds the draft by its tag, so the runners share one draft.
+2. `prepare-release` runs when there are no pending changesets left. That is the push from merging the release pull request, but also any other changeset-free push to main. On a single runner it reads the version from package.json and, if that version is not already published, creates one draft GitHub Release named `vx.x.x` with its body set to that version's section from [CHANGELOG.md](../CHANGELOG.md). If the version is already published it skips the build, so an ordinary push to main does not re-release. It runs before the builds so there is exactly one draft to upload into.
+3. `build-and-upload` runs only when `prepare-release` produced a fresh draft, and builds the app on every supported platform. Each runner uploads its installers and update metadata into that draft via electron-builder, configured in [electron-builder.yml](../electron-builder.yml). electron-builder finds the draft by its tag, so the runners share one draft.
 
 The draft release is not public. Review the attached artifacts and publish it manually on GitHub to complete the release. Publishing creates the `vx.x.x` git tag.
 
 Pre-creating the draft solves two earlier problems. The platform runners used to create the release themselves, and running concurrently each one raced to create a draft, so a single version produced several drafts. They were all empty because electron-builder does not write release notes and changesets only creates releases when publishing to npm, which this app never does.
 
-Unlike Core, which publishes its library to npm from a single runner, the client needs one build per platform. That is why `release` runs on a matrix while `changesets` and `create-release` do not.
+Unlike Core, which publishes its library to npm from a single runner, the client needs one build per platform. That is why `build-and-upload` runs on a matrix while `changesets` and `prepare-release` do not.
 
 ## Toolchain versions
 
@@ -28,7 +28,7 @@ CI and CD read the Node.js version from [.node-version](../.node-version) and th
 
 pnpm 11 ships two protections that are kept at their defaults, matching Core:
 
-- `minimumReleaseAge` refuses packages published less than a day ago, and every install verifies the whole lockfile against it. If CI fails with `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`, the lockfile references releases that are too fresh, usually because it was resolved right after an upstream release. Either wait until the entries are a day old and rerun CI, or delete `pnpm-lock.yaml` and run `pnpm install` so resolution picks the newest allowed versions.
+- `minimumReleaseAge` refuses packages published less than a day ago, and every install verifies the whole lockfile against it. If CI fails with `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`, the lockfile references releases that are too fresh, usually because it was resolved right after an upstream release. Either wait until the entries are a day old and rerun CI, or delete `pnpm-lock.yaml` and run `pnpm install` so resolution picks the newest allowed versions. When a single dependency is trusted and has to land before it ages out, a scoped `minimumReleaseAgeExclude` entry in [pnpm-workspace.yaml](../pnpm-workspace.yaml) exempts just that version. Keep it temporary and remove it once the version clears the cutoff, so the policy applies to it again.
 - `blockExoticSubdeps` refuses transitive dependencies that resolve to git repositories or tarball URLs instead of the registry. If a dependency pulls one in, prefer updating it to a version that resolves from the registry over disabling the policy.
 
 Dependency build script approval lives in [pnpm-workspace.yaml](../pnpm-workspace.yaml) as an `allowBuilds` map, with a comment per entry explaining why it is allowed or denied.
