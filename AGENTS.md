@@ -1,23 +1,23 @@
 # AGENTS.md
 
-Guidance for AI agents and contributors working on `@elek-io/client`.
+Guidance for AI agents and contributors working on `@elek-io/desktop`.
 
 `@elek-io/core` handles file IO and git version control for elek.io Projects, a headless, git-backed CMS. It is published as a TypeScript library with Node, Browser, Astro and CLI entry points.
 
-`@elek-io/client` uses `@elek-io/core` and provides a UI on top of that business logic, packaged with Electron as a cross-platform desktop application.
+`@elek-io/desktop` uses `@elek-io/core` and provides a UI on top of that business logic, packaged with Electron as a cross-platform desktop application.
 
 ## Documentation
 
 Documentation is split by what you are working on:
 
-- [`contributing/`](./contributing/) - contributor and design docs for the client: the Electron process architecture, the IPC security model, TanStack Query data loading, and the dynamic form system. Start at [`contributing/README.md`](./contributing/README.md). The client ships as a packaged desktop app, not an npm package, so these docs are never shipped and may link anywhere.
-- **Core's behavior** is documented inside the `@elek-io/core` package itself. After `pnpm install`, read it under [`node_modules/@elek-io/core/docs/`](./node_modules/@elek-io/core/docs/index.md) (content export, the local API, API client generation, fields, storage layout, and more). This is the reference for anything the client delegates to Core.
+- [`contributing/`](./contributing/) - contributor and design docs for the desktop app: the Electron process architecture, the IPC security model, TanStack Query data loading, and the dynamic form system. Start at [`contributing/README.md`](./contributing/README.md). The desktop app ships packaged, not as an npm package, so these docs are never shipped and may link anywhere.
+- **Core's behavior** is documented inside the `@elek-io/core` package itself. After `pnpm install`, read it under [`node_modules/@elek-io/core/docs/`](./node_modules/@elek-io/core/docs/index.md) (content export, the local API, API client generation, fields, storage layout, and more). This is the reference for anything the desktop app delegates to Core.
 - To **contribute to Core** itself, use the [`@elek-io/core` repository](https://github.com/elek-io/core). Core's own contributor docs are not part of its published package, so they live only there.
 
 Two rules follow:
 
-- **Read before you change.** Before working on an area, read its doc first so you change behavior on purpose, not by guesswork. For client behavior that is the matching doc in `contributing/`; for behavior that comes from Core, read Core's docs in the package.
-- **Write after you change.** When you change client behavior a user or contributor should know about, update the matching doc in `contributing/` in the same change. Changes to Core itself do not belong in this repo - make them in the separate [`@elek-io/core`](https://github.com/elek-io/core) repository and document them there.
+- **Read before you change.** Before working on an area, read its doc first so you change behavior on purpose, not by guesswork. For desktop app behavior that is the matching doc in `contributing/`; for behavior that comes from Core, read Core's docs in the package.
+- **Write after you change.** When you change desktop app behavior a user or contributor should know about, update the matching doc in `contributing/` in the same change. Changes to Core itself do not belong in this repo - make them in the separate [`@elek-io/core`](https://github.com/elek-io/core) repository and document them there.
 
 ## Commands
 

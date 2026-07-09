@@ -2,7 +2,7 @@
 
 ## Overview
 
-elek.io Client uses [TanStack Query](https://tanstack.com/query/latest) (formerly React Query) for all data fetching and mutations. This provides a consistent, type-safe way to interact with the main process via IPC, with built-in caching, loading states, and error handling.
+elek.io Desktop uses [TanStack Query](https://tanstack.com/query/latest) (formerly React Query) for all data fetching and mutations. This provides a consistent, type-safe way to interact with the main process via IPC, with built-in caching, loading states, and error handling.
 
 ## Configuration
 
@@ -463,7 +463,7 @@ Mutations already have `onSuccess` handlers that update the necessary caches. Us
 
 ## Error Handling
 
-The client handles errors in three layers:
+The desktop app handles errors in three layers:
 
 1. **Route error boundaries** - the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx) catches all unhandled errors, logs them to the Core logger, and shows a friendly error page with a way back to the projects list. Sentry capture for React errors is wired separately, via Sentry's `reactErrorHandler` passed to `ReactDOM.createRoot` in [`app.tsx`](../../src/renderer/app.tsx) (Sentry itself is initialized in [`index.ts`](../../src/renderer/index.ts)).
 2. **Query and mutation errors** - `throwOnError: true` is set by default (via `useQueryNoError` and `customMutationOptions`), so query errors bubble to the nearest error boundary and mutation failures additionally show a toast through the global handler.

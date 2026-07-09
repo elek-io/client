@@ -1,5 +1,5 @@
 ---
-'@elek-io/client': patch
+'@elek-io/desktop': patch
 ---
 
 Rework the release pipeline and harden CI/CD.

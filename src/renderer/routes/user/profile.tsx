@@ -163,7 +163,7 @@ function UserProfilePage(): ReactElement {
 
   return (
     <Page
-      title={user === null ? 'Welcome to elek.io Client' : 'User profile'}
+      title={user === null ? 'Welcome to elek.io Desktop' : 'User profile'}
       description={<Description />}
       actions={<Actions />}
       layout="bare"
@@ -208,11 +208,11 @@ function UserProfilePage(): ReactElement {
                           </FormControl>
                           <FormDescription>
                             Changing your preferred language will attempt to
-                            translate everything you see in elek.io Client. You
-                            can help translate elek.io Client by contributing to
-                            our{' '}
+                            translate everything you see in elek.io Desktop. You
+                            can help translate elek.io Desktop by contributing
+                            to our{' '}
                             <a
-                              href="https://github.com/elek-io/client"
+                              href="https://github.com/elek-io/desktop"
                               target="_blank"
                               rel="noreferrer"
                             >
@@ -291,7 +291,7 @@ function UserProfilePage(): ReactElement {
                             <FormLabel isRequired>Enabled</FormLabel>
                             <FormDescription>
                               By enabling the local API it will start whenever
-                              elek.io Client is opened. This allows you to read
+                              elek.io Desktop is opened. This allows you to read
                               local Project data from other applications.
                             </FormDescription>
                           </div>

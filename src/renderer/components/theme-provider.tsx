@@ -11,7 +11,7 @@ type ThemeProviderProps = {
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
-  storageKey = 'client-theme',
+  storageKey = 'desktop-theme',
   ...props
 }: ThemeProviderProps): React.ReactElement {
   const [theme, setTheme] = useState<Theme>(() => {

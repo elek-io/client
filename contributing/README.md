@@ -1,9 +1,9 @@
 # Developer Documentation
 
-Welcome to the elek.io Client developer documentation. This guide will help you understand the codebase architecture and development patterns.
+Welcome to the elek.io Desktop developer documentation. This guide will help you understand the codebase architecture and development patterns.
 
 > [!NOTE]
-> This folder documents how to **contribute to** elek.io Client. If instead you want to consume your Projects' content inside your own applications, see the [@elek-io/core documentation](https://github.com/elek-io/core). Core ships its full guides (content export, local API, API client generation) both in its repository and in the package's `docs` folder.
+> This folder documents how to **contribute to** elek.io Desktop. If instead you want to consume your Projects' content inside your own applications, see the [@elek-io/core documentation](https://github.com/elek-io/core). Core ships its full guides (content export, local API, API client generation) both in its repository and in the package's `docs` folder.
 
 ## Prerequisites
 
@@ -29,7 +29,7 @@ Then proceed to the specific topics based on your interests or contribution goal
 - **[E2E Testing](./testing.md)** - Playwright tests against the packaged app, fixtures, isolation, and CI
 - **[Releasing](./releasing.md)** - versioning with changesets and how CD publishes draft GitHub Releases
 
-For a running list of things Core supports but the client cannot use yet, see **[Not Yet Implemented](./not-yet-implemented.md)**. Add to it whenever you find such a gap.
+For a running list of things Core supports but the desktop app cannot use yet, see **[Not Yet Implemented](./not-yet-implemented.md)**. Add to it whenever you find such a gap.
 
 ## Contributing
 

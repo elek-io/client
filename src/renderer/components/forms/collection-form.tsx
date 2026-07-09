@@ -64,7 +64,7 @@ import {
   supportedIconSchema,
 } from '@elek-io/core';
 
-// Field types Core defines but the client has no definition form for yet. They are
+// Field types Core defines but the desktop app has no definition form for yet. They are
 // shown disabled in the picker so selecting one cannot crash the sheet.
 // See contributing/not-yet-implemented.md.
 const unimplementedFieldTypes: ReadonlySet<FieldType> = new Set(['dynamic']);

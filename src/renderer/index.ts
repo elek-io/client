@@ -28,7 +28,7 @@ const router = createRouter({
 router.subscribe('onBeforeLoad', (event) => {
   void window.ipc.core.logger.info({
     source: 'desktop',
-    message: `Client navigating from "${event.fromLocation?.href}" to "${event.toLocation.href}"`,
+    message: `Desktop navigating from "${event.fromLocation?.href}" to "${event.toLocation.href}"`,
   });
 });
 
@@ -47,7 +47,7 @@ const sentryEnabled = window.ipc.electron.process.env['NODE_ENV'] !== 'test';
 
 init(
   {
-    dsn: 'https://c839d5cdaec666911ba459803882d9d0@o4504985675431936.ingest.sentry.io/4506688843546624',
+    dsn: 'https://06f2163a40c4c4f404c41860f46a104b@o4511706089259008.ingest.de.sentry.io/4511706092535888',
     enabled: sentryEnabled,
     integrations: [
       tanstackRouterBrowserTracingIntegration(router),
@@ -57,9 +57,9 @@ init(
         blockAllMedia: true,
       }),
     ],
-    sampleRate: 1.0, // For error events @todo change this to a lower number once more people are using Client
-    tracesSampleRate: 1.0, // For tracing events @todo change this to a lower number once more people are using Client
-    profilesSampleRate: 1.0, // For profiling events @todo change this to a lower number once more people are using Client
+    sampleRate: 1.0, // For error events @todo change this to a lower number once more people are using Desktop
+    tracesSampleRate: 1.0, // For tracing events @todo change this to a lower number once more people are using Desktop
+    profilesSampleRate: 1.0, // For profiling events @todo change this to a lower number once more people are using Desktop
     replaysOnErrorSampleRate: 1.0, // Always send a session replay when an error was thrown
     tracePropagationTargets: ['localhost', /^https:\/\/api\.elek\.io/],
   },

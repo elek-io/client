@@ -1,4 +1,4 @@
-# @elek-io/client
+# @elek-io/desktop
 
 ## 0.3.3
 

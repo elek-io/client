@@ -1,4 +1,4 @@
-import { version as clientVersion, dependencies } from '@root/package.json';
+import { version as desktopVersion, dependencies } from '@root/package.json';
 import { ChevronDown, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
@@ -24,7 +24,7 @@ export function AppHeader(): React.JSX.Element {
           <Button variant="ghost" size="sm" className="gap-0">
             <h1>
               elek.<span className="text-primary">io</span>
-              <strong className="ml-2 text-xs">Client</strong>
+              <strong className="ml-2 text-xs">Desktop</strong>
             </h1>
             <ChevronDown
               className={cn(
@@ -40,7 +40,7 @@ export function AppHeader(): React.JSX.Element {
               className="cursor-pointer"
               onClick={() =>
                 window.open(
-                  'https://github.com/elek-io/client/issues',
+                  'https://github.com/elek-io/desktop/issues',
                   '_blank'
                 )
               }
@@ -54,8 +54,8 @@ export function AppHeader(): React.JSX.Element {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              elek.io Client
-              <DropdownMenuAddOn>v{clientVersion}</DropdownMenuAddOn>
+              elek.io Desktop
+              <DropdownMenuAddOn>v{desktopVersion}</DropdownMenuAddOn>
             </DropdownMenuItem>
             <DropdownMenuItem>
               elek.io Core
