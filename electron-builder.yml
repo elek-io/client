@@ -38,6 +38,15 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  # Publish each mac arch under its own channel so the per-arch update metadata
+  # files do not overwrite each other. electron-builder only adds an arch suffix
+  # to latest-*.yml on Linux, so without this both runners write latest-mac.yml.
+  # x64 emits latest-x64-mac.yml and arm64 emits latest-arm64-mac.yml, and each
+  # build bakes its own channel into app-update.yml.
+  publish:
+    provider: github
+    releaseType: draft
+    channel: latest-${arch}
 dmg:
   artifactName: elek-io-client-${version}-${arch}.${ext}
 linux:
@@ -54,7 +63,10 @@ linux:
 appImage:
   artifactName: elek-io-client-${version}.${ext}
 npmRebuild: false
-# Each CD runner uploads its installers and update metadata into a shared draft GitHub Release
+# The CD workflow pre-creates one draft GitHub Release per version. Each runner
+# uploads its installers and update metadata into that shared draft, which
+# electron-builder finds by tag. releaseType draft is kept as a fallback for the
+# case where the draft does not exist yet. Mac overrides this with a per-arch channel.
 publish:
   provider: github
   releaseType: draft

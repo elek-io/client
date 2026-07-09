@@ -1,7 +1,18 @@
 name: CI
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
+
+# Cancel superseded runs for the same pull request. github.ref is per-PR here, so
+# this only cancels older runs of the same PR, never other PRs or main.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# CI only reads the repo and uploads artifacts (which use the Actions API, not the
+# git token), so pin the token to read-only regardless of the repository default.
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -27,20 +38,14 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Run lint, check types and formatting
-        run: pnpm run lint && pnpm run check-types && pnpm run check-format
+      - name: Run checks
+        run: pnpm run check
       # electron-builder's pacman target builds through fpm, which shells out to
       # bsdtar to write the package .MTREE. The Ubuntu runner does not ship it,
       # so install it here. bsdtar comes from libarchive-tools.
       - name: Install Linux packaging tools
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools
-      # - name: Identify misconfigurations and security anti-patterns
-      #   uses: doyensec/electronegativity-action@v2
-      # - name: Upload report
-      #   uses: github/codeql-action/upload-sarif@v1
-      # with:
-      #   sarif_file: ../electronegativity_results
       # Full package build (not build:unpack), so PR CI also verifies that
       # electron-builder can still produce the installers. The E2E tests
       # only use the unpacked directory this step produces alongside them
@@ -72,12 +77,12 @@ jobs:
           name: test-results-${{ matrix.platform }}
           path: test-results/
           retention-days: 7
-      # Uncomment if necessary
-      # For example to inspect the build applications
-      - name: Upload artifact
+      # Upload the built installers so a PR's packaged output can be inspected.
+      # if-no-files-found: error also doubles as a check that packaging produced them.
+      - name: Upload installers
         uses: actions/upload-artifact@v7
         with:
-          name: artifact_${{ matrix.platform }}
+          name: installers-${{ matrix.platform }}
           path: |
             dist/*.exe
             dist/*.dmg
@@ -87,3 +92,4 @@ jobs:
             dist/*.rpm
             dist/*.pacman
           if-no-files-found: error
+          retention-days: 7

@@ -30,6 +30,7 @@ Two rules follow:
 - `pnpm check-types` - type-check both processes with tsc, no emit (`check-types:node` and `check-types:web` cover one process each)
 - `pnpm lint` - run eslint
 - `pnpm format` - format with prettier
+- `pnpm check` - run lint, check-types and check-format together, the same set CI runs
 - `pnpm test` - build the unpacked app, then run the Playwright E2E tests against it (`test:ui`, `test:debug` and `test:report` variants exist, `pnpm exec playwright test` skips the rebuild)
 
 ## Conventions
@@ -40,6 +41,6 @@ Two rules follow:
 
 ## Testing notes
 
-- Playwright E2E tests live in `tests/` and run against the packaged app. See [`contributing/testing.md`](./contributing/testing.md) for how the fixtures, isolation and CI work. Run `pnpm test` to verify a change end to end, and make sure `pnpm check-types` and `pnpm lint` pass before considering it done.
+- Playwright E2E tests live in `tests/` and run against the packaged app. See [`contributing/testing.md`](./contributing/testing.md) for how the fixtures, isolation and CI work. Run `pnpm test` to verify a change end to end, and make sure `pnpm check` passes before considering it done.
 - There is no unit test runner. Verify behavior without E2E coverage by running the app with `pnpm dev` and telling the user to exercise the affected flows.
 - All Core file and git operations run in the main process and are reached from the renderer only through `window.ipc`. Exercise them through the running app, not in isolation.
