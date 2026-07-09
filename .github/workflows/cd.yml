@@ -42,9 +42,44 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  create-release:
+    name: Create the draft GitHub Release
+    needs: changesets
+    # Only after the release pull request has been merged, before the platform builds
+    if: needs.changesets.outputs.hasChangesets == 'false'
+    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      # electron-builder finds a draft release by tag and uploads into it, but it
+      # never writes the release body. Create the one draft up front with the
+      # changelog notes, so every platform runner uploads into the same populated
+      # draft instead of each racing to create its own empty one.
+      - name: Create or update the draft release with changelog notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+          # Take this version's section from the changeset generated CHANGELOG
+          NOTES=$(awk -v ver="## ${VERSION}" '
+            $0 == ver {capture=1; next}
+            capture && /^## / {exit}
+            capture {print}
+          ' CHANGELOG.md)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            printf '%s\n' "$NOTES" | gh release edit "$TAG" --notes-file -
+          else
+            printf '%s\n' "$NOTES" | gh release create "$TAG" \
+              --draft --title "$TAG" --target "${{ github.sha }}" --notes-file -
+          fi
+
   release:
     name: Releasing on ${{ matrix.platform }}
-    needs: changesets
+    needs: [changesets, create-release]
     # Only build once the release pull request has been merged
     if: needs.changesets.outputs.hasChangesets == 'false'
     timeout-minutes: 20

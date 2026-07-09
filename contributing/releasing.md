@@ -8,14 +8,17 @@ Changes that should end up in a release need a changeset. Run `pnpm changeset` a
 
 ## What CD does
 
-The [CD workflow](../.github/workflows/cd.yml) runs on every push to `main` in two jobs:
+The [CD workflow](../.github/workflows/cd.yml) runs on every push to `main` in three jobs:
 
 1. `changesets` runs the same checks as CI on a single Linux runner. It then creates or updates the release pull request. Only one runner does this to avoid conflicting pushes.
-2. `release` only runs when there are no pending changesets left, which is the push created by merging the release pull request. It builds the app on every supported platform. Each runner uploads its installers and update metadata to a shared draft GitHub Release via electron-builder, configured in [electron-builder.yml](../electron-builder.yml).
+2. `create-release` only runs when there are no pending changesets left, which is the push created by merging the release pull request. On a single runner it creates one draft GitHub Release named `vx.x.x` and sets its body to that version's section from [CHANGELOG.md](../CHANGELOG.md). It runs before the builds so there is exactly one draft to upload into.
+3. `release` runs after `create-release` and builds the app on every supported platform. Each runner uploads its installers and update metadata into the existing draft via electron-builder, configured in [electron-builder.yml](../electron-builder.yml). electron-builder finds the draft by its tag, so the runners share one draft.
 
-The draft release is not public. Review the attached artifacts and publish it manually on GitHub to complete the release.
+The draft release is not public. Review the attached artifacts and publish it manually on GitHub to complete the release. Publishing creates the `vx.x.x` git tag.
 
-Unlike Core, which publishes its library to npm from a single runner, the client needs one build per platform. That is why `release` runs on a matrix while `changesets` does not.
+Pre-creating the draft solves two earlier problems. The platform runners used to create the release themselves, and running concurrently each one raced to create a draft, so a single version produced several drafts. They were all empty because electron-builder does not write release notes and changesets only creates releases when publishing to npm, which this app never does.
+
+Unlike Core, which publishes its library to npm from a single runner, the client needs one build per platform. That is why `release` runs on a matrix while `changesets` and `create-release` do not.
 
 ## Toolchain versions
 
@@ -30,17 +33,14 @@ pnpm 11 ships two protections that are kept at their defaults, matching Core:
 
 Dependency build script approval lives in [pnpm-workspace.yaml](../pnpm-workspace.yaml) as an `allowBuilds` map, with a comment per entry explaining why it is allowed or denied.
 
-## Known limitation
+## macOS update metadata
 
-The macOS artifact names include the architecture, so the installers from the Intel and Apple Silicon runners coexist in the release. But both runners also generate a `latest-mac.yml` with a fixed name, and the second upload overwrites the first. This breaks auto-updates for one of the two architectures. It does not matter yet because electron-updater is not wired up, but it must be solved before it is.
+macOS builds on two runners, Intel and Apple Silicon. Both the artifact names and the update metadata must stay separate per architecture, otherwise the second upload overwrites the first. The artifact names already include the architecture. For the metadata, electron-builder only adds an architecture suffix to `latest-*.yml` on Linux, so on macOS both runners would otherwise write the same `latest-mac.yml` and break auto-updates for one architecture.
 
-The plan for that point is to build both macOS architectures in a single electron-builder run on the Apple Silicon runner (`--mac --x64 --arm64`) and remove the Intel runner from the CD matrix. Removing it is required, otherwise its uploads would collide with the cross built artifacts again. This works because `latest-mac.yml` is written once per electron-builder run, not once per artifact. A single run covering both architectures lists both builds in one file, and electron-updater picks the right one per architecture. The app code itself is architecture independent, electron-builder just packages it into the prebuilt Electron binary of each target architecture.
+The fix is a per-architecture publish channel in [electron-builder.yml](../electron-builder.yml): `mac.publish.channel` is set to `latest-${arch}`. electron-builder expands the macro per build, so the Intel runner writes `latest-x64-mac.yml`, the Apple Silicon runner writes `latest-arm64-mac.yml`, and each build bakes its own channel into `app-update.yml`. Both architectures keep building and testing natively on their own runner, and no client code is needed to pick the right channel.
 
-Two things to verify when doing the switch:
+A single universal binary (`--universal`) was considered instead. It avoids the metadata problem but roughly doubles the download size and requires every bundled executable, including git from dugite, to be universal. Building both architectures natively and separating their channels avoids both the size cost and any cross building.
 
-- dugite downloads its bundled git binaries for the current machine's architecture at install time. The cross built Intel app must contain the Intel git binaries, not the ARM ones, or it will not work on Intel Macs. dugite can be forced to download a different architecture with the `npm_config_arch` environment variable, which is how GitHub Desktop cross packages.
-- The cross built Intel artifact is never executed on Intel hardware by any runner, so test it manually on an Intel Mac once.
+Auto-update itself is not wired up yet. When it is, macOS auto-update will also need the app to be code signed, since `mac.notarize` is currently `false` and Squirrel.Mac refuses unsigned updates.
 
-A single universal binary (`--universal`) was considered instead. It avoids the metadata problem but roughly doubles the download size and requires every bundled executable, including git from dugite, to be universal. That is why two separate builds are the plan.
-
-The Intel runner in CI stays as long as GitHub offers it (planned until fall 2027) to keep verifying that install, checks and build work on Intel hardware. After that date cross building from the Apple Silicon runner is the only way to keep shipping Intel builds at all.
+GitHub's Intel macOS runners are planned to last until around fall 2027, and they are what builds the Intel artifact natively. After that date, shipping Intel builds would require cross building from the Apple Silicon runner, which is when the universal or single-run cross build trade-offs would need revisiting.
