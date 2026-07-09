@@ -31,7 +31,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       {
-        title: 'elek.io Client',
+        title: 'elek.io Desktop',
       },
     ],
   }),

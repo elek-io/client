@@ -12,7 +12,7 @@ export default defineConfig({
     plugins: [
       sentryVitePlugin({
         org: 'elek-io',
-        project: 'client',
+        project: 'desktop',
       }),
     ],
   },

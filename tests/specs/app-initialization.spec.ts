@@ -11,7 +11,7 @@ test.describe('App Initialization', () => {
     await expect(mainWindow.locator('#app')).toBeVisible();
 
     // Verify the title set by the root route
-    await expect(mainWindow).toHaveTitle('elek.io Client');
+    await expect(mainWindow).toHaveTitle('elek.io Desktop');
 
     // Verify the initial "/" to "/projects" redirect happened
     await verifyCurrentRouteHash(mainWindow, '#/projects');

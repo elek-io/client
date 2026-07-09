@@ -2,7 +2,7 @@
 
 ## Introduction
 
-elek.io Client is built on [Electron](https://www.electronjs.org/) to create a cross-platform desktop application with web technologies (TypeScript, React).
+elek.io Desktop is built on [Electron](https://www.electronjs.org/) to create a cross-platform desktop application with web technologies (TypeScript, React).
 
 > [!NOTE]
 > By choosing Electron, we keep the languages (everything is mainly TypeScript) used throughout our repositories to a minimum and the knowledge barrier for potential contributors low. Although applications build e.g. with [Tauri](https://tauri.app/) do have a smaller bundle size and memory footprint, adding another language (Rust) would increase complexity for contributors by alot.
@@ -31,7 +31,7 @@ Electron applications consist of three main layers: the Main Process, the Preloa
 
 ```
 
-While elek.io Client provides the user interface in a desktop application, all core functionalities related to file I/O, content handling, Git operations, local read-only API hosting and CLI usage are encapsulated in the separate [@elek-io/core](https://github.com/elek-io/core) library.
+While elek.io Desktop provides the user interface in a desktop application, all core functionalities related to file I/O, content handling, Git operations, local read-only API hosting and CLI usage are encapsulated in the separate [@elek-io/core](https://github.com/elek-io/core) library.
 
 @elek-io/core is used by the Main Process, since only it has access to the filesystem and Node.js APIs - the Renderer Process is sandboxed for security reasons.
 
@@ -169,7 +169,7 @@ When adding a new global provider, decide which level it belongs to. Anything th
 
 ### Security
 
-Handling user content that is distributed and could potentially be malicious within an app that has access to the file system, strict security is necessary. elek.io Client follows [Electron's security best practices](https://www.electronjs.org/docs/latest/tutorial/security) to create strong isolation boundaries.
+Handling user content that is distributed and could potentially be malicious within an app that has access to the file system, strict security is necessary. elek.io Desktop follows [Electron's security best practices](https://www.electronjs.org/docs/latest/tutorial/security) to create strong isolation boundaries.
 
 The Renderer Process can only communicate with the Main Process via a controlled IPC API exposed through the Preload Script. This ensures that untrusted code running in the Renderer Process (e.g., third-party libraries or user content) cannot directly access Node.js APIs or the filesystem.
 
@@ -191,7 +191,7 @@ A Content Security Policy is enforced via a `<meta>` tag in the `src/renderer/in
 
 #### External Content Restrictions
 
-Some links to elek.io domains and loading of content are allowed in elek.io Client. To prevent abuse and potential security risks, the following restrictions are in place:
+Some links to elek.io domains and loading of content are allowed in elek.io Desktop. To prevent abuse and potential security risks, the following restrictions are in place:
 
 **URL Whitelisting**:
 
@@ -205,7 +205,7 @@ All external requests (e.g., when a user clicks a link inside the renderer or an
 
 See `allowedHostnamesToLoadExternal` in [`src/main/index.ts:41-47`](/src/main/index.ts) for the implementation.
 
-Links to whitelisted external hostnames are opened in the default system browser, not within an elek.io Client renderer window.
+Links to whitelisted external hostnames are opened in the default system browser, not within an elek.io Desktop renderer window.
 
 A separate whitelist, `allowedHostnamesToLoadInternal`, controls in-window navigation: a `will-navigate` handler blocks any navigation whose origin is not on it. This list is empty in production and only holds the Vite dev server URL in development, so navigating the renderer window away from the app is effectively disabled in production. Note the external list is matched against the URL's `hostname`, while the internal list is matched against its `origin`.
 

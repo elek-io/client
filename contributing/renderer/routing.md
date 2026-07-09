@@ -2,7 +2,7 @@
 
 ## Overview
 
-elek.io Client uses [TanStack Router](https://tanstack.com/router/latest) with file-based routing. Routes live in [`src/renderer/routes/`](../../src/renderer/routes/) and the route tree is auto-generated into `routeTree.gen.ts` by the TanStack Router plugin (configured in `electron.vite.config.ts`) - never edit that file by hand.
+elek.io Desktop uses [TanStack Router](https://tanstack.com/router/latest) with file-based routing. Routes live in [`src/renderer/routes/`](../../src/renderer/routes/) and the route tree is auto-generated into `routeTree.gen.ts` by the TanStack Router plugin (configured in `electron.vite.config.ts`) - never edit that file by hand.
 
 **Key settings:**
 

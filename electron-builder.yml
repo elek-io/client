@@ -1,5 +1,5 @@
-appId: io.elek.client
-productName: 'elek.io Client'
+appId: io.elek.desktop
+productName: 'elek.io Desktop'
 directories:
   buildResources: build
 files:
@@ -18,19 +18,22 @@ files:
   - '!{AGENTS.md,CLAUDE.md,components.json,eslint.config.mjs,.node-version}'
   - '!{playwright.config.ts,pnpm-workspace.yaml,.prettierrc.json}'
 extraMetadata:
-  name: 'elek-io-client' # Overwrites package.json name, since it cannot handle special characters
+  name: 'elek-io-desktop' # Overwrites package.json name, since it cannot handle special characters
 asarUnpack:
   - resources/**
 win:
-  executableName: 'elek.io Client'
+  executableName: 'elek.io Desktop'
 nsis:
-  artifactName: elek-io-client-${version}-setup.${ext}
+  # No version in the name so github.com/.../releases/latest/download/<file> stays
+  # a stable link. Trade-off: Windows differential updates fall back to a full
+  # download, since electron-updater derives the old blockmap URL by version.
+  artifactName: elek-io-desktop-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
   # Include the arch so Intel and ARM artifacts do not overwrite each other in the shared release
-  artifactName: elek-io-client-${version}-${arch}.${ext}
+  artifactName: elek-io-desktop-${arch}.${ext}
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -48,7 +51,7 @@ mac:
     releaseType: draft
     channel: latest-${arch}
 dmg:
-  artifactName: elek-io-client-${version}-${arch}.${ext}
+  artifactName: elek-io-desktop-${arch}.${ext}
 linux:
   # All four targets are auto-updatable via electron-updater (AppImage, deb,
   # rpm, pacman), so each one keeps in-app updates working. snap is
@@ -60,8 +63,16 @@ linux:
     - rpm
     - pacman
   category: Office
+# Linux builds are x64 only (see the CI matrix), so version-less and arch-less
+# names are unambiguous and keep the latest-download links stable.
 appImage:
-  artifactName: elek-io-client-${version}.${ext}
+  artifactName: elek-io-desktop.${ext}
+deb:
+  artifactName: elek-io-desktop.${ext}
+rpm:
+  artifactName: elek-io-desktop.${ext}
+pacman:
+  artifactName: elek-io-desktop.${ext}
 npmRebuild: false
 # The CD workflow pre-creates one draft GitHub Release per version. Each runner
 # uploads its installers and update metadata into that shared draft, which
