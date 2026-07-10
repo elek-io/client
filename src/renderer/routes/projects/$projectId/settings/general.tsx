@@ -101,6 +101,11 @@ function ProjectSettingsGeneralPage(): ReactElement {
   };
 
   const onDelete: SubmitHandler<DeleteProjectProps> = async (project) => {
+    // TODO: no force fallback. A local-only project has no origin, so Core
+    // rejects with 412 (or 409 when commits are unpushed) and it can never be
+    // deleted from the UI. On failure, open a force-delete confirmation modal
+    // that retries with force true. Then add test P0-11 in
+    // contributing/e2e-test-backlog.md.
     await deleteProject({ id: project.id });
     await router.navigate({ to: '/projects' });
   };
