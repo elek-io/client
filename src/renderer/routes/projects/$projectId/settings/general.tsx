@@ -2,8 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Trash } from 'lucide-react';
-import { type ReactElement, useEffect } from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { ProjectForm } from '@renderer/components/forms/project-form';
 import { Page } from '@renderer/components/page';
@@ -23,11 +24,7 @@ import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { queryOptions } from '@renderer/queries';
 
-import {
-  type DeleteProjectProps,
-  type UpdateProjectProps,
-  updateProjectSchema,
-} from '@elek-io/core';
+import { type UpdateProjectProps, updateProjectSchema } from '@elek-io/core';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsGeneralPage,
@@ -70,8 +67,19 @@ function ProjectSettingsGeneralPage(): ReactElement {
   const { mutateAsync: updateProject, isPending: isUpdatingProject } =
     useMutation(queryOptions.projects.update);
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isForceDeleteDialogOpen, setIsForceDeleteDialogOpen] = useState(false);
+
   const { mutateAsync: deleteProject, isPending: isDeletingProject } =
-    useMutation(queryOptions.projects.delete);
+    useMutation({
+      ...queryOptions.projects.delete,
+      // We handle the guarded delete in place with the force-delete dialog below
+      // instead of showing the root error boundary.
+      throwOnError: false,
+      onError: () => {
+        // Prevents the error toast from showing up too
+      },
+    });
 
   function Description(): ReactElement {
     return <>Here you will be able to tweak this project to your liking</>;
@@ -100,14 +108,26 @@ function ProjectSettingsGeneralPage(): ReactElement {
     await updateProject(project);
   };
 
-  const onDelete: SubmitHandler<DeleteProjectProps> = async (project) => {
-    // TODO: no force fallback. A local-only project has no origin, so Core
-    // rejects with 412 (or 409 when commits are unpushed) and it can never be
-    // deleted from the UI. On failure, open a force-delete confirmation modal
-    // that retries with force true. Then add test P0-11 in
-    // contributing/e2e-test-backlog.md.
-    await deleteProject({ id: project.id });
-    await router.navigate({ to: '/projects' });
+  const onDelete = async (): Promise<void> => {
+    try {
+      await deleteProject({ id: projectId });
+      await router.navigate({ to: '/projects' });
+    } catch {
+      // Core guards deletion that would destroy unsynchronized work (a
+      // local-only Project, or one with unpushed commits). Offer to force it.
+      setIsDeleteDialogOpen(false);
+      setIsForceDeleteDialogOpen(true);
+    }
+  };
+
+  const onForceDelete = async (): Promise<void> => {
+    try {
+      await deleteProject({ id: projectId, force: true });
+      await router.navigate({ to: '/projects' });
+    } catch {
+      setIsForceDeleteDialogOpen(false);
+      toast.error('Could not delete this Project');
+    }
   };
 
   return (
@@ -128,37 +148,72 @@ function ProjectSettingsGeneralPage(): ReactElement {
               device your Project is stored at, you will remove it permanently -
               there is no going back. Please be certain."
           actions={
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button Icon={Trash} variant="destructive">
-                  Delete Project
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Are you absolutely sure?</DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone if your Project is not
-                    replicated somewhere else than this device.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="secondary">
-                      No, I&apos;ve changed my mind
-                    </Button>
-                  </DialogClose>
-                  <Button
-                    Icon={Trash}
-                    variant="destructive"
-                    isLoading={isDeletingProject}
-                    onClick={() => onDelete({ id: projectId })}
-                  >
-                    Yes, delete this Project
+            <>
+              <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button Icon={Trash} variant="destructive">
+                    Delete Project
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Remove this Project?</DialogTitle>
+                    <DialogDescription>
+                      You are about to delete the Project from this device.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="secondary">
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                    <Button
+                      Icon={Trash}
+                      variant="destructive"
+                      isLoading={isDeletingProject}
+                      onClick={() => void onDelete()}
+                    >
+                      Delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog
+                open={isForceDeleteDialogOpen}
+                onOpenChange={setIsForceDeleteDialogOpen}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Force delete this Project?</DialogTitle>
+                    <DialogDescription>
+                      This Project is not synchronized to a remote, or it has
+                      changes that were never pushed. Deleting it now removes
+                      those changes permanently, with no way to recover them.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type="button" variant="secondary">
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                    <Button
+                      Icon={Trash}
+                      variant="destructive"
+                      isLoading={isDeletingProject}
+                      onClick={() => void onForceDelete()}
+                    >
+                      Yes, delete
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </>
           }
         />
       </ProjectForm>

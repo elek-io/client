@@ -26,7 +26,7 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 
 - **Launch race, fixed in the app (not a test concern).** The main process used to register its `window.ipc` handlers only after loading the renderer (`onAppReady` in `src/main/index.ts`), so a freshly opened window could run a `ViaIpc` seed before the handlers existed and flake with "No handler registered". `onAppReady` now creates the window, registers the handlers, then loads the renderer, which closed the race for every seed-first spec (and for real launches). See the Application Lifecycle section in [`overview.md`](./overview.md). No test-side readiness wait is needed.
 - The per-test data dir is computed inside the fixture and never exported. Surface it (`dataDir(testInfo)` / `readDataFile` / `listDataDir`) so specs can assert Core's storage layout.
-- **Console escape hatch is a prerequisite for _every_ UI-driven negative-path spec, not just the error-boundary case.** The `mainWindow` fixture asserts zero console errors/warnings on pass (`electronApp.ts:150`). Because failed mutations hit the root error boundary, React logs the caught error to `console.error` and the app logs via `core:logger:error`. Add an opt-in expected-console allow-list before writing P0-11, P1-13, P2-09, or any UI-driven failing create/update/delete. IPC-level negatives that `await` a rejected promise inside `page.evaluate` (P0-07, P0-08, P1-04, P1-05, P1-06, P1-09, P1-10, P2-03, P2-10) do **not** trip this and need no escape hatch.
+- **Console escape hatch is a prerequisite for _every_ UI-driven negative-path spec, not just the error-boundary case.** The `mainWindow` fixture asserts zero console errors/warnings on pass (`electronApp.ts:150`). Because failed mutations hit the root error boundary, React logs the caught error to `console.error` and the app logs via `core:logger:error`. Add an opt-in expected-console allow-list before writing P1-13, P2-09, or any UI-driven failing create/update/delete that reaches the error boundary. A flow that handles the error in place instead (like P0-11's force-delete modal, which overrides `throwOnError: false` and suppresses the toast) never reaches the boundary and needs no hatch. IPC-level negatives that `await` a rejected promise inside `page.evaluate` (P0-08, P1-04, P1-05, P1-06, P1-09, P1-10, P2-03, P2-10) do **not** trip this either.
 - **Native `electron:dialog:*` modals must be stubbed in the MAIN process,** not the renderer. `contextBridge.exposeInMainWorld` freezes the exposed `window.ipc`, and the dialog calls forward to Electron's `dialog.showOpenDialog/showSaveDialog` in main. The stub is applied with `electronApp.evaluate(({ dialog }) => …)`. This affects every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
 - **A controllable git origin (`setupRemote`)** — a local bare repo — is needed for synchronize/clone/getChanges and the two `project.delete` remote guards.
 
@@ -34,43 +34,43 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 
 Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /projects` redirect, plus the implicit per-pass checks (zero console errors/warnings; axe scan runs but does not assert). Everything marked "gap" is uncovered.
 
-| IPC channel                                                                  | Existing coverage       | Backlog IDs                                         |
-| ---------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------- |
-| projects:create                                                              | gap                     | P0-01, P0-02, P0-09, P2-03, P3-01                   |
-| projects:list / count                                                        | gap                     | P0-01, P1-17, P1-19, P3-07                          |
-| projects:read                                                                | gap                     | P0-02, P2-06                                        |
-| projects:history                                                             | gap                     | P0-09, P2-06, P2-07                                 |
-| projects:update                                                              | gap                     | P1-01, P2-04                                        |
-| projects:delete                                                              | gap                     | P0-07, P0-08, P0-11 (UI, deferred), P0-10(indirect) |
-| projects:getChanges                                                          | gap                     | P1-20, P2-05, P2-13                                 |
-| projects:setRemoteOriginUrl                                                  | gap                     | P2-05, P1-20, P2-13                                 |
-| projects:synchronize                                                         | gap                     | P1-20, P1-21, P2-13                                 |
-| projects:clone                                                               | gap                     | P2-12                                               |
-| collections:list                                                             | gap                     | P0-03, P1-18, P3-07                                 |
-| collections:create                                                           | gap                     | P0-03                                               |
-| collections:read                                                             | gap                     | P0-03, P0-06                                        |
-| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11            |
-| collections:delete                                                           | gap                     | P0-06                                               |
-| entries:list                                                                 | gap                     | P0-04, P1-18, P3-07                                 |
-| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05, P3-06(ref), P2-10       |
-| entries:read                                                                 | gap                     | P0-05, P1-08                                        |
-| entries:update                                                               | gap                     | P1-07, P1-08                                        |
-| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                               |
-| assets:list                                                                  | gap                     | P1-12, P3-07                                        |
-| assets:create                                                                | gap                     | P1-12                                               |
-| assets:read                                                                  | gap                     | P1-12, P1-16, P3-08                                 |
-| assets:update                                                                | gap                     | P1-15, P3-06                                        |
-| assets:delete                                                                | gap                     | P1-13, P1-14                                        |
-| assets:save                                                                  | gap                     | P1-16                                               |
-| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)                |
-| api:start / stop / isRunning                                                 | gap                     | P2-11                                               |
-| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)            |
-| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12, P1-15, P1-16, P3-06, P3-08                   |
-| i18n / date-fns locale rendering                                             | gap                     | P2-14                                               |
-| App launch / title / `/`→`/projects`                                         | **covered**             | —                                                   |
-| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                               |
-| Root not-found + error boundary                                              | gap                     | P2-09                                               |
-| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                               |
+| IPC channel                                                                  | Existing coverage       | Backlog IDs                                   |
+| ---------------------------------------------------------------------------- | ----------------------- | --------------------------------------------- |
+| projects:create                                                              | gap                     | P0-01, P0-02, P0-09, P2-03, P3-01             |
+| projects:list / count                                                        | gap                     | P0-01, P1-17, P1-19, P3-07                    |
+| projects:read                                                                | gap                     | P0-02, P2-06                                  |
+| projects:history                                                             | gap                     | P0-09, P2-06, P2-07                           |
+| projects:update                                                              | gap                     | P1-01, P2-04                                  |
+| projects:delete                                                              | gap                     | P0-11 (done), P0-08, P0-10(indirect)          |
+| projects:getChanges                                                          | gap                     | P1-20, P2-05, P2-13                           |
+| projects:setRemoteOriginUrl                                                  | gap                     | P2-05, P1-20, P2-13                           |
+| projects:synchronize                                                         | gap                     | P1-20, P1-21, P2-13                           |
+| projects:clone                                                               | gap                     | P2-12                                         |
+| collections:list                                                             | gap                     | P0-03, P1-18, P3-07                           |
+| collections:create                                                           | gap                     | P0-03                                         |
+| collections:read                                                             | gap                     | P0-03, P0-06                                  |
+| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11      |
+| collections:delete                                                           | gap                     | P0-06                                         |
+| entries:list                                                                 | gap                     | P0-04, P1-18, P3-07                           |
+| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05, P3-06(ref), P2-10 |
+| entries:read                                                                 | gap                     | P0-05, P1-08                                  |
+| entries:update                                                               | gap                     | P1-07, P1-08                                  |
+| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                         |
+| assets:list                                                                  | gap                     | P1-12, P3-07                                  |
+| assets:create                                                                | gap                     | P1-12                                         |
+| assets:read                                                                  | gap                     | P1-12, P1-16, P3-08                           |
+| assets:update                                                                | gap                     | P1-15, P3-06                                  |
+| assets:delete                                                                | gap                     | P1-13, P1-14                                  |
+| assets:save                                                                  | gap                     | P1-16                                         |
+| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)          |
+| api:start / stop / isRunning                                                 | gap                     | P2-11                                         |
+| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)      |
+| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12, P1-15, P1-16, P3-06, P3-08             |
+| i18n / date-fns locale rendering                                             | gap                     | P2-14                                         |
+| App launch / title / `/`→`/projects`                                         | **covered**             | —                                             |
+| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                         |
+| Root not-found + error boundary                                              | gap                     | P2-09                                         |
+| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                         |
 
 ## 3. Prioritized backlog
 
@@ -114,10 +114,8 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `createCollectionViaIpc`, `createEntryViaIpc`, `stringValue`, `confirmDialog`, `navigateToCollectionSettings`.
   Deps: P0-04.
 
-- **P0-07 `project.delete` no-origin guard blocks a local-only project (IPC).**
-  Steps: `seedProject` (no remote) → `ipc('core.projects.delete', { id })` (no force) rejects `PreconditionFailed(412)` and the folder still exists → retry with `{ force: true }` removes the folder and decrements the list.
-  Helpers: `seedProject`, `ipc`, `dataDir`.
-  Deps: P0-01. No remote needed — cheapest high-value data-loss test.
+- **P0-07 — DROPPED. An IPC-level delete-guard test duplicates Core.**
+  A first version asserted that `core.projects.delete` rejects without `force`. That is Core's own guard logic, covered by Core's own tests, so under the verification doctrine it does not belong in the desktop suite. The desktop-relevant behavior (the app catches that rejection and offers a force delete rather than crashing) is covered by **P0-11**. The bare throw / no-throw IPC observation is only appropriate for a guard with no UI path; project delete has one, the force-delete modal.
 
 - **P0-08 `project.delete` unpushed-ahead guard blocks a project with local-only commits (IPC).** _(added — distinct from P0-07)_
   Steps: `setupRemote` → seed project → set remote origin → make a local change so `work` is ahead of the remote → `ipc('core.projects.delete', { id })` (no force) rejects `Conflict(409)` and the folder still exists → retry with `{ force: true }` deletes.
@@ -137,12 +135,11 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `relaunchApp` (new infra — see section 4; the default fixture computes a fresh per-test dir, so the helper must reuse the recorded dir).
   Deps: P0-05, `relaunchApp`.
 
-- **P0-11 UI force-delete fallback modal — DEFERRED, blocked on the modal (do not implement yet).**
-  Intended behavior: `settings/general` Delete calls `deleteProject({ id })`; when Core rejects with `PreconditionFailed(412)` (no origin) or `Conflict(409)` (unpushed commits), Desktop opens a force-delete confirmation modal, and confirming re-issues the delete with `{ force: true }`. Core already enforces these guards; only the Desktop modal is missing (see section 5).
-  Steps (once built): `setUser` + `seedProject` (local-only) → settings/general → Delete → confirm the first dialog → assert the force-delete modal appears → confirm it.
-  Assert: the plain delete surfaces the modal (not the root `ErrorComponent`); confirming force removes `projects/{id}` from disk and navigates to `/projects`; dismissing the modal leaves the project intact.
-  Helpers: `setUser`, `seedProject`, `confirmDialog`, `expectToast`, `dataDir`, console escape hatch (the caught 412/409 may still log).
-  Deps: P0-07; **blocked on the Desktop force-delete modal in `general.tsx`**. Write only after that modal ships.
+- **P0-11 Force-deletes a local-only project through the fallback modal. — DONE (passing, `tests/specs/projects.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` (local-only) → navigate to settings/general → Delete Project → confirm the first dialog → the force-delete modal appears → confirm force.
+  Assert (desktop-only): the guarded delete is handled in place (the force-delete modal appears rather than the root error boundary), and confirming force navigates to `/projects` where the empty state shows. Core's guard logic and file removal are Core's own tests.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `navigate`, `confirmDialog`.
+  Deps: P0-01. The Desktop force-delete modal now exists in `general.tsx`: the delete mutation overrides `throwOnError: false` and suppresses the wrapper toast, so the guard rejection is caught and turned into the modal. No console escape hatch needed.
 
 ### P1 — rest of CRUD, content integrity, assets, sync
 
@@ -431,13 +428,13 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 Build these before their first consumer; ordered by dependency (each later helper tends to use the earlier ones).
 
-**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `fillProjectForm`, `createProject`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `fillEntryForm`, `navigateToEntryCreate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), and `tests/global.d.ts`. Specs **P0-01 through P0-06** are written, migrated to the doctrine, and passing. The helpers below without a "(built)" tag are still to add.
+**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `fillProjectForm`, `createProject`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `fillEntryForm`, `navigateToEntryCreate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), and `tests/global.d.ts`. Specs **P0-01 through P0-06 and P0-11** are written, migrated to the doctrine, and passing (P0-07's IPC-level guard test was dropped as a Core duplicate). The helpers below without a "(built)" tag are still to add.
 
 **Naming:** the suite drives the UI by default, so UI helpers are unmarked and IPC helpers are suffixed `ViaIpc` (see [`testing.md`](./testing.md#writing-tests)). Pending entries below still use pre-convention names like `seedProject`; those become `createProjectViaIpc` and similar as each is migrated.
 
 - **Typed IPC wrappers (built)** — thin helpers over the globally-typed `window.ipc`, each a small `page.evaluate` call, used to **arrange** state (`createProjectViaIpc`, `setUserViaIpc`). A single generic `ipc(page, path, ...args)` was intentionally **not** built: a stringly-typed dotted path cannot be typed without an `as any` cast, which the repo forbids. Per-operation wrappers stay fully type-safe and cast-free, mirroring the app's own `queries/options`. Because specs type-check under the Node tsconfig (no DOM lib), `window` is declared once in `tests/global.d.ts`; its `ipc` shape comes from the global augmentation in `src/index.d.ts`.
 - **Read-back / disk helpers — dropped (not built).** An earlier plan had `dataDir` / `readDataFile` / `listProjects` / `projectHistory` and similar to assert Core's on-disk files and commits. The verification doctrine (section 1) removes those assertions from the desktop suite, so these helpers are not needed. Observe results through the UI (or a throw / no-throw on a seed/guard call) instead.
-- **Console escape hatch (infra)** — extend the `mainWindow` fixture with an opt-in expected-console allow-list (or a per-spec teardown-skip). A prerequisite for **every** UI-driven negative-path spec (failed mutations hit the root error boundary, which logs via `console.error` + `core:logger:error`): P0-11 (the deferred UI force-delete flow), P1-13, P2-09, and any UI-driven failing create/update/delete. IPC-level negatives that await the rejected promise in `page.evaluate` are unaffected.
+- **Console escape hatch (infra)** — extend the `mainWindow` fixture with an opt-in expected-console allow-list (or a per-spec teardown-skip). A prerequisite for UI-driven negative-path specs that reach the root error boundary (which logs via `console.error` + `core:logger:error`): P1-13, P2-09, and any UI-driven failing create/update/delete. Flows that handle the error in place (P0-11) never reach the boundary and need no hatch. IPC-level negatives that await the rejected promise in `page.evaluate` are unaffected.
 - **`setUserViaIpc(page, overrides?)` (built)** — `core:user:set` precondition (git author identity); returns the User. Narrowed to the local-User branch of the `SetUserProps` union. Required before any write.
 - **`createProjectViaIpc(page, overrides?)` (built)** — `core:projects:create` with sensible defaults, returns the Project. The IPC-seed counterpart of `createProject`.
 - **`createProject(page, props)` + `fillProjectForm` (built)** — click through from the Projects list, fill name + description, submit, and return the new projectId from the redirect URL. A `selectProjectLanguage` helper for the custom language Popover/Command widget is still to add (the default en/en is used until then).
@@ -458,11 +455,11 @@ Build these before their first consumer; ordered by dependency (each later helpe
 
 ## 5. Known constraints and things deliberately out of scope
 
-- **Error contract and test-sequencing decision.** Every mutation built through `customMutationOptions` gets `throwOnError: true` (`util.ts:72`). On failure `onError` shows a `toast.error` and logs via `core:logger:error` (`util.ts:122`), and independently `throwOnError` re-throws in the render phase. Because only `__root.tsx` defines an `errorComponent`, that re-throw replaces the whole view with the root error screen (whose only exits are Back-to-Projects and Reload). So there is no "toast shows and the source route stays" state today. **Product decision:** this full-view takeover is a reasonable v1 catch-all but the wrong response to expected, recoverable Core errors (the 400/409/412 guards raised by normal user actions). Handling those in place (stay on the page plus toast, inline errors, or a follow-up modal) is a separate track, and the force-delete modal (P0-11) is its first instance. **Sequencing (decided): decouple.** Do not pin the boundary takeover for expected mutation errors. Happy-path specs and IPC-level negatives (which assert Core's rejection directly and are independent of UI presentation) proceed now. UI-driven mutation-negative specs that assert the root error screen are deferred until the error-UX track lands: currently **P0-11** and the **UI half of P1-13**. Route-load and not-found boundary behavior (**P2-09**) is not part of this change and stays as-is.
+- **Error contract and test-sequencing decision.** Every mutation built through `customMutationOptions` gets `throwOnError: true` (`util.ts:72`). On failure `onError` shows a `toast.error` and logs via `core:logger:error` (`util.ts:122`), and independently `throwOnError` re-throws in the render phase. Because only `__root.tsx` defines an `errorComponent`, that re-throw replaces the whole view with the root error screen (whose only exits are Back-to-Projects and Reload). So there is no "toast shows and the source route stays" state today. **Product decision:** this full-view takeover is a reasonable v1 catch-all but the wrong response to expected, recoverable Core errors (the 400/409/412 guards raised by normal user actions). Handling those in place (stay on the page plus toast, inline errors, or a follow-up modal) is a separate track, and the force-delete modal (P0-11, now landed) is its first instance. **Sequencing (decided): decouple.** Do not pin the boundary takeover for expected mutation errors. Happy-path specs and IPC-level negatives proceed now. UI-driven mutation-negative specs that would assert the root error screen wait until the error-UX track handles their case: currently the **UI half of P1-13** (P0-11 has landed, using a per-call `throwOnError: false` override to catch the rejection and show a dialog instead of the boundary). Route-load and not-found boundary behavior (**P2-09**) is not part of this change and stays as-is.
 - **Strict console assertion.** The `mainWindow` fixture fails on any console error/warning on a passing test. UI-driven negative-path specs must use the console escape hatch, or they are unwritable. This is scoped in section 4 as a build-first prerequisite.
 - **Native file-picker dialogs.** `electron:dialog:*` cannot be driven by Playwright and cannot be stubbed from the renderer (frozen contextBridge, handled in main). All asset flows depend on the main-process `stubFileDialog`.
 - **git-lfs binary transfer over a plain remote.** A vanilla bare/`file://` remote carries LFS **pointers** but not LFS **objects** without an LFS endpoint or a configured standalone transfer agent. Assertions that an LFS binary round-trips (P1-20) or that binaries are materialized after clone (P2-12) are **out of scope** unless Core is confirmed to configure a `file://`/standalone LFS transfer. The non-LFS commit/metadata round-trip is fully in scope.
 - **Local API reachability.** The local API runs in the main process with localhost-only CORS; probe it from the Node runner side via `APIRequestContext`, never from renderer `fetch`.
 - **Renderer reload vs process restart.** `reloadWindow` (`page.reload()`) reloads only the renderer; use `relaunchApp` (close + relaunch against the same `ELEK_IO_DATA_DIR`) for true cross-restart persistence (P0-10).
-- **Known bug, fix planned — `general.tsx` UI delete has no force fallback (test deferred, see P0-11).** `general.tsx` `onDelete` calls `deleteProject({ id })` with **no `force`**, then navigates. A freshly created local-only project has no remote, so the call always hits Core's no-origin `PreconditionFailed(412)` guard (and a project with unpushed commits hits the `Conflict(409)` guard), so it can **never** be deleted through the UI today — the navigate is unreachable. **Decision:** when the plain delete is rejected, Desktop will open a force-delete confirmation modal that re-issues the delete with `{ force: true }` on confirm. Core already enforces the guards; only the Desktop modal is missing. Do **not** write the UI delete test (P0-11) until that modal exists — until then there is no correct passing behavior to assert. The IPC-level guard tests (P0-07, P0-08) are independent of the modal and can be written now.
+- **Fixed — `general.tsx` UI delete now has a force fallback (P0-11).** The delete used to call `deleteProject({ id })` with **no `force`**; a local-only project always hit Core's guard (`412`/`409`) and, via the global `throwOnError: true`, detonated the root error boundary, so it could never be deleted through the UI. The delete mutation now overrides `throwOnError: false` at the call site and suppresses the wrapper's error toast, so the rejection is caught and opens a force-delete confirmation dialog that re-issues the delete with `{ force: true }`. This is the first landed instance of the in-place error-UX handling described above.
 - **No unit runner.** There is no non-E2E path to exercise Core in isolation; all Core behavior is reached through the running packaged app via `window.ipc`.
