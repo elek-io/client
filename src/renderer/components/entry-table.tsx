@@ -61,7 +61,8 @@ export function EntryTable({
   entries: PaginatedList<Entry>;
 }): React.JSX.Element {
   const router = useRouter();
-  const { formatDatetime, translateContent } = useProject();
+  const { formatDatetime, translateContent, formatTemporalFieldValue } =
+    useProject();
   const [filter, setFilter] = useState('');
   const [pagination, setPagination] = useState({
     pageIndex: 0, // initial page index
@@ -144,11 +145,16 @@ export function EntryTable({
           row[slug] =
             tree === null || tree === undefined ? undefined : extractText(tree);
         } else {
-          // Content is a per-language record for translatable values; index it by
-          // the default language.
-          row[slug] = (value.content as Record<string, unknown>)[
+          // Content is a per-language record; index it by the default language.
+          // Date, datetime and time values are formatted in the user's locale,
+          // every other type is shown as stored.
+          const content = (value.content as Record<string, unknown>)[
             project.settings.language.default
           ];
+          row[slug] = formatTemporalFieldValue({
+            value: content,
+            fieldType: fieldTypeBySlug.get(slug),
+          });
         }
       }
 
