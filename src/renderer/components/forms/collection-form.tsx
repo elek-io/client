@@ -182,11 +182,11 @@ export function CollectionForm<
                 name={`name.singular.${project.settings.language.default}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel isRequired>Entry name (Singluar)</FormLabel>
+                    <FormLabel isRequired>Entry name (Singular)</FormLabel>
                     <FormControl>
                       <TranslatableFormInputField
-                        title="Entry name (Singluar)"
-                        description='The name of each Entry inside your new Collection. Choose a short name in singluar - e.g. "Blogpost".'
+                        title="Entry name (Singular)"
+                        description='The name of each Entry inside your new Collection. Choose a short name in singular - e.g. "Blogpost".'
                         type="text"
                         field={field}
                         errors={collectionForm.formState.errors}
@@ -195,7 +195,7 @@ export function CollectionForm<
                     </FormControl>
                     <FormDescription>
                       The name of each Entry inside your new Collection. Choose
-                      a short name in singluar - e.g. &quot;Blogpost&quot;.
+                      a short name in singular - e.g. &quot;Blogpost&quot;.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

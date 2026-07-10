@@ -113,7 +113,7 @@ export async function fillCollectionForm(
     .getByLabel('Collection name (Plural)', { exact: true })
     .fill(props.namePlural);
   await page
-    .getByLabel('Entry name (Singluar)', { exact: true })
+    .getByLabel('Entry name (Singular)', { exact: true })
     .fill(props.nameSingular);
   await page.getByLabel('Description', { exact: true }).fill(props.description);
   await page

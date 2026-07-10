@@ -54,18 +54,18 @@ test.describe('Entries', () => {
     const collection = await createCollectionViaIpc(mainWindow, {
       projectId: project.id,
     });
+    // Land on the (empty) Entry list first, then seed over IPC, which does not
+    // touch the renderer's query cache. The reload is what surfaces the Entry,
+    // proving the renderer reads Core's persisted state on a fresh load rather
+    // than an optimistic cache entry.
+    await navigateToCollection(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
     await createEntryViaIpc(mainWindow, {
       projectId: project.id,
       collectionId: collection.id,
       values: { title: stringValue({ en: 'Persisted entry' }) },
-    });
-
-    // The Entry was seeded over IPC, which does not touch the renderer's query
-    // cache, so a fresh load is what surfaces it. This proves the renderer reads
-    // Core's persisted state rather than showing an optimistic cache entry.
-    await navigateToCollection(mainWindow, {
-      projectId: project.id,
-      collectionId: collection.id,
     });
     await reloadWindow(mainWindow);
 
