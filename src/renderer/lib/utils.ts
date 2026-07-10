@@ -1,31 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
 import { type Locale } from 'date-fns';
-import {
-  bg,
-  cs,
-  da,
-  de,
-  el,
-  enUS,
-  es,
-  et,
-  fi,
-  fr,
-  hu,
-  it,
-  ja,
-  lt,
-  lv,
-  nl,
-  pl,
-  pt,
-  ro,
-  ru,
-  sk,
-  sl,
-  sv,
-  zhCN,
-} from 'date-fns/locale';
 import type {
   ForwardRefExoticComponent,
   PropsWithoutRef,
@@ -59,36 +33,57 @@ export type Icon = ForwardRefExoticComponent<
 >;
 
 /**
- * Map between the imported locales and our supported locales
+ * On-demand date-fns Locale loaders, one per Core language.
  *
- * We use english (US) and Chinese (Simplified)
+ * Each entry is a dynamic import so the locales are code split out of the
+ * startup chunk and only the active language is fetched at runtime, instead of
+ * bundling all of them. Because the type is Record<SupportedLanguage, ...> this
+ * stays the single place that must stay in sync with Core: add a language and
+ * it fails to type-check until a loader is added here. en and zh use their
+ * regional date-fns variants (en-US, zh-CN).
  */
-export const importedLocales: Record<SupportedLanguage, Locale> = {
-  bg,
-  cs,
-  da,
-  de,
-  el,
-  en: enUS,
-  es,
-  et,
-  fi,
-  fr,
-  hu,
-  it,
-  ja,
-  lt,
-  lv,
-  nl,
-  pl,
-  pt,
-  ro,
-  ru,
-  sk,
-  sl,
-  sv,
-  zh: zhCN,
+const localeLoaders: Record<SupportedLanguage, () => Promise<Locale>> = {
+  bg: async () => (await import('date-fns/locale/bg')).bg,
+  cs: async () => (await import('date-fns/locale/cs')).cs,
+  da: async () => (await import('date-fns/locale/da')).da,
+  de: async () => (await import('date-fns/locale/de')).de,
+  el: async () => (await import('date-fns/locale/el')).el,
+  en: async () => (await import('date-fns/locale/en-US')).enUS,
+  es: async () => (await import('date-fns/locale/es')).es,
+  et: async () => (await import('date-fns/locale/et')).et,
+  fi: async () => (await import('date-fns/locale/fi')).fi,
+  fr: async () => (await import('date-fns/locale/fr')).fr,
+  hu: async () => (await import('date-fns/locale/hu')).hu,
+  it: async () => (await import('date-fns/locale/it')).it,
+  ja: async () => (await import('date-fns/locale/ja')).ja,
+  lt: async () => (await import('date-fns/locale/lt')).lt,
+  lv: async () => (await import('date-fns/locale/lv')).lv,
+  nl: async () => (await import('date-fns/locale/nl')).nl,
+  pl: async () => (await import('date-fns/locale/pl')).pl,
+  pt: async () => (await import('date-fns/locale/pt')).pt,
+  ro: async () => (await import('date-fns/locale/ro')).ro,
+  ru: async () => (await import('date-fns/locale/ru')).ru,
+  sk: async () => (await import('date-fns/locale/sk')).sk,
+  sl: async () => (await import('date-fns/locale/sl')).sl,
+  sv: async () => (await import('date-fns/locale/sv')).sv,
+  zh: async () => (await import('date-fns/locale/zh-CN')).zhCN,
 };
+
+const loadedLocales = new Map<SupportedLanguage, Locale>();
+
+/**
+ * Loads and caches the date-fns Locale for the given Core language, so the
+ * active language is fetched once and reused.
+ */
+export async function loadLocale(language: SupportedLanguage): Promise<Locale> {
+  const cached = loadedLocales.get(language);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const locale = await localeLoaders[language]();
+  loadedLocales.set(language, locale);
+  return locale;
+}
 
 /**
  * Formats given number of bytes into a human readable format

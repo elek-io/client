@@ -6,11 +6,13 @@ elek.io is multi-language in two ways. The application UI is shown in the curren
 
 The set of language codes (`SupportedLanguage`) comes from `@elek-io/core`. The client maps each code to formatting and rendering behavior.
 
-## Locales for dates (`importedLocales`)
+## Locales for dates (`loadLocale`)
 
-[`lib/utils.ts`](../../src/renderer/lib/utils.ts) holds `importedLocales`, a `Record<SupportedLanguage, Locale>` that maps every Core language code to a [date-fns](https://date-fns.org/) `Locale`. Two codes are remapped to a regional variant: `en` -> `enUS` and `zh` -> `zhCN`.
+[`lib/utils.ts`](../../src/renderer/lib/utils.ts) holds `localeLoaders`, a `Record<SupportedLanguage, () => Promise<Locale>>` that maps every Core language code to a dynamic import of its [date-fns](https://date-fns.org/) `Locale`. Two codes are remapped to a regional variant: `en` -> `en-US` and `zh` -> `zh-CN`. `loadLocale(language)` awaits the matching loader and caches the result, so each locale is fetched once.
 
-Because the type is `Record<SupportedLanguage, Locale>`, this map is the single place that must stay in sync with Core. If Core adds a `SupportedLanguage`, this file will fail to type-check until you import the matching date-fns locale and add it here.
+The loaders are dynamic imports on purpose. date-fns ships a locale for every language, and importing all of them statically pulled roughly 400 kB into the renderer startup chunk even though only the active language is ever used. Code splitting keeps them out of that chunk and loads just the active locale at runtime.
+
+Because the type is `Record<SupportedLanguage, ...>`, this map is still the single place that must stay in sync with Core. If Core adds a `SupportedLanguage`, this file fails to type-check until you add a loader for it here.
 
 ## Formatting datetimes (`formatDatetime`)
 
@@ -21,9 +23,27 @@ Because the type is `Record<SupportedLanguage, Locale>`, this map is the single 
 
 It returns `{ relative: '-', absolute: '-' }` while the user data is still loading or when the datetime is `null`, so callers do not need to guard for those cases.
 
+The user's locale is loaded on demand through `loadLocale`, so the first render after the user data resolves briefly formats with date-fns's en-US default until the locale chunk arrives, then re-renders in the user's locale.
+
 ```tsx
 const { formatDatetime } = useUser();
 const { relative, absolute } = formatDatetime({ datetime: entry.updated });
+```
+
+## Formatting field values (`formatTemporalFieldValue`)
+
+`formatTemporalFieldValue` is provided by the same `UserProvider` and read through `useUser()` or `useProject()`. It takes a raw field value and its `fieldType`, and for `date`, `datetime` and `time` fields returns the value formatted in the current user's locale (date-fns `P`, `Pp` and `p`). Every other field type, and any non-string value, is returned unchanged. Like `formatDatetime`, it falls back to date-fns's en-US default until the user's locale chunk loads. Unlike `formatDatetime` it never shows a `-` placeholder, because a stored field value always exists and should be displayed, not hidden while the user data loads.
+
+Date values are stored as `YYYY-MM-DD` with no time or timezone, so they are anchored to local midnight before formatting, otherwise the shown day could shift by one in a negative UTC offset. The [entry table](../../src/renderer/components/entry-table.tsx) uses this so a stored `2026-07-09` renders as a localized date instead of the raw ISO string.
+
+```tsx
+const { formatTemporalFieldValue } = useProject();
+
+// "07/09/2026" for a date field in the en-US locale
+const shown = formatTemporalFieldValue({
+  value: entry.values.publishedAt,
+  fieldType: 'date',
+});
 ```
 
 ## Translating content (`translateContent`)

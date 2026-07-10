@@ -19,6 +19,10 @@ The app is built with [electron-vite](https://electron-vite.org/), configured in
 
 It prunes `devDependencies`. So the shipped app is the Electron runtime, plus the `out/` bundles, plus the raw `node_modules` of every production dependency and its transitive production dependencies.
 
+### The "duplicate dependency references" log line
+
+During this collection electron-builder prints `duplicate dependency references` with a list of packages (for example `dugite`, `debug`, `@sentry/opentelemetry`). It is an `info` note, not a warning. "Duplicate" means referenced by more than one parent in the production tree, not copied more than once. These are diamond dependencies that pnpm deduped, and electron-builder collapses each to a single node, so every listed package still ships once. You can confirm it with `pnpm why <pkg> --prod`, which reports one version each. A second version in the pnpm store belongs only to `devDependencies` and is pruned before packaging. The line that would matter is `unresolved duplicate dependency references`, which is `warn` level and means a reference electron-builder could not resolve.
+
 ## The rule for dependencies vs devDependencies
 
 > A package belongs in `dependencies` if and only if the packaged app `require()`s it from `node_modules` at runtime.
