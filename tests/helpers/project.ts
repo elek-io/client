@@ -1,6 +1,10 @@
 import { expect, type Page } from '@playwright/test';
 
-import type { CreateProjectProps, Project } from '@elek-io/core';
+import type {
+  CreateProjectProps,
+  Project,
+  SetRemoteOriginUrlProjectProps,
+} from '@elek-io/core';
 
 const defaultProjectProps: CreateProjectProps = {
   name: 'Test Project',
@@ -25,6 +29,22 @@ export async function createProjectViaIpc(
 ): Promise<Project> {
   const props: CreateProjectProps = { ...defaultProjectProps, ...overrides };
   return page.evaluate(async (p) => window.ipc.core.projects.create(p), props);
+}
+
+/**
+ * Set a Project's remote `origin` URL directly over IPC, bypassing the UI.
+ *
+ * Use this to arrange a Project that points at a remote (paired with
+ * `setupRemote`) before exercising a flow that depends on that origin.
+ */
+export async function setRemoteOriginUrlViaIpc(
+  page: Page,
+  props: SetRemoteOriginUrlProjectProps
+): Promise<void> {
+  await page.evaluate(
+    async (p) => window.ipc.core.projects.setRemoteOriginUrl(p),
+    props
+  );
 }
 
 /** Fill the visible fields of the Project form. */
