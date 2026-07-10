@@ -24,6 +24,7 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 
 **Infra prerequisites this backlog exposes (build these first — see section 4):**
 
+- **Launch race, fixed in the app (not a test concern).** The main process used to register its `window.ipc` handlers only after loading the renderer (`onAppReady` in `src/main/index.ts`), so a freshly opened window could run a `ViaIpc` seed before the handlers existed and flake with "No handler registered". `onAppReady` now creates the window, registers the handlers, then loads the renderer, which closed the race for every seed-first spec (and for real launches). See the Application Lifecycle section in [`overview.md`](./overview.md). No test-side readiness wait is needed.
 - The per-test data dir is computed inside the fixture and never exported. Surface it (`dataDir(testInfo)` / `readDataFile` / `listDataDir`) so specs can assert Core's storage layout.
 - **Console escape hatch is a prerequisite for _every_ UI-driven negative-path spec, not just the error-boundary case.** The `mainWindow` fixture asserts zero console errors/warnings on pass (`electronApp.ts:150`). Because failed mutations hit the root error boundary, React logs the caught error to `console.error` and the app logs via `core:logger:error`. Add an opt-in expected-console allow-list before writing P0-11, P1-13, P2-09, or any UI-driven failing create/update/delete. IPC-level negatives that `await` a rejected promise inside `page.evaluate` (P0-07, P0-08, P1-04, P1-05, P1-06, P1-09, P1-10, P2-03, P2-10) do **not** trip this and need no escape hatch.
 - **Native `electron:dialog:*` modals must be stubbed in the MAIN process,** not the renderer. `contextBridge.exposeInMainWorld` freezes the exposed `window.ipc`, and the dialog calls forward to Electron's `dialog.showOpenDialog/showSaveDialog` in main. The stub is applied with `electronApp.evaluate(({ dialog }) => …)`. This affects every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
@@ -73,7 +74,7 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 ## 3. Prioritized backlog
 
-> **Assertion migration in progress.** These entries were first written before the verification doctrine (section 1) was settled, so many still describe on-disk `*.json` and commit-trailer assertions. Those are Core's tests, not the desktop's. As each test is implemented, its assertions are re-cast to the doctrine: drive via UI, observe throw / no-throw, assert the UI reflects the result. P0-01 has been migrated and is the reference; the wording of the others will be updated as they are picked up.
+> **Assertion migration in progress.** These entries were first written before the verification doctrine (section 1) was settled, so many still describe on-disk `*.json` and commit-trailer assertions. Those are Core's tests, not the desktop's. As each test is implemented, its assertions are re-cast to the doctrine: drive via UI, observe throw / no-throw, assert the UI reflects the result. P0-01 through P0-06 have been migrated and are the reference; the wording of the others will be updated as they are picked up.
 
 ### P0 — core data lifecycle and data-loss guards
 
@@ -89,28 +90,28 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `setUserViaIpc`, `createProjectViaIpc`, `reloadWindow`.
   Deps: P0-01 helpers.
 
-- **P0-03 Create a collection with a field definition and verify it persists.**
-  Steps: `setUser` + `seedProject` → `collections/create` → fill icon/name/slug → add a required text field → Create.
-  Assert: `collection.json` on disk with per-language translatable name, slug, and the text field (stable id); appears in `collections:list`; sidebar lists it; create commit exists.
-  Helpers: `seedProject`, `addFieldDefinition`, `navigateToProject`, `dataDir`, `ipc`.
+- **P0-03 Create a collection with a field definition through the form. — DONE (passing, `tests/specs/collections.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` → `navigateToCollectionCreate` → `fillCollectionForm` (name plural/singular, description, dual slugs) → `addFieldDefinition` (a required text field via the "Add Field" sheet) → Create Collection.
+  Assert (desktop-only, per the doctrine): the create reaches Core without throwing, shown by the redirect to the new Collection's detail route; the UI reflects it, shown by the Collection appearing in the Collections sidebar by its plural name. Core's file/commit correctness and the field definition's persisted shape are Core's tests, not asserted here.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollectionCreate`.
   Deps: P0-01.
 
-- **P0-04 Create an entry and verify values persist keyed by slug.**
-  Steps: `setUser` + `seedProject` + `seedCollection(required text)` → `collection/create` → fill entry form → Create.
-  Assert: `{entryId}.json` with objectType `entry`, `values.<slug>.content.<lang>`; row in `EntryTable`; commit carries `Object-Type:entry` + `Collection-Id` trailer.
-  Helpers: `seedCollection`, `fillEntryForm`, `dataDir`, `ipc`.
+- **P0-04 Create an entry through the form and show it in the table. — DONE (passing, `tests/specs/entries.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc(required text)` → `navigateToEntryCreate` → `fillEntryForm` → Create.
+  Assert (desktop-only): the create reaches Core without throwing, shown by the redirect to the Collection detail; the UI reflects it, shown by the new Entry's row rendering in the `EntryTable` with the value that was entered. Core's file/commit correctness (objectType, slug-keyed values, trailers) is Core's test.
+  Helpers: `createCollectionViaIpc`, `fillEntryForm`, `navigateToEntryCreate`.
   Deps: P0-03.
 
-- **P0-05 Entry survives a renderer reload.**
-  Steps: seed user+project+collection+entry → `reloadWindow` → assert row still present and `entries:read` returns the same values.
-  Note: same renderer-only caveat as P0-02.
-  Helpers: `seedEntry`, `reloadWindow`, `ipc`.
+- **P0-05 Renders a persisted entry after a renderer reload. — DONE (passing, `tests/specs/entries.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` + `createEntryViaIpc` → `navigateToCollection` (the Entry list) → `reloadWindow` → assert the Entry's row is visible.
+  Assert (desktop-only): the renderer reads Core's persisted state on a fresh load, shown by the seeded Entry's row appearing after reload. Same renderer-only caveat as P0-02 (`page.reload()` reloads only the renderer, main + Core stay alive), so this proves renderer re-fetch over IPC, not process-restart survival (that is P0-10).
+  Helpers: `createCollectionViaIpc`, `createEntryViaIpc`, `stringValue`, `navigateToCollection`, `reloadWindow`.
   Deps: P0-04.
 
-- **P0-06 Delete a collection cascades to its entries.**
-  Steps: seed collection + 1 entry → `collection/update` → Delete Collection → `confirmDialog`.
-  Assert: navigate to `/collections`; folder (including the entry file) gone from disk; `collections:list` total decremented; delete commit exists.
-  Helpers: `seedCollection`, `seedEntry`, `confirmDialog`, `dataDir`, `ipc`.
+- **P0-06 Delete a collection and remove it from the UI. — DONE (passing, `tests/specs/collections.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` + `createEntryViaIpc` → `navigateToCollectionSettings` → Delete Collection → `confirmDialog`.
+  Assert (desktop-only): the delete reaches Core without throwing, shown by the redirect to the Collections list; the UI reflects it, shown by the Collection being gone from the sidebar and the "No Collections found" empty state showing. The cascade that removes the Collection's Entries is Core's behavior and Core's test; the desktop suite observes only that the Collection (and thus any way to reach its Entries) is gone from the UI.
+  Helpers: `createCollectionViaIpc`, `createEntryViaIpc`, `stringValue`, `confirmDialog`, `navigateToCollectionSettings`.
   Deps: P0-04.
 
 - **P0-07 `project.delete` no-origin guard blocks a local-only project (IPC).**
@@ -430,7 +431,7 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 Build these before their first consumer; ordered by dependency (each later helper tends to use the earlier ones).
 
-**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `fillProjectForm`, `createProject`), and `tests/global.d.ts`. Spec **P0-01** is written, migrated to the doctrine, and passing. The helpers below without a "(built)" tag are still to add.
+**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `fillProjectForm`, `createProject`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `fillEntryForm`, `navigateToEntryCreate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), and `tests/global.d.ts`. Specs **P0-01 through P0-06** are written, migrated to the doctrine, and passing. The helpers below without a "(built)" tag are still to add.
 
 **Naming:** the suite drives the UI by default, so UI helpers are unmarked and IPC helpers are suffixed `ViaIpc` (see [`testing.md`](./testing.md#writing-tests)). Pending entries below still use pre-convention names like `seedProject`; those become `createProjectViaIpc` and similar as each is migrated.
 
@@ -440,14 +441,14 @@ Build these before their first consumer; ordered by dependency (each later helpe
 - **`setUserViaIpc(page, overrides?)` (built)** — `core:user:set` precondition (git author identity); returns the User. Narrowed to the local-User branch of the `SetUserProps` union. Required before any write.
 - **`createProjectViaIpc(page, overrides?)` (built)** — `core:projects:create` with sensible defaults, returns the Project. The IPC-seed counterpart of `createProject`.
 - **`createProject(page, props)` + `fillProjectForm` (built)** — click through from the Projects list, fill name + description, submit, and return the new projectId from the redirect URL. A `selectProjectLanguage` helper for the custom language Popover/Command widget is still to add (the default en/en is used until then).
-- **`seedCollection(page, { projectId, name, slug, fieldDefinitions })`** — `core:collections:create` with caller-supplied field-definition ids; returns collectionId.
-- **`addFieldDefinition(page, valueType, config)`** — drive the value-definition sub-forms inside the `CollectionForm` sheet (text/number/select/reference/markdown/date/etc.) for UI-level collection and validation tests.
-- **`seedEntry(page, { projectId, collectionId, values })` + `fillEntryForm(page, fieldDefinitions, values)`** — create entries via `core:entries:create` or by populating the dynamically generated entry form keyed by slug/language; `fillEntryForm` must handle the per-language translatable dialog (P2-15) and temporal fields (P2-14).
-- **`navigateToProject/Collection/Entry(page, ids)`** — route to the target and confirm the hash via `verifyCurrentRouteHash`.
+- **`createCollectionViaIpc(page, overrides)` (built)** — `core:collections:create` with sensible defaults (a valid single-language Collection with one required text field); `projectId` is required, field-definition ids are generated in the helper (Core matches definitions by id). Returns the Collection. Ships with `textFieldDefinition(overrides)`, a builder for a required text FieldDefinition.
+- **`addFieldDefinition(page, { label, description })` (built, text only)** — drive the "Add Field" sheet in `CollectionForm` to append one text field definition (fill the translatable label + description, the slug auto-derives, confirm with "Add definition"). Extend to the other value-definition sub-forms (number/select/reference/markdown/date/etc.) for later collection and validation tests.
+- **`createEntryViaIpc(page, { projectId, collectionId, values })` (built)** — `core:entries:create` with `values` keyed by field slug; ships with `stringValue(content)`, a builder for a translatable string Value. **`fillEntryForm(page, fields)` (built, text only)** — fill the dynamically generated entry form keyed by field label. Extend it to handle the per-language translatable dialog (P2-15) and temporal fields (P2-14).
+- **`navigate(page, hash)` (built)** — point the URL at a route hash and reload so the app boots fresh there (a fresh boot refetches from Core, which arranged IPC state needs since it does not touch the renderer cache). **`navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`/`navigateToEntryCreate` (built)** wrap it for the collection and entry routes and confirm the hash via `verifyCurrentRouteHash`. A `navigateToProject` equivalent is still to add.
 - **`reloadWindow(page)`** — `page.reload()` then wait for `#app` and the expected hash. Basis of the renderer-refetch persistence cases (P0-02, P0-05, P1-17, P1-19). **Note its scope:** it reloads only the renderer; main + Core stay alive, so it proves renderer re-fetch over IPC, not process-restart survival.
 - **`relaunchApp(testInfo)` (infra, for P0-10)** — record the per-test `ELEK_IO_DATA_DIR`, `electronApp.close()`, then relaunch a new Electron app with the **same** `ELEK_IO_DATA_DIR` (and a fresh or reused `--user-data-dir`). The default fixture computes a fresh dir per test, so this helper must reuse the recorded one. The only way to test true survival across a main-process restart.
 - **`getHistory(page, projectId)`** — read `core:projects:history` to assert commit subjects, trailers, order, and author.
-- **`confirmDialog(page, confirmName)` / `dismissDialog(page)`** — the shared shadcn Dialog/AlertDialog flows (project/collection/asset deletes, clone dialog, default-language guard, asset view).
+- **`confirmDialog(page, confirmName)` / `dismissDialog(page)` (built)** — the shared shadcn Dialog/AlertDialog flows (project/collection/asset deletes, clone dialog, default-language guard, asset view). `confirmDialog` scopes to the open dialog so the confirm button is not confused with the trigger that opened it; `dismissDialog` closes with Escape.
 - **`expectToast(page, text)`** — assert Sonner success/error toasts after mutations. Remember: on failure today the toast fires **and** the root `ErrorComponent` renders (the boundary half is changing for expected errors, see section 5).
 - **`stubFileDialog(page/electronApp, { open?, save? })`** — **applied in the MAIN process** via `electronApp.evaluate(({ dialog }) => …)`, overriding `dialog.showOpenDialog` / `dialog.showSaveDialog` to return canned paths. It cannot be applied in the renderer: `contextBridge.exposeInMainWorld` freezes `window.ipc` and the calls forward to main. Needed for every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
 - **`makeTempFile(testInfo, name, bytes)`** — write a source file under the test output for asset create/replace/save.

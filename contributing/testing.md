@@ -51,6 +51,8 @@ The launch does a few important things:
 
 Playwright disables the Chromium sandbox on Linux itself (it adds `--no-sandbox` unless `chromiumSandbox: true`), so unpacked builds without the SUID sandbox helper run fine on GitHub's Ubuntu runners without the fixture passing anything.
 
+A `ViaIpc` seed can run immediately after the window opens because the main process registers its IPC handlers before it loads the renderer (see the Application Lifecycle section in [`overview.md`](./overview.md)). An earlier ordering registered them after the load, so a seed racing that gap flaked with "No handler registered"; fixing the order in the app removed the race for the suite and for real launches, so no test-side readiness wait is needed.
+
 When a test passes, the `mainWindow` fixture asserts that no console errors or warnings occurred and runs an axe accessibility scan, which does not assert on violations yet until the existing ones are resolved. The scan uses axe legacy mode, since otherwise axe opens a blank aggregation page via `context.newPage()`, which Electron does not support. Both checks are skipped when the test already failed, so they do not bury the real failure.
 
 ## What a desktop test verifies
@@ -69,7 +71,7 @@ Follow the arrange, act, assert split. Arrange preconditions over IPC (the `ViaI
 
 ## Writing tests
 
-Reusable page interactions belong in `tests/helpers` as plain functions that take the `Page` first. Prefer role and label based locators over CSS selectors, and auto-retrying assertions like `toHaveURL` over one-shot reads, since route redirects happen client side.
+Reusable page interactions belong in `tests/helpers` as plain functions that take the `Page` first. Prefer role and label based locators over CSS selectors, and auto-retrying assertions like `toHaveURL` over one-shot reads, since route redirects happen client side. `getByLabel(text, { exact: true })` addresses form fields, including the translatable ones, since their inputs carry the label association. Scope it to an open dialog (`dialog.getByLabel(...)`) to disambiguate a label that also appears on the page behind it.
 
 Because the suite is end to end, a helper drives the UI by default and its name carries no marker (`createProject`, `fillProjectForm`). A helper that reaches Core directly over IPC instead is suffixed `ViaIpc` (`setUserViaIpc`, `createProjectViaIpc`), so the faster path, which bypasses the renderer and its query cache, stands out at a glance. Only mark the data verbs that could go either way (create, update, delete, set). A verb that already implies the UI (`fill`, `reload`, `navigate`) or an assertion helper stays unmarked.
 

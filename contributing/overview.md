@@ -46,11 +46,13 @@ On `app.on('ready')` the `onAppReady()` method:
 1. Creates the `ElekIoCore` instance (log level `info` when packaged, `debug` otherwise).
 2. Reads the persisted user and, if `user.localApi.isEnabled` is true, **starts the local read-only API automatically** on `user.localApi.port`. The API can therefore already be serving before the renderer ever calls `core:api:start`.
 3. Registers the custom file protocol.
-4. Creates the first window and registers the IPC handlers for it.
+4. Creates the first window (`createWindow()`), registers the IPC handlers for it (`registerIpcMain()`), then loads the renderer into it (`loadWindow()`).
 
-Other lifecycle events: `activate` (macOS dock click) recreates a window if none are open, and `window-all-closed` quits the app on Windows and Linux but not on macOS.
+The order in step 4 matters: the renderer issues IPC calls as soon as it mounts, so the handlers are registered **before** the renderer is loaded. Registering after the load would leave a startup gap where an early call arrives before its handler exists and rejects with "No handler registered", which `throwOnError` turns into the root error boundary on launch. The handlers only touch the window when invoked, so it just needs to exist (be created) at registration time, not be loaded. This is why `createWindow()` only creates the window and `loadWindow()` loads it, kept as two steps.
 
-**Window management** (`createWindow()`):
+Other lifecycle events: `activate` (macOS dock click) recreates and loads a window if none are open, and `window-all-closed` quits the app on Windows and Linux but not on macOS.
+
+**Window management** (`createWindow()` / `loadWindow()`):
 
 - The window is **frameless**: `frame: false`, `titleBarStyle: 'hidden'`, `titleBarOverlay: true`. The title bar is drawn in the renderer, so the native frame is intentionally removed.
 - On Linux the app icon is set explicitly from `resources/icon.png`.
@@ -249,7 +251,7 @@ For how these three builds decide what ships in the packaged app, the resulting 
 
 ### Known Considerations
 
-- DevTools are opened in production builds via `window.webContents.openDevTools()` in [`src/main/index.ts:198`](/src/main/index.ts) (the `app.isPackaged` branch of `createWindow`). This must be removed or guarded before a real release.
+- DevTools are opened automatically in development via `window.webContents.openDevTools()` in [`src/main/index.ts:242`](/src/main/index.ts) (the development branch of `loadWindow`). The packaged branch keeps a commented-out call to uncomment when debugging a production build.
 - Sentry is initialized in two separate places, the main process ([`src/main/index.ts`](/src/main/index.ts)) and the renderer ([`src/renderer/index.ts`](/src/renderer/index.ts)), both at 100% sampling. The renderer also enables session replay. Lowering sampling or disabling telemetry means editing both init sites.
 - Auto-update is currently disabled. The `update-electron-app` call in the `Main` constructor is commented out, and the `electron-updater` dependency is not imported anywhere, so there is no active auto-update path.
 - All Core methods are async in the renderer even when synchronous in Core (the IPC boundary requires it)

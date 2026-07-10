@@ -107,8 +107,15 @@ class Main {
 
     this.registerCustomFileProtocol();
 
-    const window = await this.createWindow();
+    // Register the IPC handlers before loading the renderer. The renderer issues
+    // IPC calls as soon as it mounts, so registering after the load would leave
+    // a startup gap where a call arrives before its handler exists and rejects
+    // with "No handler registered", which throwOnError turns into the root error
+    // boundary on launch. The handlers only touch the window when invoked, so it
+    // just needs to exist here, not be loaded yet.
+    const window = this.createWindow();
     this.registerIpcMain(window, this.core);
+    await this.loadWindow(window);
   }
 
   /**
@@ -122,7 +129,7 @@ class Main {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
-      await this.createWindow();
+      await this.loadWindow(this.createWindow());
     }
   }
 
@@ -174,7 +181,7 @@ class Main {
   /**
    * Creates a new window with security in mind and loads the frontend
    */
-  private async createWindow(): Promise<BrowserWindow> {
+  private createWindow(): BrowserWindow {
     const initialWindowSize = this.getInitialWindowSize();
 
     const options: BrowserWindowConstructorOptions = {
@@ -204,6 +211,18 @@ class Main {
       this.onWindowWebContentsWillNavigate(window, event, urlToLoad)
     );
 
+    return window;
+  }
+
+  /**
+   * Loads the renderer into an already created window.
+   *
+   * Kept separate from createWindow so the caller can register the IPC handlers
+   * on the window before the renderer starts running. That ordering closes the
+   * startup race where a renderer IPC call could arrive before its handler is
+   * registered.
+   */
+  private async loadWindow(window: BrowserWindow): Promise<void> {
     if (app.isPackaged) {
       // Desktop is in production
       // Load the static index.html directly
@@ -222,8 +241,6 @@ class Main {
       await window.loadURL(this.rendererUrl);
       window.webContents.openDevTools();
     }
-
-    return window;
   }
 
   /**

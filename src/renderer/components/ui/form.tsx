@@ -366,7 +366,7 @@ export function TranslatableFormInputField<T extends FieldValues>({
           </Dialog>
         </div>
       ) : (
-        <FormInputField field={field} type={type} />
+        <FormInputField field={field} type={type} {...props} />
       )}
     </>
   );
@@ -522,7 +522,7 @@ export function TranslatableFormTextareaField<T extends FieldValues>({
           </Dialog>
         </div>
       ) : (
-        <FormTextareaField field={field} />
+        <FormTextareaField field={field} {...props} />
       )}
     </>
   );
