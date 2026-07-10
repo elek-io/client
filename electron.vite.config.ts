@@ -33,6 +33,10 @@ export default defineConfig({
     },
   },
   renderer: {
+    // Emit source maps so @sentry/vite-plugin can upload them and symbolicate
+    // renderer (React UI) crashes. They are deleted after upload below, so they
+    // do not ship inside the asar.
+    build: { sourcemap: true },
     resolve: {
       alias: {
         '@root': resolve(__dirname, '.'),
@@ -53,6 +57,16 @@ export default defineConfig({
       }),
       viteReact(),
       tailwindcss(),
+      sentryVitePlugin({
+        org: 'elek-io',
+        project: 'desktop',
+        // Delete the emitted .map files after upload so the multi-MB renderer
+        // source maps are not packaged into the shipped app. This runs only on
+        // `pnpm build`, not `pnpm dev`, so DevTools debugging is unaffected.
+        // Comment out filesToDeleteAfterUpload to keep the maps in a local
+        // `pnpm build` when you want to inspect out/.
+        sourcemaps: { filesToDeleteAfterUpload: ['./out/renderer/**/*.map'] },
+      }),
     ],
   },
 });
