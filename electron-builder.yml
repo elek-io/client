@@ -63,6 +63,11 @@ linux:
     - rpm
     - pacman
   category: Office
+  # Name the installed .desktop file after desktopName in package.json
+  # (io.elek.desktop.desktop) so it matches StartupWMClass and the app_id
+  # Electron reports at runtime. Without it the desktop environment cannot link
+  # running windows to the entry and shows a generic icon.
+  syncDesktopName: true
 # Linux builds are x64 only (see the CI matrix), so version-less and arch-less
 # names are unambiguous and keep the latest-download links stable.
 appImage:
