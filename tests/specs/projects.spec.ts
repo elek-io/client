@@ -7,6 +7,7 @@ import { navigate, reloadWindow } from '../helpers/navigation.js';
 import {
   createProject,
   createProjectViaIpc,
+  navigateToProjectSettings,
   setRemoteOriginUrlViaIpc,
 } from '../helpers/project.js';
 import { setupRemote } from '../helpers/remote.js';
@@ -50,6 +51,43 @@ test.describe('Projects', () => {
     await reloadWindow(mainWindow);
     await expect(mainWindow).toHaveURL(/#\/projects$/);
     await expect(mainWindow.getByText(name)).toBeVisible();
+  });
+
+  test('updates a project through the form, gated on a dirty change', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow, {
+      name: 'Test Project',
+    });
+
+    // Land on the settings form fresh, which reads the Project from Core
+    await navigateToProjectSettings(mainWindow, project.id);
+
+    // Wait for the form to reset from the loaded Project. Until it settles, the
+    // dirty gate cannot be trusted, so key off the name field showing.
+    await expect(mainWindow.getByLabel('Project name')).toHaveValue(
+      'Test Project'
+    );
+
+    // Nothing edited yet, so Save is gated
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+
+    // Editing the name dirties the form, so Save enables
+    await mainWindow.getByLabel('Project name').fill('Renamed Project');
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeEnabled();
+    await mainWindow.getByRole('button', { name: 'Save changes' }).click();
+
+    // A successful Project update stays on the settings page, so prove the
+    // change persisted through a read surface: boot fresh on the Projects list,
+    // which re-reads from Core, and see the renamed card with the old name gone.
+    await navigate(mainWindow, '#/projects');
+    await expect(mainWindow.getByText('Renamed Project')).toBeVisible();
+    await expect(mainWindow.getByText('Test Project')).toBeHidden();
   });
 
   test('force-deletes a local-only project through the fallback modal', async ({

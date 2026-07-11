@@ -34,43 +34,43 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 
 Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /projects` redirect, plus the implicit per-pass checks (zero console errors/warnings; axe scan runs but does not assert). Everything marked "gap" is uncovered.
 
-| IPC channel                                                                  | Existing coverage       | Backlog IDs                                   |
-| ---------------------------------------------------------------------------- | ----------------------- | --------------------------------------------- |
-| projects:create                                                              | gap                     | P0-01, P0-02, P0-09, P2-03, P3-01             |
-| projects:list / count                                                        | gap                     | P0-01, P1-17, P1-19, P3-07                    |
-| projects:read                                                                | gap                     | P0-02, P2-06                                  |
-| projects:history                                                             | gap                     | P0-09, P2-06, P2-07                           |
-| projects:update                                                              | gap                     | P1-01, P2-04                                  |
-| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)   |
-| projects:getChanges                                                          | gap                     | P1-20, P2-05, P2-13                           |
-| projects:setRemoteOriginUrl                                                  | gap                     | P0-08 (done), P2-05, P1-20, P2-13             |
-| projects:synchronize                                                         | gap                     | P1-20, P1-21, P2-13                           |
-| projects:clone                                                               | gap                     | P2-12                                         |
-| collections:list                                                             | gap                     | P0-03, P1-18, P3-07                           |
-| collections:create                                                           | gap                     | P0-03                                         |
-| collections:read                                                             | gap                     | P0-03, P0-06                                  |
-| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11      |
-| collections:delete                                                           | gap                     | P0-06                                         |
-| entries:list                                                                 | gap                     | P0-04, P1-18, P3-07                           |
-| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05, P3-06(ref), P2-10 |
-| entries:read                                                                 | gap                     | P0-05, P1-08                                  |
-| entries:update                                                               | gap                     | P1-07, P1-08                                  |
-| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                         |
-| assets:list                                                                  | gap                     | P1-12, P3-07                                  |
-| assets:create                                                                | gap                     | P1-12                                         |
-| assets:read                                                                  | gap                     | P1-12, P1-16, P3-08                           |
-| assets:update                                                                | gap                     | P1-15, P3-06                                  |
-| assets:delete                                                                | gap                     | P1-13, P1-14                                  |
-| assets:save                                                                  | gap                     | P1-16                                         |
-| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)          |
-| api:start / stop / isRunning                                                 | gap                     | P2-11                                         |
-| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)      |
-| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12, P1-15, P1-16, P3-06, P3-08             |
-| i18n / date-fns locale rendering                                             | gap                     | P2-14                                         |
-| App launch / title / `/`→`/projects`                                         | **covered**             | —                                             |
-| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                         |
-| Root not-found + error boundary                                              | gap                     | P2-09                                         |
-| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                         |
+| IPC channel                                                                  | Existing coverage       | Backlog IDs                                     |
+| ---------------------------------------------------------------------------- | ----------------------- | ----------------------------------------------- |
+| projects:create                                                              | gap                     | P0-01, P0-02, P0-09, P2-03, P3-01               |
+| projects:list / count                                                        | gap                     | P0-01, P1-17, P1-19, P3-07                      |
+| projects:read                                                                | gap                     | P0-02, P2-06                                    |
+| projects:history                                                             | gap                     | P0-09, P2-06, P2-07                             |
+| projects:update                                                              | gap                     | P1-01 (done), P2-04                             |
+| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)     |
+| projects:getChanges                                                          | gap                     | P1-20, P2-05, P2-13                             |
+| projects:setRemoteOriginUrl                                                  | gap                     | P0-08 (done), P2-05, P1-20, P2-13               |
+| projects:synchronize                                                         | gap                     | P1-20, P1-21, P2-13                             |
+| projects:clone                                                               | gap                     | P2-12                                           |
+| collections:list                                                             | gap                     | P0-03, P1-18, P3-07                             |
+| collections:create                                                           | gap                     | P0-03                                           |
+| collections:read                                                             | gap                     | P0-03, P0-06                                    |
+| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11 (done) |
+| collections:delete                                                           | gap                     | P0-06                                           |
+| entries:list                                                                 | gap                     | P0-04, P1-18, P3-07                             |
+| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05, P3-06(ref), P2-10   |
+| entries:read                                                                 | gap                     | P0-05, P1-08                                    |
+| entries:update                                                               | gap                     | P1-07 (done), P1-08                             |
+| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                           |
+| assets:list                                                                  | gap                     | P1-12, P3-07                                    |
+| assets:create                                                                | gap                     | P1-12                                           |
+| assets:read                                                                  | gap                     | P1-12, P1-16, P3-08                             |
+| assets:update                                                                | gap                     | P1-15, P3-06                                    |
+| assets:delete                                                                | gap                     | P1-13, P1-14                                    |
+| assets:save                                                                  | gap                     | P1-16                                           |
+| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)            |
+| api:start / stop / isRunning                                                 | gap                     | P2-11                                           |
+| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)        |
+| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12, P1-15, P1-16, P3-06, P3-08               |
+| i18n / date-fns locale rendering                                             | gap                     | P2-14                                           |
+| App launch / title / `/`→`/projects`                                         | **covered**             | —                                               |
+| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                           |
+| Root not-found + error boundary                                              | gap                     | P2-09                                           |
+| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                           |
 
 ## 3. Prioritized backlog
 
@@ -144,10 +144,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 ### P1 — rest of CRUD, content integrity, assets, sync
 
-- **P1-01 Update a project persists and is dirty-gated.**
-  Steps: `seedProject` → settings/general → assert Save disabled until dirty → edit name → Save.
-  Assert: `project.json` name changed, `updated` non-null, update commit appears.
-  Helpers: `seedProject`, `dataDir`, `getHistory`.
+- **P1-01 Update a project is dirty-gated and persists. — DONE (passing, `tests/specs/projects.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc({ name: 'Test Project' })` → `navigateToProjectSettings` → wait for the form to settle (name field shows 'Test Project') → assert "Save changes" DISABLED → edit the name to 'Renamed Project' → assert ENABLED → Save.
+  Assert (desktop-only, per the doctrine): the Save button is gated on `formState.isDirty` (disabled until the name is edited); the update reaches Core without throwing; a successful Project update stays on the settings page, so persistence is proven through a read surface, booting fresh on the Projects list (which re-reads from Core) and seeing the renamed card with the old name gone. Core's file and commit correctness are Core's tests, not asserted here.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `navigateToProjectSettings`, `navigate`.
   Deps: P0-01.
 
 - **P1-02 `collection.update` rename-by-id preserves entry data (IPC).**
@@ -180,10 +180,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`.
   Deps: P1-03.
 
-- **P1-07 Update an entry persists and is dirty-gated.**
-  Steps: seed entry → `entry/update` → assert Update disabled until dirty → edit a value → Update.
-  Assert: entry json changed, `updated` non-null, update commit, navigate back to list.
-  Helpers: `seedEntry`, `fillEntryForm`, `dataDir`, `getHistory`.
+- **P1-07 Update an entry is dirty-gated and persists. — DONE (passing, `tests/specs/entries.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` + `createEntryViaIpc({ values: { title: stringValue({ en: 'Original title' }) } })` → `navigateToEntryUpdate` → wait for the form to settle (Title field shows 'Original title') → assert "Update Article" DISABLED → edit the Title to 'Edited title' via `fillEntryForm` → assert ENABLED → Update.
+  Assert (desktop-only): the Update button is gated on `formState.isDirty`; the update reaches Core without throwing, shown by the redirect to the Collection detail; the UI reflects the result, shown by the EntryTable row rendering 'Edited title' with 'Original title' gone (same UI-observation style as P0-04). Core's file and commit correctness are Core's tests.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `createCollectionViaIpc`, `createEntryViaIpc`, `stringValue`, `navigateToEntryUpdate`, `fillEntryForm`.
   Deps: P0-04.
 
 - **P1-08 Entry update back-fills defaults for fields added after creation.**
@@ -203,10 +203,11 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `seedCollection`, `ipc`, `dataDir`.
   Deps: P0-03.
 
-- **P1-11 UI collection update happy path, and pin the missing isDirty gate.** _(added — P1-02..06 are all IPC-only)_
-  Steps: seed collection → `/collections/$collectionId/update` → edit name/description via `CollectionForm` → Save changes.
-  Assert: navigates to the collection detail; `collection.json` updated; **the Save button has NO isDirty gate** (asymmetric with project/entry saves — pin this so a future half-wired gate is caught).
-  Helpers: `seedCollection`, `addFieldDefinition`, `dataDir`.
+- **P1-11 Update a collection is dirty-gated and persists. — DONE (passing, `tests/specs/collections.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` → `navigateToCollectionSettings` → wait for the form to settle (plural name shows 'Articles') → assert "Save changes" DISABLED → rename the plural name to 'Guides' and edit the description (leave the slugs untouched, a slug change is the schema-cascade flow and out of scope) → assert ENABLED → Save.
+  Assert (desktop-only): the Save button is gated on `formState.isDirty`; the update reaches Core without throwing, shown by the redirect to the collection detail; a reload proves the rename persisted (re-read from Core, not an optimistic cache entry), shown by the sidebar listing the Collection under its new plural name 'Guides'. The sidebar link is scoped to the sidebar (a complementary landmark) so the matching breadcrumb crumb on the detail page does not make the locator ambiguous. Core's file and commit correctness are Core's tests.
+  **Gate-fix note.** The original entry described this Save button as having NO isDirty gate and asked to pin that asymmetry. That asymmetry was a bug, not intended behavior, and is now fixed (`update.tsx` gates on `updateCollectionForm.formState.isDirty`, so collection update matches project and entry). The field-definition array is tracked in `isDirty` (adding or removing a field via the "Add Field" sheet flips the gate), so the gate does not block a legitimate field-only edit. See the app-wide dirty-gate convention in [`loading-and-updating-data.md`](./renderer/loading-and-updating-data.md).
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `createCollectionViaIpc`, `navigateToCollectionSettings`, `reloadWindow`.
   Deps: P0-03.
 
 - **P1-12 Create an asset keeps binary and sidecar in lockstep.**
@@ -273,13 +274,13 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 ### P2 — settings, user identity, uniqueness, history, navigation, local API, i18n
 
 - **P2-01 First-run user onboarding sets and persists identity.**
-  Steps: fresh app → `/user/profile` → assert Welcome title (user null) → fill language/name/email/port, toggle local API → Save.
+  Steps: fresh app → `/user/profile` → assert Welcome title (user null) → assert "Save local User" disabled until dirty (the gate enables once the required name/email are filled) → fill language/name/email/port, toggle local API → Save.
   Assert: navigate `/projects`; `user.json` written matching input; `user:get` returns it; UserDropdown renders; live commit preview updates as name/email change.
   Helpers: `ipc`, `dataDir`.
   Deps: none.
 
 - **P2-02 Edit an existing user and confirm identity propagates to the git author.** _(added — P2-01 covers only first-run)_
-  Steps: `setUser` → `/user/profile` (asserts the form resets from the existing user, not the Welcome state) → change name/email/language → Save → make a commit (e.g. `seedProject` via UI).
+  Steps: `setUser` → `/user/profile` (asserts the form resets from the existing user, not the Welcome state) → assert "Save local User" disabled until dirty (enables on the first edit) → change name/email/language → Save → make a commit (e.g. `seedProject` via UI).
   Assert: `user.json` updated; the next commit's author is the new name/email.
   Helpers: `setUser`, `getHistory`, `ipc`, `dataDir`.
   Deps: P2-01.
@@ -429,7 +430,7 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 Build these before their first consumer; ordered by dependency (each later helper tends to use the earlier ones).
 
-**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `fillEntryForm`, `navigateToEntryCreate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10 and P0-11** are written, migrated to the doctrine, and passing (P0-07's IPC-level guard test was dropped as a Core duplicate). The helpers below without a "(built)" tag are still to add.
+**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`, `navigateToProjectSettings`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `fillEntryForm`, `navigateToEntryCreate`, `navigateToEntryUpdate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10, P0-11, P1-01, P1-07 and P1-11** are written, migrated to the doctrine, and passing (P0-07's IPC-level guard test was dropped as a Core duplicate). The helpers below without a "(built)" tag are still to add.
 
 **Naming:** the suite drives the UI by default, so UI helpers are unmarked and IPC helpers are suffixed `ViaIpc` (see [`testing.md`](./testing.md#writing-tests)). Pending entries below still use pre-convention names like `seedProject`; those become `createProjectViaIpc` and similar as each is migrated.
 
@@ -442,7 +443,7 @@ Build these before their first consumer; ordered by dependency (each later helpe
 - **`createCollectionViaIpc(page, overrides)` (built)** — `core:collections:create` with sensible defaults (a valid single-language Collection with one required text field); `projectId` is required, field-definition ids are generated in the helper (Core matches definitions by id). Returns the Collection. Ships with `textFieldDefinition(overrides)`, a builder for a required text FieldDefinition.
 - **`addFieldDefinition(page, { label, description })` (built, text only)** — drive the "Add Field" sheet in `CollectionForm` to append one text field definition (fill the translatable label + description, the slug auto-derives, confirm with "Add definition"). Extend to the other value-definition sub-forms (number/select/reference/markdown/date/etc.) for later collection and validation tests.
 - **`createEntryViaIpc(page, { projectId, collectionId, values })` (built)** — `core:entries:create` with `values` keyed by field slug; ships with `stringValue(content)`, a builder for a translatable string Value. **`fillEntryForm(page, fields)` (built, text only)** — fill the dynamically generated entry form keyed by field label. Extend it to handle the per-language translatable dialog (P2-15) and temporal fields (P2-14).
-- **`navigate(page, hash)` (built)** — point the URL at a route hash and reload so the app boots fresh there (a fresh boot refetches from Core, which arranged IPC state needs since it does not touch the renderer cache). **`navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`/`navigateToEntryCreate` (built)** wrap it for the collection and entry routes and confirm the hash via `verifyCurrentRouteHash`. A `navigateToProject` equivalent is still to add.
+- **`navigate(page, hash)` (built)** — point the URL at a route hash and reload so the app boots fresh there (a fresh boot refetches from Core, which arranged IPC state needs since it does not touch the renderer cache). **`navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`/`navigateToEntryCreate`/`navigateToEntryUpdate` (built)** wrap it for the collection and entry routes, and **`navigateToProjectSettings` (built)** for a Project's general settings, each confirming the hash via `verifyCurrentRouteHash`. A `navigateToProject` (dashboard) equivalent is still to add.
 - **`reloadWindow(page)`** — `page.reload()` then wait for `#app` and the expected hash. Basis of the renderer-refetch persistence cases (P0-02, P0-05, P1-17, P1-19). **Note its scope:** it reloads only the renderer; main + Core stay alive, so it proves renderer re-fetch over IPC, not process-restart survival.
 - **`launchApp(testInfo, overrides?)` (built)** — the launch body extracted from the `electronApp` fixture (`tests/fixtures/electronApp.ts`): find the unpacked build, build the env (skip undefined, set `NODE_ENV=test` + `ELEK_IO_DATA_DIR`, delete `ELECTRON_RUN_AS_NODE`), launch with `--user-data-dir`, and mirror stdout/stderr. `dataDir` and `userDataDir` default to the per-test output paths, overridable so a relaunch can reuse them. The fixture calls it with the defaults, so the existing specs are unchanged.
 - **`relaunchApp(testInfo, app)` (built)** — `tests/helpers/app.ts`: `app.close()` then `launchApp` against the **same** `ELEK_IO_DATA_DIR` and userData dir, returning the new app and its first window. The only way to test true survival across a main-process restart (P0-10). The fixture's `electronApp` teardown tolerates the already-closed app (a double close cannot fail teardown), and its `mainWindow` teardown skips the console/axe checks when the first window is already closed (the relaunched window is out of scope for those checks).

@@ -85,10 +85,6 @@ function ProjectSettingsGeneralPage(): ReactElement {
     return <>Here you will be able to tweak this project to your liking</>;
   }
 
-  /**
-   * @todo Save Button should be in state "disabled" until there is a difference between props.currentProject and formData.
-   * Otherwise git is throwing an error without a message (probably because there is no change that can be committed)
-   */
   function Actions(): ReactElement {
     return (
       <>

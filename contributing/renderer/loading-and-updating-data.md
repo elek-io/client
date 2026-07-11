@@ -295,6 +295,12 @@ return (
 - Prevents user interaction during loading
 - Cleaner code with less conditional rendering
 
+### Gating Save on `formState.isDirty`
+
+Every mutation Save/Update button is disabled until the form is dirty, with `disabled={<form>.formState.isDirty === false}`. An unchanged form has nothing to commit, so submitting it would make Core reject an empty change. The gate is app-wide and consistent across the project, collection, entry, user and version-control update forms, so a form that reset from loaded data starts with Save disabled and enables it the moment the user edits a field.
+
+This is distinct from validation. Validation is surfaced on click through `FormMessage`, not by keeping the button disabled, so an invalid but changed form still shows its Save button enabled and reports the errors when submitted. Only the "nothing changed yet" state disables Save.
+
 ### Mutation Metadata
 
 All mutations should include metadata for proper toast notifications and logging. Use the `customMutationOptions` wrapper from [`util.ts`](../../src/renderer/queries/util.ts) to not only make sure the metadata is included, but also to automatically add `throwOnError: true` to propagate errors to the nearest error boundary and log all mutations with Core:

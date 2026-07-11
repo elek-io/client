@@ -6,6 +6,8 @@ import type {
   SetRemoteOriginUrlProjectProps,
 } from '@elek-io/core';
 
+import { navigate } from './navigation.js';
+
 const defaultProjectProps: CreateProjectProps = {
   name: 'Test Project',
   description: 'A Project created by the E2E tests',
@@ -45,6 +47,14 @@ export async function setRemoteOriginUrlViaIpc(
     async (p) => window.ipc.core.projects.setRemoteOriginUrl(p),
     props
   );
+}
+
+/** Route to a Project's general settings (update) page and confirm it rendered. */
+export async function navigateToProjectSettings(
+  page: Page,
+  projectId: string
+): Promise<void> {
+  await navigate(page, `#/projects/${projectId}/settings/general`);
 }
 
 /** Fill the visible fields of the Project form. */

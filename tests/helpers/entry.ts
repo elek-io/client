@@ -44,6 +44,17 @@ export async function navigateToEntryCreate(
   );
 }
 
+/** Route to an Entry's update form and confirm the app rendered there. */
+export async function navigateToEntryUpdate(
+  page: Page,
+  ids: { projectId: string; collectionId: string; entryId: string }
+): Promise<void> {
+  await navigate(
+    page,
+    `#/projects/${ids.projectId}/collections/${ids.collectionId}/${ids.entryId}/update`
+  );
+}
+
 /**
  * Fill the dynamically generated Entry form. Fields are keyed by their label
  * (as shown above each input), so pass a record of label to text value. Only

@@ -9,6 +9,7 @@ import {
 } from '../helpers/collection.js';
 import { confirmDialog } from '../helpers/dialog.js';
 import { createEntryViaIpc, stringValue } from '../helpers/entry.js';
+import { reloadWindow } from '../helpers/navigation.js';
 import { createProjectViaIpc } from '../helpers/project.js';
 import { setUserViaIpc } from '../helpers/user.js';
 
@@ -33,9 +34,71 @@ test.describe('Collections', () => {
     // Core accepted the create with its field definition without throwing. Core
     // owns and separately tests file and commit correctness, so this spec
     // verifies only the desktop app's part: the create reached Core, and the UI
-    // reflects the result by listing the new Collection in the sidebar.
+    // reflects the result by listing the new Collection in the sidebar. Scope to
+    // the sidebar (a complementary landmark) so the matching breadcrumb crumb on
+    // the detail page does not make the link locator ambiguous.
     await expect(
-      mainWindow.getByRole('link', { name: 'Articles' })
+      mainWindow
+        .getByRole('complementary')
+        .getByRole('link', { name: 'Articles' })
+    ).toBeVisible();
+  });
+
+  test('updates a collection through the form, gated on a dirty change', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+
+    await navigateToCollectionSettings(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // Wait for the form to reset from the loaded Collection. Until it settles,
+    // the dirty gate cannot be trusted, so key off the plural name showing.
+    await expect(
+      mainWindow.getByLabel('Collection name (Plural)', { exact: true })
+    ).toHaveValue('Articles');
+
+    // Nothing edited yet, so Save is gated (matches project/entry after the fix)
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+
+    // Rename the plural name and edit the description. Leave the slugs untouched,
+    // a slug change is the schema-cascade flow and out of scope here.
+    await mainWindow
+      .getByLabel('Collection name (Plural)', { exact: true })
+      .fill('Guides');
+    await mainWindow
+      .getByLabel('Description', { exact: true })
+      .fill('Guides created by the E2E tests');
+
+    // The edit dirties the form, so Save enables
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeEnabled();
+    await mainWindow.getByRole('button', { name: 'Save changes' }).click();
+
+    // Redirecting to the Collection detail is how Core's success surfaces (the
+    // update did not throw). Core owns file and commit correctness.
+    await expect(mainWindow).toHaveURL(
+      new RegExp(`#/projects/[^/]+/collections/${collection.id}$`)
+    );
+
+    // Reload so the sidebar re-reads from Core rather than an optimistic cache
+    // entry, proving the rename persisted, then see the new plural name listed.
+    // Scope to the sidebar (a complementary landmark) so the matching breadcrumb
+    // crumb on the detail page does not make the link locator ambiguous.
+    await reloadWindow(mainWindow);
+    await expect(
+      mainWindow
+        .getByRole('complementary')
+        .getByRole('link', { name: 'Guides' })
     ).toBeVisible();
   });
 
