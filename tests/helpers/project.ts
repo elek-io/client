@@ -57,6 +57,14 @@ export async function navigateToProjectSettings(
   await navigate(page, `#/projects/${projectId}/settings/general`);
 }
 
+/** Route to a Project's Assets list and confirm the app rendered there. */
+export async function navigateToAssets(
+  page: Page,
+  projectId: string
+): Promise<void> {
+  await navigate(page, `#/projects/${projectId}/assets`);
+}
+
 /** Fill the visible fields of the Project form. */
 export async function fillProjectForm(
   page: Page,

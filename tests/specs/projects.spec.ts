@@ -3,7 +3,11 @@ import { expect } from '@playwright/test';
 import { test } from '../fixtures/electronApp.js';
 import { createCollectionViaIpc } from '../helpers/collection.js';
 import { confirmDialog } from '../helpers/dialog.js';
-import { navigate, reloadWindow } from '../helpers/navigation.js';
+import {
+  navigate,
+  reloadWindow,
+  verifyCurrentRouteHash,
+} from '../helpers/navigation.js';
 import {
   createProject,
   createProjectViaIpc,
@@ -51,6 +55,62 @@ test.describe('Projects', () => {
     await reloadWindow(mainWindow);
     await expect(mainWindow).toHaveURL(/#\/projects$/);
     await expect(mainWindow.getByText(name)).toBeVisible();
+  });
+
+  test('surfaces create validation on submit without disabling the button', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    await navigate(mainWindow, '#/projects/create');
+
+    // On open, the create is not submit-gated (validation is surfaced on click,
+    // not by disabling the button) and no field is flagged invalid yet.
+    await expect(
+      mainWindow.getByRole('button', { name: 'Create Project' })
+    ).toBeEnabled();
+    await expect(mainWindow.getByLabel('Project name')).toHaveAttribute(
+      'aria-invalid',
+      'false'
+    );
+    await expect(mainWindow.getByLabel('Project description')).toHaveAttribute(
+      'aria-invalid',
+      'false'
+    );
+
+    // Submitting empty surfaces the errors on both required fields and the URL
+    // stays on the create route, so the submit did not go through and nothing
+    // was created. Whether the message text is Core's is Core's concern, the
+    // desktop app's responsibility is to surface the invalid state and block.
+    await mainWindow.getByRole('button', { name: 'Create Project' }).click();
+    await expect(mainWindow.getByLabel('Project name')).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+    await expect(mainWindow.getByLabel('Project description')).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+    await expect(mainWindow).toHaveURL(/#\/projects\/create$/);
+  });
+
+  test('shows the empty state, then a card once a project exists', async ({
+    mainWindow,
+  }) => {
+    // Fresh app with nothing seeded: the empty state shows and no card renders.
+    await verifyCurrentRouteHash(mainWindow, '#/projects');
+    await expect(mainWindow.getByText('No Projects yet')).toBeVisible();
+
+    // Seeding a project (over IPC, which skips the renderer cache) and reloading
+    // surfaces its card with both name and description, and the empty state goes.
+    await setUserViaIpc(mainWindow);
+    await createProjectViaIpc(mainWindow);
+    await reloadWindow(mainWindow);
+
+    await expect(mainWindow.getByText('Test Project')).toBeVisible();
+    await expect(
+      mainWindow.getByText('A Project created by the E2E tests')
+    ).toBeVisible();
+    await expect(mainWindow.getByText('No Projects yet')).toBeHidden();
   });
 
   test('updates a project through the form, gated on a dirty change', async ({

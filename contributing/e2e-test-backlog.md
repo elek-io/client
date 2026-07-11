@@ -34,43 +34,43 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 
 Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /projects` redirect, plus the implicit per-pass checks (zero console errors/warnings; axe scan runs but does not assert). Everything marked "gap" is uncovered.
 
-| IPC channel                                                                  | Existing coverage       | Backlog IDs                                     |
-| ---------------------------------------------------------------------------- | ----------------------- | ----------------------------------------------- |
-| projects:create                                                              | gap                     | P0-01, P0-02, P0-09, P2-03, P3-01               |
-| projects:list / count                                                        | gap                     | P0-01, P1-17, P1-19, P3-07                      |
-| projects:read                                                                | gap                     | P0-02, P2-06                                    |
-| projects:history                                                             | gap                     | P0-09, P2-06, P2-07                             |
-| projects:update                                                              | gap                     | P1-01 (done), P2-04                             |
-| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)     |
-| projects:getChanges                                                          | gap                     | P1-20, P2-05, P2-13                             |
-| projects:setRemoteOriginUrl                                                  | gap                     | P0-08 (done), P2-05, P1-20, P2-13               |
-| projects:synchronize                                                         | gap                     | P1-20, P1-21, P2-13                             |
-| projects:clone                                                               | gap                     | P2-12                                           |
-| collections:list                                                             | gap                     | P0-03, P1-18, P3-07                             |
-| collections:create                                                           | gap                     | P0-03                                           |
-| collections:read                                                             | gap                     | P0-03, P0-06                                    |
-| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11 (done) |
-| collections:delete                                                           | gap                     | P0-06                                           |
-| entries:list                                                                 | gap                     | P0-04, P1-18, P3-07                             |
-| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05, P3-06(ref), P2-10   |
-| entries:read                                                                 | gap                     | P0-05, P1-08                                    |
-| entries:update                                                               | gap                     | P1-07 (done), P1-08                             |
-| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                           |
-| assets:list                                                                  | gap                     | P1-12, P3-07                                    |
-| assets:create                                                                | gap                     | P1-12                                           |
-| assets:read                                                                  | gap                     | P1-12, P1-16, P3-08                             |
-| assets:update                                                                | gap                     | P1-15, P3-06                                    |
-| assets:delete                                                                | gap                     | P1-13, P1-14                                    |
-| assets:save                                                                  | gap                     | P1-16                                           |
-| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)            |
-| api:start / stop / isRunning                                                 | gap                     | P2-11                                           |
-| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)        |
-| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12, P1-15, P1-16, P3-06, P3-08               |
-| i18n / date-fns locale rendering                                             | gap                     | P2-14                                           |
-| App launch / title / `/`→`/projects`                                         | **covered**             | —                                               |
-| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                           |
-| Root not-found + error boundary                                              | gap                     | P2-09                                           |
-| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                           |
+| IPC channel                                                                  | Existing coverage       | Backlog IDs                                          |
+| ---------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------- |
+| projects:create                                                              | gap                     | P0-01, P0-02, P0-09, P2-03, P3-01 (done)             |
+| projects:list / count                                                        | gap                     | P0-01, P1-17 (done), P1-19, P3-07 (done)             |
+| projects:read                                                                | gap                     | P0-02, P2-06                                         |
+| projects:history                                                             | gap                     | P0-09, P2-06, P2-07                                  |
+| projects:update                                                              | gap                     | P1-01 (done), P2-04                                  |
+| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)          |
+| projects:getChanges                                                          | gap                     | P1-20, P2-05, P2-13                                  |
+| projects:setRemoteOriginUrl                                                  | gap                     | P0-08 (done), P2-05, P1-20, P2-13                    |
+| projects:synchronize                                                         | gap                     | P1-20, P1-21, P2-13                                  |
+| projects:clone                                                               | gap                     | P2-12                                                |
+| collections:list                                                             | gap                     | P0-03, P1-18 (done), P3-07 (done)                    |
+| collections:create                                                           | gap                     | P0-03                                                |
+| collections:read                                                             | gap                     | P0-03, P0-06                                         |
+| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11 (done)      |
+| collections:delete                                                           | gap                     | P0-06                                                |
+| entries:list                                                                 | gap                     | P0-04, P1-18 (done), P3-07 (done)                    |
+| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05 (done), P3-06(ref), P2-10 |
+| entries:read                                                                 | gap                     | P0-05, P1-08                                         |
+| entries:update                                                               | gap                     | P1-07 (done), P1-08                                  |
+| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                                |
+| assets:list                                                                  | gap                     | P1-12, P3-07 (done)                                  |
+| assets:create                                                                | gap                     | P1-12                                                |
+| assets:read                                                                  | gap                     | P1-12, P1-16, P3-08                                  |
+| assets:update                                                                | gap                     | P1-15, P3-06                                         |
+| assets:delete                                                                | gap                     | P1-13, P1-14                                         |
+| assets:save                                                                  | gap                     | P1-16                                                |
+| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)                 |
+| api:start / stop / isRunning                                                 | gap                     | P2-11                                                |
+| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)             |
+| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12, P1-15, P1-16, P3-06, P3-08                    |
+| i18n / date-fns locale rendering                                             | gap                     | P2-14                                                |
+| App launch / title / `/`→`/projects`                                         | **covered**             | —                                                    |
+| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                                |
+| Root not-found + error boundary                                              | gap                     | P2-09                                                |
+| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                                |
 
 ## 3. Prioritized backlog
 
@@ -240,16 +240,16 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `stubFileDialog`, `dataDir`.
   Deps: P1-12.
 
-- **P1-17 Projects list empty vs populated.**
-  Steps: fresh app → assert Empty `No Projects yet` → `seedProject` → reload/nav.
-  Assert: one card with title + description; skeletons resolved.
-  Helpers: `seedProject`, `reloadWindow`.
+- **P1-17 Projects list empty vs populated. — DONE (passing, `tests/specs/projects.spec.ts`).**
+  Steps: fresh app on `#/projects` → assert the `No Projects yet` empty state → `setUserViaIpc` + `createProjectViaIpc` (defaults) → `reloadWindow`.
+  Assert (desktop-only): the empty state shows while the list is empty; after seeding and a reload one card renders both the name ("Test Project") and description ("A Project created by the E2E tests") and the empty state is gone. The list renders skeletons while loading, then resolves to the card.
+  Helpers: `createProjectViaIpc`, `reloadWindow`, `verifyCurrentRouteHash`.
   Deps: P0-01.
 
-- **P1-18 Entry table lists entries with formatted columns.**
-  Steps: seed collection + 2 entries → collection detail.
-  Assert: 2 rows; `No results.` absent; column-visibility dropdown present; Create button labeled with the singular name.
-  Helpers: `seedCollection`, `seedEntry`.
+- **P1-18 Entry table lists entries with the expected chrome. — DONE (passing, `tests/specs/entries.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` + two `createEntryViaIpc` with distinct titles ('First', 'Second') → `navigateToCollection`.
+  Assert (desktop-only): both titles render as table cells and `No results.` is absent; the "Visible Values" column-visibility dropdown trigger is visible; the "Create Article" action (labelled with the collection singular) is visible. Asserting the two known values are present beats a brittle `getByRole('row')` count, which would include the header row.
+  Helpers: `createCollectionViaIpc`, `createEntryViaIpc`, `stringValue`, `navigateToCollection`.
   Deps: P0-04.
 
 - **P1-19 Reload lists multiple projects without duplication or loss.** _(moved down from P0-09 — list-render/count integrity, no data-loss risk)_
@@ -364,10 +364,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 ### P3 — validation edges, empty/error states, view, pagination, accessibility
 
-- **P3-01 Project form validation on submit.**
-  Steps: `/projects/create` → Create with empty name + description.
-  Assert: `FormMessage` errors; no submit-disable; no errors on open; no project written.
-  Helpers: `dataDir`.
+- **P3-01 Project create form surfaces validation on submit, not by disabling. — DONE (passing, `tests/specs/projects.spec.ts`).**
+  Steps: `setUserViaIpc` → `navigate` to `#/projects/create` → Create with empty name + description.
+  Assert (desktop-only, per the doctrine): on open the "Create Project" button is enabled (no submit-disable) and neither the name nor description field is flagged (`aria-invalid` "false", so no errors on open); clicking Create with both empty flips both fields to `aria-invalid` "true" (validation surfaced on click) and the URL stays on `#/projects/create`, so the submit did not go through and nothing was created. "No submit" is proven by no-navigation, not by reading disk. Core's zod message text is Core's test, not asserted here.
+  Helpers: `setUserViaIpc`, `navigate`.
   Deps: none.
 
 - **P3-02 Collection slug validation (regex + reserved blocklist).**
@@ -388,10 +388,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `addFieldDefinition`.
   Deps: P0-03.
 
-- **P3-05 Entry required and format validation per language.**
-  Steps: collection with a required email field → entry create submit empty → required error; invalid email → format error; valid value passes.
-  Assert: Create stays dirty-gated; errors are per language.
-  Helpers: `seedCollection`, `fillEntryForm`.
+- **P3-05 Entry required + format validation, respecting the dirty gate. — DONE (passing, `tests/specs/entries.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` with `fieldDefinitions: [emailFieldDefinition() (required), textFieldDefinition({ slug: 'note', label: { en: 'Note' }, isRequired: false })]` → `navigateToEntryCreate`.
+  Assert (desktop-only, per the doctrine): on open "Create Article" is disabled (the dirty gate) and Email is not flagged (`aria-invalid` "false"); filling the optional Note dirties the form with Email still empty, so the button enables, and submitting flags Email `aria-invalid` "true" while the URL stays on the create route (required path); filling Email with `notanemail` and submitting keeps it flagged and on the create route (format path); filling Email with `valid@example.com` and submitting navigates to the Collection detail (valid path, the create went through). Single-language (en) collection, since per-language validation across multiple languages is P2-15's scope. Because the create is dirty-gated, a pristine empty form cannot be submitted by design, so a "required" error is only reachable after dirtying the form via another field. Core's zod message text is Core's test, not asserted here.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `createCollectionViaIpc`, `emailFieldDefinition`, `textFieldDefinition`, `navigateToEntryCreate`, `fillEntryForm`.
   Deps: P0-04.
 
 - **P3-06 Asset form validation and update dirty-gate.** _(added)_
@@ -399,9 +399,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `stubFileDialog`, `makeTempFile`, `seedProject`.
   Deps: P1-12.
 
-- **P3-07 Empty states across the app.**
-  Assert: `No Projects yet`, `No Assets yet`, `No Collections found` (sidebar), and `No results.` (entry table) each render when their total is 0.
-  Helpers: `seedProject` (for the scoped-empty cases).
+- **P3-07 Empty states across the app. — DONE (passing, `tests/specs/empty-states.spec.ts`).**
+  Steps: walk all four in one spec in an order that keeps each precondition true: fresh app on `#/projects` → `setUserViaIpc` + `createProjectViaIpc` + `navigateToAssets` → `navigate` to the project's `collections` → `createCollectionViaIpc` + `navigateToCollection`.
+  Assert (desktop-only): `No Projects yet`, `No Assets yet`, `No Collections found` (the collections sidebar), and `No results.` (the entry table) each render when their total is 0. This is the single place all four empty strings are pinned, so a renamed empty state is caught (the overlap with P1-17/P1-18 is intentional for that reason).
+  Helpers: `createProjectViaIpc`, `navigateToAssets`, `createCollectionViaIpc`, `navigateToCollection`, `navigate`, `verifyCurrentRouteHash`.
   Deps: P0-01.
 
 - **P3-08 Asset teaser View/preview dialog.** _(added)_
@@ -430,7 +431,7 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 Build these before their first consumer; ordered by dependency (each later helper tends to use the earlier ones).
 
-**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`, `navigateToProjectSettings`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `fillEntryForm`, `navigateToEntryCreate`, `navigateToEntryUpdate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10, P0-11, P1-01, P1-07 and P1-11** are written, migrated to the doctrine, and passing (P0-07's IPC-level guard test was dropped as a Core duplicate). The helpers below without a "(built)" tag are still to add.
+**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`, `navigateToProjectSettings`, `navigateToAssets`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `emailFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `fillEntryForm`, `navigateToEntryCreate`, `navigateToEntryUpdate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10, P0-11, P1-01, P1-07, P1-11, P1-17, P1-18, P3-01, P3-05 and P3-07** are written, migrated to the doctrine, and passing (P0-07's IPC-level guard test was dropped as a Core duplicate). The helpers below without a "(built)" tag are still to add.
 
 **Naming:** the suite drives the UI by default, so UI helpers are unmarked and IPC helpers are suffixed `ViaIpc` (see [`testing.md`](./testing.md#writing-tests)). Pending entries below still use pre-convention names like `seedProject`; those become `createProjectViaIpc` and similar as each is migrated.
 
@@ -440,10 +441,10 @@ Build these before their first consumer; ordered by dependency (each later helpe
 - **`setUserViaIpc(page, overrides?)` (built)** — `core:user:set` precondition (git author identity); returns the User. Narrowed to the local-User branch of the `SetUserProps` union. Required before any write.
 - **`createProjectViaIpc(page, overrides?)` (built)** — `core:projects:create` with sensible defaults, returns the Project. The IPC-seed counterpart of `createProject`.
 - **`createProject(page, props)` + `fillProjectForm` (built)** — click through from the Projects list, fill name + description, submit, and return the new projectId from the redirect URL. A `selectProjectLanguage` helper for the custom language Popover/Command widget is still to add (the default en/en is used until then).
-- **`createCollectionViaIpc(page, overrides)` (built)** — `core:collections:create` with sensible defaults (a valid single-language Collection with one required text field); `projectId` is required, field-definition ids are generated in the helper (Core matches definitions by id). Returns the Collection. Ships with `textFieldDefinition(overrides)`, a builder for a required text FieldDefinition.
+- **`createCollectionViaIpc(page, overrides)` (built)** — `core:collections:create` with sensible defaults (a valid single-language Collection with one required text field); `projectId` is required, field-definition ids are generated in the helper (Core matches definitions by id). Returns the Collection. Ships with `textFieldDefinition(overrides)`, a builder for a required text FieldDefinition, and `emailFieldDefinition(overrides)` (built), the same for a required email FieldDefinition (no min/max), used to drive the required and format validation paths in P3-05.
 - **`addFieldDefinition(page, { label, description })` (built, text only)** — drive the "Add Field" sheet in `CollectionForm` to append one text field definition (fill the translatable label + description, the slug auto-derives, confirm with "Add definition"). Extend to the other value-definition sub-forms (number/select/reference/markdown/date/etc.) for later collection and validation tests.
 - **`createEntryViaIpc(page, { projectId, collectionId, values })` (built)** — `core:entries:create` with `values` keyed by field slug; ships with `stringValue(content)`, a builder for a translatable string Value. **`fillEntryForm(page, fields)` (built, text only)** — fill the dynamically generated entry form keyed by field label. Extend it to handle the per-language translatable dialog (P2-15) and temporal fields (P2-14).
-- **`navigate(page, hash)` (built)** — point the URL at a route hash and reload so the app boots fresh there (a fresh boot refetches from Core, which arranged IPC state needs since it does not touch the renderer cache). **`navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`/`navigateToEntryCreate`/`navigateToEntryUpdate` (built)** wrap it for the collection and entry routes, and **`navigateToProjectSettings` (built)** for a Project's general settings, each confirming the hash via `verifyCurrentRouteHash`. A `navigateToProject` (dashboard) equivalent is still to add.
+- **`navigate(page, hash)` (built)** — point the URL at a route hash and reload so the app boots fresh there (a fresh boot refetches from Core, which arranged IPC state needs since it does not touch the renderer cache). **`navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`/`navigateToEntryCreate`/`navigateToEntryUpdate` (built)** wrap it for the collection and entry routes, and **`navigateToProjectSettings` (built)** for a Project's general settings and **`navigateToAssets` (built)** for a Project's Assets list, each confirming the hash via `verifyCurrentRouteHash`. A `navigateToProject` (dashboard) equivalent is still to add.
 - **`reloadWindow(page)`** — `page.reload()` then wait for `#app` and the expected hash. Basis of the renderer-refetch persistence cases (P0-02, P0-05, P1-17, P1-19). **Note its scope:** it reloads only the renderer; main + Core stay alive, so it proves renderer re-fetch over IPC, not process-restart survival.
 - **`launchApp(testInfo, overrides?)` (built)** — the launch body extracted from the `electronApp` fixture (`tests/fixtures/electronApp.ts`): find the unpacked build, build the env (skip undefined, set `NODE_ENV=test` + `ELEK_IO_DATA_DIR`, delete `ELECTRON_RUN_AS_NODE`), launch with `--user-data-dir`, and mirror stdout/stderr. `dataDir` and `userDataDir` default to the per-test output paths, overridable so a relaunch can reuse them. The fixture calls it with the defaults, so the existing specs are unchanged.
 - **`relaunchApp(testInfo, app)` (built)** — `tests/helpers/app.ts`: `app.close()` then `launchApp` against the **same** `ELEK_IO_DATA_DIR` and userData dir, returning the new app and its first window. The only way to test true survival across a main-process restart (P0-10). The fixture's `electronApp` teardown tolerates the already-closed app (a double close cannot fail teardown), and its `mainWindow` teardown skips the console/axe checks when the first window is already closed (the relaunched window is out of scope for those checks).

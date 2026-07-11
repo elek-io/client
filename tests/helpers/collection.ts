@@ -4,6 +4,7 @@ import {
   uuid,
   type Collection,
   type CreateCollectionProps,
+  type EmailFieldDefinition,
   type TextFieldDefinition,
 } from '@elek-io/core';
 
@@ -31,6 +32,31 @@ export function textFieldDefinition(
     defaultValue: null,
     min: null,
     max: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Build a required email FieldDefinition with a caller-supplied id. Mirrors
+ * `textFieldDefinition` but with `fieldType` "email", so a Collection can drive
+ * both the required and format validation paths. Email definitions carry no
+ * min/max, so those keys are absent here.
+ */
+export function emailFieldDefinition(
+  overrides: Partial<EmailFieldDefinition> = {}
+): EmailFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'email',
+    label: { en: 'Email' },
+    description: null,
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'string',
+    fieldType: 'email',
+    defaultValue: null,
     ...overrides,
   };
 }
