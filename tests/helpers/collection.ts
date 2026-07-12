@@ -5,6 +5,7 @@ import {
   type Collection,
   type CreateCollectionProps,
   type EmailFieldDefinition,
+  type ReferenceFieldDefinition,
   type TextFieldDefinition,
 } from '@elek-io/core';
 
@@ -57,6 +58,44 @@ export function emailFieldDefinition(
     valueType: 'string',
     fieldType: 'email',
     defaultValue: null,
+    ...overrides,
+  };
+}
+
+/**
+ * The entry arm of the `ReferenceFieldDefinition` union (an `entry` reference,
+ * as opposed to an `asset` one). Extracted so the builder's overrides are typed
+ * against the concrete member rather than the whole union.
+ */
+type EntryReferenceFieldDefinition = Extract<
+  ReferenceFieldDefinition,
+  { fieldType: 'entry' }
+>;
+
+/**
+ * Build an optional single-entry reference FieldDefinition with a caller-supplied
+ * id. Mirrors `textFieldDefinition` but points at another Entry: `fieldType`
+ * "entry", `ofCollections` empty (any Collection), `max` 1 (a single reference).
+ * Used to arrange a Collection whose Entries can point at one another, so a sync
+ * rebase can orphan a reference target.
+ */
+export function referenceFieldDefinition(
+  overrides: Partial<EntryReferenceFieldDefinition> = {}
+): ReferenceFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'related',
+    label: { en: 'Related' },
+    description: null,
+    isRequired: false,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'reference',
+    fieldType: 'entry',
+    ofCollections: [],
+    min: null,
+    max: 1,
     ...overrides,
   };
 }

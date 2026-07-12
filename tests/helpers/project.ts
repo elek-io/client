@@ -49,6 +49,18 @@ export async function setRemoteOriginUrlViaIpc(
   );
 }
 
+/**
+ * Route to a Project's dashboard and confirm the app rendered there. The
+ * dashboard is a Project route, so the ProjectSidebar (with the Synchronize
+ * control) renders alongside it.
+ */
+export async function navigateToProjectDashboard(
+  page: Page,
+  projectId: string
+): Promise<void> {
+  await navigate(page, `#/projects/${projectId}/dashboard`);
+}
+
 /** Route to a Project's general settings (update) page and confirm it rendered. */
 export async function navigateToProjectSettings(
   page: Page,

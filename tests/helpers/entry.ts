@@ -1,6 +1,11 @@
 import { type Page } from '@playwright/test';
 
-import type { CreateEntryProps, Entry, SupportedLanguage } from '@elek-io/core';
+import type {
+  CreateEntryProps,
+  Entry,
+  ReferencedValue,
+  SupportedLanguage,
+} from '@elek-io/core';
 
 import { navigate } from './navigation.js';
 
@@ -13,6 +18,31 @@ export function stringValue(
   content: Partial<Record<SupportedLanguage, string | null>>
 ): CreateEntryProps['values'][string] {
   return { objectType: 'value', valueType: 'string', content };
+}
+
+/**
+ * Build a single-entry reference Value pointing at one target Entry. An Entry
+ * reference carries both the target's `id` and its `collectionId`, since Core's
+ * storage layout needs both to find the file. Pass the result under the
+ * reference field's slug in `createEntryViaIpc`'s `values`.
+ *
+ * Called with no arguments it builds an empty reference (no target). Core still
+ * requires the value wrapper for an optional reference field, with `content.en`
+ * present as an array, so an Entry that holds no reference passes `referenceValue()`.
+ */
+export function referenceValue(
+  entryId?: string,
+  collectionId?: string
+): ReferencedValue {
+  const content =
+    entryId !== undefined && collectionId !== undefined
+      ? [{ id: entryId, objectType: 'entry' as const, collectionId }]
+      : [];
+  return {
+    objectType: 'value',
+    valueType: 'reference',
+    content: { en: content },
+  };
 }
 
 /**

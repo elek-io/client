@@ -12,7 +12,7 @@ import {
   DownloadCloud,
   UploadCloud,
 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   ProjectSwitcher,
@@ -23,6 +23,15 @@ import {
   ButtonGroup,
   ButtonGroupSeparator,
 } from '@renderer/components/ui/button-group';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@renderer/components/ui/dialog';
 import {
   Sidebar,
   SidebarContent,
@@ -103,7 +112,19 @@ export function ProjectSidebar(): React.JSX.Element {
     refetch: refetchProjectChanges,
   } = useQueryNoError(queryOptions.projects.getChanges(project));
   const { mutateAsync: synchronizeProject, isPending: isSynchronizingProject } =
-    useMutation(queryOptions.projects.synchronize);
+    useMutation({
+      ...queryOptions.projects.synchronize,
+      // We handle a failed sync in place with the dialog below instead of showing
+      // the root error boundary. Core rejects a sync that would push a dangling
+      // reference (and other conflicts) without pushing anything.
+      throwOnError: false,
+      onError: () => {
+        // Prevents the error toast from showing up too
+      },
+    });
+
+  const [isSyncConflictDialogOpen, setIsSyncConflictDialogOpen] =
+    useState(false);
 
   if (isReadingProject) {
     return <ProjectSidebarSkeleton />;
@@ -120,9 +141,16 @@ export function ProjectSidebar(): React.JSX.Element {
             <ButtonGroup className="w-full">
               <Button
                 className="flex-1"
-                onClick={async () =>
-                  await synchronizeProject({ id: project.id })
-                }
+                onClick={async () => {
+                  try {
+                    await synchronizeProject({ id: project.id });
+                  } catch {
+                    // A conflict (e.g. a rebase that orphans a reference) stops
+                    // the sync before it pushes. Surface it in place rather than
+                    // crashing to the error boundary.
+                    setIsSyncConflictDialogOpen(true);
+                  }
+                }}
                 isLoading={isSynchronizingProject}
                 disabled={
                   isFetchingProjectChanges ||
@@ -154,6 +182,29 @@ export function ProjectSidebar(): React.JSX.Element {
                 </span>
               )}
             </p>
+
+            <Dialog
+              open={isSyncConflictDialogOpen}
+              onOpenChange={setIsSyncConflictDialogOpen}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Could not synchronize this Project</DialogTitle>
+                  <DialogDescription>
+                    A conflict stopped the synchronization before anything was
+                    pushed, so nothing reached the remote and your local changes
+                    are safe. Resolve the conflict and try again.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="secondary">
+                      Close
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </SidebarGroup>
         ) : null}
         <ProjectNavigation />
