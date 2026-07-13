@@ -164,9 +164,16 @@ test.describe('Projects', () => {
     await mainWindow.getByRole('button', { name: 'Delete Project' }).click();
     await confirmDialog(mainWindow, 'Delete');
 
-    // The force-delete modal appears (the guard was handled in place)
+    // The force-delete modal appears (the guard was handled in place) and its
+    // description reflects the preserved CoreError type: a local-only Project
+    // (PreconditionFailed) explains there is no remote copy.
     await expect(
       mainWindow.getByText('Force delete this Project?')
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText(
+        'This Project only exists on this device (no remote copy). Force delete removes it permanently.'
+      )
     ).toBeVisible();
     await confirmDialog(mainWindow, 'Yes, delete');
 
@@ -209,6 +216,14 @@ test.describe('Projects', () => {
 
     await expect(
       mainWindow.getByText('Force delete this Project?')
+    ).toBeVisible();
+    // The description reflects the preserved CoreError type: unpushed local work
+    // (Conflict) explains those changes would be discarded, distinct from the
+    // local-only reason above.
+    await expect(
+      mainWindow.getByText(
+        'This Project has local changes not yet pushed to its remote. Force delete discards those unpushed changes permanently.'
+      )
     ).toBeVisible();
     await confirmDialog(mainWindow, 'Yes, delete');
 

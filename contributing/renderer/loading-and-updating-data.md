@@ -469,23 +469,10 @@ Mutations already have `onSuccess` handlers that update the necessary caches. Us
 
 ## Error Handling
 
-The desktop app handles errors in three layers:
+Data loading and mutations lean on the app's error handling defaults:
 
-1. **Route error boundaries** - the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx) catches all unhandled errors, logs them to the Core logger, and shows a friendly error page with a way back to the projects list. Sentry capture for React errors is wired separately, via Sentry's `reactErrorHandler` passed to `ReactDOM.createRoot` in [`app.tsx`](../../src/renderer/app.tsx) (Sentry itself is initialized in [`index.ts`](../../src/renderer/index.ts)).
-2. **Query and mutation errors** - `throwOnError: true` is set by default (via `useQueryNoError` and `customMutationOptions`), so query errors bubble to the nearest error boundary and mutation failures additionally show a toast through the global handler.
-3. **Core logger** - all errors, mutations and navigations are logged through Core, accessible via `window.ipc.core.logger`.
+- `throwOnError: true` is set by default, via `useQueryNoError` for queries and `customMutationOptions` for mutations, so a failure bubbles to the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx). A mutation failure also shows a toast through the global handler.
+- All mutations and navigations, and any error that reaches the boundary, are logged through the Core logger via `window.ipc.core.logger`. Sentry capture is wired separately.
+- An expected, recoverable Core guard (a `409`/`412` from a normal user action) should not take over the whole view. Such a mutation opts out at its call site with `throwOnError: false` and a no-op `onError`, then handles the rejection in place. The force-delete and sync-conflict modals do this today.
 
-### Handling Expected Errors In Place
-
-`throwOnError: true` sends every mutation failure to the root error boundary, which replaces the whole view. That is the right default for unexpected errors, but the wrong response to an _expected_, recoverable Core guard raised by a normal user action (a `409`/`412`). For those, a mutation opts out of the boundary at the call site and handles the rejection itself:
-
-- Override the mutation options with `throwOnError: false` (so the failure does not reach the boundary) and `onError: () => {}` (so the global toast and log do not fire).
-- `await mutateAsync(...)` inside a `try`/`catch`. `mutateAsync` still rejects on failure regardless of `throwOnError`, so the `catch` runs.
-- In the `catch`, drive the UI in place, usually a controlled `Dialog` opened through `useState`.
-
-Two flows use this today:
-
-- **Force-delete a Project** ([`settings/general.tsx`](../../src/renderer/routes/projects/$projectId/settings/general.tsx)) catches Core's delete guard (a local-only or unpushed-ahead Project) and offers a force delete.
-- **Sync conflict** ([`components/project-sidebar.tsx`](../../src/renderer/components/project-sidebar.tsx)) catches a failed `synchronize`, most notably Core's sync-time integrity gate rejecting a rebase that would push a dangling reference, and shows a "Could not synchronize this Project" dialog explaining nothing was pushed. The title is deliberately generic, so it also covers an LFS or network failure without discriminating error types.
-
-Both stay on their originating page and never reach the root error boundary, so neither trips the E2E fixture's console assertion (see [`testing.md`](../testing.md)).
+The full picture, including how `CoreError.type` survives IPC, the step-by-step guide to handling an expected error in place with those two worked examples, and exactly where and when things are logged locally and to Sentry, lives in the dedicated [Error Handling](../error-handling.md) doc.

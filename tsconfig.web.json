@@ -3,7 +3,7 @@
     "@tsconfig/vite-react/tsconfig.json",
     "@tsconfig/strictest/tsconfig.json"
   ],
-  "include": ["src/renderer", "src/index.d.ts"],
+  "include": ["src/renderer", "src/shared", "src/index.d.ts"],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",

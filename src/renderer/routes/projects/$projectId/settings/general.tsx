@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { parseIpcError } from '@root/src/shared/ipcError';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Trash } from 'lucide-react';
@@ -22,13 +23,31 @@ import {
 } from '@renderer/components/ui/dialog';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
+import { describeCoreError } from '@renderer/lib/coreErrorText';
 import { queryOptions } from '@renderer/queries';
 
-import { type UpdateProjectProps, updateProjectSchema } from '@elek-io/core';
+import {
+  type CoreErrorType,
+  type UpdateProjectProps,
+  updateProjectSchema,
+} from '@elek-io/core';
 
 export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsGeneralPage,
 });
+
+// Why the normal delete was blocked, keyed by the CoreError type preserved
+// across IPC. Unlisted types (and non-Core errors) fall back to the generic
+// sentence below.
+const forceDeleteDescriptions: Partial<Record<CoreErrorType, string>> = {
+  PreconditionFailed:
+    'This Project only exists on this device (no remote copy). Force delete removes it permanently.',
+  Conflict:
+    'This Project has local changes not yet pushed to its remote. Force delete discards those unpushed changes permanently.',
+};
+
+const forceDeleteFallback =
+  'This Project is not synchronized to a remote, or it has changes that were never pushed. Deleting it now removes those changes permanently, with no way to recover them.';
 
 function ProjectSettingsGeneralPage(): ReactElement {
   const router = useRouter();
@@ -69,6 +88,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isForceDeleteDialogOpen, setIsForceDeleteDialogOpen] = useState(false);
+  const [forceDeleteError, setForceDeleteError] = useState<unknown>(null);
 
   const { mutateAsync: deleteProject, isPending: isDeletingProject } =
     useMutation({
@@ -108,9 +128,11 @@ function ProjectSettingsGeneralPage(): ReactElement {
     try {
       await deleteProject({ id: projectId });
       await router.navigate({ to: '/projects' });
-    } catch {
+    } catch (error) {
       // Core guards deletion that would destroy unsynchronized work (a
-      // local-only Project, or one with unpushed commits). Offer to force it.
+      // local-only Project, or one with unpushed commits). Keep the error so the
+      // force-delete dialog can explain why, then offer to force it.
+      setForceDeleteError(error);
       setIsDeleteDialogOpen(false);
       setIsForceDeleteDialogOpen(true);
     }
@@ -120,11 +142,19 @@ function ProjectSettingsGeneralPage(): ReactElement {
     try {
       await deleteProject({ id: projectId, force: true });
       await router.navigate({ to: '/projects' });
-    } catch {
+    } catch (error) {
       setIsForceDeleteDialogOpen(false);
-      toast.error('Could not delete this Project');
+      toast.error(
+        describeCoreError(
+          parseIpcError(error).type,
+          undefined,
+          'Could not delete this Project'
+        )
+      );
     }
   };
+
+  const { type: forceDeleteErrorType } = parseIpcError(forceDeleteError);
 
   return (
     <Page
@@ -187,9 +217,11 @@ function ProjectSettingsGeneralPage(): ReactElement {
                   <DialogHeader>
                     <DialogTitle>Force delete this Project?</DialogTitle>
                     <DialogDescription>
-                      This Project is not synchronized to a remote, or it has
-                      changes that were never pushed. Deleting it now removes
-                      those changes permanently, with no way to recover them.
+                      {describeCoreError(
+                        forceDeleteErrorType,
+                        forceDeleteDescriptions,
+                        forceDeleteFallback
+                      )}
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>

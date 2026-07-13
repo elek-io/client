@@ -161,6 +161,14 @@ test.describe('Synchronize', () => {
     await expect(
       mainWindow.getByText('Could not synchronize this Project')
     ).toBeVisible();
+    // The description reflects the preserved CoreError type: the integrity gate
+    // rejects with a Conflict, so the modal shows the remote-conflict reason
+    // rather than the generic fallback.
+    await expect(
+      mainWindow.getByText(
+        'A change on the remote conflicts with your local work, so nothing was pushed. Resolve it and try again.'
+      )
+    ).toBeVisible();
 
     // Nothing was pushed: the remote's work ref is exactly where it was, so the
     // local-only Entry never reached the shared remote.

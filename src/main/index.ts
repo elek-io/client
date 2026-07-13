@@ -16,9 +16,11 @@ import {
 } from 'electron';
 import Path from 'path';
 
-import ElekIoCore from '@elek-io/core';
+import ElekIoCore, { CoreError } from '@elek-io/core';
 
 import icon from '../../resources/icon.png?asset';
+import { serializeCoreError } from '../shared/ipcError.js';
+import { decodeCoreErrorForSentry } from '../shared/sentryCoreError.js';
 
 // import { updateElectronApp } from 'update-electron-app';
 
@@ -35,6 +37,11 @@ sentryInit({
   enableRendererProfiling: true, // @see https://docs.sentry.io/platforms/javascript/guides/electron/profiling/
   // E2E tests set NODE_ENV to prevent reporting from test runs
   enabled: process.env['NODE_ENV'] !== 'test',
+  // Decode any CoreError encoded at the IPC boundary into a readable message
+  beforeSend: (event) => {
+    decodeCoreErrorForSentry(event);
+    return event;
+  },
 });
 
 class Main {
@@ -395,15 +402,29 @@ class Main {
       ) => unknown;
 
       ipcMain.handle(channel, async (_event, ...args: unknown[]) => {
-        // Prepend window argument for dialog calls
-        if (
-          channel === 'electron:dialog:showOpenDialog' ||
-          channel === 'electron:dialog:showSaveDialog'
-        ) {
-          return await handler(window, ...args);
-        }
+        try {
+          // Prepend window argument for dialog calls
+          if (
+            channel === 'electron:dialog:showOpenDialog' ||
+            channel === 'electron:dialog:showSaveDialog'
+          ) {
+            return await handler(window, ...args);
+          }
 
-        return await handler(...args);
+          return await handler(...args);
+        } catch (error) {
+          // Electron serializes a thrown error to the plain Error shape, which
+          // drops the CoreError subclass, its `type` and its stack (the
+          // renderer receives a frameless error). Encode all three into the
+          // message so the renderer can recover them with parseIpcError.
+          // Everything else propagates unchanged.
+          if (error instanceof CoreError) {
+            throw new Error(
+              serializeCoreError(error.type, error.message, error.stack)
+            );
+          }
+          throw error;
+        }
       });
     });
   }
