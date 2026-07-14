@@ -126,6 +126,7 @@ function UserProfilePage(): ReactElement {
         <Button
           onClick={setUserForm.handleSubmit(onSetUser)}
           isLoading={isSettingUser}
+          disabled={setUserForm.formState.isDirty === false}
           Icon={Check}
         >
           Save local User

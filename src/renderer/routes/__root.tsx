@@ -1,3 +1,4 @@
+import { parseIpcError } from '@root/src/shared/ipcError';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   type ErrorComponentProps,
@@ -40,10 +41,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
   const router = useRouter();
 
+  // A CoreError that crossed IPC arrives with its type and message encoded into
+  // the message. Decode it so we show clean copy, never the raw sentinel JSON.
+  // Non-Core errors (route or JS errors) fall back to their raw message.
+  const { message } = parseIpcError(error);
+
   void window.ipc.core.logger.error({
     source: 'desktop',
-    message: `Uncaught route error: ${error.message}`,
-    meta: { error: { message: error.message, stack: error.stack } },
+    message: `Uncaught route error: ${message}`,
+    meta: { error: { message, stack: error.stack } },
   });
 
   function Description(): ReactElement {
@@ -80,7 +86,7 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
       <AppHeader />
       <Page title="Error" description={<Description />} actions={<Actions />}>
         <div className="p-6">
-          <p>{error.message}</p>
+          <p>{message}</p>
           <ScrollArea>
             <div className="flex w-max py-6 text-xs">
               <pre>{error.stack}</pre>

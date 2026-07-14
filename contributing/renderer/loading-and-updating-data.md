@@ -295,6 +295,12 @@ return (
 - Prevents user interaction during loading
 - Cleaner code with less conditional rendering
 
+### Gating Save on `formState.isDirty`
+
+Every mutation Save/Update button is disabled until the form is dirty, with `disabled={<form>.formState.isDirty === false}`. An unchanged form has nothing to commit, so submitting it would make Core reject an empty change. The gate is app-wide and consistent across the project, collection, entry, user and version-control update forms, so a form that reset from loaded data starts with Save disabled and enables it the moment the user edits a field.
+
+This is distinct from validation. Validation is surfaced on click through `FormMessage`, not by keeping the button disabled, so an invalid but changed form still shows its Save button enabled and reports the errors when submitted. Only the "nothing changed yet" state disables Save.
+
 ### Mutation Metadata
 
 All mutations should include metadata for proper toast notifications and logging. Use the `customMutationOptions` wrapper from [`util.ts`](../../src/renderer/queries/util.ts) to not only make sure the metadata is included, but also to automatically add `throwOnError: true` to propagate errors to the nearest error boundary and log all mutations with Core:
@@ -463,8 +469,10 @@ Mutations already have `onSuccess` handlers that update the necessary caches. Us
 
 ## Error Handling
 
-The desktop app handles errors in three layers:
+Data loading and mutations lean on the app's error handling defaults:
 
-1. **Route error boundaries** - the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx) catches all unhandled errors, logs them to the Core logger, and shows a friendly error page with a way back to the projects list. Sentry capture for React errors is wired separately, via Sentry's `reactErrorHandler` passed to `ReactDOM.createRoot` in [`app.tsx`](../../src/renderer/app.tsx) (Sentry itself is initialized in [`index.ts`](../../src/renderer/index.ts)).
-2. **Query and mutation errors** - `throwOnError: true` is set by default (via `useQueryNoError` and `customMutationOptions`), so query errors bubble to the nearest error boundary and mutation failures additionally show a toast through the global handler.
-3. **Core logger** - all errors, mutations and navigations are logged through Core, accessible via `window.ipc.core.logger`.
+- `throwOnError: true` is set by default, via `useQueryNoError` for queries and `customMutationOptions` for mutations, so a failure bubbles to the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx). A mutation failure also shows a toast through the global handler.
+- All mutations and navigations, and any error that reaches the boundary, are logged through the Core logger via `window.ipc.core.logger`. Sentry capture is wired separately.
+- An expected, recoverable Core guard (a `409`/`412` from a normal user action) should not take over the whole view. Such a mutation opts out at its call site with `throwOnError: false` and a no-op `onError`, then handles the rejection in place. The force-delete and sync-conflict modals do this today.
+
+The full picture, including how `CoreError.type` survives IPC, the step-by-step guide to handling an expected error in place with those two worked examples, and exactly where and when things are logged locally and to Sentry, lives in the dedicated [Error Handling](../error-handling.md) doc.

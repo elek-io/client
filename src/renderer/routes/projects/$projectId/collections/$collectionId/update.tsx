@@ -95,6 +95,7 @@ function ProjectCollectionUpdate(): ReactElement {
       <>
         <Button
           isLoading={isUpdatingCollection}
+          disabled={updateCollectionForm.formState.isDirty === false}
           onClick={updateCollectionForm.handleSubmit(onUpdate)}
         >
           <Check className="mr-2 h-4 w-4" />

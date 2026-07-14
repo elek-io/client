@@ -8,6 +8,7 @@
     "playwright.config.ts",
     "src/main",
     "src/preload",
+    "src/shared",
     "src/index.d.ts",
     "tests"
   ],

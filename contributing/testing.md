@@ -4,6 +4,8 @@ The client is tested end to end with [Playwright](https://playwright.dev/docs/ap
 
 There is no unit test setup yet. Everything below is about E2E tests.
 
+The current suite covers only a few test cases. [`e2e-test-backlog.md`](./e2e-test-backlog.md) is the prioritized list of tests still to write, grounded in the full route and IPC surface. Work top down (P0 data-loss cases first) and build the shared helpers it lists before their first consumer.
+
 ## Running tests
 
 Tests run against the unpacked build in `dist`. The test scripts build it first, so they always test the current code:
@@ -49,11 +51,31 @@ The launch does a few important things:
 
 Playwright disables the Chromium sandbox on Linux itself (it adds `--no-sandbox` unless `chromiumSandbox: true`), so unpacked builds without the SUID sandbox helper run fine on GitHub's Ubuntu runners without the fixture passing anything.
 
+A `ViaIpc` seed can run immediately after the window opens because the main process registers its IPC handlers before it loads the renderer (see the Application Lifecycle section in [`overview.md`](./overview.md)). An earlier ordering registered them after the load, so a seed racing that gap flaked with "No handler registered"; fixing the order in the app removed the race for the suite and for real launches, so no test-side readiness wait is needed.
+
 When a test passes, the `mainWindow` fixture asserts that no console errors or warnings occurred and runs an axe accessibility scan, which does not assert on violations yet until the existing ones are resolved. The scan uses axe legacy mode, since otherwise axe opens a blank aggregation page via `context.newPage()`, which Electron does not support. Both checks are skipped when the test already failed, so they do not bury the real failure.
+
+## What a desktop test verifies
+
+All business logic, validation, file IO and git live in `@elek-io/core`, a separate library with its own test suite. Core validates tightly, so a corrupt file should never be written. The desktop suite does not re-verify Core's output, and the same assertion should not be written on both sides of the Core and desktop seam.
+
+A desktop test covers only the desktop app's own responsibilities:
+
+- It drives Core correctly, so the right form maps to the right IPC call with the data the user entered.
+- Whether Core threw or not is observed. Success shows through the UI as a redirect, the rendered result or a success toast. Failure shows through the UI as an error surface, or for a guard with no UI path through the IPC call rejecting.
+- The UI reflects Core's result, so created, updated and deleted state renders and Core's errors are surfaced.
+
+A desktop test does not assert Core's on disk file contents or location, exact commit trailers or message format, or Core's validation and error codes. Those belong to Core's own tests. In practice: prefer UI assertions for UI driven flows (create a Project, then see its card in the list), observe a bare throw or no-throw for guard paths, and do not read `project.json` or inspect commit trailers.
+
+Follow the arrange, act, assert split. Arrange preconditions over IPC (the `ViaIpc` helpers, see the naming convention below) since that is fast and does not depend on unrelated UI. Act through the UI for the flow under test. Assert on the surface that proves the desktop app's responsibility, usually the UI.
 
 ## Writing tests
 
-Reusable page interactions belong in `tests/helpers` as plain functions that take the `Page` first. Prefer role and label based locators over CSS selectors, and auto-retrying assertions like `toHaveURL` over one-shot reads, since route redirects happen client side.
+Reusable page interactions belong in `tests/helpers` as plain functions that take the `Page` first. Prefer role and label based locators over CSS selectors, and auto-retrying assertions like `toHaveURL` over one-shot reads, since route redirects happen client side. `getByLabel(text, { exact: true })` addresses form fields, including the translatable ones, since their inputs carry the label association. Scope it to an open dialog (`dialog.getByLabel(...)`) to disambiguate a label that also appears on the page behind it.
+
+Because the suite is end to end, a helper drives the UI by default and its name carries no marker (`createProject`, `fillProjectForm`). A helper that reaches Core directly over IPC instead is suffixed `ViaIpc` (`setUserViaIpc`, `createProjectViaIpc`), so the faster path, which bypasses the renderer and its query cache, stands out at a glance. Only mark the data verbs that could go either way (create, update, delete, set). A verb that already implies the UI (`fill`, `reload`, `navigate`) or an assertion helper stays unmarked.
+
+The `ViaIpc` helpers reach Core by wrapping `window.ipc` in a `page.evaluate` call. `window.ipc` is globally typed through `src/index.d.ts`, but specs type-check under the Node config which has no DOM lib, so `window` is declared once in `tests/global.d.ts`. There is no generic `ipc(page, path)` helper, since a string path cannot be typed without a cast. Write a small typed wrapper per operation instead.
 
 The `tests` folder is type-checked by `pnpm check-types:node` under the strictest settings. That config resolves modules with `nodenext`, so relative imports need explicit `.js` extensions, which Playwright resolves to the `.ts` files. `pnpm lint` also applies the type-aware ESLint rules to `tests`, so `no-floating-promises` flags an unawaited assertion, which type-checking alone does not catch.
 

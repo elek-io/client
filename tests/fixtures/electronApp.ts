@@ -3,6 +3,7 @@ import {
   test as base,
   type ElectronApplication,
   type Page,
+  type TestInfo,
   _electron as electron,
   expect,
 } from '@playwright/test';
@@ -34,6 +35,67 @@ function findUnpackedBuild(): string {
 }
 
 /**
+ * Launch the unpacked build for the current platform.
+ *
+ * Extracted from the `electronApp` fixture so a spec can relaunch against the
+ * same data directory to test survival across a process restart (see
+ * `relaunchApp`). The data stores are isolated per test: Core's project data via
+ * ELEK_IO_DATA_DIR (read at startup, see testing.md) and Electron's own userData
+ * (Chromium profile, localStorage, caches) via Chromium's --user-data-dir switch,
+ * which Electron honors without any test-only code in the app. Both default to
+ * the per-test output path, overridable to reuse a dir across a relaunch.
+ */
+export async function launchApp(
+  testInfo: TestInfo,
+  overrides: { dataDir?: string; userDataDir?: string } = {}
+): Promise<ElectronApplication> {
+  const appInfo = parseElectronApp(findUnpackedBuild());
+
+  const dataDir = overrides.dataDir ?? testInfo.outputPath('elek-io-data');
+  const userDataDir =
+    overrides.userDataDir ?? testInfo.outputPath('electron-user-data');
+
+  // Inherit the environment but skip undefined values,
+  // since Playwright only accepts strings
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) {
+      env[key] = value;
+    }
+  }
+  env['NODE_ENV'] = 'test';
+  env['ELEK_IO_DATA_DIR'] = dataDir;
+  // Electron based terminals like the one in VSCode set this variable,
+  // which would turn the launched app into a plain Node process
+  // and fail the launch with "Process failed to launch!"
+  delete env['ELECTRON_RUN_AS_NODE'];
+
+  // No main script argument on purpose, packaged builds load their bundled
+  // app on their own. Playwright adds --no-sandbox on Linux itself, so
+  // unpacked builds without the SUID sandbox helper run fine on CI
+  const app = await electron.launch({
+    executablePath: appInfo.executable,
+    args: [`--user-data-dir=${userDataDir}`],
+    env,
+  });
+
+  // Mirror the app's process output into the test output,
+  // so initialization failures in the main process are visible
+  app
+    .process()
+    .stdout?.on('data', (data: Buffer) =>
+      console.log(`[app] ${data.toString().trimEnd()}`)
+    );
+  app
+    .process()
+    .stderr?.on('data', (data: Buffer) =>
+      console.error(`[app] ${data.toString().trimEnd()}`)
+    );
+
+  return app;
+}
+
+/**
  * Custom fixtures for Electron E2E testing
  *
  * Tests run against the packaged build in "dist",
@@ -52,58 +114,19 @@ export const test = base.extend<{
 }>({
   // eslint-disable-next-line no-empty-pattern
   electronApp: async ({}, use, testInfo) => {
-    const appInfo = parseElectronApp(findUnpackedBuild());
-
-    // Isolate both data stores per test, so tests start clean and never touch
-    // real user data. Core reads ELEK_IO_DATA_DIR for its project data.
-    // Electron's own userData (Chromium profile, localStorage, caches) is
-    // redirected with Chromium's --user-data-dir switch below. Core and
-    // Electron each create their directory, see testing.md
-    const dataDir = testInfo.outputPath('elek-io-data');
-    const userDataDir = testInfo.outputPath('electron-user-data');
-
-    // Inherit the environment but skip undefined values,
-    // since Playwright only accepts strings
-    const env: Record<string, string> = {};
-    for (const [key, value] of Object.entries(process.env)) {
-      if (value !== undefined) {
-        env[key] = value;
-      }
-    }
-    env['NODE_ENV'] = 'test';
-    env['ELEK_IO_DATA_DIR'] = dataDir;
-    // Electron based terminals like the one in VSCode set this variable,
-    // which would turn the launched app into a plain Node process
-    // and fail the launch with "Process failed to launch!"
-    delete env['ELECTRON_RUN_AS_NODE'];
-
-    // No main script argument on purpose, packaged builds load their bundled
-    // app on their own. Playwright adds --no-sandbox on Linux itself, so
-    // unpacked builds without the SUID sandbox helper run fine on CI
-    const app = await electron.launch({
-      executablePath: appInfo.executable,
-      args: [`--user-data-dir=${userDataDir}`],
-      env,
-    });
-
-    // Mirror the app's process output into the test output,
-    // so initialization failures in the main process are visible
-    app
-      .process()
-      .stdout?.on('data', (data: Buffer) =>
-        console.log(`[app] ${data.toString().trimEnd()}`)
-      );
-    app
-      .process()
-      .stderr?.on('data', (data: Buffer) =>
-        console.error(`[app] ${data.toString().trimEnd()}`)
-      );
+    const app = await launchApp(testInfo);
 
     // Use the app in tests
     await use(app);
 
-    // Clean up - close the app after tests
-    await app.close();
+    // Clean up - close the app after tests. A spec that relaunches (see
+    // relaunchApp) closes this app itself first, so tolerate an already-closed
+    // app rather than failing teardown on a double close
+    try {
+      await app.close();
+    } catch {
+      // Already closed by the test, nothing to clean up
+    }
   },
 
   mainWindow: async ({ electronApp }, use, testInfo) => {
@@ -131,6 +154,13 @@ export const test = base.extend<{
     // window may be gone, so the axe scan would throw an unrelated error and
     // the console assertions would just pile onto the real failure
     if (testInfo.status !== testInfo.expectedStatus) {
+      return;
+    }
+
+    // A relaunch spec closes the first app (and this window) during the body to
+    // restart against the same data dir. The relaunched window is out of scope
+    // for these checks, so skip them rather than scanning a closed page
+    if (window.isClosed()) {
       return;
     }
 
