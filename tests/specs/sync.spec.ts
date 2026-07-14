@@ -18,6 +18,7 @@ import {
   setRemoteOriginUrlViaIpc,
 } from '../helpers/project.js';
 import {
+  commitFileOnRemote,
   deleteEntryOnRemote,
   localWorkSha,
   remoteWorkSha,
@@ -178,6 +179,67 @@ test.describe('Synchronize', () => {
     // dashboard and its sidebar still render.
     await dismissDialog(mainWindow);
     await expect(synchronize).toBeVisible();
+    await expect(mainWindow).toHaveURL(
+      new RegExp(`#/projects/${project.id}/dashboard`)
+    );
+  });
+
+  test('pulls a remote commit so the behind count drives to zero', async ({
+    mainWindow,
+  }, testInfo) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+
+    // Mirror the Project's current work into a bare origin (starts level), point
+    // the Project at it, then advance the remote by one commit out of band. Now
+    // local is behind the remote by that commit with nothing ahead.
+    const projectPath = testInfo.outputPath(
+      'elek-io-data',
+      'projects',
+      project.id
+    );
+    const remote = setupRemote(testInfo, { mirror: projectPath });
+    await setRemoteOriginUrlViaIpc(mainWindow, {
+      id: project.id,
+      url: remote.url,
+    });
+    // A Core-shaped commit (its trailers mark it an "update project"), so
+    // getChanges counts it as behind. A plain out-of-band commit would be
+    // invisible to getChanges (it filters to Core commits), so the sidebar
+    // would never see the behind change. This mirrors a collaborator's push.
+    commitFileOnRemote(
+      testInfo,
+      remote.path,
+      { relPath: 'note.txt', content: 'from the remote' },
+      { method: 'update', reference: { objectType: 'project', id: project.id } }
+    );
+
+    // Local is behind: its work ref differs from the (now advanced) remote's.
+    // This runner-side ref check corroborates the arrangement without inspecting
+    // file contents, the mirror image of the ahead-path round-trip above.
+    const remoteSha = remoteWorkSha(remote.path);
+    expect(localWorkSha(projectPath)).not.toBe(remoteSha);
+
+    // The sidebar detected the behind change (ahead is 0 here, so an enabled
+    // Synchronize can only mean behind > 0). Exact counts are Core's, so the
+    // button state, not the number, is what proves the desktop reflected it.
+    await navigateToProjectDashboard(mainWindow, project.id);
+    const synchronize = mainWindow.getByRole('button', { name: 'Synchronize' });
+    await expect(synchronize).toBeEnabled();
+
+    await synchronize.click();
+
+    // The pull brings the remote commit into local work: the local work ref
+    // reaches the remote's (a pure fast-forward, so the remote does not move).
+    // Poll while the sync (fetch, rebase, push) is in flight.
+    await expect
+      .poll(() => localWorkSha(projectPath), { timeout: 30000 })
+      .toBe(remoteSha);
+
+    // Sync resolved, so ahead/behind are back to zero and the button returns to
+    // disabled, still in the sidebar (so the view was not replaced by the root
+    // error boundary, backed by the fixture's console check).
+    await expect(synchronize).toBeDisabled();
     await expect(mainWindow).toHaveURL(
       new RegExp(`#/projects/${project.id}/dashboard`)
     );

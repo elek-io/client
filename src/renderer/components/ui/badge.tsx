@@ -80,11 +80,18 @@ function RemoteOriginBadge({
       }
     } else {
       // HTTPS/HTTP format
-      const url = new URL(remoteOriginUrl);
-      hostname = url.hostname;
-      path = url.pathname.startsWith('/')
-        ? url.pathname.slice(1)
-        : url.pathname;
+      try {
+        const url = new URL(remoteOriginUrl);
+        hostname = url.hostname;
+        path = url.pathname.startsWith('/')
+          ? url.pathname.slice(1)
+          : url.pathname;
+      } catch {
+        // Fallback for an origin that is not a parseable URL, like a bare
+        // filesystem path. Render it as is instead of crashing the card.
+        hostname = 'unknown';
+        path = remoteOriginUrl;
+      }
     }
 
     const HostIcon = hostname.includes('github.com')

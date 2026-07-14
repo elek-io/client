@@ -2,6 +2,7 @@ import { expect, type Page } from '@playwright/test';
 
 import type {
   CreateProjectProps,
+  DeleteProjectProps,
   Project,
   SetRemoteOriginUrlProjectProps,
 } from '@elek-io/core';
@@ -47,6 +48,20 @@ export async function setRemoteOriginUrlViaIpc(
     async (p) => window.ipc.core.projects.setRemoteOriginUrl(p),
     props
   );
+}
+
+/**
+ * Delete a Project directly over IPC, bypassing the UI.
+ *
+ * Pass `force: true` to skip Core's delete guards (no origin / unpushed work),
+ * used to remove a local copy so a bare mirror holds a Project the local data
+ * dir does not, as the clone flow needs.
+ */
+export async function deleteProjectViaIpc(
+  page: Page,
+  props: DeleteProjectProps
+): Promise<void> {
+  await page.evaluate(async (p) => window.ipc.core.projects.delete(p), props);
 }
 
 /**

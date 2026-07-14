@@ -1,9 +1,35 @@
 import { type TestInfo } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import type { GitMessage } from '@elek-io/core';
 
 /** The branch all content edits happen on (see Core's git-and-sync docs). */
 const WORK_BRANCH = 'work';
+
+/**
+ * Build a Core-shaped commit message: a subject line followed by the git
+ * trailers Core stamps on every commit (see Core's git-and-sync docs).
+ *
+ * getChanges only reports commits it can parse back into a Core commit (its
+ * `log` filters on those trailers), so an out-of-band remote commit must carry
+ * them to register as `behind`, exactly as a real collaborator's Core push
+ * would. A plain commit without trailers is invisible to getChanges.
+ */
+function coreCommitMessage(message: GitMessage): string {
+  const lines = [
+    `${message.method} ${message.reference.objectType} ${message.reference.id}`,
+    '',
+    `Method: ${message.method}`,
+    `Object-Type: ${message.reference.objectType}`,
+    `Object-Id: ${message.reference.id}`,
+  ];
+  if (message.reference.collectionId !== undefined) {
+    lines.push(`Collection-Id: ${message.reference.collectionId}`);
+  }
+  return lines.join('\n');
+}
 
 /**
  * Create a local bare git repo to stand in for a Project's remote `origin`.
@@ -100,6 +126,48 @@ export function deleteEntryOnRemote(
     'commit',
     '-m',
     `Delete ${relPath} out of band`,
+  ]);
+  execFileSync('git', ['-C', workTree, 'push', 'origin', WORK_BRANCH], { env });
+}
+
+/**
+ * Write a file and commit it on the bare remote as a Core-shaped commit, out of
+ * band, then push it to `work`.
+ *
+ * Clones the bare to a throwaway working tree, writes `file.relPath`, commits
+ * with `message`'s Core trailers (so getChanges recognizes it, see
+ * `coreCommitMessage`), and pushes `work` back to the bare. This advances the
+ * remote's `work` by one commit that Core counts, so a local Project pointed at
+ * it becomes `behind` by one, the state the behind-path sync spec needs. The
+ * file is plain (not under `lfs/**`), so no LFS object is involved.
+ */
+export function commitFileOnRemote(
+  testInfo: TestInfo,
+  remotePath: string,
+  file: { relPath: string; content: string },
+  message: GitMessage
+): void {
+  const workTree = testInfo.outputPath('remote-commit-clone');
+
+  // Entry/plain files are not LFS-tracked, and skipping the smudge filter keeps
+  // git-lfs from reaching for a remote it cannot serve.
+  const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' };
+
+  execFileSync('git', ['clone', remotePath, workTree], { env });
+  execFileSync('git', ['-C', workTree, 'checkout', WORK_BRANCH], { env });
+  writeFileSync(join(workTree, file.relPath), file.content);
+  execFileSync('git', ['-C', workTree, 'add', file.relPath]);
+  execFileSync('git', [
+    '-C',
+    workTree,
+    // Identity is set inline so the runner needs no global git config
+    '-c',
+    'user.name=E2E Remote',
+    '-c',
+    'user.email=e2e-remote@example.com',
+    'commit',
+    '-m',
+    coreCommitMessage(message),
   ]);
   execFileSync('git', ['-C', workTree, 'push', 'origin', WORK_BRANCH], { env });
 }

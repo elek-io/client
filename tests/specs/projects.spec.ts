@@ -11,6 +11,7 @@ import {
 import {
   createProject,
   createProjectViaIpc,
+  deleteProjectViaIpc,
   navigateToProjectSettings,
   navigateToVersionControl,
   setRemoteOriginUrlViaIpc,
@@ -349,5 +350,51 @@ test.describe('Projects', () => {
     for (const name of names) {
       await expect(mainWindow.getByText(name, { exact: true })).toHaveCount(1);
     }
+  });
+
+  test('clones a project from a local bare remote and shows it in the list', async ({
+    mainWindow,
+  }, testInfo) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow, {
+      name: 'Cloned Project',
+    });
+
+    // Mirror the Project into a bare remote (clone --bare copies its refs), then
+    // force-delete the local copy. The bare now holds a Project the local data
+    // dir does not, which is what the clone flow pulls back down.
+    const projectPath = testInfo.outputPath(
+      'elek-io-data',
+      'projects',
+      project.id
+    );
+    const remote = setupRemote(testInfo, { mirror: projectPath });
+    await deleteProjectViaIpc(mainWindow, { id: project.id, force: true });
+
+    // With the local copy gone, a fresh Projects list is empty again.
+    await navigate(mainWindow, '#/projects');
+    await expect(mainWindow.getByText('No Projects yet')).toBeVisible();
+
+    // Clone it back from the bare remote through the UI, pointing at the bare's
+    // plain filesystem path (what setupRemote returns). clone stores that path as
+    // the Project's origin, and the list card's RemoteOriginBadge renders it, so
+    // this also exercises the badge's fallback for an origin that is not a
+    // parseable URL (before the fix, new URL(path) threw and crashed the card).
+    await mainWindow.getByRole('button', { name: 'Clone Project' }).click();
+    const dialog = mainWindow.getByRole('dialog');
+    await expect(dialog.getByText('Clone a Project by URL')).toBeVisible();
+    await dialog.getByLabel('URL', { exact: true }).fill(remote.url);
+    await dialog.getByRole('button', { name: 'Clone' }).click();
+
+    // The clone reaches Core without throwing: the dialog closes and the Project
+    // reappears on the list by its name (the empty state is gone), its card
+    // rendered rather than crashing to the error boundary. Core's on-disk clone
+    // (files, LFS materialization) is Core's own test, not asserted here. Cloning
+    // the same id twice would hit the root error boundary (the clone mutation
+    // keeps the global throwOnError), so that duplicate-id Conflict is a deferred
+    // UI-negative and is not exercised here.
+    await expect(dialog).toBeHidden();
+    await expect(mainWindow.getByText('Cloned Project')).toBeVisible();
+    await expect(mainWindow.getByText('No Projects yet')).toBeHidden();
   });
 });
