@@ -3,6 +3,7 @@ import { expect } from '@playwright/test';
 import { test } from '../fixtures/electronApp.js';
 import { createCollectionViaIpc } from '../helpers/collection.js';
 import { confirmDialog, dismissDialog } from '../helpers/dialog.js';
+import { stubCoreReject } from '../helpers/ipc.js';
 import {
   navigate,
   reloadWindow,
@@ -396,5 +397,37 @@ test.describe('Projects', () => {
     await expect(dialog).toBeHidden();
     await expect(mainWindow.getByText('Cloned Project')).toBeVisible();
     await expect(mainWindow.getByText('No Projects yet')).toBeHidden();
+  });
+
+  test('routes an unexpected delete failure to the root error boundary', async ({
+    mainWindow,
+    electronApp,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+
+    await navigate(mainWindow, `#/projects/${project.id}/settings/general`);
+
+    // Make the delete reject with a non-guard error (a plain Error carries no
+    // CoreError type). The delete mutation handles only PreconditionFailed and
+    // Conflict in place (the force-delete modal), so every other failure must
+    // reach the root error boundary. This guards the throwOnError predicate
+    // against a regression back to a blanket throwOnError: false, which would
+    // swallow the failure into the force-delete modal and drop it from the logs
+    // and Sentry. The guard-path force-delete specs above cannot catch that,
+    // since the modal still opens for the guard reasons either way.
+    await stubCoreReject(electronApp, 'core:projects:delete');
+
+    await mainWindow.getByRole('button', { name: 'Delete Project' }).click();
+    await confirmDialog(mainWindow, 'Delete');
+
+    // The failure propagates: the root error boundary replaces the view and the
+    // force-delete modal never opens.
+    await expect(
+      mainWindow.getByRole('heading', { name: 'Error' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('Force delete this Project?')
+    ).toBeHidden();
   });
 });

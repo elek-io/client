@@ -87,12 +87,15 @@ export function AssetTeaser(
     useState<boolean>(false);
   const { mutateAsync: deleteAsset } = useMutation({
     ...queryOptions.assets.delete,
-    // We handle a blocked delete in place with the dialog below instead of
-    // showing the root error boundary. Core rejects deleting an Asset that
-    // Entries still reference (Conflict) without removing anything.
-    throwOnError: false,
+    // Only a referenced Asset is handled in place by the dialog below: Core
+    // rejects deleting an Asset that Entries still reference (Conflict) without
+    // removing anything. Every other failure is unexpected, so let it reach the
+    // root error boundary, which logs it and reports it to Sentry.
+    throwOnError: (error) => parseIpcError(error).type !== 'Conflict',
     onError: () => {
-      // Prevents the error toast from showing up too
+      // The in-place dialog is the surface for the handled Conflict, so suppress
+      // the wrapper's error toast. Unexpected failures are logged and reported by
+      // the boundary instead.
     },
   });
   const [isDeleteErrorDialogOpen, setIsDeleteErrorDialogOpen] =
@@ -202,11 +205,14 @@ export function AssetTeaser(
     try {
       await deleteAsset({ ...props });
     } catch (error) {
-      // Core blocks deleting an Asset that Entries still reference (Conflict).
-      // Keep the error and surface it in place rather than crashing to the root
-      // error boundary, so the dialog can explain why the delete was blocked.
-      setDeleteError(error);
-      setIsDeleteErrorDialogOpen(true);
+      const { type } = parseIpcError(error);
+      // Core blocks deleting an Asset that Entries still reference (Conflict), so
+      // surface that in place and explain why. Any other failure was already
+      // routed to the root error boundary, so there is nothing to handle here.
+      if (type === 'Conflict') {
+        setDeleteError(error);
+        setIsDeleteErrorDialogOpen(true);
+      }
     }
   };
 

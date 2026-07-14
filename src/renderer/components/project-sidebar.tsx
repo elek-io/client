@@ -131,12 +131,18 @@ export function ProjectSidebar(): React.JSX.Element {
   const { mutateAsync: synchronizeProject, isPending: isSynchronizingProject } =
     useMutation({
       ...queryOptions.projects.synchronize,
-      // We handle a failed sync in place with the dialog below instead of showing
-      // the root error boundary. Core rejects a sync that would push a dangling
-      // reference (and other conflicts) without pushing anything.
-      throwOnError: false,
+      // Only a failed sync we can explain is handled in place by the dialog
+      // below: a remote conflict (Conflict) or an unreachable/unsupported remote
+      // (PreconditionFailed). Every other failure is unexpected, so let it reach
+      // the root error boundary, which logs it and reports it to Sentry.
+      throwOnError: (error) => {
+        const { type } = parseIpcError(error);
+        return type !== 'Conflict' && type !== 'PreconditionFailed';
+      },
       onError: () => {
-        // Prevents the error toast from showing up too
+        // The in-place dialog is the surface for the handled reasons, so suppress
+        // the wrapper's error toast. Unexpected failures are logged and reported
+        // by the boundary instead.
       },
     });
 
@@ -165,12 +171,15 @@ export function ProjectSidebar(): React.JSX.Element {
                   try {
                     await synchronizeProject({ id: project.id });
                   } catch (error) {
-                    // A conflict (e.g. a rebase that orphans a reference) stops
-                    // the sync before it pushes. Surface it in place rather than
-                    // crashing to the error boundary, keeping the error so the
-                    // dialog can explain the reason.
-                    setSyncError(error);
-                    setIsSyncConflictDialogOpen(true);
+                    const { type } = parseIpcError(error);
+                    // A remote conflict (e.g. a rebase that orphans a reference)
+                    // or an unreachable/unsupported remote is explained in place.
+                    // Any other failure was already routed to the root error
+                    // boundary, so there is nothing to handle here.
+                    if (type === 'Conflict' || type === 'PreconditionFailed') {
+                      setSyncError(error);
+                      setIsSyncConflictDialogOpen(true);
+                    }
                   }
                 }}
                 isLoading={isSynchronizingProject}

@@ -5,7 +5,6 @@ import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Trash } from 'lucide-react';
 import { type ReactElement, useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 
 import { ProjectForm } from '@renderer/components/forms/project-form';
 import { Page } from '@renderer/components/page';
@@ -93,11 +92,18 @@ function ProjectSettingsGeneralPage(): ReactElement {
   const { mutateAsync: deleteProject, isPending: isDeletingProject } =
     useMutation({
       ...queryOptions.projects.delete,
-      // We handle the guarded delete in place with the force-delete dialog below
-      // instead of showing the root error boundary.
-      throwOnError: false,
+      // Only the delete guard is handled in place by the force-delete dialog: a
+      // local-only Project (PreconditionFailed) or one with unpushed commits
+      // (Conflict). Every other failure is unexpected, so let it reach the root
+      // error boundary, which logs it and reports it to Sentry.
+      throwOnError: (error) => {
+        const { type } = parseIpcError(error);
+        return type !== 'PreconditionFailed' && type !== 'Conflict';
+      },
       onError: () => {
-        // Prevents the error toast from showing up too
+        // The force-delete dialog is the surface for the handled guard, so
+        // suppress the wrapper's error toast. Unexpected failures are logged and
+        // reported by the boundary instead.
       },
     });
 
@@ -129,12 +135,17 @@ function ProjectSettingsGeneralPage(): ReactElement {
       await deleteProject({ id: projectId });
       await router.navigate({ to: '/projects' });
     } catch (error) {
-      // Core guards deletion that would destroy unsynchronized work (a
-      // local-only Project, or one with unpushed commits). Keep the error so the
-      // force-delete dialog can explain why, then offer to force it.
-      setForceDeleteError(error);
-      setIsDeleteDialogOpen(false);
-      setIsForceDeleteDialogOpen(true);
+      const { type } = parseIpcError(error);
+      // Only the guard offers a force delete (see throwOnError above): a
+      // local-only Project (PreconditionFailed) or one with unpushed commits
+      // (Conflict). Keep the error so the force-delete dialog can explain the
+      // reason. Any other failure was already routed to the root error boundary,
+      // so there is nothing to handle here.
+      if (type === 'PreconditionFailed' || type === 'Conflict') {
+        setForceDeleteError(error);
+        setIsDeleteDialogOpen(false);
+        setIsForceDeleteDialogOpen(true);
+      }
     }
   };
 
@@ -142,15 +153,11 @@ function ProjectSettingsGeneralPage(): ReactElement {
     try {
       await deleteProject({ id: projectId, force: true });
       await router.navigate({ to: '/projects' });
-    } catch (error) {
+    } catch {
+      // A force delete bypasses the guard, so any failure here is unexpected.
+      // throwOnError routes it to the root error boundary (which logs and reports
+      // it); close this dialog so it is not left in front of the boundary.
       setIsForceDeleteDialogOpen(false);
-      toast.error(
-        describeCoreError(
-          parseIpcError(error).type,
-          undefined,
-          'Could not delete this Project'
-        )
-      );
     }
   };
 

@@ -12,6 +12,7 @@ import {
   referenceValue,
   stringValue,
 } from '../helpers/entry.js';
+import { stubCoreReject } from '../helpers/ipc.js';
 import {
   createProjectViaIpc,
   navigateToProjectDashboard,
@@ -243,5 +244,49 @@ test.describe('Synchronize', () => {
     await expect(mainWindow).toHaveURL(
       new RegExp(`#/projects/${project.id}/dashboard`)
     );
+  });
+
+  test('routes an unexpected sync failure to the root error boundary', async ({
+    mainWindow,
+    electronApp,
+  }, testInfo) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+
+    // A reachable bare origin plus one local commit, so the Synchronize control
+    // enables (ahead 1). Mirrors the round-trip setup above.
+    const projectPath = testInfo.outputPath(
+      'elek-io-data',
+      'projects',
+      project.id
+    );
+    const remote = setupRemote(testInfo, { mirror: projectPath });
+    await setRemoteOriginUrlViaIpc(mainWindow, {
+      id: project.id,
+      url: remote.url,
+    });
+    await createCollectionViaIpc(mainWindow, { projectId: project.id });
+
+    await navigateToProjectDashboard(mainWindow, project.id);
+    const synchronize = mainWindow.getByRole('button', { name: 'Synchronize' });
+    await expect(synchronize).toBeEnabled();
+
+    // Make the sync reject with a non-guard error. The Synchronize mutation
+    // handles only Conflict and PreconditionFailed in place (the sync-conflict
+    // modal), so every other failure must reach the root error boundary. Guards
+    // the throwOnError predicate against a regression to a blanket throwOnError:
+    // false (see the projects delete spec for the full rationale).
+    await stubCoreReject(electronApp, 'core:projects:synchronize');
+
+    await synchronize.click();
+
+    // The failure propagates: the root error boundary replaces the view and the
+    // sync-conflict modal never opens.
+    await expect(
+      mainWindow.getByRole('heading', { name: 'Error' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('Could not synchronize this Project')
+    ).toBeHidden();
   });
 });

@@ -23,6 +23,7 @@ import {
   createEntryViaIpc,
   stringValue,
 } from '../helpers/entry.js';
+import { stubCoreReject } from '../helpers/ipc.js';
 import { createProjectViaIpc, navigateToAssets } from '../helpers/project.js';
 import { setUserViaIpc } from '../helpers/user.js';
 
@@ -315,5 +316,41 @@ test.describe('Assets', () => {
     await expect
       .poll(async () => previewImage.evaluate((img) => img.naturalWidth))
       .toBeGreaterThan(0);
+  });
+
+  test('routes an unexpected delete failure to the root error boundary', async ({
+    mainWindow,
+    electronApp,
+  }, testInfo) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const filePath = makeTempFile(testInfo, 'logo.png', pngBytes);
+    await createAssetViaIpc(mainWindow, { projectId: project.id, filePath });
+
+    await navigateToAssets(mainWindow, project.id);
+    await expect(
+      mainWindow.getByText('An Asset created by the E2E tests')
+    ).toBeVisible();
+
+    // Make the delete reject with a non-guard error. The delete handles only a
+    // referenced-Asset Conflict in place (the in-use dialog), so every other
+    // failure must reach the root error boundary. Guards the throwOnError
+    // predicate against a regression to a blanket throwOnError: false (see the
+    // projects delete spec for the full rationale).
+    await stubCoreReject(electronApp, 'core:assets:delete');
+
+    // The teaser Delete opens the confirm alertdialog, then confirming fires the
+    // guarded delete.
+    await mainWindow.getByRole('button', { name: 'Delete' }).click();
+    await confirmDialog(mainWindow, 'Delete');
+
+    // The failure propagates: the root error boundary replaces the view and the
+    // in-use dialog never opens.
+    await expect(
+      mainWindow.getByRole('heading', { name: 'Error' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('Could not delete this Asset')
+    ).toBeHidden();
   });
 });

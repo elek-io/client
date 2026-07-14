@@ -73,6 +73,8 @@ A desktop test covers only the desktop app's own responsibilities:
 
 A desktop test does not assert Core's on disk file contents or location, exact commit trailers or message format, or Core's validation and error codes. Those belong to Core's own tests. In practice: prefer UI assertions for UI driven flows (create a Project, then see its card in the list), observe a bare throw or no-throw for guard paths, and do not read `project.json` or inspect commit trailers.
 
+When a mutation handles some `CoreError` types in place and lets the rest propagate (the default, see [`error-handling.md`](./error-handling.md)), assert both sides of that split. Drive the handled `type` and assert its in place surface, the reason specific dialog, and where practical drive an unhandled failure and assert it reaches the root boundary instead of that dialog. Asserting only the handled path lets a regression back to a blanket `throwOnError: false` pass unnoticed, since the in place assertion still holds.
+
 Follow the arrange, act, assert split. Arrange preconditions over IPC (the `ViaIpc` helpers, see the naming convention below) since that is fast and does not depend on unrelated UI. Act through the UI for the flow under test. Assert on the surface that proves the desktop app's responsibility, usually the UI.
 
 ## Writing tests

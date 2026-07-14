@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect, type ElectronApplication } from '@playwright/test';
 
 /**
  * Assert that an IPC call rejects.
@@ -22,4 +22,31 @@ export async function expectRejects(promise: Promise<unknown>): Promise<void> {
     threw = true;
   }
   expect(threw).toBe(true);
+}
+
+/**
+ * Replace a Core IPC handler so its next call rejects, to drive an unexpected
+ * failure the app has no in-place handling for. Used to prove such a failure
+ * reaches the root error boundary rather than an in-place dialog, which guards
+ * the mutation's `throwOnError` predicate against a regression back to a blanket
+ * `throwOnError: false` (see error-handling.md).
+ *
+ * Mirrors `stubFileDialog`: the app captures each handler by reference at
+ * registration, so this removes the real one and registers a throwing
+ * replacement in the main process. The thrown error is a plain `Error` and so
+ * carries no `CoreError` type, which is exactly what the predicate treats as
+ * unexpected and lets propagate. Scoped to the current test's app instance, so
+ * it does not leak. Electron logs a handler throw to the main process console,
+ * not the renderer, so the fixture's renderer console check is not tripped.
+ */
+export async function stubCoreReject(
+  electronApp: ElectronApplication,
+  channel: string
+): Promise<void> {
+  await electronApp.evaluate(({ ipcMain }, ch) => {
+    ipcMain.removeHandler(ch);
+    ipcMain.handle(ch, () => {
+      throw new Error('E2E injected failure');
+    });
+  }, channel);
 }
