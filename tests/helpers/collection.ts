@@ -291,14 +291,37 @@ export async function fillCollectionForm(
   await page.getByLabel('Entry-Slug', { exact: true }).fill(props.slugSingular);
 }
 
+export interface AddFieldDefinitionOptions {
+  label: string;
+  description: string;
+  /** Fills the text field's "Minimum" control. */
+  min?: number;
+  /** Fills the text field's "Maximum" control. */
+  max?: number;
+  /**
+   * Assert the add is REJECTED rather than accepted. `submitDefinition` only
+   * closes the sheet after it appends the definition, so a still-open sheet
+   * proves the definition was not appended (a failed per-type schema, or a
+   * duplicate slug). When omitted, assert the happy path: the sheet closes
+   * because the definition was appended.
+   */
+  expectRejected?: boolean;
+}
+
 /**
- * Drive the "Add Field" sheet to append one text field definition. Opens the
+ * Drive the "Add Field" sheet to add one text field definition. Opens the
  * sheet, fills the translatable label and description (the slug auto-derives
- * from the label), then confirms with "Add definition".
+ * from the label) plus any per-type bounds, then confirms with "Add definition".
+ *
+ * For a valid, unique definition the sheet closes (asserted). Pass
+ * `expectRejected` to instead assert the sheet stays open, which the negative
+ * validation specs (duplicate slug, min>max) use to prove the definition was
+ * not appended. Add other input types (a `fieldType` Select drive) when a spec
+ * needs them.
  */
 export async function addFieldDefinition(
   page: Page,
-  props: { label: string; description: string }
+  options: AddFieldDefinitionOptions
 ): Promise<void> {
   await page.getByRole('button', { name: 'Add Field' }).click();
   const sheet = page.getByRole('dialog', {
@@ -306,14 +329,27 @@ export async function addFieldDefinition(
   });
   await expect(sheet).toBeVisible();
 
-  // The "Input type" select defaults to "text", so no change is needed here.
-  await sheet.getByLabel('Label', { exact: true }).fill(props.label);
+  // The "Input type" Select defaults to "text", so no change is needed here.
+  await sheet.getByLabel('Label', { exact: true }).fill(options.label);
   await sheet
     .getByLabel('Description', { exact: true })
-    .fill(props.description);
+    .fill(options.description);
+
+  // The text field's bounds labels carry an "- optional" suffix (they are not
+  // required), so match by prefix rather than exactly.
+  if (options.min !== undefined) {
+    await sheet.getByLabel('Minimum').fill(String(options.min));
+  }
+  if (options.max !== undefined) {
+    await sheet.getByLabel('Maximum').fill(String(options.max));
+  }
 
   await page.getByRole('button', { name: 'Add definition' }).click();
-  await expect(sheet).toBeHidden();
+  if (options.expectRejected === true) {
+    await expect(sheet).toBeVisible();
+  } else {
+    await expect(sheet).toBeHidden();
+  }
 }
 
 /**

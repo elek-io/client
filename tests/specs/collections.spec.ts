@@ -2,8 +2,10 @@ import { expect } from '@playwright/test';
 
 import { test } from '../fixtures/electronApp.js';
 import {
+  addFieldDefinition,
   createCollection,
   createCollectionViaIpc,
+  fillCollectionForm,
   navigateToCollectionCreate,
   navigateToCollectionSettings,
 } from '../helpers/collection.js';
@@ -134,5 +136,140 @@ test.describe('Collections', () => {
       mainWindow.getByRole('link', { name: 'Articles' })
     ).toBeHidden();
     await expect(mainWindow.getByText('No Collections found')).toBeVisible();
+  });
+
+  // P3-02
+  test('flags an invalid Collection-Slug on submit and accepts a valid one', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+
+    // Fill an otherwise-valid form plus one field, so only the Collection-Slug
+    // varies. Everything else stays valid across the whole test.
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+    await addFieldDefinition(mainWindow, {
+      label: 'Title',
+      description: 'The title of the article',
+    });
+
+    const slugField = mainWindow.getByLabel('Collection-Slug', { exact: true });
+    const createButton = mainWindow.getByRole('button', {
+      name: 'Create Collection',
+    });
+
+    // Core's slug schema (reserved blocklist for 'index', the lowercase
+    // single-hyphen regex for the others) runs client-side via zodResolver. The
+    // desktop responsibility is that the form flags the field and blocks the
+    // submit, so assert that rejected state, not Core's message text. Staying on
+    // the create route proves the submit did not go through.
+    for (const invalidSlug of ['index', 'Uppercase', 'double--hyphen']) {
+      await slugField.fill(invalidSlug);
+      await createButton.click();
+      await expect(slugField).toHaveAttribute('aria-invalid', 'true');
+      await expect(mainWindow).toHaveURL(
+        /#\/projects\/[^/]+\/collections\/create$/
+      );
+    }
+
+    // A valid slug clears the block, so the create reaches Core and redirects to
+    // the new Collection's detail route (a uuid segment, never 'create').
+    await slugField.fill('blog-posts');
+    await createButton.click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // P3-03
+  test('rejects a duplicate field-definition slug before appending it', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    // The first "Title" appends, its slug auto-derives to "title". The appended
+    // definition renders a preview labelled "Title" in the form (a Slot+Fragment
+    // nesting breaks the preview input's label association, so count the visible
+    // label text rather than getByLabel).
+    await addFieldDefinition(mainWindow, {
+      label: 'Title',
+      description: 'The title of the article',
+    });
+    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+
+    // A second "Title" derives the same "title" slug. The sheet's own duplicate
+    // check rejects it before appending, so the sheet stays open (expectRejected)
+    // and its Slug field is flagged. Assert that rejected state, not Core's
+    // message text.
+    await addFieldDefinition(mainWindow, {
+      label: 'Title',
+      description: 'A duplicate title',
+      expectRejected: true,
+    });
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet.getByLabel('Slug', { exact: true })).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
+
+    // Closing the sheet leaves exactly one "title" definition appended.
+    await mainWindow.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+  });
+
+  // P3-04 (field-definition bounds refinement, min>max)
+  test('rejects a text field whose minimum exceeds its maximum at the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    // min>max is refined inside the text field's own schema, so the add is
+    // rejected at the sheet: it stays open (expectRejected, proving the
+    // definition was not appended) and the Minimum control is flagged. This
+    // pins the desktop responsibility (the sheet surfaces the error and blocks
+    // the add); whether a given field-definition combination is valid is Core's
+    // own test, so no other refinement is re-verified here.
+    await addFieldDefinition(mainWindow, {
+      label: 'Body',
+      description: 'The body of the article',
+      min: 10,
+      max: 5,
+      expectRejected: true,
+    });
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet.getByLabel('Minimum')).toHaveAttribute(
+      'aria-invalid',
+      'true'
+    );
   });
 });
