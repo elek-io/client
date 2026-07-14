@@ -8,9 +8,15 @@ import {
   fillCollectionForm,
   navigateToCollectionCreate,
   navigateToCollectionSettings,
+  referenceFieldDefinition,
+  textFieldDefinition,
 } from '../helpers/collection.js';
-import { confirmDialog } from '../helpers/dialog.js';
-import { createEntryViaIpc, stringValue } from '../helpers/entry.js';
+import { confirmDialog, dismissDialog } from '../helpers/dialog.js';
+import {
+  createEntryViaIpc,
+  referenceValue,
+  stringValue,
+} from '../helpers/entry.js';
 import { reloadWindow } from '../helpers/navigation.js';
 import { createProjectViaIpc } from '../helpers/project.js';
 import { setUserViaIpc } from '../helpers/user.js';
@@ -146,6 +152,66 @@ test.describe('Collections', () => {
       mainWindow.getByRole('link', { name: 'Articles' })
     ).toBeHidden();
     await expect(mainWindow.getByText('No Collections found')).toBeVisible();
+  });
+
+  test('surfaces a blocked delete in place when another Collection references in', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+
+    // Collection A holds the referenced Entry. Collection B holds an Entry that
+    // references into A. Deleting A while B survives would leave B's reference
+    // dangling, so Core blocks the delete with a Conflict listing the referrer.
+    const collectionA = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+    const target = await createEntryViaIpc(mainWindow, {
+      projectId: project.id,
+      collectionId: collectionA.id,
+      values: { title: stringValue({ en: 'Referenced target' }) },
+    });
+    // A distinct name and slug, since a Collection defaults to "Articles" and a
+    // duplicate slug is itself rejected before the reference is even set up.
+    const collectionB = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+      name: { singular: { en: 'Reference' }, plural: { en: 'References' } },
+      slug: { singular: 'reference', plural: 'references' },
+      fieldDefinitions: [textFieldDefinition(), referenceFieldDefinition()],
+    });
+    await createEntryViaIpc(mainWindow, {
+      projectId: project.id,
+      collectionId: collectionB.id,
+      values: {
+        title: stringValue({ en: 'Points into A' }),
+        related: referenceValue(target.id, collectionA.id),
+      },
+    });
+
+    await navigateToCollectionSettings(mainWindow, {
+      projectId: project.id,
+      collectionId: collectionA.id,
+    });
+
+    await mainWindow.getByRole('button', { name: 'Delete Collection' }).click();
+    await confirmDialog(mainWindow, 'Yes, delete this Collection');
+
+    // The Conflict is surfaced in place through the error dialog rather than the
+    // root error boundary (the fixture's console check backs this up: an error
+    // reaching the boundary would log and fail the run). The description reflects
+    // the preserved CoreError type, not Core's raw message.
+    await expect(
+      mainWindow.getByText('Could not delete this Collection')
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('still reference Entries in this one')
+    ).toBeVisible();
+    await dismissDialog(mainWindow);
+
+    // The Collection was not deleted: we stay on its settings page.
+    await expect(mainWindow).toHaveURL(
+      new RegExp(`#/projects/[^/]+/collections/${collectionA.id}/update$`)
+    );
   });
 
   // P3-02
