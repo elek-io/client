@@ -8,7 +8,21 @@ import {
   makeTempFile,
   pngBytes,
 } from '../helpers/asset.js';
-import { confirmDialog, stubFileDialog } from '../helpers/dialog.js';
+import {
+  assetFieldDefinition,
+  createCollectionViaIpc,
+  textFieldDefinition,
+} from '../helpers/collection.js';
+import {
+  confirmDialog,
+  dismissDialog,
+  stubFileDialog,
+} from '../helpers/dialog.js';
+import {
+  assetReferenceValue,
+  createEntryViaIpc,
+  stringValue,
+} from '../helpers/entry.js';
 import { createProjectViaIpc, navigateToAssets } from '../helpers/project.js';
 import { setUserViaIpc } from '../helpers/user.js';
 
@@ -211,5 +225,95 @@ test.describe('Assets', () => {
     await expect(
       updateDialog.getByRole('button', { name: 'Update' })
     ).toBeEnabled();
+  });
+
+  test('surfaces a blocked delete in place when the asset is referenced', async ({
+    mainWindow,
+  }, testInfo) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+
+    // Seed an Asset plus a Collection whose Entry references it, so Core blocks
+    // the delete with a Conflict listing the referring Entry.
+    const filePath = makeTempFile(testInfo, 'logo.png', pngBytes);
+    const asset = await createAssetViaIpc(mainWindow, {
+      projectId: project.id,
+      filePath,
+    });
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+      fieldDefinitions: [textFieldDefinition(), assetFieldDefinition()],
+    });
+    await createEntryViaIpc(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+      values: {
+        title: stringValue({ en: 'Uses the logo' }),
+        logo: assetReferenceValue(asset.id),
+      },
+    });
+
+    await navigateToAssets(mainWindow, project.id);
+    await expect(
+      mainWindow.getByText('An Asset created by the E2E tests')
+    ).toBeVisible();
+
+    // The teaser Delete opens the confirm alertdialog, then confirming it fires
+    // the guarded delete.
+    await mainWindow.getByRole('button', { name: 'Delete' }).click();
+    await expect(
+      mainWindow.getByText('You are about to delete this Asset')
+    ).toBeVisible();
+    await confirmDialog(mainWindow, 'Delete');
+
+    // The Conflict is surfaced in place through the in-use dialog rather than the
+    // root error boundary. The fixture's console check backs this up: an error
+    // reaching the boundary would log and fail the run.
+    await expect(
+      mainWindow.getByText('Could not delete this Asset')
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('used by one or more Entries')
+    ).toBeVisible();
+    await dismissDialog(mainWindow);
+
+    // The Asset was not deleted: its teaser is still present and the empty state
+    // has not returned.
+    await expect(
+      mainWindow.getByText('An Asset created by the E2E tests')
+    ).toBeVisible();
+    await expect(mainWindow.getByText('No Assets yet')).toBeHidden();
+  });
+
+  test('renders the asset preview over the custom file protocol', async ({
+    mainWindow,
+  }, testInfo) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const filePath = makeTempFile(testInfo, 'logo.png', pngBytes);
+    // A slug-safe name so the preview dialog title is predictable (Core
+    // slugifies the name on write).
+    await createAssetViaIpc(mainWindow, {
+      projectId: project.id,
+      filePath,
+      name: 'logo',
+    });
+
+    await navigateToAssets(mainWindow, project.id);
+
+    // Open the teaser's preview dialog, whose title is the Asset's name.
+    await mainWindow.getByRole('button', { name: 'View' }).click();
+    const dialog = mainWindow.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'logo' })).toBeVisible();
+
+    // The preview <img> actually loaded its bytes over the elek-io-local-file://
+    // protocol under the packaged CSP: a failed protocol/CSP load leaves
+    // naturalWidth at 0. Scope to the open dialog so this is the preview, not the
+    // teaser thumbnail behind it.
+    const previewImage = dialog.getByRole('img');
+    await expect
+      .poll(async () => previewImage.evaluate((img) => img.naturalWidth))
+      .toBeGreaterThan(0);
   });
 });

@@ -58,6 +58,10 @@ An error handled this way is intentionally invisible to the standard logging and
 
 [`settings/general.tsx`](/src/renderer/routes/projects/$projectId/settings/general.tsx) catches Core's delete guard. A normal delete of a local only Project (`PreconditionFailed`) or one with unpushed commits (`Conflict`) is blocked. The delete mutation uses the same `throwOnError: false` and no-op `onError` override. The `catch` stores the error and opens the "Force delete this Project?" dialog, whose description uses `describeCoreError` to explain why the normal delete was blocked (`PreconditionFailed` says the Project only exists on this device, `Conflict` says it has unpushed changes). Confirming re-issues the delete with `{ force: true }`. The `onForceDelete` failure toast also runs through `describeCoreError`.
 
+### Example: delete an Asset still in use
+
+[`components/asset-teaser.tsx`](/src/renderer/components/asset-teaser.tsx) catches Core's asset delete guard. Deleting an Asset that an Entry still references is blocked with a `Conflict` that lists the referring Entries (see Core's [asset-management doc](../node_modules/@elek-io/core/docs/asset-management.md)). The delete mutation uses the same `throwOnError: false` and no-op `onError` override. The teaser's own "You are about to delete this Asset" alertdialog is the confirm step, not the error surface: its confirm action fires the delete, and on rejection the `catch` stores the error and opens a separate controlled "Could not delete this Asset" dialog. So the alertdialog closes and the in-use dialog opens in its place, keeping the failure on the Assets page. The description uses `describeCoreError` with a `Conflict` override that tells the user to remove or repoint the references first, and a generic fallback for any other type. Nothing is deleted, so the teaser stays on the page.
+
 ## Logging: where, what, and when
 
 The app logs to two independent sinks. Do not confuse them.

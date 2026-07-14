@@ -46,6 +46,21 @@ export function referenceValue(
 }
 
 /**
+ * Build a single-asset reference Value pointing at one target Asset. Unlike an
+ * entry reference, an asset reference carries only the target's `id` (no
+ * `collectionId`, since Assets live at the Project root, not inside a
+ * Collection). Pass the result under the asset field's slug in
+ * `createEntryViaIpc`'s `values`.
+ */
+export function assetReferenceValue(assetId: string): ReferencedValue {
+  return {
+    objectType: 'value',
+    valueType: 'reference',
+    content: { en: [{ id: assetId, objectType: 'asset' as const }] },
+  };
+}
+
+/**
  * Create an Entry directly over IPC, bypassing the UI.
  *
  * Use this to arrange a precondition a test depends on but does not itself

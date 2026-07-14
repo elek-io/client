@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { parseIpcError } from '@root/src/shared/ipcError';
 import { useMutation } from '@tanstack/react-query';
 import {
   DownloadIcon,
@@ -30,6 +31,7 @@ import { ButtonGroup } from '@renderer/components/ui/button-group';
 import {
   Dialog,
   DialogBody,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -54,14 +56,26 @@ import {
   TooltipTrigger,
 } from '@renderer/components/ui/tooltip';
 import { useProject } from '@renderer/hooks/useProject';
+import { describeCoreError } from '@renderer/lib/coreErrorText';
 import { cn, formatBytes } from '@renderer/lib/utils';
 import { queryOptions } from '@renderer/queries';
 
 import {
   updateAssetSchema,
   type Asset,
+  type CoreErrorType,
   type UpdateAssetProps,
 } from '@elek-io/core';
+
+// Why the delete was blocked, keyed by the CoreError type preserved across IPC.
+// Unlisted types (and non-Core errors) fall back to the generic sentence below.
+const deleteErrorDescriptions: Partial<Record<CoreErrorType, string>> = {
+  Conflict:
+    'This Asset is used by one or more Entries and can’t be deleted. Remove or repoint those references first, then try again.',
+};
+
+const deleteErrorFallback =
+  'This Asset could not be deleted. Please review and try again.';
 
 export function AssetTeaser(
   props: Asset & { projectId: string; className?: string }
@@ -71,7 +85,19 @@ export function AssetTeaser(
   const { mutateAsync: updateAsset } = useMutation(queryOptions.assets.update);
   const [isUpdateAssetDialogOpen, setIsUpdateAssetDialogOpen] =
     useState<boolean>(false);
-  const { mutateAsync: deleteAsset } = useMutation(queryOptions.assets.delete);
+  const { mutateAsync: deleteAsset } = useMutation({
+    ...queryOptions.assets.delete,
+    // We handle a blocked delete in place with the dialog below instead of
+    // showing the root error boundary. Core rejects deleting an Asset that
+    // Entries still reference (Conflict) without removing anything.
+    throwOnError: false,
+    onError: () => {
+      // Prevents the error toast from showing up too
+    },
+  });
+  const [isDeleteErrorDialogOpen, setIsDeleteErrorDialogOpen] =
+    useState<boolean>(false);
+  const [deleteError, setDeleteError] = useState<unknown>(null);
   const updateAssetForm = useForm<UpdateAssetProps>({
     resolver: async (data, context, options) => {
       return zodResolver(updateAssetSchema)(data, context, options);
@@ -171,6 +197,20 @@ export function AssetTeaser(
     });
     setIsUpdateAssetDialogOpen(false);
   };
+
+  const onDelete = async (): Promise<void> => {
+    try {
+      await deleteAsset({ ...props });
+    } catch (error) {
+      // Core blocks deleting an Asset that Entries still reference (Conflict).
+      // Keep the error and surface it in place rather than crashing to the root
+      // error boundary, so the dialog can explain why the delete was blocked.
+      setDeleteError(error);
+      setIsDeleteErrorDialogOpen(true);
+    }
+  };
+
+  const { type: deleteErrorType } = parseIpcError(deleteError);
 
   return (
     <Item variant="outline" className={cn(props.className)}>
@@ -352,7 +392,7 @@ export function AssetTeaser(
                   <Button
                     variant="destructive"
                     Icon={TrashIcon}
-                    onClick={async () => deleteAsset({ ...props })}
+                    onClick={() => void onDelete()}
                   >
                     Delete
                   </Button>
@@ -361,6 +401,31 @@ export function AssetTeaser(
             </AlertDialogContent>
           </AlertDialog>
         </ButtonGroup>
+
+        <Dialog
+          open={isDeleteErrorDialogOpen}
+          onOpenChange={setIsDeleteErrorDialogOpen}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Could not delete this Asset</DialogTitle>
+              <DialogDescription>
+                {describeCoreError(
+                  deleteErrorType,
+                  deleteErrorDescriptions,
+                  deleteErrorFallback
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Close
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </ItemFooter>
     </Item>
   );

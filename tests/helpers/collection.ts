@@ -2,6 +2,7 @@ import { expect, type Page } from '@playwright/test';
 
 import {
   uuid,
+  type AssetFieldDefinition,
   type Collection,
   type CreateCollectionProps,
   type EmailFieldDefinition,
@@ -96,6 +97,34 @@ export function referenceFieldDefinition(
     ofCollections: [],
     min: null,
     max: 1,
+    ...overrides,
+  };
+}
+
+/**
+ * Build a required single-asset reference FieldDefinition with a caller-supplied
+ * id. Mirrors `referenceFieldDefinition` but points at an Asset: `fieldType`
+ * "asset", `ofAssetMimeTypes` empty (any type), `min`/`max` 1 (a single required
+ * reference). Used to arrange a Collection whose Entries reference an Asset, so a
+ * delete of that Asset is blocked while the reference stands.
+ */
+export function assetFieldDefinition(
+  overrides: Partial<AssetFieldDefinition> = {}
+): AssetFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'logo',
+    label: { en: 'Logo' },
+    description: null,
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'reference',
+    fieldType: 'asset',
+    min: 1,
+    max: 1,
+    ofAssetMimeTypes: [],
     ...overrides,
   };
 }
