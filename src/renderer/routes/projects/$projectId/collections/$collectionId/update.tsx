@@ -8,16 +8,18 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { CollectionForm } from '@renderer/components/forms/collection-form';
 import { Page } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
-import { Button } from '@renderer/components/ui/button';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@renderer/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@renderer/components/ui/alert-dialog';
+import { Button } from '@renderer/components/ui/button';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
@@ -149,38 +151,40 @@ function ProjectCollectionUpdate(): ReactElement {
               </p>
             </div>
             <div>
-              <Dialog>
-                <DialogTrigger asChild>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
                   <Button variant="destructive">
                     <Trash className="mr-2 h-4 w-4" />
                     Delete Collection
                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Are you sure?</DialogTitle>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="secondary">
-                        No, I&apos;ve changed my mind
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this Collection?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Deleting this Collection also permanently deletes every
+                      Entry inside it. This cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction asChild>
+                      <Button
+                        variant="destructive"
+                        onClick={() =>
+                          onDelete({
+                            projectId,
+                            id: collectionId,
+                          })
+                        }
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Yes, delete this Collection
                       </Button>
-                    </DialogClose>
-                    <Button
-                      variant="destructive"
-                      onClick={() =>
-                        onDelete({
-                          projectId,
-                          id: collectionId,
-                        })
-                      }
-                    >
-                      <Trash className="mr-2 h-4 w-4" />
-                      Yes, delete this Collection
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </PageSection>

@@ -124,6 +124,16 @@ test.describe('Collections', () => {
     });
 
     await mainWindow.getByRole('button', { name: 'Delete Collection' }).click();
+
+    // The destructive confirm warns that the cascade deletes the seeded Entry
+    // too, rather than a bare "Are you sure?". Assert the copy so a regression to
+    // the weaker, warning-less dialog is caught.
+    await expect(
+      mainWindow.getByText(
+        'Deleting this Collection also permanently deletes every Entry inside it. This cannot be undone.'
+      )
+    ).toBeVisible();
+
     await confirmDialog(mainWindow, 'Yes, delete this Collection');
 
     // The delete redirecting to the Collections list is how Core's success
