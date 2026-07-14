@@ -1,4 +1,4 @@
-import { type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import type {
   CreateEntryProps,
@@ -18,6 +18,19 @@ export function stringValue(
   content: Partial<Record<SupportedLanguage, string | null>>
 ): CreateEntryProps['values'][string] {
   return { objectType: 'value', valueType: 'string', content };
+}
+
+/**
+ * Build a translatable temporal Entry Value (date, datetime or time). Core
+ * stores all three as an ISO string in a translatable string Value (see Core's
+ * fields docs), so the shape matches `stringValue`. Named for temporal fields to
+ * keep the temporal specs self-documenting. Pass valid ISO content, e.g.
+ * `{ en: '2026-01-15' }` for a date field.
+ */
+export function temporalValue(
+  content: Partial<Record<SupportedLanguage, string | null>>
+): CreateEntryProps['values'][string] {
+  return stringValue(content);
 }
 
 /**
@@ -102,14 +115,42 @@ export async function navigateToEntryUpdate(
 
 /**
  * Fill the dynamically generated Entry form. Fields are keyed by their label
- * (as shown above each input), so pass a record of label to text value. Only
- * text-like fields are supported for now, which covers the current specs.
+ * (as shown above each input).
+ *
+ * A field value is either:
+ * - a string, which fills the default-language input directly (single-language
+ *   projects, or the visible input of a translatable field), or
+ * - a per-language record like `{ en: 'Hello', de: 'Hallo' }`, which opens that
+ *   field's translations dialog (via its accessible name "Edit translations for
+ *   <label>", from form.tsx's translatable trigger), fills each language input
+ *   (labelled by its language code, scoped to the dialog), then clicks "Done".
+ *
+ * The string path stays backward compatible, so existing specs are unaffected.
  */
 export async function fillEntryForm(
   page: Page,
-  fields: Record<string, string>
+  fields: Record<string, string | Partial<Record<SupportedLanguage, string>>>
 ): Promise<void> {
   for (const [label, value] of Object.entries(fields)) {
-    await page.getByLabel(label, { exact: true }).fill(value);
+    if (typeof value === 'string') {
+      await page.getByLabel(label, { exact: true }).fill(value);
+      continue;
+    }
+
+    // Per-language: open the field's translations dialog. Its accessible name
+    // comes from the Phase 0 sr-only label on the LanguagesIcon trigger, and the
+    // dialog's own name is the field's title (both the field's label).
+    await page
+      .getByRole('button', { name: `Edit translations for ${label}` })
+      .click();
+    const dialog = page.getByRole('dialog', { name: label });
+    await expect(dialog).toBeVisible();
+
+    for (const [language, text] of Object.entries(value)) {
+      await dialog.getByLabel(language, { exact: true }).fill(text);
+    }
+
+    await dialog.getByRole('button', { name: 'Done' }).click();
+    await expect(dialog).toBeHidden();
   }
 }

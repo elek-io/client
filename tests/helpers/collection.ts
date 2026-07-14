@@ -5,9 +5,12 @@ import {
   type AssetFieldDefinition,
   type Collection,
   type CreateCollectionProps,
+  type DateFieldDefinition,
+  type DatetimeFieldDefinition,
   type EmailFieldDefinition,
   type ReferenceFieldDefinition,
   type TextFieldDefinition,
+  type TimeFieldDefinition,
 } from '@elek-io/core';
 
 import { navigate } from './navigation.js';
@@ -58,6 +61,78 @@ export function emailFieldDefinition(
     inputWidth: '12',
     valueType: 'string',
     fieldType: 'email',
+    defaultValue: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Build a required date FieldDefinition with a caller-supplied id. Mirrors
+ * `emailFieldDefinition` (no min/max) but with `fieldType` "date". Core stores a
+ * date Value as a `YYYY-MM-DD` ISO string, formatted per the User's language in
+ * the UI, so this drives the temporal-formatting specs.
+ */
+export function dateFieldDefinition(
+  overrides: Partial<DateFieldDefinition> = {}
+): DateFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'published',
+    label: { en: 'Published' },
+    description: null,
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'string',
+    fieldType: 'date',
+    defaultValue: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Build a required datetime FieldDefinition with a caller-supplied id. Mirrors
+ * `dateFieldDefinition` but with `fieldType` "datetime", storing a full ISO
+ * datetime string.
+ */
+export function datetimeFieldDefinition(
+  overrides: Partial<DatetimeFieldDefinition> = {}
+): DatetimeFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'event-at',
+    label: { en: 'Event at' },
+    description: null,
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'string',
+    fieldType: 'datetime',
+    defaultValue: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Build a required time FieldDefinition with a caller-supplied id. Mirrors
+ * `dateFieldDefinition` but with `fieldType` "time", storing an ISO time string.
+ */
+export function timeFieldDefinition(
+  overrides: Partial<TimeFieldDefinition> = {}
+): TimeFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'opens-at',
+    label: { en: 'Opens at' },
+    description: null,
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'string',
+    fieldType: 'time',
     defaultValue: null,
     ...overrides,
   };
