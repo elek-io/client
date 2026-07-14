@@ -11,6 +11,7 @@ import {
   type ReferenceFieldDefinition,
   type TextFieldDefinition,
   type TimeFieldDefinition,
+  type UpdateCollectionProps,
 } from '@elek-io/core';
 
 import { navigate } from './navigation.js';
@@ -233,6 +234,26 @@ export async function createCollectionViaIpc(
 
   return page.evaluate(
     async (p) => window.ipc.core.collections.create(p),
+    props
+  );
+}
+
+/**
+ * Update a Collection directly over IPC, bypassing the UI.
+ *
+ * Use this to arrange a precondition a test depends on but does not itself
+ * verify, for example adding a field definition to an existing Collection so a
+ * later Entry-update back-fill can be observed. `props` is the full
+ * `UpdateCollectionProps`, so pass a spread of the Collection plus `projectId`
+ * (as the update form does) with the fields adjusted. Returns the updated
+ * Collection.
+ */
+export async function updateCollectionViaIpc(
+  page: Page,
+  props: UpdateCollectionProps
+): Promise<Collection> {
+  return page.evaluate(
+    async (p) => window.ipc.core.collections.update(p),
     props
   );
 }

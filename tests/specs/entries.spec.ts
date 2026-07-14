@@ -11,6 +11,7 @@ import {
   navigateToCollection,
   textFieldDefinition,
   timeFieldDefinition,
+  updateCollectionViaIpc,
 } from '../helpers/collection.js';
 import {
   createEntryViaIpc,
@@ -432,5 +433,162 @@ test.describe('Entries', () => {
     expect(deRow).not.toEqual(enRow);
     expect(deRow).toContain('vor');
     expect(enRow).toContain('ago');
+  });
+
+  test('back-fills a newly added field default on entry update without losing existing values', async ({
+    mainWindow,
+  }) => {
+    // P1-08. Field A is the default required "title"; seed an Entry holding only
+    // A, then add field B (an optional text field with a default) to the
+    // Collection after the Entry exists.
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+    const entry = await createEntryViaIpc(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+      values: { title: stringValue({ en: 'x' }) },
+    });
+
+    // updateCollectionViaIpc takes the full UpdateCollectionProps, so spread the
+    // Collection plus projectId (as the update form does) with B appended.
+    await updateCollectionViaIpc(mainWindow, {
+      ...collection,
+      projectId: project.id,
+      fieldDefinitions: [
+        ...collection.fieldDefinitions,
+        textFieldDefinition({
+          slug: 'subtitle',
+          label: { en: 'Subtitle' },
+          isRequired: false,
+          defaultValue: 'Default subtitle',
+        }),
+      ],
+    });
+
+    await navigateToEntryUpdate(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+      entryId: entry.id,
+    });
+
+    // The update form back-fills B's default while preserving A's stored value.
+    // A is exact "Title"; B is optional, so its label carries an "- optional"
+    // suffix and is matched without exactness.
+    await expect(mainWindow.getByLabel('Title', { exact: true })).toHaveValue(
+      'x'
+    );
+    await expect(mainWindow.getByLabel('Subtitle')).toHaveValue(
+      'Default subtitle'
+    );
+
+    // Back-filling alone does not dirty the form (opening an Entry after a
+    // schema change is not a user edit), so the update stays dirty-gated.
+    const updateButton = mainWindow.getByRole('button', {
+      name: 'Update Article',
+    });
+    await expect(updateButton).toBeDisabled();
+
+    // Editing the new field (B, leaving A untouched) dirties the form and
+    // enables the save, so a successful save proves A was not lost.
+    await mainWindow.getByLabel('Subtitle').fill('Custom subtitle');
+    await expect(updateButton).toBeEnabled();
+    await updateButton.click();
+
+    // The update did not throw, shown by the redirect to the Collection detail.
+    await expect(mainWindow).toHaveURL(
+      new RegExp(`#/projects/[^/]+/collections/${collection.id}$`)
+    );
+
+    // A fresh read reflects both values: A preserved and B round-tripped.
+    await reloadWindow(mainWindow);
+    await expect(
+      mainWindow.getByRole('cell', { name: 'x', exact: true })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByRole('cell', { name: 'Custom subtitle' })
+    ).toBeVisible();
+  });
+
+  test('paginates and filters the entry table client side', async ({
+    mainWindow,
+  }) => {
+    // P3-09. Seed 11 Entries, one past the page size of 10, so a second page
+    // exists. Titles are zero-padded so an exact cell locator is unambiguous.
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+    for (let i = 1; i <= 11; i++) {
+      await createEntryViaIpc(mainWindow, {
+        projectId: project.id,
+        collectionId: collection.id,
+        values: {
+          title: stringValue({ en: `Entry ${String(i).padStart(2, '0')}` }),
+        },
+      });
+    }
+
+    await navigateToCollection(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // The route loads the whole Collection (limit 0) and the table paginates it
+    // client side at a page size of 10. Wait for the real table (its "Title"
+    // header, not the skeleton), then the first page shows 10 data rows plus the
+    // header row.
+    await expect(
+      mainWindow.getByRole('columnheader', { name: 'Title' })
+    ).toBeVisible();
+    await expect(mainWindow.getByRole('row')).toHaveCount(11);
+
+    // The pagination controls are hrefless anchors (a generic role, so their
+    // disabled state is only exposed through aria-disabled, not a native
+    // disabled property) named by their aria-label. On the first page Previous
+    // is disabled and Next is enabled (11 over a page size of 10 is two pages).
+    const previous = mainWindow.getByLabel('Go to previous page');
+    const next = mainWindow.getByLabel('Go to next page');
+    await expect(previous).toHaveAttribute('aria-disabled', 'true');
+    await expect(next).toHaveAttribute('aria-disabled', 'false');
+
+    // Advancing pages the rows: the second page holds the 11th Entry, so one data
+    // row plus the header remain, and the control state flips.
+    await next.click();
+    await expect(mainWindow.getByRole('row')).toHaveCount(2);
+    await expect(previous).toHaveAttribute('aria-disabled', 'false');
+    await expect(next).toHaveAttribute('aria-disabled', 'true');
+
+    // Going back restores the full first page.
+    await previous.click();
+    await expect(mainWindow.getByRole('row')).toHaveCount(11);
+    await expect(previous).toHaveAttribute('aria-disabled', 'true');
+    await expect(next).toHaveAttribute('aria-disabled', 'false');
+
+    // The filter narrows the rows client side across every page. 'Entry 11'
+    // started on the second page, so a match proves the filter also resets to
+    // the first page (one data row plus the header).
+    const filter = mainWindow.getByPlaceholder('Filter Articles...');
+    await filter.fill('Entry 11');
+    await expect(mainWindow.getByRole('row')).toHaveCount(2);
+    await expect(
+      mainWindow.getByRole('cell', { name: 'Entry 11', exact: true })
+    ).toBeVisible();
+
+    // A substring matches every title that contains it: 'Entry 1' matches
+    // 'Entry 10' and 'Entry 11' (two data rows plus the header).
+    await filter.fill('Entry 1');
+    await expect(mainWindow.getByRole('row')).toHaveCount(3);
+
+    // A no-match filter collapses to the "No results." row.
+    await filter.fill('zzzzz');
+    await expect(mainWindow.getByText('No results.')).toBeVisible();
+
+    // Clearing the filter restores the full first page.
+    await filter.fill('');
+    await expect(mainWindow.getByRole('row')).toHaveCount(11);
   });
 });

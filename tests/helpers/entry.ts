@@ -91,6 +91,21 @@ export async function createEntryViaIpc(
   return page.evaluate(async (p) => window.ipc.core.entries.create(p), props);
 }
 
+/**
+ * Delete an Entry directly over IPC, bypassing the UI.
+ *
+ * There is no UI control to delete an Entry (the `EntryTable` actions column is
+ * commented out), so this is the only way to reach `entries.delete`. Used to
+ * observe the delete guard as a bare throw / no-throw: a delete rejects while
+ * another Entry references the target and resolves once the referrer is gone.
+ */
+export async function deleteEntryViaIpc(
+  page: Page,
+  props: { projectId: string; collectionId: string; id: string }
+): Promise<void> {
+  await page.evaluate(async (p) => window.ipc.core.entries.delete(p), props);
+}
+
 /** Route to a Collection's Entry create form and confirm the app rendered. */
 export async function navigateToEntryCreate(
   page: Page,

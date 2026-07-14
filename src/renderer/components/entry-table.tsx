@@ -2,6 +2,8 @@ import { useRouter } from '@tanstack/react-router';
 import {
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
   type ColumnDef,
   type VisibilityState,
@@ -162,16 +164,26 @@ export function EntryTable({
     }),
     columns: columns(),
     getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    rowCount: entries.total,
+    // The route loads the whole Collection with limit 0 (the app-wide load-all
+    // list pattern, see loading-and-updating-data.md), so pagination is applied
+    // client side over the fully loaded list rather than refetched per page.
+    getPaginationRowModel: getPaginationRowModel(),
+    // `data` is rebuilt into a new array on every render, which the default
+    // autoResetPageIndex reads as a data change and snaps the page back to 0,
+    // so paging past the first page never sticks. Disable it: the page index is
+    // driven only by the pagination controls.
+    autoResetPageIndex: false,
+    // The filter input drives a global filter across the visible columns. It is
+    // applied before pagination, so a match on any page surfaces on the first
+    // one (the filter input resets the page index, see below).
+    getFilteredRowModel: getFilteredRowModel(),
     onPaginationChange: setPagination, // update the pagination state when internal APIs mutate the pagination state
     onColumnVisibilityChange: setColumnVisibility,
-    // getFilteredRowModel: getFilteredRowModel(),
+    onGlobalFilterChange: setFilter,
     state: {
       pagination,
       columnVisibility,
-      // globalFilter: columnFilter,
-      // columnFilters: columnFilter,
+      globalFilter: filter,
     },
   });
 
@@ -195,7 +207,11 @@ export function EntryTable({
             record: collection.name.plural,
           })}...`}
           value={filter}
-          onChange={(event) => setFilter(event.target.value)}
+          onChange={(event) => {
+            setFilter(event.target.value);
+            // Reset to the first page so a match on a later page is visible.
+            setPagination((previous) => ({ ...previous, pageIndex: 0 }));
+          }}
           className="max-w-sm"
         />
         <DropdownMenu>

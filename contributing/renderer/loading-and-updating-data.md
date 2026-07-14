@@ -184,6 +184,8 @@ return (
 
 This ensures the page structure renders immediately, with placeholders that are replaced by real data as it loads.
 
+**Lists load fully and paginate client side.** List queries pass `limit: 0`, so Core returns the whole list into a single cached `'list'` query (kept fresh by `staleTime: Infinity` and updated in place by `mergeListWithObject`, not refetched). Any pagination or filtering a list view offers is therefore applied client side over that already-loaded list, not by refetching a page from Core. The Entry table is the current example: it feeds the full list to TanStack Table with `getPaginationRowModel()` (a fixed page size) and `getFilteredRowModel()` (the filter input drives `state.globalFilter`), resets the page index when the filter changes, and sets `autoResetPageIndex: false` because it rebuilds its `data` array each render (the default auto-reset would read that as a data change and snap the page back to the first one).
+
 ### Error Handling - Prefer useQueryNoError
 
 **Always use [`useQueryNoError`](../../src/renderer/hooks/useQueryNoError.ts) instead of `useQuery` for data fetching.**
