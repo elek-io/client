@@ -38,3 +38,14 @@ export async function setUserViaIpc(
 export async function navigateToUserProfile(page: Page): Promise<void> {
   await navigate(page, '#/user/profile');
 }
+
+/**
+ * Read whether Core's local API is currently running, over IPC.
+ *
+ * The API lifecycle is driven from the main process, so this observes it there
+ * rather than through the renderer. Used to assert the desktop app started or
+ * stopped the API in response to the profile's Enabled toggle (P2-11).
+ */
+export async function apiIsRunningViaIpc(page: Page): Promise<boolean> {
+  return page.evaluate(async () => window.ipc.core.api.isRunning());
+}

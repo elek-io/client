@@ -111,7 +111,29 @@ export const test = base.extend<{
    * The main window of the Electron app
    */
   mainWindow: Page;
+
+  /**
+   * Console messages a spec expects and tolerates, matched against the errors
+   * and warnings the `mainWindow` teardown asserts on. A collected message is
+   * allowed when it includes one of the string `patterns` or matches one of the
+   * RegExp `patterns`; only the remainder must be empty.
+   *
+   * `patterns` defaults to `[]`, so every existing spec stays strict (no message
+   * is tolerated). A spec opts in with
+   * `test.use({ allowedConsoleErrors: { patterns: [...] } })`, keeping the list
+   * tight so unrelated regressions still fail.
+   *
+   * The patterns are wrapped in an object rather than passed as a bare array on
+   * purpose: Playwright reads an array-valued option override as its own
+   * `[value, options]` fixture tuple when the second element is an object, so a
+   * bare `[/a/, /b/]` (or any array with a RegExp at index 1) would silently
+   * collapse to its first element. An object override is never mistaken for
+   * that tuple. See tests/fixtures/electronApp.ts history for the experiment.
+   */
+  allowedConsoleErrors: { patterns: (string | RegExp)[] };
 }>({
+  allowedConsoleErrors: [{ patterns: [] }, { option: true }],
+
   // eslint-disable-next-line no-empty-pattern
   electronApp: async ({}, use, testInfo) => {
     const app = await launchApp(testInfo);
@@ -129,7 +151,7 @@ export const test = base.extend<{
     }
   },
 
-  mainWindow: async ({ electronApp }, use, testInfo) => {
+  mainWindow: async ({ electronApp, allowedConsoleErrors }, use, testInfo) => {
     // Wait for the first window to open. The timeout is below the test
     // timeout, so a window that never opens reports as a firstWindow
     // timeout instead of a less specific test timeout
@@ -175,8 +197,22 @@ export const test = base.extend<{
       .setLegacyMode()
       .analyze();
 
-    // Fail on any console error or warning. A single assertion, so both lists
-    // are visible when either is non-empty
-    expect({ errors, warnings }).toEqual({ errors: [], warnings: [] });
+    // Fail on any console error or warning, minus the messages a spec opted to
+    // tolerate via `allowedConsoleErrors`. A message is allowed when it includes
+    // an allowed substring or matches an allowed RegExp. A single assertion, so
+    // both remaining lists are visible when either is non-empty
+    const isAllowed = (message: string): boolean =>
+      allowedConsoleErrors.patterns.some((pattern) =>
+        typeof pattern === 'string'
+          ? message.includes(pattern)
+          : pattern.test(message)
+      );
+    const remainingErrors = errors.filter((message) => !isAllowed(message));
+    const remainingWarnings = warnings.filter((message) => !isAllowed(message));
+
+    expect({
+      errors: remainingErrors,
+      warnings: remainingWarnings,
+    }).toEqual({ errors: [], warnings: [] });
   },
 });
