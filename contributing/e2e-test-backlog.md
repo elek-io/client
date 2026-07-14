@@ -16,7 +16,7 @@ The app has exactly one spec today (`tests/specs/app-initialization.spec.ts`: la
 **Prioritization principle (rank order):**
 
 - **P0 — core data lifecycle / data-loss guards.** Create + delete + persistence for projects/collections/entries, git-commit correctness, and the two `project.delete` destruction guards (no-origin 412, unpushed-ahead 409). A bug here means silent data loss or corruption of the primary content objects, or destruction of unsynchronized commits.
-- **P1 — the rest of CRUD + content integrity + sync.** Update flows, the collection-update schema cascade (rename/remove/narrow/non-deterministic + resolutions retry), write-time reference integrity, assets (two-file model), synchronize round-trip **and its dangling-reference integrity gate**, list/read states.
+- **P1 — the rest of CRUD + content integrity + sync.** Update flows (the collection-update happy path is P1-11; its schema-cascade internals — rename/remove/narrow/non-deterministic + resolutions retry — are Core's own tests and were dropped, see P1-02..P1-06 in section 3), write-time reference integrity, assets (two-file model), synchronize round-trip **and its dangling-reference integrity gate**, list/read states.
 - **P2 — settings, user identity, uniqueness, history, navigation guards, local API, i18n/locale, multi-language content.**
 - **P3 — validation edges, empty/error states, asset view/validation, table pagination, accessibility.**
 
@@ -26,7 +26,7 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 
 - **Launch race, fixed in the app (not a test concern).** The main process used to register its `window.ipc` handlers only after loading the renderer (`onAppReady` in `src/main/index.ts`), so a freshly opened window could run a `ViaIpc` seed before the handlers existed and flake with "No handler registered". `onAppReady` now creates the window, registers the handlers, then loads the renderer, which closed the race for every seed-first spec (and for real launches). See the Application Lifecycle section in [`overview.md`](./overview.md). No test-side readiness wait is needed.
 - The per-test data dir is computed inside the fixture and never exported. Surface it (`dataDir(testInfo)` / `readDataFile` / `listDataDir`) so specs can assert Core's storage layout.
-- **Console escape hatch is a prerequisite for _every_ UI-driven negative-path spec, not just the error-boundary case.** The `mainWindow` fixture asserts zero console errors/warnings on pass (`electronApp.ts:150`). Because failed mutations hit the root error boundary, React logs the caught error to `console.error` and the app logs via `core:logger:error`. Add an opt-in expected-console allow-list before writing P1-13, P2-09, or any UI-driven failing create/update/delete that reaches the error boundary. A flow that handles the error in place instead (like P0-11's force-delete modal, which overrides `throwOnError: false` and suppresses the toast) never reaches the boundary and needs no hatch. IPC-level negatives that `await` a rejected promise inside `page.evaluate` (P0-08, P1-04, P1-05, P1-06, P1-09, P1-10, P2-03, P2-10) do **not** trip this either.
+- **Console escape hatch is a prerequisite for _every_ UI-driven negative-path spec, not just the error-boundary case.** The `mainWindow` fixture asserts zero console errors/warnings on pass (`electronApp.ts:150`). Because failed mutations hit the root error boundary, React logs the caught error to `console.error` and the app logs via `core:logger:error`. Add an opt-in expected-console allow-list before writing P1-13, P2-09, or any UI-driven failing create/update/delete that reaches the error boundary. A flow that handles the error in place instead (like P0-11's force-delete modal, which overrides `throwOnError: false` and suppresses the toast) never reaches the boundary and needs no hatch. IPC-level negatives that `await` a rejected promise inside `page.evaluate` (P0-08, P1-09, P1-10) do **not** trip this either. (P1-04..P1-06 were dropped as Core duplicates, and P2-03 and P2-10 were reclassified as deferred UI-negatives that would reach the boundary, so they left this IPC-only set — see section 3.)
 - **Native `electron:dialog:*` modals must be stubbed in the MAIN process,** not the renderer. `contextBridge.exposeInMainWorld` freezes the exposed `window.ipc`, and the dialog calls forward to Electron's `dialog.showOpenDialog/showSaveDialog` in main. The handlers capture those methods by reference at registration (`main/index.ts`), so reassigning `dialog.showOpenDialog` at runtime does not intercept; the stub instead runs `electronApp.evaluate(({ ipcMain }) => …)` to `removeHandler` + re-`handle` each channel with a canned result (see `stubFileDialog` in section 4). This affects every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
 - **A controllable git origin (`setupRemote`)** — a local bare repo — is needed for synchronize/clone/getChanges and the two `project.delete` remote guards.
 
@@ -34,43 +34,43 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 
 Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /projects` redirect, plus the implicit per-pass checks (zero console errors/warnings; axe scan runs but does not assert). Everything marked "gap" is uncovered.
 
-| IPC channel                                                                  | Existing coverage       | Backlog IDs                                            |
-| ---------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------ |
-| projects:create                                                              | gap                     | P0-01, P0-02, P2-03, P3-01 (done)                      |
-| projects:list / count                                                        | gap                     | P0-01, P1-17 (done), P1-19, P3-07 (done)               |
-| projects:read                                                                | gap                     | P0-02, P2-06                                           |
-| projects:history                                                             | gap                     | P2-06, P2-07                                           |
-| projects:update                                                              | partial                 | P1-01 (done), P2-04 (done)                             |
-| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)            |
-| projects:getChanges                                                          | partial (via sidebar)   | P1-20 (done), P2-05, P2-13                             |
-| projects:setRemoteOriginUrl                                                  | partial                 | P0-08 (done), P2-05 (done), P1-20 (done), P2-13        |
-| projects:synchronize                                                         | partial                 | P1-20 (done), P1-21 (done), P2-13                      |
-| projects:clone                                                               | gap                     | P2-12                                                  |
-| collections:list                                                             | gap                     | P0-03, P1-18 (done), P3-07 (done)                      |
-| collections:create                                                           | gap                     | P0-03                                                  |
-| collections:read                                                             | gap                     | P0-03, P0-06                                           |
-| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11 (done)        |
-| collections:delete                                                           | gap                     | P0-06                                                  |
-| entries:list                                                                 | gap                     | P0-04, P1-18 (done), P3-07 (done)                      |
-| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05 (done), P3-06(ref), P2-10   |
-| entries:read                                                                 | gap                     | P0-05, P1-08                                           |
-| entries:update                                                               | gap                     | P1-07 (done), P1-08                                    |
-| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                                  |
-| assets:list                                                                  | gap                     | P1-12 (done), P3-07 (done)                             |
-| assets:create                                                                | gap                     | P1-12 (done)                                           |
-| assets:read                                                                  | gap                     | P1-12 (done), P1-16 (done), P3-08 (done)               |
-| assets:update                                                                | gap                     | P1-15 (done), P3-06 (done)                             |
-| assets:delete                                                                | gap                     | P1-13 (done), P1-14 (done)                             |
-| assets:save                                                                  | gap                     | P1-16 (done)                                           |
-| user:get / set                                                               | partial                 | P2-01 (done), P2-02 (done), P2-03 (setUser helper)     |
-| api:start / stop / isRunning                                                 | gap                     | P2-11                                                  |
-| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)               |
-| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12 (done), P1-15 (done), P1-16 (done), P3-06 (done) |
-| i18n / date-fns locale rendering                                             | gap                     | P2-14                                                  |
-| App launch / title / `/`→`/projects`                                         | **covered**             | —                                                      |
-| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                                  |
-| Root not-found + error boundary                                              | gap                     | P2-09                                                  |
-| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                                  |
+| IPC channel                                                                  | Existing coverage       | Backlog IDs                                                     |
+| ---------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------- |
+| projects:create                                                              | gap                     | P0-01, P0-02, P2-03 (deferred), P3-01 (done)                    |
+| projects:list / count                                                        | gap                     | P0-01, P1-17 (done), P1-19, P3-07 (done)                        |
+| projects:read                                                                | gap                     | P0-02, P2-06                                                    |
+| projects:history                                                             | gap                     | P2-06, P2-07                                                    |
+| projects:update                                                              | partial                 | P1-01 (done), P2-04 (done)                                      |
+| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)                     |
+| projects:getChanges                                                          | partial (via sidebar)   | P1-20 (done), P2-05, P2-13                                      |
+| projects:setRemoteOriginUrl                                                  | partial                 | P0-08 (done), P2-05 (done), P1-20 (done), P2-13                 |
+| projects:synchronize                                                         | partial                 | P1-20 (done), P1-21 (done), P2-13                               |
+| projects:clone                                                               | gap                     | P2-12                                                           |
+| collections:list                                                             | gap                     | P0-03, P1-18 (done), P3-07 (done)                               |
+| collections:create                                                           | gap                     | P0-03                                                           |
+| collections:read                                                             | gap                     | P0-03, P0-06                                                    |
+| collections:update                                                           | gap                     | P1-11 (done) (P1-02..P1-06 dropped, see section 3)              |
+| collections:delete                                                           | gap                     | P0-06                                                           |
+| entries:list                                                                 | gap                     | P0-04, P1-18 (done), P3-07 (done)                               |
+| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05 (done), P3-06(ref), P2-10 (deferred) |
+| entries:read                                                                 | gap                     | P0-05, P1-08                                                    |
+| entries:update                                                               | gap                     | P1-07 (done), P1-08                                             |
+| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                                           |
+| assets:list                                                                  | gap                     | P1-12 (done), P3-07 (done)                                      |
+| assets:create                                                                | gap                     | P1-12 (done)                                                    |
+| assets:read                                                                  | gap                     | P1-12 (done), P1-16 (done), P3-08 (done)                        |
+| assets:update                                                                | gap                     | P1-15 (done), P3-06 (done)                                      |
+| assets:delete                                                                | gap                     | P1-13 (done), P1-14 (done)                                      |
+| assets:save                                                                  | gap                     | P1-16 (done)                                                    |
+| user:get / set                                                               | partial                 | P2-01 (done), P2-02 (done), P2-03 (deferred)                    |
+| api:start / stop / isRunning                                                 | gap                     | P2-11                                                           |
+| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)                        |
+| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12 (done), P1-15 (done), P1-16 (done), P3-06 (done)          |
+| i18n / date-fns locale rendering                                             | gap                     | P2-14                                                           |
+| App launch / title / `/`→`/projects`                                         | **covered**             | —                                                               |
+| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                                           |
+| Root not-found + error boundary                                              | gap                     | P2-09                                                           |
+| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                                           |
 
 ## 3. Prioritized backlog
 
@@ -147,35 +147,21 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `setUserViaIpc`, `createProjectViaIpc`, `navigateToProjectSettings`, `navigate`.
   Deps: P0-01.
 
-- **P1-02 `collection.update` rename-by-id preserves entry data (IPC).**
-  Steps: seed collection(text `title`) + entry(value) → `ipc('core.collections.update')` with the same field id but slug `heading`.
-  Assert: entry value moved to `heading` with content preserved; one commit covers `collection.json` + entry.
-  Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`, `getHistory`.
-  Deps: P0-04.
+- **P1-02 — DROPPED. Asserting rename-by-id preserves entry data duplicates Core.**
+  A first version asserted that a `collection.update` renaming a field by id carries the entry's value to the new slug with content preserved. That is Core's own data-migration result, which Core tests itself, so under the verification doctrine (rule 2, asserting Core's internal correctness) it does not belong in the desktop suite. The collection-update UI happy path is already covered by **P1-11**, and its failure surface is deferred to the error-UX track (section 5), so this IPC assertion only duplicates Core.
 
-- **P1-03 `collection.update` remove-field drops exactly that value (IPC).**
-  Steps: seed collection(fields A,B) + entry(both) → update removing B by id.
-  Assert: A preserved; B gone from the entry; single commit; nothing else changed.
-  Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`.
-  Deps: P0-04.
+- **P1-03 — DROPPED. Asserting remove-field drops exactly that value duplicates Core.**
+  A first version asserted that removing a field by id drops that one value and leaves the others intact. That is Core's own data-migration result (rule 2), covered by Core's tests. The desktop happy path is **P1-11**; its failure surface is deferred (section 5), so this IPC assertion only duplicates Core.
 
-- **P1-04 Non-deterministic schema change fails `missing_required` with Conflict and rolls back (IPC).**
-  Steps: seed collection + entry → update adding a required field with no default → expect `Conflict(409)` whose cause lists `missing_required`.
-  Assert: `collection.json` and the entry unchanged on disk; history length unchanged (atomic rollback).
-  Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`, `getHistory`.
-  Deps: P0-04.
+- **P1-04 — DROPPED. Asserting Core's non-deterministic-change guard and rollback duplicates Core.**
+  A first version asserted a `Conflict(409)` with a `missing_required` cause and an atomic on-disk rollback when a required field is added with no default. The collection update has a UI path (the collection settings form, **P1-11**), so under the doctrine its failure is observed through the UI, not by a bare IPC assertion (rule 1), and the guard plus rollback internals are Core's own tests (rule 2). That UI failure surface is deferred to the error-UX track (section 5).
+  **Possible future desktop enhancement (out of current scope):** surfacing a collection-update schema conflict IN PLACE, a fourth in-place-modal consumer alongside force-delete, sync and asset-in-use (see [`error-handling.md`](./error-handling.md#handling-expected-errors-in-place)), would be follow-up product work plus a UI-driven spec.
 
-- **P1-05 `collection.update` other non-deterministic issue types + resolutions-map retry (IPC).** _(added)_
-  Steps: seed collection + entries that will collide → drive each of `type_mismatch`, `constraint_violation`, and `unique_collision` as `Conflict(409)` causes → then re-issue the update with a `resolutions` map keyed by `entryId → fieldSlug` and assert it completes and rewrites the affected entries.
-  Assert: each issue type surfaces its own cause; the documented recovery path (retry with resolutions) actually unblocks the change and produces one commit.
-  Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`, `getHistory`.
-  Deps: P1-04. (Confirm the exact `resolutions` shape against Core docs before writing.)
+- **P1-05 — DROPPED. Asserting the other non-deterministic issue types and the resolutions-map retry duplicates Core.**
+  A first version drove each of `type_mismatch`, `constraint_violation` and `unique_collision` as `Conflict(409)` causes, then retried the update with a `resolutions` map. Those causes and the documented resolutions recovery are Core's own guard internals (rule 2) for a flow that has a UI path (rule 1), whose failure handling is deferred to the error-UX track (section 5). Same possible future in-place enhancement as noted on **P1-04**.
 
-- **P1-06 `collection.update` narrowing a reference field silently strips now-disallowed refs (IPC).** _(added — distinct from P1-03)_
-  Steps: seed collection with a reference field allowing collections {A,B} + an entry referencing a B target → update the field to `ofCollections`/`ofComponents` = {A} only.
-  Assert: the B reference is silently removed from the entry (permanent, silent data loss path); A-scoped references preserved; single commit.
-  Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`.
-  Deps: P1-03.
+- **P1-06 — DROPPED. Asserting a narrowed reference field strips now-disallowed refs duplicates Core.**
+  A first version asserted that narrowing a reference field's `ofCollections` silently removes the now-disallowed refs from an entry while preserving the still-allowed ones. That silent-strip is Core's own data-migration result (rule 2), covered by Core's tests. The desktop happy path is **P1-11**; its failure surface is deferred (section 5), so this IPC assertion only duplicates Core.
 
 - **P1-07 Update an entry is dirty-gated and persists. — DONE (passing, `tests/specs/entries.spec.ts`).**
   Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` + `createEntryViaIpc({ values: { title: stringValue({ en: 'Original title' }) } })` → `navigateToEntryUpdate` → wait for the form to settle (Title field shows 'Original title') → assert "Update Article" DISABLED → edit the Title to 'Edited title' via `fillEntryForm` → assert ENABLED → Update.
@@ -189,15 +175,18 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`.
   Deps: P1-07.
 
-- **P1-09 `entry.delete` reference guard and success (IPC-only; no UI path).**
-  Steps: seed collection with an entry-reference field, entries E1 and E2 where E2 references E1 → `ipc` delete E1 rejects `Conflict(409)` with `ReferencingEntry[]` naming E2, E1 still on disk → delete E2, then E1 succeeds and the file is gone.
-  Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`.
+- **P1-09 `entry.delete` reference guard and success (sanctioned no-UI-path IPC guard).**
+  **No-UI-path premise verified:** there is no UI control to delete an Entry. The `EntryTable` actions column is commented out (`entry-table.tsx`), the entry update route (`$entryId/update.tsx`) exposes only an "Update" action, and the entry layout is a bare `Outlet`. So this guard has genuinely no UI path and is observed as a bare IPC throw / no-throw, the one IPC-only case the doctrine sanctions.
+  Steps: seed a collection with an entry-reference field and entries E1, E2 where E2 references E1 → delete E1 over IPC and observe it **rejects** (still referenced) → delete E2, then delete E1 and observe both **resolve**.
+  Assert: the referenced delete rejects, and once the referrer is gone the delete succeeds (throw / no-throw only). Core's error type, its cause payload (the referencing entries) and the on-disk file removal are Core's own tests, not asserted here.
+  Helpers: `createCollectionViaIpc`, `referenceFieldDefinition`, `createEntryViaIpc`, `referenceValue`.
   Deps: P0-04.
 
-- **P1-10 Entry write-time reference integrity: broken reference rejected (IPC).** _(moved up from P3-06 — content-integrity gate)_
-  Steps: `ipc('core.entries.create')` with a reference to a non-existent id.
-  Assert: `BadRequest(400)` `Entry contains invalid references` (`reference_not_found`); no file written.
-  Helpers: `seedCollection`, `ipc`, `dataDir`.
+- **P1-10 Entry write-time reference integrity: broken reference rejected (sanctioned no-UI-path IPC guard).** _(moved up from P3-06 — content-integrity gate)_
+  **No-UI-path premise verified:** the entry form's reference field is a picker that only offers existing targets. `FormEntryField` (`form.tsx`) lists entries fetched from the allowed collections and toggles their ids, with no free-text id input, so a non-existent reference id cannot be submitted through the UI. The guard therefore has no UI path and is observed as a bare IPC throw.
+  Steps: create an Entry over IPC with a reference to a non-existent id and observe it **rejects**.
+  Assert: the create rejects (throw only). Core's error type, message and cause (`reference_not_found`) and the no-file-written result are Core's own tests, not asserted here.
+  Helpers: `createCollectionViaIpc`, `referenceFieldDefinition`, `createEntryViaIpc`, `referenceValue`.
   Deps: P0-03.
 
 - **P1-11 Update a collection is dirty-gated and persists. — DONE (passing, `tests/specs/collections.spec.ts`).**
@@ -285,10 +274,8 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `setUserViaIpc`, `navigateToUserProfile`.
   Deps: P2-01.
 
-- **P2-03 Unauthorized gate: writes without a user throw 401 (IPC).**
-  Steps: fresh app (no `setUser`) → `ipc('core.projects.create', …)`.
-  Assert: rejects `Unauthorized(401)`; no project written on disk.
-  Helpers: `ipc`, `dataDir`.
+- **P2-03 — DEFERRED (UI-negative). The recommended no-UI-path premise did not hold: a write-before-User path exists and hits the root error boundary.**
+  Verifying the "no flow writes before a User is set" premise showed the app has **no onboarding gate**. With no User set, a fresh app redirects `/` → `/projects`, whose "Create Project" action opens `/projects/create` (neither route has a User `beforeLoad` gate and the list never blocks the action), and the create form submits `projects.create` directly. So there IS a UI path that writes before a User is set. Because `projects.create` uses the global `throwOnError: true` and is not handled in place, Core's `Unauthorized` rejection would reach the root error boundary. Under the doctrine (rule 1) a guard with a UI path is tested through the UI, and per the error-contract decision (section 5) a UI-driven mutation-negative that would assert the root `ErrorComponent` is deferred to the error-UX track. So this is deferred, not a no-UI-path IPC keep (contrast P1-09/P1-10). Separately worth recording: adding an onboarding gate (redirect to the profile until a User exists) is product work that would turn this into a blocked-in-UI path rather than a boundary hit.
   Deps: none.
 
 - **P2-04 Project language management: the default cannot be removed and the supported set persists. — DONE (passing, `tests/specs/projects.spec.ts`).**
@@ -326,10 +313,8 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: console escape hatch, `verifyCurrentRouteHash`.
   Deps: console escape hatch.
 
-- **P2-10 Uniqueness collision on a unique field (IPC).** _(moved up from P3-07 — Core integrity guarantee, on par with reference integrity)_
-  Steps: collection with an `isUnique` text field → create entry value `x` → create a second with `x`.
-  Assert: `Conflict(409)` `unique_collision`; the first entry intact.
-  Helpers: `seedCollection`, `seedEntry`, `ipc`, `dataDir`.
+- **P2-10 — DEFERRED (UI-negative). The entry create form has no client-side uniqueness pre-check, so a duplicate unique value has a UI path that hits the root error boundary.** _(moved up from P3-07 — Core integrity guarantee, on par with reference integrity)_
+  Verifying the entry CREATE form showed it validates with a static Core-generated zod schema (`getCreateEntrySchemaFromFieldDefinitions`) and does no cross-entry uniqueness check (`isUnique` appears only in the collection field-definition forms, never in the entry form). A unique field renders as a normal input, so a value duplicating an existing one can be submitted. Because `entries.create` uses the global `throwOnError: true` and is not handled in place, Core's `unique_collision` rejection would reach the root error boundary. So a UI path exists and, under the doctrine (rule 1) plus the error-contract decision (section 5), this is a deferred UI-negative pending the error-UX track, not a no-UI-path IPC keep (contrast P1-09/P1-10, which have genuinely no UI path).
   Deps: P0-04.
 
 - **P2-11 Local API lifecycle from the profile toggle.**
