@@ -188,6 +188,9 @@ export function ProjectForm<
                                         }}
                                       >
                                         <Cross2Icon className="h-4 w-4" />
+                                        <span className="sr-only">
+                                          Remove {language}
+                                        </span>
                                       </Button>
                                     </Chip>
                                   </li>

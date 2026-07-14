@@ -55,6 +55,8 @@ A `ViaIpc` seed can run immediately after the window opens because the main proc
 
 When a test passes, the `mainWindow` fixture asserts that no console errors or warnings occurred and runs an axe accessibility scan, which does not assert on violations yet until the existing ones are resolved. The scan uses axe legacy mode, since otherwise axe opens a blank aggregation page via `context.newPage()`, which Electron does not support. Both checks are skipped when the test already failed, so they do not bury the real failure.
 
+Per-route assertions now opt in ahead of that fixture-wide check via `expectNoAxeViolations(page)`, starting with the Projects list (`#/projects`) in `accessibility.spec.ts`. That route enforces every rule except the app-wide `color-contrast` issue, so a nameless button or missing label there fails a test. More routes join as they are cleaned, and once every route is clean the `@todo` fixture-wide assertion replaces the opt-in list.
+
 ## What a desktop test verifies
 
 All business logic, validation, file IO and git live in `@elek-io/core`, a separate library with its own test suite. Core validates tightly, so a corrupt file should never be written. The desktop suite does not re-verify Core's output, and the same assertion should not be written on both sides of the Core and desktop seam.
@@ -78,6 +80,10 @@ Because the suite is end to end, a helper drives the UI by default and its name 
 The `ViaIpc` helpers reach Core by wrapping `window.ipc` in a `page.evaluate` call. `window.ipc` is globally typed through `src/index.d.ts`, but specs type-check under the Node config which has no DOM lib, so `window` is declared once in `tests/global.d.ts`. There is no generic `ipc(page, path)` helper, since a string path cannot be typed without a cast. Write a small typed wrapper per operation instead.
 
 The `tests` folder is type-checked by `pnpm check-types:node` under the strictest settings. That config resolves modules with `nodenext`, so relative imports need explicit `.js` extensions, which Playwright resolves to the `.ts` files. `pnpm lint` also applies the type-aware ESLint rules to `tests`, so `no-floating-promises` flags an unawaited assertion, which type-checking alone does not catch.
+
+### Accessibility as a testing contract
+
+An element a test drives must expose a proper accessible role and name, so a role and name locator finds it. When an interactable has no accessible name (a bare icon button, an icon-only toggle), fix the source rather than reaching for a brittle structural locator. Give it an `sr-only` label or an `aria-label`, mirroring the icon buttons in [`asset-teaser.tsx`](../src/renderer/components/asset-teaser.tsx) (`<span className="sr-only">…</span>` inside the button). One fix serves screen-reader users and stable tests at once, and it chips away at the axe violations blocking the fixture's deferred assertion. This is how the language-chip remove button became `getByRole('button', { name: 'Remove en' })`.
 
 ## CI
 

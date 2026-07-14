@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 
 import { test } from '../fixtures/electronApp.js';
 import { createCollectionViaIpc } from '../helpers/collection.js';
-import { confirmDialog } from '../helpers/dialog.js';
+import { confirmDialog, dismissDialog } from '../helpers/dialog.js';
 import {
   navigate,
   reloadWindow,
@@ -12,6 +12,7 @@ import {
   createProject,
   createProjectViaIpc,
   navigateToProjectSettings,
+  navigateToVersionControl,
   setRemoteOriginUrlViaIpc,
 } from '../helpers/project.js';
 import { setupRemote } from '../helpers/remote.js';
@@ -230,5 +231,102 @@ test.describe('Projects', () => {
     // The force delete goes through and the UI reflects the removal
     await expect(mainWindow).toHaveURL(/#\/projects$/);
     await expect(mainWindow.getByText('No Projects yet')).toBeVisible();
+  });
+
+  test('blocks removing the default language and persists the supported set', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow, {
+      settings: { language: { default: 'en', supported: ['en', 'de'] } },
+    });
+
+    await navigateToProjectSettings(mainWindow, project.id);
+
+    // Wait for the form to reset from the loaded Project, so both language chips
+    // and their (accessibly named) remove buttons are present.
+    await expect(
+      mainWindow.getByRole('button', { name: 'Remove en' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByRole('button', { name: 'Remove de' })
+    ).toBeVisible();
+
+    // Removing the default language is blocked in place: the guard dialog opens
+    // and 'en' is not removed.
+    await mainWindow.getByRole('button', { name: 'Remove en' }).click();
+    await expect(
+      mainWindow.getByText('Deleting the default language')
+    ).toBeVisible();
+    await dismissDialog(mainWindow);
+    await expect(
+      mainWindow.getByRole('button', { name: 'Remove en' })
+    ).toBeVisible();
+
+    // Removing a non-default language drops its chip and dirties the form.
+    await mainWindow.getByRole('button', { name: 'Remove de' }).click();
+    await expect(
+      mainWindow.getByRole('button', { name: 'Remove de' })
+    ).toBeHidden();
+
+    // Saving persists the narrowed supported set. A reload re-reads from Core and
+    // shows only 'en' (de gone, en stayed), guarding the default-remove guard and
+    // the supported-set persistence.
+    await mainWindow.getByRole('button', { name: 'Save changes' }).click();
+    await reloadWindow(mainWindow);
+    await expect(
+      mainWindow.getByRole('button', { name: 'Remove en' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByRole('button', { name: 'Remove de' })
+    ).toBeHidden();
+  });
+
+  test('sets the remote origin URL and reveals the Synchronize control', async ({
+    mainWindow,
+  }, testInfo) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+
+    // A bare mirror of the Project's current work is a reachable origin, so the
+    // sidebar's getChanges succeeds once the origin is set and the console stays
+    // clean (clone --bare copies the refs without an LFS push path).
+    const projectPath = testInfo.outputPath(
+      'elek-io-data',
+      'projects',
+      project.id
+    );
+    const remote = setupRemote(testInfo, { mirror: projectPath });
+
+    await navigateToVersionControl(mainWindow, project.id);
+
+    // No origin yet: Save is gated and the sidebar shows no Synchronize control
+    // (it renders only when remoteOriginUrl != null).
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+    await expect(
+      mainWindow.getByRole('button', { name: 'Synchronize' })
+    ).toBeHidden();
+
+    // Setting the origin dirties the form, so Save enables.
+    await mainWindow.getByLabel('Remote URL').fill(remote.url);
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeEnabled();
+    await mainWindow.getByRole('button', { name: 'Save changes' }).click();
+
+    // The origin is set: the Synchronize button appears, and the form reset back
+    // to the saved origin re-gates Save (proving the change reached Core).
+    await expect(
+      mainWindow.getByRole('button', { name: 'Synchronize' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+
+    // The clearing half (empty URL removes the origin) is dropped: an empty
+    // submit resolves in Core but leaves a non-null value rather than clearing
+    // it, so the origin is not actually cleared. See the backlog (P2-05).
   });
 });

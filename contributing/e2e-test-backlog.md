@@ -40,10 +40,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 | projects:list / count                                                        | gap                     | P0-01, P1-17 (done), P1-19, P3-07 (done)               |
 | projects:read                                                                | gap                     | P0-02, P2-06                                           |
 | projects:history                                                             | gap                     | P2-06, P2-07                                           |
-| projects:update                                                              | gap                     | P1-01 (done), P2-04                                    |
+| projects:update                                                              | partial                 | P1-01 (done), P2-04 (done)                             |
 | projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)            |
 | projects:getChanges                                                          | partial (via sidebar)   | P1-20 (done), P2-05, P2-13                             |
-| projects:setRemoteOriginUrl                                                  | partial                 | P0-08 (done), P2-05, P1-20 (done), P2-13               |
+| projects:setRemoteOriginUrl                                                  | partial                 | P0-08 (done), P2-05 (done), P1-20 (done), P2-13        |
 | projects:synchronize                                                         | partial                 | P1-20 (done), P1-21 (done), P2-13                      |
 | projects:clone                                                               | gap                     | P2-12                                                  |
 | collections:list                                                             | gap                     | P0-03, P1-18 (done), P3-07 (done)                      |
@@ -62,7 +62,7 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 | assets:update                                                                | gap                     | P1-15 (done), P3-06 (done)                             |
 | assets:delete                                                                | gap                     | P1-13 (done), P1-14 (done)                             |
 | assets:save                                                                  | gap                     | P1-16 (done)                                           |
-| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)                   |
+| user:get / set                                                               | partial                 | P2-01 (done), P2-02 (done), P2-03 (setUser helper)     |
 | api:start / stop / isRunning                                                 | gap                     | P2-11                                                  |
 | logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)               |
 | electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12 (done), P1-15 (done), P1-16 (done), P3-06 (done) |
@@ -272,16 +272,17 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 ### P2 — settings, user identity, uniqueness, history, navigation, local API, i18n
 
-- **P2-01 First-run user onboarding sets and persists identity.**
-  Steps: fresh app → `/user/profile` → assert Welcome title (user null) → assert "Save local User" disabled until dirty (the gate enables once the required name/email are filled) → fill language/name/email/port, toggle local API → Save.
-  Assert: navigate `/projects`; `user.json` written matching input; `user:get` returns it; UserDropdown renders; live commit preview updates as name/email change.
-  Helpers: `ipc`, `dataDir`.
+- **P2-01 First-run onboarding sets and persists the local User. — DONE (passing, `tests/specs/user.spec.ts`).**
+  Steps: fresh app (no User) → `navigateToUserProfile` → fill "Full name" + "Email" (Port stays 31310, the local-API Switch stays OFF so the API never starts, that side effect is P2-11) → Save → `navigateToUserProfile` again.
+  Assert (desktop-only, per the doctrine): the title is "Welcome to elek.io Desktop" and "Save local User" is DISABLED while no User exists; typing the name updates the live "Example change" commit preview (its author renders the typed name); the form dirties so Save ENABLES, and saving navigates to `/projects`. Persistence is proven by reopening the profile: the title is now "User profile" (a User exists) and "Full name" shows the entered value (the form reset from the saved User). The on-disk `user.json` and the `user:get` shape are Core's tests, not asserted here.
+  Helpers: `navigateToUserProfile`.
   Deps: none.
 
-- **P2-02 Edit an existing user and confirm identity propagates to the git author.** _(added — P2-01 covers only first-run)_
-  Steps: `setUser` → `/user/profile` (asserts the form resets from the existing user, not the Welcome state) → assert "Save local User" disabled until dirty (enables on the first edit) → change name/email/language → Save → make a commit (e.g. `seedProject` via UI).
-  Assert: `user.json` updated; the next commit's author is the new name/email.
-  Helpers: `setUser`, `getHistory`, `ipc`, `dataDir`.
+- **P2-02 Edit an existing User persists. — DONE (passing, `tests/specs/user.spec.ts`).**
+  Re-cast: the original asserted the new identity propagates to the git author, which is Core's test (Core stamps the author from the User). The desktop-relevant part is only that the edit persists and the form reflects it.
+  Steps: `setUserViaIpc({ name: 'Test User', email: 'test@elek.io' })` → `navigateToUserProfile` → edit "Full name" to 'Renamed User' → Save → `navigateToUserProfile` again.
+  Assert (desktop-only): the title is "User profile" (not Welcome), "Full name" shows 'Test User' (form reset from the existing User) and "Save local User" is DISABLED; editing the name ENABLES Save, and saving navigates to `/projects`; reopening the profile shows 'Renamed User' (persisted). The git author of the next commit is Core's test, dropped from this spec.
+  Helpers: `setUserViaIpc`, `navigateToUserProfile`.
   Deps: P2-01.
 
 - **P2-03 Unauthorized gate: writes without a user throw 401 (IPC).**
@@ -290,17 +291,18 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `ipc`, `dataDir`.
   Deps: none.
 
-- **P2-04 Project language management: default cannot be removed; supported set persists.**
-  Steps: seed project(supported en,de; default en) → settings/general → try removing `en`.
-  Assert: removing `en` opens the blocking `default cannot be deleted` dialog and does not remove it → remove `de`, change default, Save → new supported set persists (guards the default-Select force-remount regression).
-  Helpers: `seedProject`, `confirmDialog`/`dismissDialog`, `dataDir`.
+- **P2-04 Project language management: the default cannot be removed and the supported set persists. — DONE (passing, `tests/specs/projects.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc({ settings: { language: { default: 'en', supported: ['en', 'de'] } } })` → `navigateToProjectSettings` → click "Remove en" (the default) → `dismissDialog` → click "Remove de" → "Save changes" → `reloadWindow`.
+  Assert (desktop-only, per the doctrine): removing the default `en` is blocked in place (the "Deleting the default language" dialog opens and the "Remove en" chip button stays); removing the non-default `de` drops its chip; saving the dirtied form persists the narrowed set, shown by a reload re-reading from Core with only "Remove en" present ("Remove de" gone). This guards the default-language remove guard and the supported-set persistence (the default-Select force-remount regression). The chip remove buttons are addressable because the Phase 0 a11y fix gave them accessible names ("Remove &lt;lang&gt;"). Core's on-disk `settings.language` shape is Core's test, not asserted here.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `navigateToProjectSettings`, `dismissDialog`, `reloadWindow`.
   Deps: P0-01.
 
-- **P2-05 Set/clear the remote origin URL.**
-  Steps: seed project → settings/version-control → assert Save disabled until dirty → enter url → Save.
-  Assert: `project.remoteOriginUrl` persisted; `getChanges` no longer throws `PreconditionFailed` for a missing origin → clearing to empty string removes the remote.
-  Helpers: `seedProject`, `ipc`, `dataDir`.
-  Deps: P0-01.
+- **P2-05 Set the remote origin URL and reveal the Synchronize control. — DONE (passing, `tests/specs/projects.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` → `setupRemote({ mirror: <project path> })` (a reachable bare mirror, so the sidebar's getChanges stays console-clean) → `navigateToVersionControl` → fill "Remote URL" with `remote.url` → "Save changes".
+  Assert (desktop-only, per the doctrine): "Save changes" is DISABLED with no origin and the sidebar shows no "Synchronize" button (it renders only when `remoteOriginUrl != null`); filling the URL ENABLES Save, and saving makes the "Synchronize" button appear (the origin reached Core) while the form resets back to the saved origin (Save re-gated). `project.remoteOriginUrl` on disk is Core's test.
+  **Clearing half dropped (empirical, verified against Core).** The original also asked to clear the origin with an empty URL. The schema's `url` is a plain `ZodString`, so an empty submit passes validation and resolves, but it does NOT clear the origin: a follow-up `read` returns a non-null value (git leaves an `origin` remote behind rather than removing it), so `remoteOriginUrl != null` stays true and the "Synchronize" control would not disappear. There is no working "clear the origin" path through this form today, so that half is not forced. A real clear path (Core removing the remote, or the form sending a null / absent url) is follow-up product work.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `setupRemote`, `navigateToVersionControl`.
+  Deps: P0-01, `setupRemote`.
 
 - **P2-06 History sidebar lists commits and the diff view renders per type.**
   Steps: seed user+project+collection+entry (several commits) → `/history`.
@@ -423,16 +425,21 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `seedProject` (for a non-trivial breadcrumb trail).
   Deps: P0-01.
 
-- **P3-11 Per-route accessibility assertions (opt-in).**
-  Steps: on already-clean routes (projects list, create, dashboard) run `expectNoAxeViolations`, ahead of the fixture-wide assertion the `@todo` defers.
-  Helpers: `expectNoAxeViolations`.
-  Deps: P0-01.
+- **P3-11 Per-route accessibility assertions (opt-in). — STARTED (one route enforced, `tests/specs/accessibility.spec.ts`).**
+  Landed: the Projects list (`#/projects`) asserts `expectNoAxeViolations` with `color-contrast` scoped out, so it enforces every other axe rule (including `button-name`, the rule Phase 0's accessible-name fixes address). The spec loops over a route list, so more routes join as they are cleaned.
+  Discovery (axe legacy-mode scan per candidate route, after the Phase 0 accessible-name fixes and the `html-has-lang` fix):
+  - `#/projects` (empty): `color-contrast` only → enforced with `color-contrast` disabled.
+  - `#/projects/create`: `button-name` (the Radix Popover "Add language" trigger, `role="combobox"`), `color-contrast`.
+  - `#/user/profile`: `button-name` (the Radix Select "Preferred language" trigger, `role="combobox"`), `color-contrast`, `link-in-text-block` (x2), `list`, `listitem`.
+    Remaining burn-down before the fixture-wide assertion: the app-wide `color-contrast`; the two Radix combobox `button-name` cases (third-party widget internals / complex ARIA, needing an `aria-label` or a proper label association, out of this chunk's scope); and the profile's `link-in-text-block` / `list` / `listitem`. Each is why the full unscoped assertion is not yet possible on those routes.
+    Helpers: `expectNoAxeViolations`.
+    Deps: P0-01.
 
 ## 4. Helpers / fixtures to build first
 
 Build these before their first consumer; ordered by dependency (each later helper tends to use the earlier ones).
 
-**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`, `navigateToProjectSettings`, `navigateToProjectDashboard`, `navigateToAssets`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `emailFieldDefinition`, `referenceFieldDefinition`, `assetFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `referenceValue`, `assetReferenceValue`, `fillEntryForm`, `navigateToEntryCreate`, `navigateToEntryUpdate`), `tests/helpers/asset.ts` (`createAssetViaIpc`, `makeTempFile`, `pngBytes`, `jpegBytes`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`, `stubFileDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`, `remoteWorkSha`, `localWorkSha`, `deleteEntryOnRemote`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10, P0-11, P1-01, P1-07, P1-11, P1-12, P1-13, P1-14, P1-15, P1-16, P1-17, P1-18, P1-20, P1-21, P3-01, P3-05, P3-06, P3-07 and P3-08** are written, migrated to the doctrine, and passing (P0-07's and P0-09's IPC-level / commit-trailer guard tests were dropped as Core duplicates). The helpers below without a "(built)" tag are still to add.
+**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`, `navigateToUserProfile`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`, `navigateToProjectSettings`, `navigateToVersionControl`, `navigateToProjectDashboard`, `navigateToAssets`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `emailFieldDefinition`, `referenceFieldDefinition`, `assetFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `referenceValue`, `assetReferenceValue`, `fillEntryForm`, `navigateToEntryCreate`, `navigateToEntryUpdate`), `tests/helpers/asset.ts` (`createAssetViaIpc`, `makeTempFile`, `pngBytes`, `jpegBytes`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`, `stubFileDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`, `remoteWorkSha`, `localWorkSha`, `deleteEntryOnRemote`), `tests/helpers/accessibility.ts` (`expectNoAxeViolations`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10, P0-11, P1-01, P1-07, P1-11, P1-12, P1-13, P1-14, P1-15, P1-16, P1-17, P1-18, P1-20, P1-21, P2-01, P2-02, P2-04, P2-05, P3-01, P3-05, P3-06, P3-07 and P3-08** are written, migrated to the doctrine, and passing (P0-07's and P0-09's IPC-level / commit-trailer guard tests were dropped as Core duplicates), and **P3-11** has landed its first enforced route in `tests/specs/accessibility.spec.ts`. Three Phase 0 accessibility fixes in app source support the role and name locators these specs use: the language-chip remove button (`project-form.tsx`) and the sidebar Synchronize-refresh button (`project-sidebar.tsx`) each gained an `sr-only` name, and `src/renderer/index.html` gained `lang="en"` (clearing the app-wide `html-has-lang` axe violation). The helpers below without a "(built)" tag are still to add.
 
 **Naming:** the suite drives the UI by default, so UI helpers are unmarked and IPC helpers are suffixed `ViaIpc` (see [`testing.md`](./testing.md#writing-tests)). Pending entries below still use pre-convention names like `seedProject`; those become `createProjectViaIpc` and similar as each is migrated.
 
@@ -460,7 +467,7 @@ Build these before their first consumer; ordered by dependency (each later helpe
 - **`referenceFieldDefinition(overrides?)` (built)** — `tests/helpers/collection.ts`: an optional single-entry reference `FieldDefinition` (`fieldType: 'entry'`, `ofCollections: []` = any, `max: 1`), the counterpart of `textFieldDefinition`/`emailFieldDefinition` for arranging Collections whose Entries point at one another. **`referenceValue(entryId?, collectionId?)` (built)** — `tests/helpers/entry.ts`: the matching Entry Value builder; with both ids it points at one target Entry (carrying `collectionId`, which Core's storage needs), with no args it builds an empty reference (Core still requires the value wrapper for an optional reference field).
 - **`assetFieldDefinition(overrides?)` (built)** — `tests/helpers/collection.ts`: a required single-asset reference `FieldDefinition` (`fieldType: 'asset'`, `ofAssetMimeTypes: []` = any type, `min`/`max` 1), for arranging a Collection whose Entries reference an Asset. **`assetReferenceValue(assetId)` (built)** — `tests/helpers/entry.ts`: the matching Value builder pointing at one Asset; unlike `referenceValue` it carries only the target `id` (no `collectionId`, since Assets live at the Project root, not inside a Collection). Together they arrange the referenced-Asset delete guard in P1-13.
 - **`apiRequest(playwright)` (runner-side)** — a Playwright `APIRequestContext` (`request.newContext()`) to probe the local API from Node (P2-11), since the renderer's custom-protocol origin cannot reach `http://localhost`.
-- **`expectNoAxeViolations(page)`** — opt-in per-route accessibility assertion ahead of the fixture-wide enforcement the `@todo` defers.
+- **`expectNoAxeViolations(page, options?)` (built)** — `tests/helpers/accessibility.ts`: opt-in per-route accessibility assertion ahead of the fixture-wide enforcement the `@todo` defers. Runs the axe legacy-mode scan (legacy mode is required, see the fixture) and asserts no violations, surfacing the failing rule ids so a regression is debuggable. `options.disableRules` scopes out rules a route does not pass yet (the app-wide `color-contrast`), so a route can enforce every other rule now; omit it for a full scan once a route is fully clean. First consumer: **P3-11**.
 
 ## 5. Known constraints and things deliberately out of scope
 

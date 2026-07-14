@@ -190,7 +190,9 @@ export function ProjectSidebar(): React.JSX.Element {
                 onClick={async () => await refetchProjectChanges()}
                 disabled={isFetchingProjectChanges || isSynchronizingProject}
                 Icon={RefreshCw}
-              />
+              >
+                <span className="sr-only">Refresh changes</span>
+              </Button>
             </ButtonGroup>
             <p className="mt-2 text-center text-xs font-medium text-zinc-400">
               {isFetchingProjectChanges ? (

@@ -69,6 +69,14 @@ export async function navigateToProjectSettings(
   await navigate(page, `#/projects/${projectId}/settings/general`);
 }
 
+/** Route to a Project's version-control settings page and confirm it rendered. */
+export async function navigateToVersionControl(
+  page: Page,
+  projectId: string
+): Promise<void> {
+  await navigate(page, `#/projects/${projectId}/settings/version-control`);
+}
+
 /** Route to a Project's Assets list and confirm the app rendered there. */
 export async function navigateToAssets(
   page: Page,

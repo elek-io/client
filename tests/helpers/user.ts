@@ -2,6 +2,8 @@ import { type Page } from '@playwright/test';
 
 import type { SetUserProps, User } from '@elek-io/core';
 
+import { navigate } from './navigation.js';
+
 // SetUserProps is a local | cloud union. The tests only ever set a local User,
 // so overrides target that branch to keep the userType discriminant intact.
 type LocalUserProps = Extract<SetUserProps, { userType: 'local' }>;
@@ -30,4 +32,9 @@ export async function setUserViaIpc(
   };
 
   return page.evaluate(async (user) => window.ipc.core.user.set(user), props);
+}
+
+/** Route to the User profile page and confirm the app rendered there. */
+export async function navigateToUserProfile(page: Page): Promise<void> {
+  await navigate(page, '#/user/profile');
 }
