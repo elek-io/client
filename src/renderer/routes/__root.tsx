@@ -41,15 +41,18 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
   const router = useRouter();
 
-  // A CoreError that crossed IPC arrives with its type and message encoded into
-  // the message. Decode it so we show clean copy, never the raw sentinel JSON.
-  // Non-Core errors (route or JS errors) fall back to their raw message.
-  const { message } = parseIpcError(error);
+  // A CoreError that crossed IPC arrives with its type, message and Core's origin
+  // stack encoded into the message. Decode all of it so we show and log clean
+  // copy, never the raw sentinel JSON. A non-Core error (route or JS error) has
+  // no encoded stack, so fall back to its own stack, which carries no sentinel to
+  // leak.
+  const { message, stack } = parseIpcError(error);
+  const displayStack = stack ?? error.stack;
 
   void window.ipc.core.logger.error({
     source: 'desktop',
     message: `Uncaught route error: ${message}`,
-    meta: { error: { message, stack: error.stack } },
+    meta: { error: { message, stack: displayStack } },
   });
 
   function Description(): ReactElement {
@@ -89,7 +92,7 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
           <p>{message}</p>
           <ScrollArea>
             <div className="flex w-max py-6 text-xs">
-              <pre>{error.stack}</pre>
+              <pre>{displayStack}</pre>
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>

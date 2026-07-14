@@ -48,16 +48,20 @@ test.describe('Root error boundary', () => {
       mainWindow.getByRole('heading', { name: 'Error' })
     ).toBeVisible({ timeout: 20000 });
 
-    // The desktop app shows a decoded message (via parseIpcError), never the raw
-    // IPC sentinel JSON. The message is a plain `<p>` (no ARIA role), sitting
-    // beside the developer stack `<pre>` which legitimately still carries the
-    // encoded form, so scope the check to that paragraph, not the whole page.
+    // The desktop app shows a decoded message (via parseIpcError) and, in the
+    // technical detail block, the decoded Core origin stack. Neither carries the
+    // raw IPC sentinel JSON, so the whole error view is free of it. The message
+    // is a plain `<p>` with no ARIA role, so still key its visibility off that
+    // paragraph, then assert the sentinel is absent from the entire main region
+    // (the `<pre>` included, which before the fix still leaked the encoded form).
     const errorMessage = mainWindow
       .getByRole('main')
       .locator('p')
       .filter({ hasNotText: 'Unfortunately' });
     await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).not.toContainText(IPC_CORE_ERROR_SENTINEL);
+    await expect(mainWindow.getByRole('main')).not.toContainText(
+      IPC_CORE_ERROR_SENTINEL
+    );
 
     // Recovery: Back to Projects returns to the Projects list and the app is
     // usable again (the empty state renders, since no Project was created).
