@@ -27,50 +27,50 @@ Within a tier, cases are ordered by how foundational the flow is: set a user bef
 - **Launch race, fixed in the app (not a test concern).** The main process used to register its `window.ipc` handlers only after loading the renderer (`onAppReady` in `src/main/index.ts`), so a freshly opened window could run a `ViaIpc` seed before the handlers existed and flake with "No handler registered". `onAppReady` now creates the window, registers the handlers, then loads the renderer, which closed the race for every seed-first spec (and for real launches). See the Application Lifecycle section in [`overview.md`](./overview.md). No test-side readiness wait is needed.
 - The per-test data dir is computed inside the fixture and never exported. Surface it (`dataDir(testInfo)` / `readDataFile` / `listDataDir`) so specs can assert Core's storage layout.
 - **Console escape hatch is a prerequisite for _every_ UI-driven negative-path spec, not just the error-boundary case.** The `mainWindow` fixture asserts zero console errors/warnings on pass (`electronApp.ts:150`). Because failed mutations hit the root error boundary, React logs the caught error to `console.error` and the app logs via `core:logger:error`. Add an opt-in expected-console allow-list before writing P1-13, P2-09, or any UI-driven failing create/update/delete that reaches the error boundary. A flow that handles the error in place instead (like P0-11's force-delete modal, which overrides `throwOnError: false` and suppresses the toast) never reaches the boundary and needs no hatch. IPC-level negatives that `await` a rejected promise inside `page.evaluate` (P0-08, P1-04, P1-05, P1-06, P1-09, P1-10, P2-03, P2-10) do **not** trip this either.
-- **Native `electron:dialog:*` modals must be stubbed in the MAIN process,** not the renderer. `contextBridge.exposeInMainWorld` freezes the exposed `window.ipc`, and the dialog calls forward to Electron's `dialog.showOpenDialog/showSaveDialog` in main. The stub is applied with `electronApp.evaluate(({ dialog }) => …)`. This affects every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
+- **Native `electron:dialog:*` modals must be stubbed in the MAIN process,** not the renderer. `contextBridge.exposeInMainWorld` freezes the exposed `window.ipc`, and the dialog calls forward to Electron's `dialog.showOpenDialog/showSaveDialog` in main. The handlers capture those methods by reference at registration (`main/index.ts`), so reassigning `dialog.showOpenDialog` at runtime does not intercept; the stub instead runs `electronApp.evaluate(({ ipcMain }) => …)` to `removeHandler` + re-`handle` each channel with a canned result (see `stubFileDialog` in section 4). This affects every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
 - **A controllable git origin (`setupRemote`)** — a local bare repo — is needed for synchronize/clone/getChanges and the two `project.delete` remote guards.
 
 ## 2. Coverage matrix / gap summary
 
 Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /projects` redirect, plus the implicit per-pass checks (zero console errors/warnings; axe scan runs but does not assert). Everything marked "gap" is uncovered.
 
-| IPC channel                                                                  | Existing coverage       | Backlog IDs                                          |
-| ---------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------- |
-| projects:create                                                              | gap                     | P0-01, P0-02, P0-09, P2-03, P3-01 (done)             |
-| projects:list / count                                                        | gap                     | P0-01, P1-17 (done), P1-19, P3-07 (done)             |
-| projects:read                                                                | gap                     | P0-02, P2-06                                         |
-| projects:history                                                             | gap                     | P0-09, P2-06, P2-07                                  |
-| projects:update                                                              | gap                     | P1-01 (done), P2-04                                  |
-| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)          |
-| projects:getChanges                                                          | partial (via sidebar)   | P1-20 (done), P2-05, P2-13                           |
-| projects:setRemoteOriginUrl                                                  | partial                 | P0-08 (done), P2-05, P1-20 (done), P2-13             |
-| projects:synchronize                                                         | partial                 | P1-20 (done), P1-21 (done), P2-13                    |
-| projects:clone                                                               | gap                     | P2-12                                                |
-| collections:list                                                             | gap                     | P0-03, P1-18 (done), P3-07 (done)                    |
-| collections:create                                                           | gap                     | P0-03                                                |
-| collections:read                                                             | gap                     | P0-03, P0-06                                         |
-| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11 (done)      |
-| collections:delete                                                           | gap                     | P0-06                                                |
-| entries:list                                                                 | gap                     | P0-04, P1-18 (done), P3-07 (done)                    |
-| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05 (done), P3-06(ref), P2-10 |
-| entries:read                                                                 | gap                     | P0-05, P1-08                                         |
-| entries:update                                                               | gap                     | P1-07 (done), P1-08                                  |
-| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                                |
-| assets:list                                                                  | gap                     | P1-12, P3-07 (done)                                  |
-| assets:create                                                                | gap                     | P1-12                                                |
-| assets:read                                                                  | gap                     | P1-12, P1-16, P3-08                                  |
-| assets:update                                                                | gap                     | P1-15, P3-06                                         |
-| assets:delete                                                                | gap                     | P1-13, P1-14                                         |
-| assets:save                                                                  | gap                     | P1-16                                                |
-| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)                 |
-| api:start / stop / isRunning                                                 | gap                     | P2-11                                                |
-| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)             |
-| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12, P1-15, P1-16, P3-06, P3-08                    |
-| i18n / date-fns locale rendering                                             | gap                     | P2-14                                                |
-| App launch / title / `/`→`/projects`                                         | **covered**             | —                                                    |
-| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                                |
-| Root not-found + error boundary                                              | gap                     | P2-09                                                |
-| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                                |
+| IPC channel                                                                  | Existing coverage       | Backlog IDs                                                   |
+| ---------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------- |
+| projects:create                                                              | gap                     | P0-01, P0-02, P2-03, P3-01 (done)                             |
+| projects:list / count                                                        | gap                     | P0-01, P1-17 (done), P1-19, P3-07 (done)                      |
+| projects:read                                                                | gap                     | P0-02, P2-06                                                  |
+| projects:history                                                             | gap                     | P2-06, P2-07                                                  |
+| projects:update                                                              | gap                     | P1-01 (done), P2-04                                           |
+| projects:delete                                                              | gap                     | P0-11 (done), P0-08 (done), P0-10(indirect)                   |
+| projects:getChanges                                                          | partial (via sidebar)   | P1-20 (done), P2-05, P2-13                                    |
+| projects:setRemoteOriginUrl                                                  | partial                 | P0-08 (done), P2-05, P1-20 (done), P2-13                      |
+| projects:synchronize                                                         | partial                 | P1-20 (done), P1-21 (done), P2-13                             |
+| projects:clone                                                               | gap                     | P2-12                                                         |
+| collections:list                                                             | gap                     | P0-03, P1-18 (done), P3-07 (done)                             |
+| collections:create                                                           | gap                     | P0-03                                                         |
+| collections:read                                                             | gap                     | P0-03, P0-06                                                  |
+| collections:update                                                           | gap                     | P1-02, P1-03, P1-04, P1-05, P1-06, P1-11 (done)               |
+| collections:delete                                                           | gap                     | P0-06                                                         |
+| entries:list                                                                 | gap                     | P0-04, P1-18 (done), P3-07 (done)                             |
+| entries:create                                                               | gap                     | P0-04, P1-10, P2-15, P3-05 (done), P3-06(ref), P2-10          |
+| entries:read                                                                 | gap                     | P0-05, P1-08                                                  |
+| entries:update                                                               | gap                     | P1-07 (done), P1-08                                           |
+| entries:delete                                                               | gap (no UI; IPC-only)   | P1-09                                                         |
+| assets:list                                                                  | gap                     | P1-12 (done), P3-07 (done)                                    |
+| assets:create                                                                | gap                     | P1-12 (done)                                                  |
+| assets:read                                                                  | gap                     | P1-12 (done), P1-16 (done), P3-08                             |
+| assets:update                                                                | gap                     | P1-15 (done), P3-06 (done)                                    |
+| assets:delete                                                                | gap                     | P1-13, P1-14 (done)                                           |
+| assets:save                                                                  | gap                     | P1-16 (done)                                                  |
+| user:get / set                                                               | gap                     | P2-01, P2-02, P2-03 (setUser helper)                          |
+| api:start / stop / isRunning                                                 | gap                     | P2-11                                                         |
+| logger:*                                                                     | indirect only           | (exercised via P2-09; no dedicated case)                      |
+| electron:dialog:showOpen/showSave                                            | native, stubbed in main | P1-12 (done), P1-15 (done), P1-16 (done), P3-06 (done), P3-08 |
+| i18n / date-fns locale rendering                                             | gap                     | P2-14                                                         |
+| App launch / title / `/`→`/projects`                                         | **covered**             | —                                                             |
+| Redirect chains ($projectId→dashboard, $entryId→update, settings/user index) | gap                     | P2-08                                                         |
+| Root not-found + error boundary                                              | gap                     | P2-09                                                         |
+| Global chrome (versions, back/forward, breadcrumbs)                          | gap                     | P3-10                                                         |
 
 ## 3. Prioritized backlog
 
@@ -124,11 +124,8 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `setupRemote`, `createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `createCollectionViaIpc`, `confirmDialog`, `navigate`.
   Deps: P0-11, `setupRemote`.
 
-- **P0-09 Git commit trailers and author are correct across object types.**
-  Steps: `setUser` (known name/email) → create project, collection, entry via UI → `getHistory`.
-  Assert: each commit carries the right `Method`/`Object-Type`/`Object-Id`; the entry commit adds `Collection-Id`; ordering is newest-first; author matches the configured user.
-  Helpers: `setUser`, `createProjectViaUi`, `addFieldDefinition`, `fillEntryForm`, `getHistory`.
-  Deps: P0-01, P0-03, P0-04.
+- **P0-09 — DROPPED. Asserting commit trailers, message format and author duplicates Core.**
+  A first version asserted each commit's `Method`/`Object-Type`/`Object-Id`/`Collection-Id` trailers, newest-first ordering and the git author across object types. Under the verification doctrine those are Core's own tests (Core stamps the commit and separately tests its content and format), so they do not belong in the desktop suite. The desktop-relevant behavior, that the configured User identity reaches the git author, is covered by **P2-02** (edit the user, then observe the next commit's author).
 
 - **P0-10 True cross-process-restart persistence. — DONE (passing, `tests/specs/persistence.spec.ts`).**
   Steps: `setUserViaIpc` + `createProjectViaIpc` + `createCollectionViaIpc` + `createEntryViaIpc` on the first window → `relaunchApp` (close and relaunch `electronApp` against the same `ELEK_IO_DATA_DIR` and userData dir) → on the new window assert the seeded Project's card renders on `/projects`, then `navigateToCollection` and assert the seeded Entry's row renders.
@@ -210,10 +207,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `setUserViaIpc`, `createProjectViaIpc`, `createCollectionViaIpc`, `navigateToCollectionSettings`, `reloadWindow`.
   Deps: P0-03.
 
-- **P1-12 Create an asset keeps binary and sidecar in lockstep.**
-  Steps: `seedProject` → `makeTempFile` (png) → assets route → `stubFileDialog({ open → temp })` (**applied in main**) → Add Asset → fill name/description → submit.
-  Assert: `assets/{id}.json` (slugified name e.g. `my-logo`, derived mime/extension/size) and `lfs/{id}.{ext}` both exist; teaser appears; create commit.
-  Helpers: `stubFileDialog`, `makeTempFile`, `seedProject`, `dataDir`.
+- **P1-12 Create an asset through the form and show its teaser. — DONE (passing, `tests/specs/assets.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` → `makeTempFile('logo.png', png)` → `stubFileDialog({ open: [thatPath] })` (**applied in main**) → `navigateToAssets` → the header "Add Asset" runs the stubbed picker and opens the Add Asset dialog with the name prefilled from the filename → fill "Asset description" → submit the dialog's "Add Asset" (scoped to the dialog, since the header trigger shares the label).
+  Assert (desktop-only, per the doctrine): the create reaches Core without throwing, shown by the dialog closing, the "No Assets yet" empty state disappearing and the new teaser rendering (its un-slugified description text plus the teaser's "View"/"Delete" controls). The two-file model (`assets/{id}.json` + `lfs/{id}.{ext}`), the slugified name and the derived mime/extension/size are Core's own tests, not asserted here.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `makeTempFile`, `stubFileDialog`, `navigateToAssets`.
   Deps: P0-01, `stubFileDialog`.
 
 - **P1-13 Deleting a referenced asset is blocked.** _(split: IPC guard writable now, UI presentation deferred with the error-UX track)_
@@ -222,22 +219,22 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `seedCollection`, `seedEntry`, `stubFileDialog`, `confirmDialog`, `expectToast`, `dataDir`, console escape hatch (UI half only).
   Deps: P1-12.
 
-- **P1-14 Deleting an unreferenced asset removes both files.**
-  Steps: seed unreferenced asset → teaser Delete → `confirmDialog`.
-  Assert: `assets/{id}.json` and `lfs/{id}.{ext}` both gone; teaser removed; list decremented; delete commit.
-  Helpers: `seedProject`, `stubFileDialog`, `confirmDialog`, `dataDir`.
+- **P1-14 Delete an unreferenced asset and return to the empty state. — DONE (passing, `tests/specs/assets.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` → `makeTempFile` + `createAssetViaIpc` → `navigateToAssets` → teaser "Delete" opens the "You are about to delete this Asset" alertdialog → `confirmDialog(mainWindow, 'Delete')`.
+  Assert (desktop-only): the delete reaches Core without throwing, shown by the teaser disappearing (its description text is gone) and the "No Assets yet" empty state returning. Removal of both on-disk files and the delete commit are Core's own tests. Delete is an `AlertDialog` (`role="alertdialog"`), which is why `confirmDialog` was extended to match either role (see section 4).
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `makeTempFile`, `createAssetViaIpc`, `navigateToAssets`, `confirmDialog`.
   Deps: P1-12.
 
-- **P1-15 Replacing an asset binary re-derives metadata and removes the old binary on extension change.**
-  Steps: seed asset(png) → teaser Update → `stubFileDialog({ open → jpg temp })` → Save.
-  Assert: size/mime/extension re-derived; `lfs/{id}.jpg` present, `lfs/{id}.png` gone; `updated` non-null; commit.
-  Helpers: `stubFileDialog`, `makeTempFile`, `dataDir`.
+- **P1-15 Replace an asset's binary through the update flow. — DONE (passing, `tests/specs/assets.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createAssetViaIpc(png)` → `navigateToAssets` → `makeTempFile('logo.jpg', jpg)` → `stubFileDialog({ open: [thatJpgPath] })` → teaser "Update" → assert the "Update" submit is DISABLED (nothing changed) → "Replace file" (stubbed picker) → the "New file: logo.jpg" hint appears and "Update" ENABLES → click "Update".
+  Assert (desktop-only): the "Update" submit is dirty-gated (disabled until the file is replaced); the replace reaches Core without throwing, shown by the dialog closing and the teaser still rendering. The binary swap (png→jpg), the metadata re-derivation and the old-binary removal are Core's own tests, not asserted here.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `createAssetViaIpc`, `makeTempFile`, `stubFileDialog`, `navigateToAssets`.
   Deps: P1-12.
 
-- **P1-16 Save-as exports the asset bytes to disk.**
-  Steps: seed asset → teaser Save as → `stubFileDialog({ save → target under testInfo output })`.
-  Assert: the target file exists with bytes equal to the source.
-  Helpers: `stubFileDialog`, `dataDir`.
+- **P1-16 Save-as exports the asset to the chosen path. — DONE (passing, `tests/specs/assets.spec.ts`).**
+  Steps: `setUserViaIpc` + `createProjectViaIpc` + `createAssetViaIpc` → `navigateToAssets` → `target = testInfo.outputPath('exported.png')` → `stubFileDialog({ save: target })` → teaser "Save as".
+  Assert (desktop-only): the desktop drove the export to the user-chosen path, shown by polling until the target file exists on disk (runner-side `node:fs`) and is non-empty. This runner-side check of the export target (the path the user picked) is the flow's observable result and is allowed by the doctrine; byte-for-byte correctness of the exported file is Core's own test.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `createAssetViaIpc`, `navigateToAssets`, `stubFileDialog`.
   Deps: P1-12.
 
 - **P1-17 Projects list empty vs populated. — DONE (passing, `tests/specs/projects.spec.ts`).**
@@ -396,9 +393,10 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
   Helpers: `setUserViaIpc`, `createProjectViaIpc`, `createCollectionViaIpc`, `emailFieldDefinition`, `textFieldDefinition`, `navigateToEntryCreate`, `fillEntryForm`.
   Deps: P0-04.
 
-- **P3-06 Asset form validation and update dirty-gate.** _(added)_
-  Steps: assets route → `stubFileDialog({ open → temp })` → Add Asset with empty description (description is `min(1)`) → submit → assert blocked with a message; fill it → succeeds. Then on an existing asset's Update form, assert the Update button is isDirty-gated.
-  Helpers: `stubFileDialog`, `makeTempFile`, `seedProject`.
+- **P3-06 Asset form validation and update dirty-gate. — DONE (passing, `tests/specs/assets.spec.ts`).** _(added)_
+  Steps: `setUserViaIpc` + `createProjectViaIpc` → `stubFileDialog({ open: [png] })` → `navigateToAssets` → Add Asset (name prefills from the filename) → submit with the description empty → then fill the description and submit → then open the created asset's Update dialog.
+  Assert (desktop-only, per the doctrine): on submit with an empty description the field flips to `aria-invalid` "true" and nothing is created (the dialog stays open, the empty state is untouched behind it); filling the description lets the submit through (the dialog closes and a teaser renders). On the Update dialog the "Update" submit is DISABLED on open (the dirty gate) and ENABLES once the description is edited. `createAssetSchema`'s `min(1)` message text is Core's test, not asserted here; the reachable required error is the empty description, since the name is prefilled from the filename.
+  Helpers: `setUserViaIpc`, `createProjectViaIpc`, `makeTempFile`, `stubFileDialog`, `navigateToAssets`.
   Deps: P1-12.
 
 - **P3-07 Empty states across the app. — DONE (passing, `tests/specs/empty-states.spec.ts`).**
@@ -433,7 +431,7 @@ Existing coverage (the one spec): app launch, `#app` visible, title, `/ → /pro
 
 Build these before their first consumer; ordered by dependency (each later helper tends to use the earlier ones).
 
-**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`, `navigateToProjectSettings`, `navigateToProjectDashboard`, `navigateToAssets`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `emailFieldDefinition`, `referenceFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `referenceValue`, `fillEntryForm`, `navigateToEntryCreate`, `navigateToEntryUpdate`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`, `remoteWorkSha`, `localWorkSha`, `deleteEntryOnRemote`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10, P0-11, P1-01, P1-07, P1-11, P1-17, P1-18, P1-20, P1-21, P3-01, P3-05 and P3-07** are written, migrated to the doctrine, and passing (P0-07's IPC-level guard test was dropped as a Core duplicate). The helpers below without a "(built)" tag are still to add.
+**Status (implemented so far):** `tests/helpers/user.ts` (`setUserViaIpc`), `tests/helpers/project.ts` (`createProjectViaIpc`, `setRemoteOriginUrlViaIpc`, `fillProjectForm`, `createProject`, `navigateToProjectSettings`, `navigateToProjectDashboard`, `navigateToAssets`), `tests/helpers/collection.ts` (`createCollectionViaIpc`, `textFieldDefinition`, `emailFieldDefinition`, `referenceFieldDefinition`, `fillCollectionForm`, `addFieldDefinition`, `createCollection`, `navigateToCollection`/`navigateToCollectionCreate`/`navigateToCollectionSettings`), `tests/helpers/entry.ts` (`createEntryViaIpc`, `stringValue`, `referenceValue`, `fillEntryForm`, `navigateToEntryCreate`, `navigateToEntryUpdate`), `tests/helpers/asset.ts` (`createAssetViaIpc`, `makeTempFile`, `pngBytes`, `jpegBytes`), `tests/helpers/dialog.ts` (`confirmDialog`, `dismissDialog`, `stubFileDialog`), `tests/helpers/navigation.ts` (`verifyCurrentRouteHash`, `reloadWindow`, `navigate`), `tests/helpers/remote.ts` (`setupRemote`, `remoteWorkSha`, `localWorkSha`, `deleteEntryOnRemote`), `tests/helpers/app.ts` (`relaunchApp`), the `launchApp` export in `tests/fixtures/electronApp.ts`, and `tests/global.d.ts`. Specs **P0-01 through P0-06, P0-08, P0-10, P0-11, P1-01, P1-07, P1-11, P1-12, P1-14, P1-15, P1-16, P1-17, P1-18, P1-20, P1-21, P3-01, P3-05, P3-06 and P3-07** are written, migrated to the doctrine, and passing (P0-07's and P0-09's IPC-level / commit-trailer guard tests were dropped as Core duplicates). The helpers below without a "(built)" tag are still to add.
 
 **Naming:** the suite drives the UI by default, so UI helpers are unmarked and IPC helpers are suffixed `ViaIpc` (see [`testing.md`](./testing.md#writing-tests)). Pending entries below still use pre-convention names like `seedProject`; those become `createProjectViaIpc` and similar as each is migrated.
 
@@ -451,10 +449,10 @@ Build these before their first consumer; ordered by dependency (each later helpe
 - **`launchApp(testInfo, overrides?)` (built)** — the launch body extracted from the `electronApp` fixture (`tests/fixtures/electronApp.ts`): find the unpacked build, build the env (skip undefined, set `NODE_ENV=test` + `ELEK_IO_DATA_DIR`, delete `ELECTRON_RUN_AS_NODE`), launch with `--user-data-dir`, and mirror stdout/stderr. `dataDir` and `userDataDir` default to the per-test output paths, overridable so a relaunch can reuse them. The fixture calls it with the defaults, so the existing specs are unchanged.
 - **`relaunchApp(testInfo, app)` (built)** — `tests/helpers/app.ts`: `app.close()` then `launchApp` against the **same** `ELEK_IO_DATA_DIR` and userData dir, returning the new app and its first window. The only way to test true survival across a main-process restart (P0-10). The fixture's `electronApp` teardown tolerates the already-closed app (a double close cannot fail teardown), and its `mainWindow` teardown skips the console/axe checks when the first window is already closed (the relaunched window is out of scope for those checks).
 - **`getHistory(page, projectId)`** — read `core:projects:history` to assert commit subjects, trailers, order, and author.
-- **`confirmDialog(page, confirmName)` / `dismissDialog(page)` (built)** — the shared shadcn Dialog/AlertDialog flows (project/collection/asset deletes, clone dialog, default-language guard, asset view). `confirmDialog` scopes to the open dialog so the confirm button is not confused with the trigger that opened it; `dismissDialog` closes with Escape.
+- **`confirmDialog(page, confirmName)` / `dismissDialog(page)` (built)** — the shared shadcn Dialog/AlertDialog flows (project/collection/asset deletes, clone dialog, default-language guard, asset view). `confirmDialog` scopes to the open dialog so the confirm button is not confused with the trigger that opened it; `dismissDialog` closes with Escape. `confirmDialog` matches either role, `getByRole('dialog').or(getByRole('alertdialog'))`, since the Asset delete uses an `AlertDialog` (`role="alertdialog"`); only one is ever open at a time, so the `.or` resolves to a single element and the existing `Dialog` callers keep working.
 - **`expectToast(page, text)`** — assert Sonner success/error toasts after mutations. Remember: on failure today the toast fires **and** the root `ErrorComponent` renders (the boundary half is changing for expected errors, see section 5).
-- **`stubFileDialog(page/electronApp, { open?, save? })`** — **applied in the MAIN process** via `electronApp.evaluate(({ dialog }) => …)`, overriding `dialog.showOpenDialog` / `dialog.showSaveDialog` to return canned paths. It cannot be applied in the renderer: `contextBridge.exposeInMainWorld` freezes `window.ipc` and the calls forward to main. Needed for every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
-- **`makeTempFile(testInfo, name, bytes)`** — write a source file under the test output for asset create/replace/save.
+- **`stubFileDialog(electronApp, { open?, save? })` (built)** — `tests/helpers/dialog.ts`: **applied in the MAIN process** via `electronApp.evaluate(({ ipcMain }) => …)`. The dialog IPC handlers capture `dialog.showOpenDialog` / `showSaveDialog` by reference at registration (`main/index.ts`), so reassigning `dialog.showOpenDialog` at runtime does **not** intercept. Instead it `ipcMain.removeHandler(channel)` then `ipcMain.handle(channel, …)` to replace the handler with one returning a canned, non-cancelled result (`{ canceled: false, filePaths }` for open, `{ canceled: false, filePath }` for save). It cannot be applied in the renderer: `contextBridge.exposeInMainWorld` freezes `window.ipc` and the calls forward to main. Needed for every asset flow (P1-12, P1-15, P1-16, P3-06, P3-08).
+- **`makeTempFile(testInfo, name, bytes)` (built)** — `tests/helpers/asset.ts`: write a source file under the test output (runner-side `node:fs`) for asset create/replace/save, returning its path. The extension of `name` sets Core's derived mimeType/extension (Core reads the type from the path via the `mime` package), so ships with `pngBytes` and `jpegBytes`, minimal valid 1x1 images whose bytes match a `.png`/`.jpg` name and load in the teaser preview without a console error. **`createAssetViaIpc(page, { projectId, filePath, name?, description? })` (built)** — `tests/helpers/asset.ts`: `core:assets:create` over IPC (`filePath` must be a real file from `makeTempFile`, sensible name/description defaults), to arrange an Asset for the delete/replace/save-as tests.
 - **`setupRemote(testInfo, options?)` (built)** — `tests/helpers/remote.ts`: create a local **bare** git repo to act as origin for synchronize/clone/getChanges and the two `project.delete` remote guards. Runs on the runner via the system `git` (`git init --bare`, or `git clone --bare <mirror>` to seed it level with an existing repo). Returns `{ path, url }` where `url` is the absolute bare path (dugite accepts it directly). Reliable for commit/ref round-trips; see the LFS caveat in section 5.
 - **`remoteWorkSha(remotePath)` / `localWorkSha(dir)` (built)** — `tests/helpers/remote.ts`: read the `work` branch SHA of a bare remote (`git ls-remote`) or a local repo (`git rev-parse`). Comparing them corroborates a sync round-trip (P1-20) or that a rejected sync pushed nothing (P1-21). This observes only the ref, not file contents, so it stays within the desktop verification doctrine (the runner-side git check the doctrine allows).
 - **`deleteEntryOnRemote(testInfo, remotePath, relPath)` (built)** — `tests/helpers/remote.ts`: clone the bare to a throwaway working tree, `git rm` the Entry file on `work`, commit (with an inline identity so the runner needs no global git config), and push `work` back to the bare. Arranges a remote whose `work` tree already holds a dangling reference, a state Core's own delete gate would never produce, so a following local `synchronize` hits the sync-time integrity gate (P1-21).
