@@ -162,6 +162,20 @@ export default [
     },
   },
 
+  // Build and CI scripts (plain Node ESM, not part of the app)
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      // Plain JavaScript, so TypeScript-only return type annotations do not apply
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+
   // Prettier must be last
   eslintConfigPrettier,
 ];

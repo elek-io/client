@@ -34,6 +34,9 @@ export class SecurityError extends Error {
 
 sentryInit({
   dsn: 'https://06f2163a40c4c4f404c41860f46a104b@o4511706089259008.ingest.de.sentry.io/4511706092535888',
+  // Injected at build time from the app version (electron.vite.config.ts). Tags
+  // events with the release the source maps were uploaded to, so frames resolve.
+  release: __APP_RELEASE__,
   enableRendererProfiling: true, // @see https://docs.sentry.io/platforms/javascript/guides/electron/profiling/
   // E2E tests set NODE_ENV to prevent reporting from test runs
   enabled: process.env['NODE_ENV'] !== 'test',

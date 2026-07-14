@@ -19,6 +19,14 @@ type AsyncifyMethods<T> = {
 };
 
 declare global {
+  /**
+   * The Sentry release name, injected at build time by electron-vite `define`
+   * from the app version (see electron.vite.config.ts). Both Sentry inits set it
+   * as their `release` so events match the release the source maps were uploaded
+   * to.
+   */
+  const __APP_RELEASE__: string;
+
   interface ContextBridgeApi {
     electron: {
       process: ElectronAPI['process'];

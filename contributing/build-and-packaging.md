@@ -38,7 +38,7 @@ That only happens for code that was **externalized**, not bundled. Combined with
 Two more cases follow the same "is it required at runtime" test:
 
 - **Peer dependencies of a shipped package.** [`@elek-io/core`](../package.json) declares `dugite` and `zod` as required peers and `require()`s them at runtime in the main process. The client provides them, so they must be `dependencies`. Demote them and the app crashes on launch.
-- **Build only tools.** A Vite plugin like `@sentry/vite-plugin` runs only during the build, so it is a `devDependency` even though it is very much part of shipping the app. Left in `dependencies` it drags its `@sentry/cli` platform binary (tens of MB) into every packaged copy.
+- **Build only tools.** A Vite plugin like `@sentry/vite-plugin` runs only during the build, so it is a `devDependency` even though it is very much part of shipping the app. Left in `dependencies` it drags its `@sentry/cli` platform binary (tens of MB) into every packaged copy. `@sentry/cli` itself is a direct `devDependency` too, so CD can invoke it with `pnpm exec sentry-cli` to upload Core's source map (see [releasing.md](./releasing.md#sentry-source-maps)). It stays in `devDependencies` for the same reason: the CLI runs only during CD and its binary must not ship.
 
 ### Why this fails late
 

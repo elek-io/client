@@ -9,10 +9,11 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-  # Contributor docs, tests, changesets, dev configs and Playwright output are
-  # not part of the running app, so keep them out of the asar
+  # Contributor docs, tests, changesets, build scripts, dev configs and
+  # Playwright output are not part of the running app, so keep them out of the asar
   - '!contributing/*'
   - '!tests/*'
+  - '!scripts/*'
   - '!.changeset/*'
   - '!{test-results,playwright-report}/*'
   - '!{AGENTS.md,CLAUDE.md,components.json,eslint.config.mjs,.node-version}'

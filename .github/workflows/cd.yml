@@ -144,3 +144,25 @@ jobs:
           # production crashes are symbolicated. The plugin reads this env var by
           # default. Without it the build still succeeds, just without upload.
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # @elek-io/core is externalized from the main build and loaded from
+      # node_modules, so @sentry/vite-plugin never touches it. Upload Core's
+      # self-contained node source map to the same release so a forwarded
+      # CoreError frame resolves to Core's TypeScript source. Core's map is
+      # identical on every platform, so run this once on Linux instead of racing
+      # duplicate artifacts from all four runners. The release name and the
+      # url-prefix must match electron.vite.config.ts and src/shared/sentryCoreError.ts.
+      - name: Upload @elek-io/core source map to Sentry
+        if: runner.os == 'Linux'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+            echo "No SENTRY_AUTH_TOKEN, skipping Core source map upload" >&2
+            exit 0
+          fi
+          RELEASE="desktop@$(node -p "require('./package.json').version")"
+          pnpm exec sentry-cli sourcemaps upload \
+            --org elek-io --project desktop \
+            --release "$RELEASE" \
+            --url-prefix '~/node_modules/@elek-io/core/dist/node' \
+            node_modules/@elek-io/core/dist/node

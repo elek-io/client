@@ -20,6 +20,17 @@ Pre-creating the draft solves two earlier problems. The platform runners used to
 
 Unlike Core, which publishes its library to npm from a single runner, the client needs one build per platform. That is why `build-and-upload` runs on a matrix while `changesets` and `prepare-release` do not.
 
+## Sentry source maps
+
+The build uploads source maps so production crashes symbolicate to their original source instead of the shipped bundles. The `build-and-upload` job passes `SENTRY_AUTH_TOKEN` to the build. Without it the build still succeeds and just skips the upload, which is what a local `pnpm build` does (`@sentry/vite-plugin` warns `No auth token provided`).
+
+Two things are uploaded, by two different mechanisms, because our own code and Core reach Sentry differently:
+
+- **Our bundles** (main and renderer) are uploaded by `@sentry/vite-plugin` during `electron-vite build`, matched by **debug ids** the plugin injects. The renderer maps are deleted after upload so they do not ship in the asar (see [electron.vite.config.ts](../electron.vite.config.ts)).
+- **`@elek-io/core`** is externalized from the main build and loaded from `node_modules`, so the plugin never sees it. A dedicated step uploads Core's self-contained node source map (`node_modules/@elek-io/core/dist/node/index.node.mjs.map`, which embeds its original sources) with `sentry-cli`. It is matched by **release plus artifact path**, since Core carries no debug id. This is what lets a forwarded `CoreError` frame resolve to Core's TypeScript. See [error-handling.md](./error-handling.md#sentry-remote) for how the frame is rebuilt and its path normalized to match.
+
+The release name ties the two together. [electron.vite.config.ts](../electron.vite.config.ts) derives `desktop@<version>` from the app version, sets it on the Vite plugin and injects it into both bundles so both SDK inits tag events with it. The Core upload step derives the same string from `package.json`. Core's map is identical on every platform, so its upload runs on the Linux runner only, otherwise all four runners would race duplicate artifacts into the release. `sentry-cli` comes from the `@sentry/cli` devDependency, kept out of `dependencies` so its platform binary is not packaged (see [build-and-packaging.md](./build-and-packaging.md#the-rule-for-dependencies-vs-devdependencies)).
+
 ## Toolchain versions
 
 CI and CD read the Node.js version from [.node-version](../.node-version) and the pnpm version from the `packageManager` field in [package.json](../package.json). Both are kept in sync with Core. Update those two files to change the toolchain, not the workflows.
