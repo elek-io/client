@@ -69,6 +69,14 @@ export async function navigateToProjectSettings(
   await navigate(page, `#/projects/${projectId}/settings/general`);
 }
 
+/** Route to a Project's commit history and confirm the app rendered there. */
+export async function navigateToHistory(
+  page: Page,
+  projectId: string
+): Promise<void> {
+  await navigate(page, `#/projects/${projectId}/history`);
+}
+
 /** Route to a Project's version-control settings page and confirm it rendered. */
 export async function navigateToVersionControl(
   page: Page,

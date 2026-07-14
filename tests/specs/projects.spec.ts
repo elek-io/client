@@ -329,4 +329,25 @@ test.describe('Projects', () => {
     // submit resolves in Core but leaves a non-null value rather than clearing
     // it, so the origin is not actually cleared. See the backlog (P2-05).
   });
+
+  test('reload lists multiple projects without duplication or loss', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+
+    // Seed three Projects with distinct names over IPC (skipping the renderer
+    // cache), then reload so the list re-reads all of them from Core.
+    const names = ['Alpha Project', 'Beta Project', 'Gamma Project'];
+    for (const name of names) {
+      await createProjectViaIpc(mainWindow, { name });
+    }
+    await reloadWindow(mainWindow);
+    await verifyCurrentRouteHash(mainWindow, '#/projects');
+
+    // Every name renders exactly once: none lost, none duplicated. Each name is
+    // its own card title, so an exact-text match counts one element per Project.
+    for (const name of names) {
+      await expect(mainWindow.getByText(name, { exact: true })).toHaveCount(1);
+    }
+  });
 });
