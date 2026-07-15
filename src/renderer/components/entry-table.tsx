@@ -9,7 +9,7 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table';
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 import { Button } from '@renderer/components/ui/button';
 import {
@@ -187,6 +187,18 @@ export function EntryTable({
     },
   });
 
+  // The list is paginated client side with autoResetPageIndex off, so a shrink in
+  // the loaded data (an Entry removed while the table is open) would leave the
+  // page index past the last page and strand the user on an empty page. Clamp it
+  // back to the last valid page. useLayoutEffect runs before paint, so the empty
+  // page never flashes, and it is a no-op while the page index is in range.
+  const pageCount = table.getPageCount();
+  useLayoutEffect(() => {
+    if (pagination.pageIndex > 0 && pagination.pageIndex > pageCount - 1) {
+      table.setPageIndex(pageCount - 1);
+    }
+  }, [pageCount, pagination.pageIndex, table]);
+
   async function onRowClicked(id: string): Promise<void> {
     await router.navigate({
       to: '/projects/$projectId/collections/$collectionId/$entryId/update',
@@ -294,8 +306,8 @@ export function EntryTable({
 
       <div className="flex items-center justify-end p-6">
         <div className="flex-1 text-sm text-zinc-400">
-          Showing {table.getFilteredRowModel().rows.length} of{' '}
-          {table.getRowCount()} total{' '}
+          Showing {table.getFilteredRowModel().rows.length} of {entries.total}{' '}
+          total{' '}
           {translateContent({
             key: 'currentCollection.name.plural',
             record: collection.name.plural,

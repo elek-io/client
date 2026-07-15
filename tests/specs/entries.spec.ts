@@ -578,6 +578,11 @@ test.describe('Entries', () => {
       mainWindow.getByRole('cell', { name: 'Entry 11', exact: true })
     ).toBeVisible();
 
+    // The summary counts the match against the whole Collection, not just the
+    // filtered rows: "1 of 11 total". A regression to getRowCount() (the filtered
+    // count) would read "1 of 1 total".
+    await expect(mainWindow.getByText('Showing 1 of 11 total')).toBeVisible();
+
     // A substring matches every title that contains it: 'Entry 1' matches
     // 'Entry 10' and 'Entry 11' (two data rows plus the header).
     await filter.fill('Entry 1');
