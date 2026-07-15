@@ -44,16 +44,13 @@ test.describe('Assets', () => {
     await expect(mainWindow.getByText('No Assets yet')).toBeVisible();
 
     // The header "Add Asset" runs the (stubbed) picker, then opens the Add Asset
-    // dialog with the name prefilled from the picked filename.
+    // dialog. The name is not derived from the picked file, so fill it and the
+    // description, then submit inside the dialog (the header trigger shares the
+    // "Add Asset" label, so scope to the dialog).
     await mainWindow.getByRole('button', { name: 'Add Asset' }).click();
     const dialog = mainWindow.getByRole('dialog');
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByLabel('Asset name', { exact: true })).toHaveValue(
-      'logo.png'
-    );
-
-    // Only the description is empty. Fill it, then submit inside the dialog (the
-    // header trigger shares the "Add Asset" label, so scope to the dialog).
+    await dialog.getByLabel('Asset name', { exact: true }).fill('Company logo');
     await dialog
       .getByLabel('Asset description', { exact: true })
       .fill('The company logo');
@@ -180,11 +177,14 @@ test.describe('Assets', () => {
     await stubFileDialog(electronApp, { open: [pngPath] });
     await navigateToAssets(mainWindow, project.id);
 
-    // Open the Add Asset dialog. The name prefills from the filename, the
-    // description starts empty and unflagged.
+    // Open the Add Asset dialog and give the Asset a name, so only the missing
+    // description gates the submit. The description starts empty and unflagged.
     await mainWindow.getByRole('button', { name: 'Add Asset' }).click();
     const createDialog = mainWindow.getByRole('dialog');
     await expect(createDialog).toBeVisible();
+    await createDialog
+      .getByLabel('Asset name', { exact: true })
+      .fill('Company logo');
     await expect(
       createDialog.getByLabel('Asset description', { exact: true })
     ).toHaveAttribute('aria-invalid', 'false');

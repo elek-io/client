@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
+import { join } from 'node:path';
 
-import { test } from '../fixtures/electronApp.js';
+import { test, testDataDirs } from '../fixtures/electronApp.js';
 import {
   createCollectionViaIpc,
   referenceFieldDefinition,
@@ -37,8 +38,8 @@ test.describe('Synchronize', () => {
     // Mirror the Project's current work branch into a bare origin, so it starts
     // level with the remote. clone --bare copies the refs without a working tree
     // or an LFS push, which a plain bare remote cannot serve.
-    const projectPath = testInfo.outputPath(
-      'elek-io-data',
+    const projectPath = join(
+      testDataDirs(testInfo).dataDir,
       'projects',
       project.id
     );
@@ -116,8 +117,8 @@ test.describe('Synchronize', () => {
 
     // Mirror the current work (with both Entries and the reference) into a bare
     // origin, then point the Project at it.
-    const projectPath = testInfo.outputPath(
-      'elek-io-data',
+    const projectPath = join(
+      testDataDirs(testInfo).dataDir,
       'projects',
       project.id
     );
@@ -194,8 +195,8 @@ test.describe('Synchronize', () => {
     // Mirror the Project's current work into a bare origin (starts level), point
     // the Project at it, then advance the remote by one commit out of band. Now
     // local is behind the remote by that commit with nothing ahead.
-    const projectPath = testInfo.outputPath(
-      'elek-io-data',
+    const projectPath = join(
+      testDataDirs(testInfo).dataDir,
       'projects',
       project.id
     );
@@ -255,8 +256,8 @@ test.describe('Synchronize', () => {
 
     // A reachable bare origin plus one local commit, so the Synchronize control
     // enables (ahead 1). Mirrors the round-trip setup above.
-    const projectPath = testInfo.outputPath(
-      'elek-io-data',
+    const projectPath = join(
+      testDataDirs(testInfo).dataDir,
       'projects',
       project.id
     );

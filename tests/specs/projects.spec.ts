@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
+import { join } from 'node:path';
 
-import { test } from '../fixtures/electronApp.js';
+import { test, testDataDirs } from '../fixtures/electronApp.js';
 import { createCollectionViaIpc } from '../helpers/collection.js';
 import { confirmDialog, dismissDialog } from '../helpers/dialog.js';
 import { stubCoreReject } from '../helpers/ipc.js';
@@ -194,8 +195,8 @@ test.describe('Projects', () => {
     // Mirror the Project's current work branch into a bare origin, so the
     // Project starts out level with its remote (ahead 0). clone --bare copies
     // the refs without a working tree, sidestepping Core's LFS push path.
-    const projectPath = testInfo.outputPath(
-      'elek-io-data',
+    const projectPath = join(
+      testDataDirs(testInfo).dataDir,
       'projects',
       project.id
     );
@@ -293,8 +294,8 @@ test.describe('Projects', () => {
     // A bare mirror of the Project's current work is a reachable origin, so the
     // sidebar's getChanges succeeds once the origin is set and the console stays
     // clean (clone --bare copies the refs without an LFS push path).
-    const projectPath = testInfo.outputPath(
-      'elek-io-data',
+    const projectPath = join(
+      testDataDirs(testInfo).dataDir,
       'projects',
       project.id
     );
@@ -364,8 +365,8 @@ test.describe('Projects', () => {
     // Mirror the Project into a bare remote (clone --bare copies its refs), then
     // force-delete the local copy. The bare now holds a Project the local data
     // dir does not, which is what the clone flow pulls back down.
-    const projectPath = testInfo.outputPath(
-      'elek-io-data',
+    const projectPath = join(
+      testDataDirs(testInfo).dataDir,
       'projects',
       project.id
     );
