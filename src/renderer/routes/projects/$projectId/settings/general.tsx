@@ -3,7 +3,7 @@ import { parseIpcError } from '@root/src/shared/ipcError';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Trash } from 'lucide-react';
-import { type ReactElement, useEffect, useState } from 'react';
+import { type ReactElement, useEffect, useId, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { ProjectForm } from '@renderer/components/forms/project-form';
@@ -55,6 +55,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
   const {
     projectQuery: { data: project, isPending: isReadingProject },
   } = useProject();
+  const formId = useId();
   const updateProjectForm = useForm<UpdateProjectProps>({
     resolver: zodResolver(updateProjectSchema),
     defaultValues: {
@@ -115,8 +116,9 @@ function ProjectSettingsGeneralPage(): ReactElement {
     return (
       <>
         <Button
+          type="submit"
+          form={formId}
           Icon={Check}
-          onClick={updateProjectForm.handleSubmit(onUpdate)}
           isLoading={isUpdatingProject}
           disabled={updateProjectForm.formState.isDirty === false}
         >
@@ -170,6 +172,7 @@ function ProjectSettingsGeneralPage(): ReactElement {
       actions={<Actions />}
     >
       <ProjectForm
+        id={formId}
         projectForm={updateProjectForm}
         isViewOnly={isReadingProject || isUpdatingProject}
         onFormSubmit={onUpdate}

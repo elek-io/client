@@ -65,6 +65,12 @@ interface ProjectFormProps<
   children?: React.ReactNode;
   isViewOnly?: boolean;
   onFormSubmit: SubmitHandler<TTransformedValues>;
+  /**
+   * Associates the form with a submit button rendered outside it (in the page
+   * header via `Page`'s `actions`). That button carries `type="submit"` and the
+   * same `form={id}`, so it submits this form from outside its subtree.
+   */
+  id?: string;
 }
 
 export function ProjectForm<
@@ -75,6 +81,7 @@ export function ProjectForm<
   onFormSubmit,
   children,
   isViewOnly = false,
+  id,
 }: ProjectFormProps<TFieldValues, TTransformedValues>): React.JSX.Element {
   // The project fields (name, description, language settings) use literal paths RHF
   // cannot resolve for a generic T, so view the form as UpdateProjectProps for those.
@@ -95,7 +102,7 @@ export function ProjectForm<
   return (
     <>
       <Form {...genericForm}>
-        <form onSubmit={genericForm.handleSubmit(onFormSubmit)}>
+        <form id={id} onSubmit={genericForm.handleSubmit(onFormSubmit)}>
           <fieldset disabled={isViewOnly}>
             <div className="space-y-4 p-6">
               <div className="grid grid-cols-12 gap-6">

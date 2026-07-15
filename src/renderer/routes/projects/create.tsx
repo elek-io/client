@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { type ReactElement } from 'react';
+import { type ReactElement, useId } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { ProjectForm } from '@renderer/components/forms/project-form';
@@ -35,6 +35,7 @@ function CreateProjectPage(): ReactElement {
   });
   const { mutateAsync: createProject, isPending: isCreatingProject } =
     useMutation(queryOptions.projects.create);
+  const formId = useId();
 
   function Description(): ReactElement {
     return (
@@ -50,9 +51,10 @@ function CreateProjectPage(): ReactElement {
     return (
       <>
         <Button
+          type="submit"
+          form={formId}
           Icon={Check}
           isLoading={isCreatingProject}
-          onClick={createProjectForm.handleSubmit(onCreate)}
         >
           Create Project
         </Button>
@@ -75,6 +77,7 @@ function CreateProjectPage(): ReactElement {
       actions={<Actions />}
     >
       <ProjectForm
+        id={formId}
         projectForm={createProjectForm}
         isViewOnly={isCreatingProject}
         onFormSubmit={onCreate}

@@ -20,6 +20,12 @@ import {
 interface AssetFormProps<TFieldValues extends FieldValues> {
   assetForm: UseFormReturn<TFieldValues>;
   onFormSubmit: SubmitHandler<TFieldValues>;
+  /**
+   * Associates the form with a submit button rendered outside it (in the
+   * dialog's `DialogFooter`). The footer button carries `type="submit"` and the
+   * same `form={id}`, so it submits this form natively from outside its subtree.
+   */
+  id?: string;
 }
 
 /**
@@ -40,10 +46,11 @@ interface AssetFormProps<TFieldValues extends FieldValues> {
 export function AssetForm<TFieldValues extends FieldValues>({
   assetForm,
   onFormSubmit,
+  id,
 }: AssetFormProps<TFieldValues>): React.JSX.Element {
   return (
     <Form {...assetForm}>
-      <form onSubmit={assetForm.handleSubmit(onFormSubmit)}>
+      <form id={id} onSubmit={assetForm.handleSubmit(onFormSubmit)}>
         <div className="grid grid-cols-12 gap-6">
           <FormField
             control={assetForm.control}

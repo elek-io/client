@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 
 import {
@@ -53,6 +53,7 @@ function ProjectAssetsPage(): React.JSX.Element {
   );
   const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] =
     useState<boolean>(false);
+  const addAssetFormId = useId();
   const createAssetForm = useForm<CreateAssetProps>({
     resolver: zodResolver(createAssetSchema),
     defaultValues: {
@@ -168,6 +169,7 @@ function ProjectAssetsPage(): React.JSX.Element {
 
           <DialogBody>
             <AssetForm
+              id={addAssetFormId}
               assetForm={createAssetForm}
               onFormSubmit={onCreateAsset}
             />
@@ -180,9 +182,10 @@ function ProjectAssetsPage(): React.JSX.Element {
               </Button>
             </DialogClose>
             <Button
+              type="submit"
+              form={addAssetFormId}
               Icon={Plus}
               isLoading={isCreatingAsset}
-              onClick={createAssetForm.handleSubmit(onCreateAsset)}
             >
               Add Asset
             </Button>

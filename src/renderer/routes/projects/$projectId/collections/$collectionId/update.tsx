@@ -3,7 +3,7 @@ import { parseIpcError } from '@root/src/shared/ipcError';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check, Trash } from 'lucide-react';
-import { useEffect, useState, type ReactElement } from 'react';
+import { useEffect, useId, useState, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CollectionForm } from '@renderer/components/forms/collection-form';
@@ -77,6 +77,7 @@ function ProjectCollectionUpdate(): ReactElement {
   useBreadcrumb(Route, isReadingCollection ? undefined : 'Configure');
   const { mutateAsync: updateCollection, isPending: isUpdatingCollection } =
     useMutation(queryOptions.collections.update);
+  const formId = useId();
   const { mutateAsync: deleteCollection } = useMutation({
     ...queryOptions.collections.delete,
     // Only a referenced Collection is handled in place by the dialog below: Core
@@ -132,9 +133,10 @@ function ProjectCollectionUpdate(): ReactElement {
     return (
       <>
         <Button
+          type="submit"
+          form={formId}
           isLoading={isUpdatingCollection}
           disabled={updateCollectionForm.formState.isDirty === false}
-          onClick={updateCollectionForm.handleSubmit(onUpdate)}
         >
           <Check className="mr-2 h-4 w-4" />
           Save changes
@@ -188,6 +190,7 @@ function ProjectCollectionUpdate(): ReactElement {
   return (
     <Page title={title} description={<Description />} actions={<Actions />}>
       <CollectionForm
+        id={formId}
         collectionForm={updateCollectionForm}
         project={project}
         isViewOnly={isUpdatingCollection}

@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { type ReactElement, useEffect } from 'react';
+import { type ReactElement, useEffect, useId } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CommitHistory } from '@renderer/components/commit-history';
@@ -58,6 +58,7 @@ function UserProfilePage(): ReactElement {
   const { mutateAsync: setUser, isPending: isSettingUser } = useMutation(
     queryOptions.user.set
   );
+  const formId = useId();
   const setUserForm = useForm<SetUserProps>({
     resolver: async (data, context, options) => {
       return zodResolver(setUserSchema)(data, context, options);
@@ -124,7 +125,8 @@ function UserProfilePage(): ReactElement {
     return (
       <>
         <Button
-          onClick={setUserForm.handleSubmit(onSetUser)}
+          type="submit"
+          form={formId}
           isLoading={isSettingUser}
           disabled={setUserForm.formState.isDirty === false}
           Icon={Check}
@@ -172,7 +174,7 @@ function UserProfilePage(): ReactElement {
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
         <Card className="py-0 lg:col-span-2">
           <Form {...setUserForm}>
-            <form>
+            <form id={formId} onSubmit={setUserForm.handleSubmit(onSetUser)}>
               <fieldset disabled={isGettingUser}>
                 <PageSection
                   title="Local User"

@@ -10,7 +10,7 @@ import {
   TrashIcon,
   X,
 } from 'lucide-react';
-import { Fragment, useState } from 'react';
+import { Fragment, useId, useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 
 import { AssetDisplay } from '@renderer/components/asset-display';
@@ -113,6 +113,7 @@ export function AssetTeaser(
       newFilePath: undefined,
     },
   });
+  const updateAssetFormId = useId();
   const newFilePath = updateAssetForm.watch('newFilePath');
   const createdTime = formatDatetime({ datetime: props.created });
   const updatedTime = formatDatetime({ datetime: props.updated });
@@ -338,6 +339,7 @@ export function AssetTeaser(
 
                   <ItemContent className="w-full p-0">
                     <AssetForm
+                      id={updateAssetFormId}
                       assetForm={updateAssetForm}
                       onFormSubmit={onAssetUpdate}
                     />
@@ -347,9 +349,10 @@ export function AssetTeaser(
 
               <DialogFooter>
                 <Button
+                  type="submit"
+                  form={updateAssetFormId}
                   variant="outline"
                   Icon={Edit2Icon}
-                  onClick={updateAssetForm.handleSubmit(onAssetUpdate)}
                   disabled={updateAssetForm.formState.isDirty === false}
                 >
                   Update

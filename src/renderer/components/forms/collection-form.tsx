@@ -78,6 +78,12 @@ export interface CollectionFormProps<
   children?: React.ReactNode;
   isViewOnly?: boolean;
   onFormSubmit: SubmitHandler<TTransformedValues>;
+  /**
+   * Associates the form with a submit button rendered outside it (in the page
+   * header via `Page`'s `actions`). That button carries `type="submit"` and the
+   * same `form={id}`, so it submits this form from outside its subtree.
+   */
+  id?: string;
 }
 
 export function CollectionForm<
@@ -89,6 +95,7 @@ export function CollectionForm<
   children,
   isViewOnly = false,
   onFormSubmit,
+  id,
 }: CollectionFormProps<TFieldValues, TTransformedValues>): ReactElement {
   const { translateContent } = useProject();
   // The many concrete collection fields (icon, name, description) use literal paths
@@ -118,7 +125,7 @@ export function CollectionForm<
 
   return (
     <Form {...genericForm}>
-      <form onSubmit={genericForm.handleSubmit(onFormSubmit)}>
+      <form id={id} onSubmit={genericForm.handleSubmit(onFormSubmit)}>
         <fieldset disabled={isViewOnly}>
           <div className="space-y-6 p-6">
             <div className="grid grid-cols-12 items-start gap-6">

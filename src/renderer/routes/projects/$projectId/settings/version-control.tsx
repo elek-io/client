@@ -87,14 +87,14 @@ function ProjectSettingsVersionControlPage(): ReactElement {
       actions={<Actions />}
     >
       <Form {...remoteOriginUrlForm}>
-        <form>
+        <form onSubmit={remoteOriginUrlForm.handleSubmit(onSetRemoteOriginUrl)}>
           <PageSection
             title="Remote"
             description="A Projects remote is a place that makes it accessible for other users. By adding a remote you are able to work with multiple others together on the same Project."
             actions={
               <Button
+                type="submit"
                 Icon={Check}
-                onClick={remoteOriginUrlForm.handleSubmit(onSetRemoteOriginUrl)}
                 isLoading={isSettingRemoteOriginUrl}
                 disabled={remoteOriginUrlForm.formState.isDirty === false}
               >
