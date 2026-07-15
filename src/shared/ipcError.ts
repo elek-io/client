@@ -16,16 +16,22 @@ import { type CoreErrorType } from '@elek-io/core';
 export const IPC_CORE_ERROR_SENTINEL = '__elekio_core_error__';
 
 // The known CoreErrorType values, so the renderer can validate a decoded type
-// without importing Core at runtime. `satisfies` keeps this list honest.
-const coreErrorTypes = new Set<string>([
-  'NotFound',
-  'BadRequest',
-  'Unauthorized',
-  'Conflict',
-  'PreconditionFailed',
-  'UpgradeFailed',
-  'Internal',
-] satisfies CoreErrorType[]);
+// without importing Core at runtime. Built from a Record keyed by CoreErrorType,
+// which forces the list to stay exhaustive: adding a type in Core makes this fail
+// to compile until the new key is added, so parseIpcError can never silently drop
+// a new but valid type. The Set gives a prototype-safe membership check (a bare
+// `in` on the object would match inherited keys like "toString").
+const coreErrorTypes = new Set<string>(
+  Object.keys({
+    NotFound: true,
+    BadRequest: true,
+    Unauthorized: true,
+    Conflict: true,
+    PreconditionFailed: true,
+    UpgradeFailed: true,
+    Internal: true,
+  } satisfies Record<CoreErrorType, true>)
+);
 
 function isCoreErrorType(value: unknown): value is CoreErrorType {
   return typeof value === 'string' && coreErrorTypes.has(value);
