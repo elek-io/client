@@ -8,7 +8,10 @@ import {
   expect,
 } from '@playwright/test';
 import { parseElectronApp } from 'electron-playwright-helpers';
+import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import path from 'node:path';
 
 /**
  * Returns the path to the unpacked build for the current platform
@@ -35,6 +38,31 @@ function findUnpackedBuild(): string {
 }
 
 /**
+ * The per-test data directories, kept short on purpose.
+ *
+ * Core runs git inside `<dataDir>/projects/<uuid>`, and on Windows a
+ * `git show <rev>:<path>` in the history diff resolves that arg against the
+ * project dir and overflows the 260-char MAX_PATH once the path gets deep.
+ * `testInfo.outputPath()` nests under the long test-title folder, which tips CI
+ * over the limit, so hash the test into a short dir under `test-results`
+ * instead. The hash is deterministic per test and retry, so `relaunchApp` gets
+ * the same dirs back. Once a future Core enables `core.longpaths`, git accepts
+ * any length and this can go back to `testInfo.outputPath()`.
+ */
+export function testDataDirs(testInfo: TestInfo): {
+  dataDir: string;
+  userDataDir: string;
+} {
+  const key = `${testInfo.titlePath.join('|')}#${testInfo.retry}`;
+  const hash = createHash('sha1').update(key).digest('hex').slice(0, 10);
+  const root = path.join(testInfo.project.outputDir, 'd', hash);
+  return {
+    dataDir: path.join(root, 'core'),
+    userDataDir: path.join(root, 'user'),
+  };
+}
+
+/**
  * Launch the unpacked build for the current platform.
  *
  * Extracted from the `electronApp` fixture so a spec can relaunch against the
@@ -42,8 +70,9 @@ function findUnpackedBuild(): string {
  * `relaunchApp`). The data stores are isolated per test: Core's project data via
  * ELEK_IO_DATA_DIR (read at startup, see testing.md) and Electron's own userData
  * (Chromium profile, localStorage, caches) via Chromium's --user-data-dir switch,
- * which Electron honors without any test-only code in the app. Both default to
- * the per-test output path, overridable to reuse a dir across a relaunch.
+ * which Electron honors without any test-only code in the app. Both default to a
+ * short per-test dir (see testDataDirs), overridable to reuse a dir across a
+ * relaunch.
  */
 export async function launchApp(
   testInfo: TestInfo,
@@ -51,9 +80,9 @@ export async function launchApp(
 ): Promise<ElectronApplication> {
   const appInfo = parseElectronApp(findUnpackedBuild());
 
-  const dataDir = overrides.dataDir ?? testInfo.outputPath('elek-io-data');
-  const userDataDir =
-    overrides.userDataDir ?? testInfo.outputPath('electron-user-data');
+  const defaults = testDataDirs(testInfo);
+  const dataDir = overrides.dataDir ?? defaults.dataDir;
+  const userDataDir = overrides.userDataDir ?? defaults.userDataDir;
 
   // Inherit the environment but skip undefined values,
   // since Playwright only accepts strings
@@ -148,6 +177,18 @@ export const test = base.extend<{
       await app.close();
     } catch {
       // Already closed by the test, nothing to clean up
+    }
+
+    // The data dirs sit outside testInfo.outputPath (kept short for Windows
+    // MAX_PATH, see testDataDirs), so Playwright's preserveOutput does not sweep
+    // them. Mirror failures-only here: drop a passed test's dirs, keep a failed
+    // test's for the uploaded artifact. Best-effort, since the next run wipes
+    // test-results anyway.
+    if (testInfo.status === testInfo.expectedStatus) {
+      const { dataDir } = testDataDirs(testInfo);
+      await rm(path.dirname(dataDir), { recursive: true, force: true }).catch(
+        () => {}
+      );
     }
   },
 

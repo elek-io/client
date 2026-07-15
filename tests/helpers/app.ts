@@ -4,7 +4,7 @@ import {
   type TestInfo,
 } from '@playwright/test';
 
-import { launchApp } from '../fixtures/electronApp.js';
+import { launchApp, testDataDirs } from '../fixtures/electronApp.js';
 
 /**
  * Close the running app and relaunch it against the same data directory, to
@@ -22,10 +22,7 @@ export async function relaunchApp(
 ): Promise<{ app: ElectronApplication; window: Page }> {
   await app.close();
 
-  const relaunched = await launchApp(testInfo, {
-    dataDir: testInfo.outputPath('elek-io-data'),
-    userDataDir: testInfo.outputPath('electron-user-data'),
-  });
+  const relaunched = await launchApp(testInfo, testDataDirs(testInfo));
   const window = await relaunched.firstWindow({ timeout: 20000 });
 
   return { app: relaunched, window };
