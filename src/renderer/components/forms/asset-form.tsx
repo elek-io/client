@@ -19,12 +19,17 @@ import {
 
 interface AssetFormProps<TFieldValues extends FieldValues> {
   assetForm: UseFormReturn<TFieldValues>;
-  children?: React.ReactNode;
   onFormSubmit: SubmitHandler<TFieldValues>;
 }
 
 /**
  * Shared form body collecting an Asset's `name` and `description`.
+ *
+ * Renders only the fields inside a form, so the surrounding dialog owns the
+ * scroll structure. Place it inside a `DialogBody` and put the submit control in
+ * a sibling `DialogFooter` that calls `assetForm.handleSubmit`, so the body
+ * scrolls while the footer stays pinned and on screen (see the create dialog in
+ * `assets/index.tsx` and the update dialog in `asset-teaser.tsx`).
  *
  * Kept generic over the form values so it works for both the create
  * (`CreateAssetProps`) and update (`UpdateAssetProps`) flows, whose shapes
@@ -35,7 +40,6 @@ interface AssetFormProps<TFieldValues extends FieldValues> {
 export function AssetForm<TFieldValues extends FieldValues>({
   assetForm,
   onFormSubmit,
-  children,
 }: AssetFormProps<TFieldValues>): React.JSX.Element {
   return (
     <Form {...assetForm}>
@@ -71,7 +75,6 @@ export function AssetForm<TFieldValues extends FieldValues>({
             )}
           />
         </div>
-        {children}
       </form>
     </Form>
   );

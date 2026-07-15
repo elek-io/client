@@ -167,19 +167,26 @@ function ProjectAssetsPage(): React.JSX.Element {
           </DialogHeader>
 
           <DialogBody>
-            <AssetForm assetForm={createAssetForm} onFormSubmit={onCreateAsset}>
-              <DialogFooter className="mt-6">
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button type="submit" Icon={Plus} isLoading={isCreatingAsset}>
-                  Add Asset
-                </Button>
-              </DialogFooter>
-            </AssetForm>
+            <AssetForm
+              assetForm={createAssetForm}
+              onFormSubmit={onCreateAsset}
+            />
           </DialogBody>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              Icon={Plus}
+              isLoading={isCreatingAsset}
+              onClick={createAssetForm.handleSubmit(onCreateAsset)}
+            >
+              Add Asset
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
