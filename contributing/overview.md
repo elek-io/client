@@ -215,9 +215,9 @@ A separate whitelist, `allowedHostnamesToLoadInternal`, controls in-window navig
 
 **Custom File Protocol**:
 
-Loading of Assets in the UI is handled via a custom file protocol `elek-io-local-file://` since the standard `file://` protocol in Electron has more privileges than in a browser. This custom protocol implementation ensures path validation (files must be within Project or tmp folders) and prevents directory traversal attacks.
+Loading of Assets in the UI is handled via a custom file protocol `elek-io-local-file://` since the standard `file://` protocol in Electron has more privileges than in a browser. The renderer builds these URLs in `AssetDisplay`'s `toLocalFileSrc`, percent-encoding each path segment so a URL-significant character in the path (`#`, `?`, `%`, a space, for example from a profile folder like `C:\Users\a#b`) survives instead of truncating the path into a fragment or query. The handler resolves each request to a normalized, absolute native path (decoding that percent-encoding and collapsing `.`/`..` segments) and then serves it only when it is inside the Projects or tmp directory, matched with a trailing separator so a sibling like `projects-evil` cannot pass as a prefix of `projects`. A request it cannot parse fails closed. Because `net.fetch` follows symlinks and a git-backed Project can arrive from an untrusted source carrying a symlinked asset (git stores symlinks), the handler then resolves symlinks on both the request and the base directories with `realpath` and re-checks containment, serving the resolved path so no link is followed afterwards. This blocks directory traversal (including percent-encoded `..`), sibling-prefix escapes, and symlink escapes.
 
-See [`src/main/index.ts:272-305`](/src/main/index.ts) for the custom protocol implementation.
+See [`src/main/index.ts`](/src/main/index.ts) (`registerCustomFileProtocol`) for the implementation and the "Custom file protocol" block in [`tests/specs/main-security.spec.ts`](/tests/specs/main-security.spec.ts) for the E2E coverage of the boundary, alongside the other main-process security guards (renderer isolation, the navigation guard, and external-link handling).
 
 ### Path Aliases
 

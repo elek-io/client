@@ -14,6 +14,8 @@ import {
   screen,
   shell,
 } from 'electron';
+import { realpath } from 'node:fs/promises';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import Path from 'path';
 
 import ElekIoCore, { CoreError } from '@elek-io/core';
@@ -309,11 +311,6 @@ class Main {
    */
   private registerCustomFileProtocol(): void {
     protocol.handle(this.customFileProtocol, async (request) => {
-      const absoluteFilePath = request.url.replace(
-        `${this.customFileProtocol}://`,
-        ''
-      );
-
       if (!this.core) {
         sentryCaptureException(
           new Error(
@@ -323,22 +320,92 @@ class Main {
         return new Response('Internal Server Error', { status: 500 });
       }
 
+      const forbidden = new Response(
+        'Forbidden: Tried to load a file from outside of elek.io Projects directory',
+        { status: 403 }
+      );
+
+      // Resolve the request to a normalized, absolute native path before the
+      // containment check. The renderer builds a file-style URL (empty
+      // authority, forward slashes), so swap the custom scheme for `file:` and
+      // let Node turn it back into a native path. fileURLToPath decodes
+      // percent-encoding (so a "%2e%2e" cannot smuggle a "..") and rebuilds a
+      // Windows drive path (`/D:/dir` becomes `D:\dir`), then Path.resolve
+      // collapses any "."/".." segments. So the path we check is the path we
+      // would actually read. A URL we cannot parse fails closed.
+      let absoluteFilePath: string;
+      try {
+        absoluteFilePath = Path.resolve(
+          fileURLToPath(
+            request.url.replace(`${this.customFileProtocol}://`, 'file://')
+          )
+        );
+      } catch {
+        sentryCaptureException(
+          new SecurityError(
+            `Could not resolve requested file URL "${request.url}".`
+          )
+        );
+        return forbidden;
+      }
+
+      // Only serve files inside the Projects or tmp directories. Match "<dir>"
+      // and "<dir><sep>" so a sibling like "projects-evil" cannot slip through
+      // as a bare string prefix of "projects".
+      const isWithin = (candidate: string, directory: string): boolean =>
+        candidate === directory || candidate.startsWith(directory + Path.sep);
+
       if (
-        absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false &&
-        absoluteFilePath.startsWith(this.core.util.pathTo.tmp) === false
+        isWithin(absoluteFilePath, this.core.util.pathTo.projects) === false &&
+        isWithin(absoluteFilePath, this.core.util.pathTo.tmp) === false
       ) {
         sentryCaptureException(
           new SecurityError(
-            `Tried to load file "${absoluteFilePath}" outside of Projects directory.`
+            `Tried to load file "${absoluteFilePath}" outside of the Projects or tmp directory.`
           )
         );
-        return new Response(
-          'Forbidden: Tried to load a file from outside of elek.io Projects directory',
-          { status: 403 }
-        );
+        return forbidden;
       }
 
-      return await net.fetch(`file://${absoluteFilePath}`);
+      // Lexical containment is not enough: `net.fetch` follows symlinks. Core is
+      // git-backed and Projects move between machines, so a Project imported
+      // from an untrusted source can carry an asset that is a symlink whose own
+      // path sits inside `projects` but points outside it (lfs/x.png ->
+      // /etc/passwd). Resolve symlinks on both the request and the base
+      // directories, then re-check, so only bytes that physically live inside
+      // the Projects or tmp directory are served, and fetch the resolved path so
+      // no further link is followed. A missing file or broken link fails closed.
+      let resolvedFilePath: string;
+      let resolvedProjects: string;
+      let resolvedTmp: string;
+      try {
+        [resolvedFilePath, resolvedProjects, resolvedTmp] = await Promise.all([
+          realpath(absoluteFilePath),
+          realpath(this.core.util.pathTo.projects),
+          realpath(this.core.util.pathTo.tmp),
+        ]);
+      } catch {
+        sentryCaptureException(
+          new SecurityError(
+            `Could not resolve the real path of "${absoluteFilePath}".`
+          )
+        );
+        return forbidden;
+      }
+
+      if (
+        isWithin(resolvedFilePath, resolvedProjects) === false &&
+        isWithin(resolvedFilePath, resolvedTmp) === false
+      ) {
+        sentryCaptureException(
+          new SecurityError(
+            `Tried to load file "${absoluteFilePath}" resolving through a link to "${resolvedFilePath}" outside of the Projects or tmp directory.`
+          )
+        );
+        return forbidden;
+      }
+
+      return await net.fetch(pathToFileURL(resolvedFilePath).href);
     });
   }
 

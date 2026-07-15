@@ -102,9 +102,8 @@ function ProjectAssetsPage(): React.JSX.Element {
       return;
     }
 
-    const filename = filePath.split('/').pop() ?? '';
     createAssetForm.reset({
-      name: filename,
+      name: '',
       description: '',
       projectId: projectId,
       filePath: filePath,
