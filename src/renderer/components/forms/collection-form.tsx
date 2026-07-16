@@ -1,5 +1,4 @@
-import { Plus } from 'lucide-react';
-import { type ReactElement, useRef, useState } from 'react';
+import { type ReactElement } from 'react';
 import {
   type Control,
   type FieldValues,
@@ -12,12 +11,8 @@ import {
   DraggableComponent,
   SortableFieldArray,
 } from '@renderer/components/drag-and-drop';
-import {
-  FieldDefinitionForm,
-  type FieldDefinitionFormRef,
-} from '@renderer/components/forms/util';
+import { AddFieldSheet } from '@renderer/components/forms/add-field-sheet';
 import { PageSection } from '@renderer/components/page-section';
-import { Button } from '@renderer/components/ui/button';
 import {
   FieldGroup,
   FieldLegend,
@@ -43,31 +38,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@renderer/components/ui/select';
-import {
-  Sheet,
-  SheetBody,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@renderer/components/ui/sheet';
 import { useProject } from '@renderer/hooks/useProject';
 
 import {
   type FieldDefinitionOrGroup,
-  type FieldType,
-  fieldTypeSchema,
   type Project,
   type UpdateCollectionProps,
   supportedIconSchema,
 } from '@elek-io/core';
-
-// Field types Core defines but the desktop app has no definition form for yet. They are
-// shown disabled in the picker so selecting one cannot crash the sheet.
-// See contributing/not-yet-implemented.md.
-const unimplementedFieldTypes: ReadonlySet<FieldType> = new Set(['dynamic']);
 
 export interface CollectionFormProps<
   TFieldValues extends FieldValues,
@@ -103,10 +81,6 @@ export function CollectionForm<
   // those. The generic keeps the callers (create, update, diff) type-safe.
   const collectionForm =
     genericForm as unknown as UseFormReturn<UpdateCollectionProps>;
-  const fieldDefinitionFormRef = useRef<FieldDefinitionFormRef>(null);
-  const [isAddFieldDefinitionSheetOpen, setIsAddFieldDefinitionSheetOpen] =
-    useState(false);
-  const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
 
   // Opaque id-rows so useFieldArray never walks the deep FieldDefinitionOrGroup
   // union (RHF instantiation depth limit). Rows are recovered when rendering.
@@ -116,12 +90,6 @@ export function CollectionForm<
     }>,
     name: 'fieldDefinitions',
   });
-
-  async function addFieldDefinition(): Promise<void> {
-    if (fieldDefinitionFormRef.current) {
-      await fieldDefinitionFormRef.current.addDefinition();
-    }
-  }
 
   return (
     <Form {...genericForm}>
@@ -286,94 +254,10 @@ export function CollectionForm<
               isViewOnly ? (
                 <></>
               ) : (
-                <Sheet
-                  open={isAddFieldDefinitionSheetOpen}
-                  onOpenChange={setIsAddFieldDefinitionSheetOpen}
-                >
-                  <SheetTrigger asChild>
-                    <Button
-                      Icon={Plus}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        setIsAddFieldDefinitionSheetOpen(true);
-                      }}
-                    >
-                      Add Field
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent
-                  // @todo Uncomment to not close the Sheet when clicking into the example inputs - this needs some work, since then it's also not possible to use the example input
-                  //
-                  // onInteractOutside={(event) => {
-                  //   console.log(event);
-                  //   event.preventDefault();
-                  // }}
-                  // overlayChildren={
-                  //   fieldDefinitionFormRef.current && (
-                  //     <fieldDefinitionFormRef.current.getExampleFormField
-                  //       fieldType={selectedFieldType}
-                  //     />
-                  //   )
-                  // }
-                  >
-                    <SheetHeader>
-                      <SheetTitle>Add a Field to this Collection</SheetTitle>
-                      <SheetDescription>
-                        Adding Fields to your Collection will enable users to
-                        enter data that follows the boundries you&apos;ve set.
-                      </SheetDescription>
-                      <FormItem>
-                        <FormLabel isRequired>Input type</FormLabel>
-                        <Select
-                          value={selectedFieldType}
-                          onValueChange={(value: FieldType) =>
-                            setSelectedFieldType(value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {fieldTypeSchema.options.map((option) => {
-                              return (
-                                <SelectItem
-                                  key={option}
-                                  value={option}
-                                  disabled={unimplementedFieldTypes.has(option)}
-                                >
-                                  {option}
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          The type of input the user is able to enter for this
-                          Field.
-                        </FormDescription>
-                      </FormItem>
-                    </SheetHeader>
-
-                    <SheetBody>
-                      <FieldDefinitionForm
-                        ref={fieldDefinitionFormRef}
-                        fieldDefinitions={fieldDefinitions}
-                        setIsAddFieldDefinitionSheetOpen={
-                          setIsAddFieldDefinitionSheetOpen
-                        }
-                        fieldType={selectedFieldType}
-                        supportedLanguages={project.settings.language.supported}
-                        defaultLanguage={project.settings.language.default}
-                      />
-                    </SheetBody>
-
-                    <SheetFooter>
-                      <Button className="w-full" onClick={addFieldDefinition}>
-                        Add definition
-                      </Button>
-                    </SheetFooter>
-                  </SheetContent>
-                </Sheet>
+                <AddFieldSheet
+                  project={project}
+                  fieldDefinitions={fieldDefinitions}
+                />
               )
             }
           >
