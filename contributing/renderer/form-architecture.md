@@ -511,10 +511,15 @@ typed edit helpers give the "reducer feel" without the split. This also unblocks
 group authoring and field-definition editing, both currently blocked _by_ the
 opaque-row typing.
 
-> The [PoC](#proof-of-concept) does **not** implement this pillar — it keeps the
-> existing `useFieldArray` and appends into it, so the sheet migration and the
-> `fieldDefinitions` migration stay independent strangler steps. This pillar is
-> the design for step 3, not yet proven.
+> **Landed** on `poc-form-registry` (migration step 3). `collection-form.tsx`
+> binds `fieldDefinitions` through `useController` and edits it with typed
+> `appendDefinition`/`removeDefinition`/`moveDefinition` helpers (reorder via
+> dnd-kit `arrayMove`); the sheet and the fallback dispatcher now take the value
+> array plus an `onAppend` callback. The three opaque-row `as unknown as` casts
+> are gone and no `field.value` cast was needed. The slug-source id bug is closed
+> and gated by E2E: a slug-source-picker test, a definition-only dirty-gate test,
+> and a collection-diff render test. Group authoring and definition editing stay
+> out of scope (still clearly-marked TODOs).
 
 ### How the recommendation solves each hard problem
 
@@ -545,13 +550,13 @@ Each step is independently shippable and E2E-green; no big-bang.
    from the registry, submit via `SubmitButton form={sheetId}`. This is the
    [proof of concept](#proof-of-concept). Ship once `collections.spec.ts` is
    green.
-3. **(Higher risk) Move `fieldDefinitions` to the `Controller`-bound value.**
-   Swap the opaque `useFieldArray` for a single `Controller`-bound value with
-   typed edit helpers; delete the three casts; the slug-source id bug closes.
-   This step touches `collection-form.tsx`, which `collection-diff.tsx` reuses
-   read-only, so it must be landed **behind new E2E first**: a slug-source-picker
-   test (currently uncovered), a dirty-gate test on a definition-only edit, and a
-   collection-diff render test. Not covered by the PoC.
+3. **(Done) Move `fieldDefinitions` to the `Controller`-bound value.** Swapped
+   the opaque `useFieldArray` for a single `useController`-bound value with typed
+   edit helpers; deleted the three opaque-row casts; the slug-source id bug is
+   closed. This step touches `collection-form.tsx`, which `collection-diff.tsx`
+   reuses read-only, so it landed **behind new E2E first**: a slug-source-picker
+   test (previously uncovered), a dirty-gate test on a definition-only edit, and a
+   collection-diff render test. Was not covered by the PoC.
 4. **(Higher risk) Fold the entry renderer onto the registry.** This rewrites
    `FormComponentFromFieldDefinition`/`FormFieldFromDefinition` inside the
    1912-line `form.tsx`, shared by entry create/update, entry diff, **and** the
@@ -745,8 +750,9 @@ validates the definition). Against the packaged PoC build:
 
 ### What the PoC does **not** prove
 
-- Pillar 3 (the `Controller`-bound `fieldDefinitions`), so the slug-source id bug
-  and group authoring are still open — that is migration step 3.
+- ~~Pillar 3 (the `Controller`-bound `fieldDefinitions`)~~ — landed since as
+  migration step 3, closing the slug-source id bug. Group authoring and
+  definition editing remain open.
 - The entry-renderer fold (step 4) inside `form.tsx`.
 - The four remaining complex authoring types (`slug`, `markdown`, `asset`,
   `entry`) still use the existing dispatcher via the fallback. `slug` is the next

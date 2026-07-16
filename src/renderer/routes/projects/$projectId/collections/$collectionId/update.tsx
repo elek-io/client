@@ -95,8 +95,12 @@ function ProjectCollectionUpdate(): ReactElement {
   const [deleteError, setDeleteError] = useState<unknown>(null);
   const updateCollectionForm = useForm({
     resolver: zodResolver(updateCollectionSchema),
+    // Seed fieldDefinitions so the Collection form's Controller-bound value is a
+    // real array from the first render, before the Collection loads and reset()
+    // hydrates it. Create and diff already seed it the same way.
     defaultValues: {
       projectId,
+      fieldDefinitions: [],
     },
   });
 

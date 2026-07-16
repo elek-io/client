@@ -1,10 +1,10 @@
+import { arrayMove } from '@dnd-kit/sortable';
 import { type ReactElement } from 'react';
 import {
-  type Control,
   type FieldValues,
   type SubmitHandler,
   type UseFormReturn,
-  useFieldArray,
+  useController,
 } from 'react-hook-form';
 
 import {
@@ -41,6 +41,7 @@ import {
 import { useProject } from '@renderer/hooks/useProject';
 
 import {
+  type FieldDefinition,
   type FieldDefinitionOrGroup,
   type Project,
   type UpdateCollectionProps,
@@ -82,14 +83,38 @@ export function CollectionForm<
   const collectionForm =
     genericForm as unknown as UseFormReturn<UpdateCollectionProps>;
 
-  // Opaque id-rows so useFieldArray never walks the deep FieldDefinitionOrGroup
-  // union (RHF instantiation depth limit). Rows are recovered when rendering.
-  const fieldDefinitions = useFieldArray({
-    control: genericForm.control as unknown as Control<{
-      fieldDefinitions: { id: string }[];
-    }>,
+  // Hold the whole fieldDefinitions array as one Controller-bound value rather
+  // than a useFieldArray. A Controller keeps the array as a single opaque value
+  // RHF never introspects, so it sidesteps the instantiation-depth limit that
+  // forced the old opaque {id} rows, and the value keeps the definitions' real
+  // ids. Because the array stays in RHF state, updateCollectionSchema's
+  // refinements still validate it, formState.isDirty still flips on edits, and
+  // reset() still hydrates it on load and in the diff views.
+  const { field: fieldDefinitionsField } = useController({
+    control: collectionForm.control,
     name: 'fieldDefinitions',
   });
+  const definitions: FieldDefinitionOrGroup[] = fieldDefinitionsField.value;
+
+  // Typed edit helpers over the value. Each produces a new array so RHF sees the
+  // change and marks the form dirty. Update and group-nesting helpers are not
+  // implemented yet (the Edit pencil and group authoring are follow-up steps).
+  const appendDefinition = (definition: FieldDefinition): void => {
+    fieldDefinitionsField.onChange([...definitions, definition]);
+  };
+  const removeDefinition = (id: string): void => {
+    fieldDefinitionsField.onChange(
+      definitions.filter((definition) => definition.id !== id)
+    );
+  };
+  const moveDefinition = (activeId: string, overId: string): void => {
+    const oldIndex = definitions.findIndex((d) => d.id === activeId);
+    const newIndex = definitions.findIndex((d) => d.id === overId);
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+    fieldDefinitionsField.onChange(arrayMove(definitions, oldIndex, newIndex));
+  };
 
   return (
     <Form {...genericForm}>
@@ -256,19 +281,18 @@ export function CollectionForm<
               ) : (
                 <AddFieldSheet
                   project={project}
-                  fieldDefinitions={fieldDefinitions}
+                  fieldDefinitions={definitions}
+                  onAppend={appendDefinition}
                 />
               )
             }
           >
             <div className="mt-6 grid grid-cols-12 gap-6">
-              <SortableFieldArray fieldArray={fieldDefinitions}>
-                {fieldDefinitions.fields.map((field) => {
-                  // Recover the real definition from the opaque id-row.
-                  const fieldDefinition =
-                    field as unknown as FieldDefinitionOrGroup & {
-                      id: string;
-                    };
+              <SortableFieldArray
+                items={definitions}
+                onReorder={moveDefinition}
+              >
+                {definitions.map((fieldDefinition) => {
                   // Groups are presentational, render their member fields inside
                   // a labeled FieldSet. Group authoring is not supported yet, so
                   // the members are shown read-only as a preview.
@@ -320,12 +344,7 @@ export function CollectionForm<
                         onDelete={
                           isViewOnly
                             ? undefined
-                            : (fieldDefinition) => {
-                                const index = fieldDefinitions.fields.findIndex(
-                                  (field) => field.id === fieldDefinition.id
-                                );
-                                fieldDefinitions.remove(index);
-                              }
+                            : () => removeDefinition(fieldDefinition.id)
                         }
                       />
                     </DraggableComponent>

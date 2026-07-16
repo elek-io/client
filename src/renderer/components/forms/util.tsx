@@ -12,7 +12,6 @@ import {
   type FieldValues,
   type PathValue,
   type Resolver,
-  type UseFieldArrayReturn,
   type UseFormReturn,
 } from 'react-hook-form';
 
@@ -66,6 +65,7 @@ import {
   type DatetimeFieldDefinition,
   type EmailFieldDefinition,
   type EntryFieldDefinition,
+  type FieldDefinition,
   type FieldDefinitionBase,
   type FieldDefinitionOrGroup,
   type FieldType,
@@ -89,13 +89,12 @@ export interface FieldDefinitionFormProps {
   supportedLanguages: SupportedLanguage[];
   defaultLanguage: SupportedLanguage;
   fieldType: FieldType;
-  // Opaque id-rows: react-hook-form cannot type a field array whose element is the
-  // deeply nested FieldDefinitionOrGroup union (instantiation depth limit). Rows are
-  // cast back to FieldDefinitionOrGroup where read.
-  fieldDefinitions: UseFieldArrayReturn<
-    { fieldDefinitions: { id: string }[] },
-    'fieldDefinitions'
-  >;
+  // The definitions already on the Collection, with their real ids. The slug
+  // source picker reads these siblings and the duplicate-slug guard checks them,
+  // so both see real UUIDs rather than react-hook-form's render keys. Edits are
+  // appended through onAppend into the Collection form's Controller-bound value.
+  fieldDefinitions: FieldDefinitionOrGroup[];
+  onAppend: (definition: FieldDefinition) => void;
   setIsAddFieldDefinitionSheetOpen: React.Dispatch<
     React.SetStateAction<boolean>
   >;
@@ -124,16 +123,10 @@ export const FieldDefinitionForm = forwardRef(
       inputWidth: '12',
     };
 
-    // Recover the real definitions from the opaque id-rows, for the duplicate
-    // slug check and for forms that reference sibling fields.
-    const recoveredFieldDefinitions = props.fieldDefinitions.fields.map(
-      (field) => field as unknown as FieldDefinitionOrGroup
-    );
-
     // Core throws on duplicate slugs when saving the Collection,
     // so reject them here where the user can still correct the slug
     const isDuplicateSlug = (definitionSlug: string): boolean =>
-      recoveredFieldDefinitions.some((definition) =>
+      props.fieldDefinitions.some((definition) =>
         'isGroup' in definition
           ? definition.fieldDefinitions.some(
               (member) => member.slug === definitionSlug
@@ -151,11 +144,12 @@ export const FieldDefinitionForm = forwardRef(
     // the definition, close the sheet and reset for the next add. RHF's FieldPath
     // cannot reduce the literal paths for an unresolved generic T, so they are
     // asserted here once (same tax as DefaultFieldDefinitionForm's base helper).
-    // TTransformed covers forms whose resolver output differs from the form
-    // values (markdown pins the recursive defaultValue to null in its values).
+    // T is the form values (markdown pins the recursive defaultValue to null in
+    // its values); TTransformed is the resolver output, a concrete FieldDefinition
+    // the Collection form's onAppend accepts.
     const submitDefinition = async <
-      T extends FieldDefinitionBase & FieldValues,
-      TTransformed extends FieldDefinitionBase & FieldValues = T,
+      T extends FieldValues,
+      TTransformed extends FieldDefinition & FieldValues,
     >(
       formState: UseFormReturn<T, unknown, TTransformed>
     ): Promise<void> => {
@@ -167,7 +161,7 @@ export const FieldDefinitionForm = forwardRef(
           );
           return;
         }
-        props.fieldDefinitions.append(definition);
+        props.onAppend(definition);
         props.setIsAddFieldDefinitionSheetOpen(false);
         formState.reset();
         formState.setValue(
@@ -666,7 +660,7 @@ export const FieldDefinitionForm = forwardRef(
         return (
           <SlugFieldDefinitionForm
             form={slugFieldDefinitionFormState}
-            fieldDefinitions={recoveredFieldDefinitions}
+            fieldDefinitions={props.fieldDefinitions}
             currentLanguage={props.defaultLanguage}
             supportedLanguages={props.supportedLanguages}
             fieldType={props.fieldType}

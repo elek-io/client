@@ -109,6 +109,10 @@ const SlugFieldDefinitionForm = ({
                           </span>
                         </div>
                         <Switch
+                          aria-label={translateContent({
+                            key: 'fieldDefinition.label',
+                            record: definition.label,
+                          })}
                           checked={selectedSourceIds.includes(definition.id)}
                           onCheckedChange={() => toggleSource(definition.id)}
                         />

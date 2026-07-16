@@ -524,4 +524,112 @@ test.describe('Collections', () => {
       /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
     );
   });
+
+  // The proof of the Controller-bound fieldDefinitions fix. A slug field derives
+  // its value from a sibling field, storing that sibling's id in
+  // ofFieldDefinitions. Before the migration, the definitions were opaque
+  // useFieldArray rows whose ids RHF overwrote with its own render keys, so the
+  // slug stored a non-existent id and Core's slugSourceReferences refinement
+  // rejected the Collection on save. With the real ids preserved, Core accepts
+  // it. This test fails pre-migration (stuck on the create route) and passes
+  // after.
+  test('creates a Collection whose slug field derives from a sibling, using the real field id', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    // Add the text field the slug will derive from.
+    await addFieldDefinition(mainWindow, {
+      label: 'Title',
+      description: 'The title of the article',
+    });
+    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+
+    // Add a slug field and pick the text field as its source. Slug is not on the
+    // registry yet, so this drives the fallback dispatcher and its slug source
+    // picker, which is the plumbing the fix flows through.
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow.getByRole('option', { name: 'slug', exact: true }).click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Permalink');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The permalink of the article');
+
+    // The source switch carries its sibling field's label as its accessible
+    // name, so it is addressable by role/name. Toggling it stores the text
+    // field's real id in ofFieldDefinitions.
+    await sheet.getByRole('switch', { name: 'Title' }).click();
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Permalink', { exact: true })
+    ).toBeVisible();
+
+    // Create the Collection. A uuid detail route (never 'create') means Core
+    // accepted the slug source's real id.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Guards that a definition-only edit flips the form's dirty state. Adding a
+  // field definition goes through the Controller-bound value's onChange, which
+  // must mark the form dirty so the update form's "Save changes" gate opens with
+  // no other field touched.
+  test('enables Save on the update form after only adding a field definition', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+
+    await navigateToCollectionSettings(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // Wait for the form to hydrate from the loaded Collection before trusting
+    // the gate, keying off the plural name showing.
+    await expect(
+      mainWindow.getByLabel('Collection name (Plural)', { exact: true })
+    ).toHaveValue('Articles');
+
+    // Nothing edited yet, so Save is gated.
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+
+    // Add a field definition and change nothing else. The seeded Collection
+    // already has a "title" field, so "Body" is a fresh, non-duplicate slug.
+    await addFieldDefinition(mainWindow, {
+      label: 'Body',
+      description: 'The body of the article',
+    });
+
+    // The definition-only edit dirties the form through the Controller value, so
+    // Save enables.
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeEnabled();
+  });
 });

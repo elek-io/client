@@ -1,6 +1,5 @@
 import { Plus } from 'lucide-react';
 import { Fragment, useId, useRef, useState, type ReactElement } from 'react';
-import { type UseFieldArrayReturn } from 'react-hook-form';
 
 import { type DefinitionDraftProps } from '@renderer/components/forms/field-definition-draft';
 import { FIELD_DEFINITION_REGISTRY } from '@renderer/components/forms/field-definition-registry';
@@ -57,17 +56,17 @@ const unimplementedFieldTypes: ReadonlySet<FieldType> = new Set(['dynamic']);
 
 export interface AddFieldSheetProps {
   project: Project;
-  // The Collection form's field array. Kept as opaque {id} rows in this PoC;
-  // migrating it to a Controller-bound value is a separate strangler step.
-  fieldDefinitions: UseFieldArrayReturn<
-    { fieldDefinitions: { id: string }[] },
-    'fieldDefinitions'
-  >;
+  // The Collection's field definitions as their real value (real ids), bound
+  // through a Controller in the Collection form. Read here only for the
+  // duplicate-slug guard and the slug source list; edits go through onAppend.
+  fieldDefinitions: FieldDefinitionOrGroup[];
+  onAppend: (definition: FieldDefinition) => void;
 }
 
 export function AddFieldSheet({
   project,
   fieldDefinitions,
+  onAppend,
 }: AddFieldSheetProps): ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
@@ -79,20 +78,14 @@ export function AddFieldSheet({
   const supportedLanguages = project.settings.language.supported;
   const defaultLanguage = project.settings.language.default;
 
-  // Recover the real definitions from the opaque rows for the duplicate-slug
-  // check. Same cast the Collection form uses today; it goes away with the
-  // fieldDefinitions reducer migration.
-  const recovered = fieldDefinitions.fields.map(
-    (field) => field as unknown as FieldDefinitionOrGroup
-  );
-  const existingSlugs = recovered.flatMap((definition) =>
+  const existingSlugs = fieldDefinitions.flatMap((definition) =>
     'isGroup' in definition
       ? definition.fieldDefinitions.map((member) => member.slug)
       : [definition.slug]
   );
 
   const onAdd = (definition: FieldDefinition): void => {
-    fieldDefinitions.append(definition);
+    onAppend(definition);
     setIsOpen(false);
   };
 
@@ -169,6 +162,7 @@ export function AddFieldSheet({
             <FieldDefinitionForm
               ref={legacyFormRef}
               fieldDefinitions={fieldDefinitions}
+              onAppend={onAppend}
               setIsAddFieldDefinitionSheetOpen={setIsOpen}
               fieldType={selectedFieldType}
               supportedLanguages={supportedLanguages}

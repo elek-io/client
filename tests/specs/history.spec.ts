@@ -1,7 +1,10 @@
 import { expect } from '@playwright/test';
 
 import { test } from '../fixtures/electronApp.js';
-import { createCollectionViaIpc } from '../helpers/collection.js';
+import {
+  createCollectionViaIpc,
+  textFieldDefinition,
+} from '../helpers/collection.js';
 import { createEntryViaIpc, stringValue } from '../helpers/entry.js';
 import { verifyCurrentRouteHash } from '../helpers/navigation.js';
 import {
@@ -106,5 +109,35 @@ test.describe('History', () => {
       mainWindow,
       `#/projects/${project.id}/history`
     );
+  });
+
+  // Guards that the CollectionDiff hydrates the Controller-bound fieldDefinitions
+  // read-only through reset(). The reused CollectionForm renders the definitions
+  // as previews, so a distinctively labelled field proves they came through the
+  // value rather than being dropped by the migration.
+  test('renders a Collection’s field definitions in the history diff', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+      fieldDefinitions: [
+        textFieldDefinition({ label: { en: 'Headline' }, slug: 'headline' }),
+      ],
+    });
+
+    await navigateToHistory(mainWindow, project.id);
+
+    // Open the collection-create commit's diff.
+    await mainWindow.getByRole('link', { name: /create collection/i }).click();
+    await expect(
+      mainWindow.getByRole('heading', { name: 'create collection' })
+    ).toBeVisible();
+
+    // The field definition renders in the diff, labelled by its definition.
+    await expect(
+      mainWindow.getByText('Headline', { exact: true })
+    ).toBeVisible();
   });
 });
