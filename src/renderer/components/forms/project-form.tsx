@@ -102,7 +102,14 @@ export function ProjectForm<
   return (
     <>
       <Form {...genericForm}>
-        <form id={id} onSubmit={genericForm.handleSubmit(onFormSubmit)}>
+        {/* noValidate: zod (through RHF) owns validation. Without it the
+        browser's native constraint check on required inputs blocks submit
+        before handleSubmit runs. */}
+        <form
+          id={id}
+          noValidate
+          onSubmit={genericForm.handleSubmit(onFormSubmit)}
+        >
           <fieldset disabled={isViewOnly}>
             <div className="space-y-4 p-6">
               <div className="grid grid-cols-12 gap-6">

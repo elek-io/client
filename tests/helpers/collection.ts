@@ -393,7 +393,13 @@ export async function createCollection(
   await addFieldDefinition(page, props.field);
 
   await page.getByRole('button', { name: 'Create Collection' }).click();
-  await expect(page).toHaveURL(/#\/projects\/[^/]+\/collections\/[^/]+$/);
+  // Match the new Collection's detail route by its uuid segment, never the
+  // 'create' segment. A plain `[^/]+` also matches `/collections/create`, so a
+  // form that never submits would still satisfy this and hide the failure a
+  // caller depends on. See collections.spec.ts for the same uuid pattern.
+  await expect(page).toHaveURL(
+    /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+  );
 
   const hash = new URL(page.url()).hash;
   const collectionId = hash.split('/')[4];

@@ -145,8 +145,12 @@ function ListProjectsPage(): ReactElement {
 
           <DialogBody>
             <Form {...cloneProjectForm}>
+              {/* noValidate: zod (through RHF) owns validation. Without it the
+              browser's native constraint check on required inputs blocks submit
+              before handleSubmit runs. */}
               <form
                 id={cloneFormId}
+                noValidate
                 onSubmit={cloneProjectForm.handleSubmit(onCloneProject)}
               >
                 <FormField

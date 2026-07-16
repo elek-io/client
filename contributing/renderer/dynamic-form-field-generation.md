@@ -262,6 +262,24 @@ const form = useForm({
 // Form validates automatically and shows error messages via FormMessage component
 ```
 
+### Submitting from the page header (`form={id}` and `noValidate`)
+
+A form's primary action (Create, Save changes) is rendered in the `Page` header
+through `Page`'s `actions`, which is outside the `<form>` subtree. The button
+associates back to the form with `type="submit"` and `form={id}`, where the same
+`id` (from `useId()`) is passed to the form component. `Button` defaults to
+`type="button"`, so a submit button has to opt in with `type="submit"`.
+
+Because that button submits the form natively, the form must set `noValidate`.
+Zod (through react-hook-form) is the single source of validation, and the inputs
+carry native constraints too (`FormFieldFromDefinition` sets `required` from
+`isRequired`, and the Collection editor renders required field-definition preview
+inputs). Without `noValidate` the browser's native constraint check runs first,
+blocks the submit on an empty required input, and shows its own default message,
+so the `submit` event and `handleSubmit` never fire and no Zod error is shown.
+Every react-hook-form form that submits (the shared `*Form` components and the
+standalone route forms) sets `noValidate` for this reason.
+
 ### Form typing (react-hook-form + generated schemas)
 
 The generated entry and collection schemas transform a loose input into the strict `*Props` output (their `values` is a `z.pipe`, and Collections carry recursive mdast), so their `z.input` differs from their `z.output`. Two rules follow, both applied throughout the form code:

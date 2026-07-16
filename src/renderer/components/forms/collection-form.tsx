@@ -125,7 +125,14 @@ export function CollectionForm<
 
   return (
     <Form {...genericForm}>
-      <form id={id} onSubmit={genericForm.handleSubmit(onFormSubmit)}>
+      {/* noValidate: zod (through RHF) owns validation. Without it the browser's
+      native constraint check on required inputs, including the field-definition
+      preview inputs, blocks submit before handleSubmit runs. */}
+      <form
+        id={id}
+        noValidate
+        onSubmit={genericForm.handleSubmit(onFormSubmit)}
+      >
         <fieldset disabled={isViewOnly}>
           <div className="space-y-6 p-6">
             <div className="grid grid-cols-12 items-start gap-6">

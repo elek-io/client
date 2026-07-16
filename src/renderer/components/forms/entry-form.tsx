@@ -73,7 +73,14 @@ export function EntryForm<
   return (
     <FieldDefinitionsProvider fieldDefinitions={fieldDefinitions}>
       <Form {...entryForm}>
-        <form id={id} onSubmit={entryForm.handleSubmit(onFormSubmit)}>
+        {/* noValidate: zod (through RHF) owns validation. Without it the
+        browser's native constraint check on required inputs blocks submit
+        before handleSubmit runs. */}
+        <form
+          id={id}
+          noValidate
+          onSubmit={entryForm.handleSubmit(onFormSubmit)}
+        >
           <fieldset disabled={isViewOnly}>
             <div className="grid grid-cols-12 gap-x-4 gap-y-8 p-6 sm:gap-x-6 xl:gap-x-8">
               {fieldDefinitions.map((fieldDefinition) => {

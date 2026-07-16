@@ -50,7 +50,10 @@ export function AssetForm<TFieldValues extends FieldValues>({
 }: AssetFormProps<TFieldValues>): React.JSX.Element {
   return (
     <Form {...assetForm}>
-      <form id={id} onSubmit={assetForm.handleSubmit(onFormSubmit)}>
+      {/* noValidate: zod (through RHF) owns validation. Without it the browser's
+      native constraint check on required inputs blocks submit before
+      handleSubmit runs. */}
+      <form id={id} noValidate onSubmit={assetForm.handleSubmit(onFormSubmit)}>
         <div className="grid grid-cols-12 gap-6">
           <FormField
             control={assetForm.control}
