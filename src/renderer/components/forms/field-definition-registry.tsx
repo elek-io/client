@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type ReactElement } from 'react';
 
+import { AssetDefinitionDraft } from '@renderer/components/forms/asset-field-definition';
+import { EntryDefinitionDraft } from '@renderer/components/forms/entry-field-definition';
 import { baseDefaults } from '@renderer/components/forms/field-definition-defaults';
 import {
   DefaultValueInputField,
@@ -9,7 +11,9 @@ import {
   type DefinitionDraftProps,
   type DefinitionSpec,
 } from '@renderer/components/forms/field-definition-draft';
+import { MarkdownDefinitionDraft } from '@renderer/components/forms/markdown-field-definition';
 import { SelectDefinitionDraft } from '@renderer/components/forms/select-field-definition';
+import { SlugDefinitionDraft } from '@renderer/components/forms/slug-field-definition';
 import {
   FormControl,
   FormDateField,
@@ -59,12 +63,13 @@ import {
 // into its authoring form. The trivial scalar types are pure data (a spec: which
 // Core schema validates it, a fresh draft, and the extra controls): text,
 // textarea, number, toggle, email, date, datetime, time, url, telephone, ipv4
-// and range. Complex types (select, and later slug/asset/entry/markdown) live in
-// their own file and are referenced here.
+// and range. Complex types (select, slug, asset, entry, markdown) live in their
+// own file and are referenced here.
 //
-// The Add Field sheet falls back to the existing dispatcher for types not
-// registered here, so the app stays fully functional while the strangler
-// migration proceeds.
+// Every authorable field type is now registered; only 'dynamic' stays
+// unimplemented (disabled in the picker). The Add Field sheet still falls back to
+// the existing dispatcher for unregistered types, so nothing breaks, but that
+// path is now dead for pickable types and is deleted in the next migration step.
 //
 // See contributing/renderer/form-architecture.md.
 
@@ -402,6 +407,10 @@ export const FIELD_DEFINITION_REGISTRY: Partial<
   ipv4: (props) => <DefinitionDraft {...props} spec={ipv4Spec} />,
   range: (props) => <DefinitionDraft {...props} spec={rangeSpec} />,
   select: (props) => <SelectDefinitionDraft {...props} />,
+  slug: (props) => <SlugDefinitionDraft {...props} />,
+  asset: (props) => <AssetDefinitionDraft {...props} />,
+  entry: (props) => <EntryDefinitionDraft {...props} />,
+  markdown: (props) => <MarkdownDefinitionDraft {...props} />,
 };
 
 export function isRegisteredFieldType(fieldType: FieldType): boolean {

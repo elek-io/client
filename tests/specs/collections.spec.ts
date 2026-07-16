@@ -554,9 +554,10 @@ test.describe('Collections', () => {
     });
     await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
 
-    // Add a slug field and pick the text field as its source. Slug is not on the
-    // registry yet, so this drives the fallback dispatcher and its slug source
-    // picker, which is the plumbing the fix flows through.
+    // Add a slug field and pick the text field as its source. Slug now authors
+    // through the registry (SlugDefinitionDraft), whose source picker reads the
+    // sibling definitions threaded through DefinitionExtrasProps, which is the
+    // plumbing the id fix flows through.
     await mainWindow.getByRole('button', { name: 'Add Field' }).click();
     const sheet = mainWindow.getByRole('dialog', {
       name: 'Add a Field to this Collection',
@@ -584,6 +585,190 @@ test.describe('Collections', () => {
 
     // Create the Collection. A uuid detail route (never 'create') means Core
     // accepted the slug source's real id.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Exercises the registry-driven asset authoring form end to end. Asset is the
+  // simplest reference type: a never-unique reference whose only controls are the
+  // min/max Asset count. It also carries ofAssetMimeTypes as a hidden empty
+  // default (no control today) that Core requires, so reaching the Collection
+  // detail proves the whole definition, including that default, validated.
+  test('adds an asset field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'asset'. The picker is the
+    // first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'asset', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Cover');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The cover image of the article');
+
+    // The min/max Asset counts are optional, so leave them empty and add.
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the asset field was added through the new path.
+    await expect(sheet).toBeHidden();
+    await expect(mainWindow.getByText('Cover', { exact: true })).toBeVisible();
+
+    // Creating the Collection reaches Core with the asset definition. A uuid
+    // detail route (never 'create') means Core accepted it, hidden mime-type
+    // default and all.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Exercises the registry-driven entry authoring form end to end. Entry proves a
+  // TanStack Query living inside the spec's Extras: the ofCollections picker is
+  // backed by a Collections list query. A Collection is arranged first (via IPC)
+  // so the picker has something to restrict to, then a second Collection is
+  // authored with an entry field restricted to it. Reaching the detail route
+  // proves Core accepted the restriction's real Collection id.
+  test('adds an entry field definition restricted to a Collection through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    // The Collection the entry field will reference. Its plural name "Articles"
+    // is the ofCollections toggle's accessible name in the sheet.
+    await createCollectionViaIpc(mainWindow, { projectId: project.id });
+
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Reviews',
+      nameSingular: 'Review',
+      description: 'Reviews of the articles',
+      slugPlural: 'reviews',
+      slugSingular: 'review',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'entry', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Article');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The reviewed article');
+
+    // The Collections query resolves into a toggle per Collection, each carrying
+    // its plural name as its accessible name (added in the migration). Toggling
+    // "Articles" stores its real id in ofCollections. Its checked state is bound
+    // to that stored id, so asserting it is on proves the toggle reached form
+    // state, not just the DOM.
+    const restriction = sheet.getByRole('switch', {
+      name: 'Articles',
+      exact: true,
+    });
+    await restriction.click();
+    await expect(restriction).toBeChecked();
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the entry field was added through the new path.
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Article', { exact: true })
+    ).toBeVisible();
+
+    // Creating the Collection reaches Core with the entry definition. A uuid
+    // detail route (never 'create') means Core accepted the restriction id.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Exercises the registry-driven markdown authoring form end to end. Markdown is
+  // the heaviest type: block/inline feature toggles plus the one resolver cast
+  // its input/output divergence needs. Toggling a couple of features and reaching
+  // the detail route proves the cast-backed spec validated and Core accepted it.
+  test('adds a markdown field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'markdown', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Body');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The body of the article');
+
+    // The feature toggles carry their label as their accessible name (added in
+    // the migration), one block feature and one inline feature here. Task list
+    // items are gated on lists, so they start disabled; enabling "Lists" must
+    // flip that switch to enabled, which proves the toggle reached form state and
+    // the watch-driven dependency re-rendered, not just the DOM.
+    const taskListItems = sheet.getByRole('switch', {
+      name: 'Task list items',
+      exact: true,
+    });
+    await expect(taskListItems).toBeDisabled();
+    await sheet.getByRole('switch', { name: 'Lists', exact: true }).click();
+    await expect(taskListItems).toBeEnabled();
+    await sheet.getByRole('switch', { name: 'Emphasis', exact: true }).click();
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the markdown field was added through the new path.
+    await expect(sheet).toBeHidden();
+    await expect(mainWindow.getByText('Body', { exact: true })).toBeVisible();
+
+    // Creating the Collection reaches Core with the markdown definition. A uuid
+    // detail route (never 'create') means Core accepted the feature config.
     await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
     await expect(mainWindow).toHaveURL(
       /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/

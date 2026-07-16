@@ -50,8 +50,8 @@ Two sets are the source of truth for "what is implemented". Keep them in sync wh
 ## `ofAssetMimeTypes`: asset field and markdown definition forms
 
 - **Core support**: `assetFieldDefinitionSchema` and `markdownFieldDefinitionSchema` carry `ofAssetMimeTypes` to restrict which mime types an Asset (or a markdown assetReference) may use.
-- **Client today**: neither definition form exposes it, so it always stays at its default (empty, any type). The markdown editor's asset picker already filters by it when it is set through Core or the API.
-- **Where to start**: add a mime type selector shared by [`asset-value-definition-form.tsx`](../src/renderer/components/forms/asset-value-definition-form.tsx) and [`markdown-value-definition-form.tsx`](../src/renderer/components/forms/markdown-value-definition-form.tsx).
+- **Client today**: neither definition form exposes it, so it always stays at its default (empty, any type). Both registry specs still set `ofAssetMimeTypes: []` in their defaults because Core requires the key. The markdown editor's asset picker already filters by it when it is set through Core or the API.
+- **Where to start**: add a mime type selector shared by the asset and markdown authoring specs ([`asset-field-definition.tsx`](../src/renderer/components/forms/asset-field-definition.tsx) and [`markdown-field-definition.tsx`](../src/renderer/components/forms/markdown-field-definition.tsx)), surfaced through each spec's `Extras`.
 
 ## Markdown: v1 simplifications
 

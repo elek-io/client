@@ -26,6 +26,7 @@ import {
 import {
   type FieldDefinition,
   type FieldDefinitionBase,
+  type FieldDefinitionOrGroup,
   type FieldType,
   type SupportedLanguage,
 } from '@elek-io/core';
@@ -137,11 +138,18 @@ export function MinMaxRow<Def extends FieldValues>({
 }
 
 /** The context a type's `Extras` receives. Scalars use only `form`; translatable
- * sub-fields (a select field's option labels) also need the languages. */
+ * sub-fields (a select field's option labels) also need the languages, and the
+ * slug source picker needs the sibling definitions already on the Collection (to
+ * offer non-slug string fields as slug sources). Every `Extras` gets all three;
+ * the ones that do not need a field ignore it, the same way select widened this
+ * contract with the languages. */
 export interface DefinitionExtrasProps<Def extends FieldValues> {
   form: UseFormReturn<Def>;
   currentLanguage: SupportedLanguage;
   supportedLanguages: SupportedLanguage[];
+  // The definitions already added to the Collection, with their real ids. Slug
+  // reads these to build its source list; the others ignore it.
+  fieldDefinitions: FieldDefinitionOrGroup[];
 }
 
 /**
@@ -162,6 +170,9 @@ export interface DefinitionSpec<Def extends FieldDefinitionBase> {
 export interface DefinitionDraftProps {
   id: string;
   existingSlugs: string[];
+  // The Collection's current definitions (real ids). Threaded to the spec's
+  // Extras so the slug source picker can read its siblings; ignored by the rest.
+  fieldDefinitions: FieldDefinitionOrGroup[];
   supportedLanguages: SupportedLanguage[];
   defaultLanguage: SupportedLanguage;
   onAdd: (definition: FieldDefinition) => void;
@@ -182,6 +193,7 @@ export function DefinitionDraft<
   supportedLanguages,
   defaultLanguage,
   onAdd,
+  fieldDefinitions,
 }: DefinitionDraftProps & { spec: DefinitionSpec<Def> }): ReactElement {
   const form = useForm<Def, unknown, Def>({
     resolver: spec.resolver,
@@ -221,6 +233,7 @@ export function DefinitionDraft<
             form={form}
             currentLanguage={defaultLanguage}
             supportedLanguages={supportedLanguages}
+            fieldDefinitions={fieldDefinitions}
           />
         ) : null}
       </DefaultFieldDefinitionForm>

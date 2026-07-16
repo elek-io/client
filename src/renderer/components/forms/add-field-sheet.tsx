@@ -99,6 +99,7 @@ export function AddFieldSheet({
   const draftProps: DefinitionDraftProps = {
     id: addFieldFormId,
     existingSlugs,
+    fieldDefinitions,
     supportedLanguages,
     defaultLanguage,
     onAdd,

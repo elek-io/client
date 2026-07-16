@@ -474,13 +474,16 @@ The registry **relocates** the genuinely type-specific bits rather than erasing
 them, and the leaks are worth naming honestly: `markdown`'s definition input and
 output diverge (`MarkdownFieldDefinitionFormValues` pins the recursive
 `defaultValue` to null), so its `DefinitionSpec.resolver` still carries the one
-resolver cast `util.tsx` has today; `slug`/`entry`/`asset` authoring need
-sibling-list or TanStack-Query context (`ofFieldDefinitions`, `ofCollections`),
-which lives in their `Extras`, not the shared base. The win is that these five
-complex types are the _only_ ones with bespoke code; the other 13 become pure
-data. The `select` two-schema case is two authoring entries
-(`stringSelect`/`numberSelect`) chosen by the option value-type picker — no
-`AuthorableFieldType` widening leaking into a shared base.
+resolver cast `util.tsx` has today; `entry`/`markdown` read a TanStack-Query
+Collections list (`ofCollections`) that lives entirely inside their `Extras`;
+`slug`'s source picker (`ofFieldDefinitions`) needs the current sibling
+definitions, which surfaced as **one** shared widening — `DefinitionExtrasProps`
+now also carries `fieldDefinitions`, passed to every `Extras` and ignored by all
+but slug, exactly like the `currentLanguage`/`supportedLanguages` widening
+`select` made. The win is that these five complex types are the _only_ ones with
+bespoke code; the other 13 become pure data. The `select` two-schema case is two
+authoring entries (`stringSelect`/`numberSelect`) chosen by the option value-type
+picker — no `AuthorableFieldType` widening leaking into a shared base.
 
 ### Pillar 3 — `fieldDefinitions` as a `Controller`-bound value
 
@@ -754,11 +757,20 @@ validates the definition). Against the packaged PoC build:
   migration step 3, closing the slug-source id bug. Group authoring and
   definition editing remain open.
 - The entry-renderer fold (step 4) inside `form.tsx`.
-- The four remaining complex authoring types (`slug`, `markdown`, `asset`,
-  `entry`) still use the existing dispatcher via the fallback. `slug` is the next
-  most instructive (its `ofFieldDefinitions` reads sibling definitions, which is
-  entangled with the Pillar 3 id bug); `asset`/`entry` add TanStack Query inside
-  the authoring `Extras`; `markdown` carries the resolver input/output cast.
+- ~~The four remaining complex authoring types (`slug`, `markdown`, `asset`,
+  `entry`) still use the existing dispatcher via the fallback.~~ — landed since:
+  each authors through its own registry file (`slug-field-definition.tsx`,
+  `asset-field-definition.tsx`, `entry-field-definition.tsx`,
+  `markdown-field-definition.tsx`), so **all 18 authorable types are registered**
+  and only `dynamic` stays disabled. `slug` reads its sibling sources through the
+  one `fieldDefinitions` contract widening; `entry`/`markdown` keep their
+  Collections query inside their `Extras`; `markdown` carries the single resolver
+  cast. Authoring for each is gated by a new E2E in `collections.spec.ts` (asset,
+  entry-with-restriction, markdown feature toggles), and the pre-existing
+  slug-source test now drives the registry path. The `util.tsx` dispatcher and the
+  18 `*-value-definition-form.tsx` files are now dead but still present; deleting
+  them (with `getExampleFormField` and the sheet's fallback branch) is the next
+  step.
 
 ---
 
