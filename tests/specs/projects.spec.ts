@@ -400,6 +400,36 @@ test.describe('Projects', () => {
     await expect(mainWindow.getByText('No Projects yet')).toBeHidden();
   });
 
+  test('rejects a clone with an empty URL client-side now that it has a resolver', async ({
+    mainWindow,
+  }) => {
+    // Clone Project now runs cloneProjectSchema through a resolver (it had none
+    // before, so the URL reached Core unvalidated). cloneProjectSchema.url is a
+    // required string and FormInputField normalizes an empty input to null, so a
+    // cleared URL is the client-rejectable case: the resolver flags it before any
+    // IPC call, rather than sending an empty URL to Core.
+    await setUserViaIpc(mainWindow);
+
+    await navigate(mainWindow, '#/projects');
+    await mainWindow.getByRole('button', { name: 'Clone Project' }).click();
+    const dialog = mainWindow.getByRole('dialog');
+    await expect(dialog.getByText('Clone a Project by URL')).toBeVisible();
+
+    // On open the URL field is not flagged (no validation has run).
+    const url = dialog.getByLabel('URL', { exact: true });
+    await expect(url).toHaveAttribute('aria-invalid', 'false');
+
+    // Type then clear, so the field value normalizes to null, and submit. The
+    // resolver flags URL invalid and clones nothing: the dialog stays open and
+    // the route stays on the Projects list, proving the reject was client-side.
+    await url.fill('placeholder');
+    await url.fill('');
+    await dialog.getByRole('button', { name: 'Clone' }).click();
+    await expect(url).toHaveAttribute('aria-invalid', 'true');
+    await expect(dialog).toBeVisible();
+    await expect(mainWindow).toHaveURL(/#\/projects$/);
+  });
+
   test('routes an unexpected delete failure to the root error boundary', async ({
     mainWindow,
     electronApp,

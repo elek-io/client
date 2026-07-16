@@ -5,8 +5,8 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 
+import { AppForm } from '@renderer/components/ui/app-form';
 import {
-  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -49,43 +49,38 @@ export function AssetForm<TFieldValues extends FieldValues>({
   id,
 }: AssetFormProps<TFieldValues>): React.JSX.Element {
   return (
-    <Form {...assetForm}>
-      {/* noValidate: zod (through RHF) owns validation. Without it the browser's
-      native constraint check on required inputs blocks submit before
-      handleSubmit runs. */}
-      <form id={id} noValidate onSubmit={assetForm.handleSubmit(onFormSubmit)}>
-        <div className="grid grid-cols-12 gap-6">
-          <FormField
-            control={assetForm.control}
-            name={'name' as FieldPath<TFieldValues>}
-            render={({ field }) => (
-              <FormItem className="col-span-12">
-                <FormLabel isRequired>Asset name</FormLabel>
-                <FormControl>
-                  <FormInputField field={field} type="text" />
-                </FormControl>
-                <FormDescription />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <AppForm form={assetForm} onSubmit={onFormSubmit} id={id}>
+      <div className="grid grid-cols-12 gap-6">
+        <FormField
+          control={assetForm.control}
+          name={'name' as FieldPath<TFieldValues>}
+          render={({ field }) => (
+            <FormItem className="col-span-12">
+              <FormLabel isRequired>Asset name</FormLabel>
+              <FormControl>
+                <FormInputField field={field} type="text" />
+              </FormControl>
+              <FormDescription />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={assetForm.control}
-            name={'description' as FieldPath<TFieldValues>}
-            render={({ field }) => (
-              <FormItem className="col-span-12">
-                <FormLabel isRequired>Asset description</FormLabel>
-                <FormControl>
-                  <FormTextareaField field={field} />
-                </FormControl>
-                <FormDescription />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-      </form>
-    </Form>
+        <FormField
+          control={assetForm.control}
+          name={'description' as FieldPath<TFieldValues>}
+          render={({ field }) => (
+            <FormItem className="col-span-12">
+              <FormLabel isRequired>Asset description</FormLabel>
+              <FormControl>
+                <FormTextareaField field={field} />
+              </FormControl>
+              <FormDescription />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+    </AppForm>
   );
 }

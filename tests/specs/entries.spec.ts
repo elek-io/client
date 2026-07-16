@@ -21,6 +21,7 @@ import {
   stringValue,
   temporalValue,
 } from '../helpers/entry.js';
+import { stubCoreReject } from '../helpers/ipc.js';
 import { reloadWindow } from '../helpers/navigation.js';
 import { createProjectViaIpc } from '../helpers/project.js';
 import { setUserViaIpc } from '../helpers/user.js';
@@ -535,6 +536,93 @@ test.describe('Entries', () => {
     await expect(
       mainWindow.getByRole('cell', { name: 'Custom subtitle' })
     ).toBeVisible();
+  });
+
+  test('surfaces a unique-value collision in place instead of the error boundary', async ({
+    mainWindow,
+  }) => {
+    // P2-10. A unique Title field: a second Entry reusing a value collides, and
+    // Core rejects the create with a Conflict (see Core's fields docs). The form
+    // handles that in place rather than letting it take over the whole screen.
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+      fieldDefinitions: [textFieldDefinition({ isUnique: true })],
+    });
+    // Seed the first Entry over IPC holding the value the form will collide with.
+    await createEntryViaIpc(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+      values: { title: stringValue({ en: 'Taken title' }) },
+    });
+
+    await navigateToEntryCreate(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // Re-entering the taken value and submitting collides. The desktop app owns
+    // only its part: mapping the Conflict to an in-place surface rather than the
+    // boundary. Core's uniqueness enforcement is Core's own test.
+    await fillEntryForm(mainWindow, { Title: 'Taken title' });
+    await mainWindow.getByRole('button', { name: 'Create Article' }).click();
+
+    // The Conflict is surfaced in place: the reason-specific dialog explains the
+    // collision, the URL stays on the create route (nothing was created), and the
+    // root error boundary is not hit. The fixture's console-clean assertion backs
+    // the no-boundary claim (a boundary would log and fail the run).
+    await expect(
+      mainWindow.getByText('Could not save this Entry')
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('another Entry in this Collection already uses it')
+    ).toBeVisible();
+    await expect(mainWindow).toHaveURL(
+      new RegExp(`#/projects/[^/]+/collections/${collection.id}/create$`)
+    );
+    await expect(
+      mainWindow.getByRole('heading', { name: 'Error' })
+    ).toBeHidden();
+  });
+
+  test('routes an unexpected create failure to the root error boundary', async ({
+    mainWindow,
+    electronApp,
+  }) => {
+    // The create handles only a unique-value Conflict in place; every other
+    // failure must reach the root error boundary. This guards the useAppMutation
+    // predicate against a regression back to a blanket throwOnError: false, which
+    // would swallow an unexpected failure into the in-place dialog and drop it
+    // from the logs and Sentry (see error-handling.md and the projects delete
+    // spec for the full rationale).
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+
+    await navigateToEntryCreate(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // Fill the required Title first, so the dirty-gated Create button enables.
+    await fillEntryForm(mainWindow, { Title: 'Anything' });
+
+    // Make the create reject with a non-Conflict error (a plain Error carries no
+    // CoreError type), which the form does not handle in place.
+    await stubCoreReject(electronApp, 'core:entries:create');
+    await mainWindow.getByRole('button', { name: 'Create Article' }).click();
+
+    // The failure propagates: the root error boundary replaces the view and the
+    // in-place conflict dialog never opens.
+    await expect(
+      mainWindow.getByRole('heading', { name: 'Error' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('Could not save this Entry')
+    ).toBeHidden();
   });
 
   test('paginates and filters the entry table client side', async ({

@@ -210,6 +210,12 @@ sites and **zero form submits** — so an entry unique-collision (`Conflict`) to
 takes over the whole screen via the root boundary instead of flagging the field
 (backlog P2-10).
 
+> **Landed** (migration step 5). Every form now submits through
+> `AppForm`/`SubmitButton`; `useAppMutation` closed P2-10; Update Asset is
+> pending-gated; Clone Project is validated; the async resolver closures are gone.
+> The create-form dirty-gating inconsistency was left deliberately (pinned by the
+> `projects.spec.ts` / `entries.spec.ts` create-form specs), not fixed by accident.
+
 ---
 
 ## Candidate architectures
@@ -414,8 +420,18 @@ the **mutation's** `throwOnError` predicate _and_ a no-op `onError` — both on 
 the mutation). So the guardrail is a small `useAppMutation(options, { handled })`
 helper that applies the by-type predicate to `throwOnError`/`onError`; a form's
 `onSubmit` calls it and drives the field/dialog for the handled `type`. This is
-what would close the entry unique-collision gap (P2-10) — at the mutation layer,
-not in `AppForm`.
+what closes the entry unique-collision gap (P2-10) — at the mutation layer, not in
+`AppForm`.
+
+> **Landed.** [`hooks/useAppMutation.ts`](/src/renderer/hooks/useAppMutation.ts)
+> takes the `handled` map and derives `throwOnError` (false only for the handled
+> types) plus the no-op `onError` from it, and returns a `handleError(error)` the
+> caller runs in its `catch`. It is the single home for the by-type pattern: the
+> "expected" set is defined once, so predicate and dispatch cannot drift. P2-10 is
+> closed — the Entry create and update forms handle a unique-value `Conflict` in a
+> "Could not save this Entry" dialog (gated by a new `entries.spec.ts` test, plus
+> one that drives an unhandled failure to the boundary). The four delete/sync
+> in-place sites were refactored onto the helper with their copy unchanged.
 
 **The field registry emits no native constraint attributes** (with one
 exception). Today the rendered inputs carry `required`/`minLength`/`maxLength`/
@@ -573,9 +589,18 @@ Each step is independently shippable and E2E-green; no big-bang.
    `FormFieldDefinitionPreview` (real disabled input, proper label). Landed per
    field-type group behind the entry, history and accessibility specs (see the
    [render registry section](./dynamic-form-field-generation.md#the-render-registry)).
-5. **Migrate remaining route forms to `AppForm`/`SubmitButton`.** Delete
-   per-form `noValidate`, per-route `useId`, the async resolver closures, and add
-   the missing dirty/pending gates uniformly. Give Clone Project a resolver.
+5. **(Done) Migrate remaining route forms to `AppForm`/`SubmitButton`.** All four
+   shared form components (`project`/`entry`/`collection`/`asset`) and the three
+   route-inline forms (Clone Project, User profile, Set remote URL) now render
+   through `AppForm`, and every submit control is a `SubmitButton`. The per-form
+   `noValidate`, the `<Form><form><fieldset>` boilerplate, the three async
+   resolver closures, and the diff forms' no-op submit handlers are gone. Gating
+   is uniform through a `<FormActions form={...}>` provider that exposes the
+   reactive `isDirty`/`isSubmitting` to the detached button: pending gating
+   (`isSubmitting`, spanning the awaited `mutateAsync`) is always on, which fixed
+   Update Asset never gating on pending; dirty gating stays per-form intent
+   (`requireDirty` on updates and Create Entry) with the create-form inconsistency
+   left as pinned by the specs. Clone Project gained `zodResolver(cloneProjectSchema)`.
 6. **Enable guardrails and delete dead code.** Turn on the lint rules below;
    remove `getExampleFormField`, the commented-out preview block, and the
    now-empty per-type files.

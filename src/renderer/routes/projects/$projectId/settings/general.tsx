@@ -9,6 +9,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { ProjectForm } from '@renderer/components/forms/project-form';
 import { Page } from '@renderer/components/page';
 import { PageSection } from '@renderer/components/page-section';
+import { FormActions, SubmitButton } from '@renderer/components/ui/app-form';
 import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
@@ -20,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@renderer/components/ui/dialog';
+import { useAppMutation } from '@renderer/hooks/useAppMutation';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { describeCoreError } from '@renderer/lib/coreErrorText';
@@ -90,23 +92,25 @@ function ProjectSettingsGeneralPage(): ReactElement {
   const [isForceDeleteDialogOpen, setIsForceDeleteDialogOpen] = useState(false);
   const [forceDeleteError, setForceDeleteError] = useState<unknown>(null);
 
-  const { mutateAsync: deleteProject, isPending: isDeletingProject } =
-    useMutation({
-      ...queryOptions.projects.delete,
-      // Only the delete guard is handled in place by the force-delete dialog: a
-      // local-only Project (PreconditionFailed) or one with unpushed commits
-      // (Conflict). Every other failure is unexpected, so let it reach the root
-      // error boundary, which logs it and reports it to Sentry.
-      throwOnError: (error) => {
-        const { type } = parseIpcError(error);
-        return type !== 'PreconditionFailed' && type !== 'Conflict';
-      },
-      onError: () => {
-        // The force-delete dialog is the surface for the handled guard, so
-        // suppress the wrapper's error toast. Unexpected failures are logged and
-        // reported by the boundary instead.
-      },
-    });
+  // Only the delete guard is handled in place by the force-delete dialog: a
+  // local-only Project (PreconditionFailed) or one with unpushed commits
+  // (Conflict). useAppMutation opts those two out of the boundary and drives this
+  // dialog; every other failure still reaches the boundary, logged and reported.
+  const openForceDeleteDialog = (error: unknown): void => {
+    setForceDeleteError(error);
+    setIsDeleteDialogOpen(false);
+    setIsForceDeleteDialogOpen(true);
+  };
+  const {
+    mutateAsync: deleteProject,
+    isPending: isDeletingProject,
+    handleError: handleDeleteError,
+  } = useAppMutation(queryOptions.projects.delete, {
+    handled: {
+      PreconditionFailed: openForceDeleteDialog,
+      Conflict: openForceDeleteDialog,
+    },
+  });
 
   function Description(): ReactElement {
     return <>Here you will be able to tweak this project to your liking</>;
@@ -114,17 +118,11 @@ function ProjectSettingsGeneralPage(): ReactElement {
 
   function Actions(): ReactElement {
     return (
-      <>
-        <Button
-          type="submit"
-          form={formId}
-          Icon={Check}
-          isLoading={isUpdatingProject}
-          disabled={updateProjectForm.formState.isDirty === false}
-        >
+      <FormActions form={updateProjectForm} id={formId}>
+        <SubmitButton requireDirty Icon={Check}>
           Save changes
-        </Button>
-      </>
+        </SubmitButton>
+      </FormActions>
     );
   }
 
@@ -137,17 +135,11 @@ function ProjectSettingsGeneralPage(): ReactElement {
       await deleteProject({ id: projectId });
       await router.navigate({ to: '/projects' });
     } catch (error) {
-      const { type } = parseIpcError(error);
-      // Only the guard offers a force delete (see throwOnError above): a
-      // local-only Project (PreconditionFailed) or one with unpushed commits
-      // (Conflict). Keep the error so the force-delete dialog can explain the
-      // reason. Any other failure was already routed to the root error boundary,
-      // so there is nothing to handle here.
-      if (type === 'PreconditionFailed' || type === 'Conflict') {
-        setForceDeleteError(error);
-        setIsDeleteDialogOpen(false);
-        setIsForceDeleteDialogOpen(true);
-      }
+      // Only the guard offers a force delete: a local-only Project
+      // (PreconditionFailed) or one with unpushed commits (Conflict), both
+      // handled by opening the force-delete dialog. Any other failure was already
+      // routed to the boundary, so handleError is a no-op for it.
+      handleDeleteError(error);
     }
   };
 

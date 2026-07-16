@@ -5,12 +5,13 @@ import {
   type UseFormReturn,
 } from 'react-hook-form';
 
+import { AppForm } from '@renderer/components/ui/app-form';
 import {
   FieldGroup,
   FieldLegend,
   FieldSet,
 } from '@renderer/components/ui/field';
-import { Form, FormFieldFromDefinition } from '@renderer/components/ui/form';
+import { FormFieldFromDefinition } from '@renderer/components/ui/form';
 import { useProject } from '@renderer/hooks/useProject';
 import { FieldDefinitionsProvider } from '@renderer/providers/FieldDefinitionsProvider';
 
@@ -36,7 +37,7 @@ interface EntryFormProps<
   project: Project;
   children?: React.ReactNode;
   isViewOnly?: boolean;
-  onFormSubmit: SubmitHandler<TTransformedValues>;
+  onFormSubmit?: SubmitHandler<TTransformedValues>;
   /**
    * Associates the form with a submit button rendered outside it (in the page
    * header via `Page`'s `actions`). That button carries `type="submit"` and the
@@ -54,7 +55,7 @@ export function EntryForm<
   project,
   children,
   isViewOnly = false,
-  onFormSubmit,
+  onFormSubmit = () => {},
   id,
 }: EntryFormProps<TFieldValues, TTransformedValues>): React.JSX.Element {
   const { translateContent } = useProject();
@@ -72,61 +73,53 @@ export function EntryForm<
 
   return (
     <FieldDefinitionsProvider fieldDefinitions={fieldDefinitions}>
-      <Form {...entryForm}>
-        {/* noValidate: zod (through RHF) owns validation. Without it the
-        browser's native constraint check on required inputs blocks submit
-        before handleSubmit runs. */}
-        <form
-          id={id}
-          noValidate
-          onSubmit={entryForm.handleSubmit(onFormSubmit)}
-        >
-          <fieldset disabled={isViewOnly}>
-            <div className="grid grid-cols-12 gap-x-4 gap-y-8 p-6 sm:gap-x-6 xl:gap-x-8">
-              {fieldDefinitions.map((fieldDefinition) => {
-                // Groups are presentational, render their member fields inside a
-                // labeled FieldSet that spans the full width of the form grid.
-                if ('isGroup' in fieldDefinition) {
-                  return (
-                    <FieldSet key={fieldDefinition.id} className="col-span-12">
-                      <FieldLegend>
-                        {translateContent({
-                          key: 'fieldDefinitionGroup.label',
-                          record: fieldDefinition.label,
-                        })}
-                      </FieldLegend>
-                      <FieldGroup className="grid grid-cols-12 gap-x-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
-                        {fieldDefinition.fieldDefinitions.map((member) => (
-                          <FormFieldFromDefinition
-                            key={member.id}
-                            fieldDefinition={member}
-                            form={fieldForm}
-                            name={valuePath(member.slug)}
-                            supportedLanguages={
-                              project.settings.language.supported
-                            }
-                          />
-                        ))}
-                      </FieldGroup>
-                    </FieldSet>
-                  );
-                }
+      <AppForm
+        form={entryForm}
+        onSubmit={onFormSubmit}
+        id={id}
+        mode={isViewOnly ? 'view' : 'edit'}
+      >
+        <div className="grid grid-cols-12 gap-x-4 gap-y-8 p-6 sm:gap-x-6 xl:gap-x-8">
+          {fieldDefinitions.map((fieldDefinition) => {
+            // Groups are presentational, render their member fields inside a
+            // labeled FieldSet that spans the full width of the form grid.
+            if ('isGroup' in fieldDefinition) {
+              return (
+                <FieldSet key={fieldDefinition.id} className="col-span-12">
+                  <FieldLegend>
+                    {translateContent({
+                      key: 'fieldDefinitionGroup.label',
+                      record: fieldDefinition.label,
+                    })}
+                  </FieldLegend>
+                  <FieldGroup className="grid grid-cols-12 gap-x-4 gap-y-8 sm:gap-x-6 xl:gap-x-8">
+                    {fieldDefinition.fieldDefinitions.map((member) => (
+                      <FormFieldFromDefinition
+                        key={member.id}
+                        fieldDefinition={member}
+                        form={fieldForm}
+                        name={valuePath(member.slug)}
+                        supportedLanguages={project.settings.language.supported}
+                      />
+                    ))}
+                  </FieldGroup>
+                </FieldSet>
+              );
+            }
 
-                return (
-                  <FormFieldFromDefinition
-                    key={fieldDefinition.id}
-                    fieldDefinition={fieldDefinition}
-                    form={fieldForm}
-                    name={valuePath(fieldDefinition.slug)}
-                    supportedLanguages={project.settings.language.supported}
-                  />
-                );
-              })}
-            </div>
-            {children}
-          </fieldset>
-        </form>
-      </Form>
+            return (
+              <FormFieldFromDefinition
+                key={fieldDefinition.id}
+                fieldDefinition={fieldDefinition}
+                form={fieldForm}
+                name={valuePath(fieldDefinition.slug)}
+                supportedLanguages={project.settings.language.supported}
+              />
+            );
+          })}
+        </div>
+        {children}
+      </AppForm>
     </FieldDefinitionsProvider>
   );
 }
