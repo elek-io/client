@@ -348,4 +348,66 @@ test.describe('Collections', () => {
       'true'
     );
   });
+
+  // Exercises the registry-driven select authoring form end to end: a select is
+  // one Core fieldType backed by two schemas (string / number), authored through
+  // the new AppForm path with an options field array. Reaching the Collection
+  // detail proves Core accepted the string-option select definition.
+  test('adds a text-option select field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'select'. The picker is
+    // the first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'select', exact: true })
+      .click();
+
+    // The select authoring form mounts with its 'Type of options' picker
+    // (defaulting to Text), proving the registry served the select entry.
+    await expect(sheet.getByText('Type of options')).toBeVisible();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Priority');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('How urgent this is');
+
+    // Fill the first option's label; its value auto-derives to a slug. The
+    // sr-only per-option labels are what make this addressable by role/name; they
+    // carry an "- optional" suffix like the bounds labels, so match by prefix.
+    await sheet.getByLabel('Option 1 label').fill('High');
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the select was added through the new path.
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Priority', { exact: true })
+    ).toBeVisible();
+
+    // Creating the Collection reaches Core with the select definition. A uuid
+    // detail route (never 'create') means Core accepted it.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
 });

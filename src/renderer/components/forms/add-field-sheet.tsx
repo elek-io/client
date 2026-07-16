@@ -2,10 +2,8 @@ import { Plus } from 'lucide-react';
 import { Fragment, useId, useRef, useState, type ReactElement } from 'react';
 import { type UseFieldArrayReturn } from 'react-hook-form';
 
-import {
-  FIELD_DEFINITION_REGISTRY,
-  type DefinitionDraftProps,
-} from '@renderer/components/forms/field-definition-registry';
+import { type DefinitionDraftProps } from '@renderer/components/forms/field-definition-draft';
+import { FIELD_DEFINITION_REGISTRY } from '@renderer/components/forms/field-definition-registry';
 import {
   FieldDefinitionForm,
   type FieldDefinitionFormRef,

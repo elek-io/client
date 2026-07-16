@@ -656,12 +656,15 @@ value) is deliberately out of scope so the two migrations stay independent.
 
 ### What was built
 
-| File                                                          |     Lines | What                                                                                                                                                       |
-| ------------------------------------------------------------- | --------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/renderer/components/ui/app-form.tsx`                     |       135 | `AppForm` + `SubmitButton` primitives                                                                                                                      |
-| `src/renderer/components/forms/field-definition-registry.tsx` |       397 | `AUTHORING_REGISTRY` for `text`, `textarea`, `number`, `toggle`, `email`, plus the one generic `DefinitionDraft` form and shared value-typed field helpers |
-| `src/renderer/components/forms/add-field-sheet.tsx`           |       200 | the sheet, self-contained: registry-driven `AppForm` + detached `SubmitButton` for migrated types, falling back to the existing dispatcher for the rest    |
-| `src/renderer/components/forms/collection-form.tsx`           | 458 → 342 | the inline Sheet + `useRef` + `useImperativeHandle` wiring replaced by `<AddFieldSheet>` (−116 lines)                                                      |
+| File                                                          |     Lines | What                                                                                                                        |
+| ------------------------------------------------------------- | --------: | --------------------------------------------------------------------------------------------------------------------------- |
+| `src/renderer/components/ui/app-form.tsx`                     |       135 | `AppForm` + `SubmitButton` primitives                                                                                       |
+| `src/renderer/components/forms/field-definition-draft.tsx`    |       208 | the shared engine: `DefinitionSpec`, the one generic `DefinitionDraft` form, and the value-typed field helpers              |
+| `src/renderer/components/forms/field-definition-defaults.ts`  |        25 | `baseDefaults` (the shared-fields factory), in a component-free module                                                      |
+| `src/renderer/components/forms/field-definition-registry.tsx` |       221 | the map: scalar specs (`text`, `textarea`, `number`, `toggle`, `email`) as data + the `select` entry                        |
+| `src/renderer/components/forms/select-field-definition.tsx`   |       533 | `select` authoring: two specs (`stringSelect`/`numberSelect`), their option-array `Extras`, and the value-type picker       |
+| `src/renderer/components/forms/add-field-sheet.tsx`           |       198 | the sheet, self-contained: registry-driven `AppForm` + detached `SubmitButton`, falling back to the dispatcher for the rest |
+| `src/renderer/components/forms/collection-form.tsx`           | 458 → 342 | the inline Sheet + `useRef` + `useImperativeHandle` wiring replaced by `<AddFieldSheet>` (−116 lines)                       |
 
 ### How it behaves (verified in the packaged app + E2E)
 
@@ -686,28 +689,67 @@ value) is deliberately out of scope so the two migrations stay independent.
   disappears with Pillar 3. The 13 trivial field types become pure data
   (`resolver` + `makeDefaults` + optional `Extras`).
 - **`pnpm check` clean** on the new/edited files (web type-check 0 errors, eslint
-  0 errors, prettier clean).
+  0 errors — including react-refresh — prettier clean).
+
+### `select`: the first complex type — collapse or relocate?
+
+The adversarial review's sharpest doubt was that the registry would only
+_relocate_ complex types' special-casing, not collapse it. `select` is the test:
+one Core `fieldType` backed by **two** schemas (`stringSelect`/`numberSelect`), a
+value-type picker, an **options field array**, and translatable option labels.
+Migrating it end to end gave a genuinely mixed, honest answer:
+
+- **What generalized cleanly (evidence of collapse).** The two-schema case is two
+  `DefinitionSpec`s and one entry component that keys the active draft — no
+  `select` special-casing leaks into the shared base or the sheet. The sheet's
+  detached `SubmitButton` submits whichever variant is active with **no wiring
+  change**. The migration added **zero casts** (`select-field-definition.tsx`: 0),
+  versus the old path's second `useForm`-per-render, `selectValueType` state, and
+  `select`-specific `case`s in both of `util.tsx`'s 18-way switches. The imperative
+  dispatch and the two-schema submit branching are gone.
+- **What the contract had to grow (a real, contained leak).** Select's option
+  labels are translatable, so its `Extras` needs the language context the scalar
+  `Extras` never used. This surfaced as one widening: `DefinitionExtrasProps` now
+  carries `currentLanguage` + `supportedLanguages`, passed to every `Extras`
+  (scalars ignore them). One prop on one shared type — not a `select` branch — so
+  it generalizes, but it _is_ a place the abstraction had to give.
+- **LOC is honest, not magical.** The 13 trivial types collapsed to data; `select`
+  did **not** shrink (533 lines vs the old 481, and it _added_ the option UI's
+  missing `sr-only` labels). Its irreducible complexity is the option-array UI.
+  The win for a complex type is **architectural, not line-count**: one submission
+  model, zero casts, self-contained in one file, and no entanglement with a shared
+  dispatcher. Expect `slug`/`asset`/`entry`/`markdown` to behave the same way —
+  they relocate cleanly and drop their cross-cutting wiring, but their bespoke UI
+  stays roughly its current size.
+- **Bonus a11y win.** The old option rows had no accessible names (a documented
+  gap); the migrated rows carry `sr-only` labels ("Option N label/value", "Remove
+  option N"), which is also what makes them E2E-addressable by role/name.
 
 ### E2E outcome
 
 `collections.spec.ts` drives the sheet directly (text add, duplicate-slug reject
-via `aria-invalid` + sheet-stays-open, min>max reject). Against the packaged PoC
-build:
+via `aria-invalid` + sheet-stays-open, min>max reject, and now a full `select`
+authoring flow: pick the type, fill the base, fill an option, add, then create the
+Collection so Core validates the definition). Against the packaged PoC build:
 
-- **`collections.spec.ts`: 7/7 pass** — behavior parity with the old sheet,
-  including the two negative-validation paths.
-- **`collections` + `entries` + `history`/diff + `accessibility`: 20/20 pass** —
-  the change does not regress the forms that reuse `collection-form.tsx` read-only
-  (the diff/history views), the entry forms, or the axe-enforced Projects route.
+- **`collections.spec.ts`: 8/8 pass** — behavior parity with the old sheet plus
+  the new `select` flow (one iteration needed: the `sr-only` label carries an
+  "- optional" suffix, so the locator matches by prefix like the bounds labels).
+- **`collections` + `entries` + `history`/diff + `accessibility`: 21/21 pass** —
+  the file restructure and `select` migration do not regress the forms that reuse
+  `collection-form.tsx` read-only (diff/history), the entry forms, or the
+  axe-enforced Projects route.
 
 ### What the PoC does **not** prove
 
 - Pillar 3 (the `Controller`-bound `fieldDefinitions`), so the slug-source id bug
   and group authoring are still open — that is migration step 3.
 - The entry-renderer fold (step 4) inside `form.tsx`.
-- The five complex authoring types (`select`, `slug`, `markdown`, `asset`,
-  `entry`) still use the existing dispatcher via the fallback; migrating them is
-  where the registry's `Extras` slot earns its keep and should be validated next.
+- The four remaining complex authoring types (`slug`, `markdown`, `asset`,
+  `entry`) still use the existing dispatcher via the fallback. `slug` is the next
+  most instructive (its `ofFieldDefinitions` reads sibling definitions, which is
+  entangled with the Pillar 3 id bug); `asset`/`entry` add TanStack Query inside
+  the authoring `Extras`; `markdown` carries the resolver input/output cast.
 
 ---
 
