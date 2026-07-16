@@ -1,5 +1,28 @@
 # @elek-io/desktop
 
+## 0.3.5
+
+### Patch Changes
+
+- fb49564: Add an end-to-end Playwright test suite and the fixes it surfaced.
+
+  Errors from Core now carry their type across IPC, so the renderer handles the ones it can act on in place and lets the rest reach the root error boundary. Force-deleting a project with local changes and resolving a sync conflict now show a specific message per reason, and the Core origin stack is forwarded to Sentry so those crashes stay symbolicated. The error boundary shows the decoded stack instead of the raw sentinel.
+
+  Accessibility: buttons default to type "button" so they no longer submit their form by accident, forms carry explicit ids so a submit button placed outside the form still targets it, and native validation is replaced by zod through react-hook-form. Single-language translatable fields regained their id, aria-describedby and aria-invalid, and back and forward navigation got proper labels.
+
+  Hardening: the custom file protocol rejects path traversal and symlink escapes, long paths no longer overflow the Windows 260 character limit, and IPC handlers are registered before the renderer loads so early calls cannot race.
+
+  Fixes: the entry table pagination total is correct and no longer strands an empty last page, the dialog footer stays visible while a long body scrolls, and deleting a collection warns before it cascades to its entries or explains why a delete is blocked.
+
+- 751fdf9: Fix Linux window association. Set desktopName in package.json and linux.syncDesktopName in electron-builder.yml so the installed .desktop filename, its StartupWMClass and the app_id Electron reports at runtime all agree on io.elek.desktop. A running window now shows the app's own icon and groups with its launcher in the dock instead of falling back to a generic icon, and the electron-builder window-association warning is gone.
+- 9edf08a: Show date, datetime and time field values in the user's locale, and load date-fns locales on demand.
+
+  Entry table cells for date, datetime and time fields now render a localized value (for example `07/09/2026`) instead of the raw stored ISO string. This is done by a new `formatTemporalFieldValue` helper on the user and project providers. Every other field type is shown unchanged. Date values are anchored to local midnight before formatting so the shown day cannot shift in a negative UTC offset timezone.
+
+  The date-fns locales are now loaded through per-language dynamic imports instead of a single static map, so only the active language is fetched at runtime. This keeps roughly 400 kB of locale data out of the renderer startup chunk. As a result the first render after the user data resolves briefly uses date-fns's en-US default until the active locale chunk arrives, then re-renders in the user's locale.
+
+- ec0d91c: Upload source maps to Sentry during CD so production crashes are symbolicated. The build now passes SENTRY_AUTH_TOKEN to @sentry/vite-plugin, and the renderer build emits source maps and runs the plugin alongside the main process, so both processes report readable stack traces instead of minified ones. The renderer maps are deleted after upload so they do not ship inside the app.
+
 ## 0.3.4
 
 ### Patch Changes
