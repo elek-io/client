@@ -124,6 +124,7 @@ These wrappers carry the value contract Core expects, so do not hand-roll a raw 
 - `FormDatetimeField` converts between the ISO UTC datetime Core stores and the local time the `datetime-local` input speaks
 - `FormSlugField` derives the slug live from its source fields (same language) while the value is empty or still equals the last derived value, so a stored slug is never rewritten. Manual input is made canonical on blur. It resolves its source ids through `useFieldDefinitions()` ([`hooks/useFieldDefinitions.ts`](../../src/renderer/hooks/useFieldDefinitions.ts)), provided by the `FieldDefinitionsProvider` ([`providers/FieldDefinitionsProvider.tsx`](../../src/renderer/providers/FieldDefinitionsProvider.tsx)) that `EntryForm` wraps its fields in - outside of it (for example the Collection editor preview) the input is simply manual
 - `markdown` fields render the Milkdown based `MarkdownEditor` through a thin adapter - see [`markdown-editor.md`](./markdown-editor.md)
+- `TranslatableFormInputField` / `TranslatableFormTextareaField` must forward the props the parent `FormControl` injects (`id`, `aria-describedby`, `aria-invalid`) onto the inner control in **both** the single and multi language branches. Those props carry the label, description and error associations. A branch that renders the bare control without them silently breaks accessibility: the `<label htmlFor>` no longer points at the input and the validation error is not announced. The single-language project is the common case, so a gap there affects most forms
 
 #### Field definition components
 
@@ -260,6 +261,24 @@ const form = useForm({
 
 // Form validates automatically and shows error messages via FormMessage component
 ```
+
+### Submitting from the page header (`form={id}` and `noValidate`)
+
+A form's primary action (Create, Save changes) is rendered in the `Page` header
+through `Page`'s `actions`, which is outside the `<form>` subtree. The button
+associates back to the form with `type="submit"` and `form={id}`, where the same
+`id` (from `useId()`) is passed to the form component. `Button` defaults to
+`type="button"`, so a submit button has to opt in with `type="submit"`.
+
+Because that button submits the form natively, the form must set `noValidate`.
+Zod (through react-hook-form) is the single source of validation, and the inputs
+carry native constraints too (`FormFieldFromDefinition` sets `required` from
+`isRequired`, and the Collection editor renders required field-definition preview
+inputs). Without `noValidate` the browser's native constraint check runs first,
+blocks the submit on an empty required input, and shows its own default message,
+so the `submit` event and `handleSubmit` never fire and no Zod error is shown.
+Every react-hook-form form that submits (the shared `*Form` components and the
+standalone route forms) sets `noValidate` for this reason.
 
 ### Form typing (react-hook-form + generated schemas)
 

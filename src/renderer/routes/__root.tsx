@@ -1,3 +1,4 @@
+import { parseIpcError } from '@root/src/shared/ipcError';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import {
   type ErrorComponentProps,
@@ -40,10 +41,18 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
   const router = useRouter();
 
+  // A CoreError that crossed IPC arrives with its type, message and Core's origin
+  // stack encoded into the message. Decode all of it so we show and log clean
+  // copy, never the raw sentinel JSON. A non-Core error (route or JS error) has
+  // no encoded stack, so fall back to its own stack, which carries no sentinel to
+  // leak.
+  const { message, stack } = parseIpcError(error);
+  const displayStack = stack ?? error.stack;
+
   void window.ipc.core.logger.error({
     source: 'desktop',
-    message: `Uncaught route error: ${error.message}`,
-    meta: { error: { message: error.message, stack: error.stack } },
+    message: `Uncaught route error: ${message}`,
+    meta: { error: { message, stack: displayStack } },
   });
 
   function Description(): ReactElement {
@@ -80,10 +89,10 @@ function ErrorComponent({ error }: ErrorComponentProps): ReactElement {
       <AppHeader />
       <Page title="Error" description={<Description />} actions={<Actions />}>
         <div className="p-6">
-          <p>{error.message}</p>
+          <p>{message}</p>
           <ScrollArea>
             <div className="flex w-max py-6 text-xs">
-              <pre>{error.stack}</pre>
+              <pre>{displayStack}</pre>
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>

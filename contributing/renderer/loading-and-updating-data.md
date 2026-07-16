@@ -184,6 +184,8 @@ return (
 
 This ensures the page structure renders immediately, with placeholders that are replaced by real data as it loads.
 
+**Lists load fully and paginate client side.** List queries pass `limit: 0`, so Core returns the whole list into a single cached `'list'` query (kept fresh by `staleTime: Infinity` and updated in place by `mergeListWithObject`, not refetched). Any pagination or filtering a list view offers is therefore applied client side over that already-loaded list, not by refetching a page from Core. The Entry table is the current example: it feeds the full list to TanStack Table with `getPaginationRowModel()` (a fixed page size) and `getFilteredRowModel()` (the filter input drives `state.globalFilter`), resets the page index when the filter changes, and sets `autoResetPageIndex: false` because it rebuilds its `data` array each render (the default auto-reset would read that as a data change and snap the page back to the first one).
+
 ### Error Handling - Prefer useQueryNoError
 
 **Always use [`useQueryNoError`](../../src/renderer/hooks/useQueryNoError.ts) instead of `useQuery` for data fetching.**
@@ -294,6 +296,12 @@ return (
 - Native browser styling for disabled state
 - Prevents user interaction during loading
 - Cleaner code with less conditional rendering
+
+### Gating Save on `formState.isDirty`
+
+Every mutation Save/Update button is disabled until the form is dirty, with `disabled={<form>.formState.isDirty === false}`. An unchanged form has nothing to commit, so submitting it would make Core reject an empty change. The gate is app-wide and consistent across the project, collection, entry, user and version-control update forms, so a form that reset from loaded data starts with Save disabled and enables it the moment the user edits a field.
+
+This is distinct from validation. Validation is surfaced on click through `FormMessage`, not by keeping the button disabled, so an invalid but changed form still shows its Save button enabled and reports the errors when submitted. Only the "nothing changed yet" state disables Save.
 
 ### Mutation Metadata
 
@@ -463,8 +471,10 @@ Mutations already have `onSuccess` handlers that update the necessary caches. Us
 
 ## Error Handling
 
-The desktop app handles errors in three layers:
+Data loading and mutations lean on the app's error handling defaults:
 
-1. **Route error boundaries** - the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx) catches all unhandled errors, logs them to the Core logger, and shows a friendly error page with a way back to the projects list. Sentry capture for React errors is wired separately, via Sentry's `reactErrorHandler` passed to `ReactDOM.createRoot` in [`app.tsx`](../../src/renderer/app.tsx) (Sentry itself is initialized in [`index.ts`](../../src/renderer/index.ts)).
-2. **Query and mutation errors** - `throwOnError: true` is set by default (via `useQueryNoError` and `customMutationOptions`), so query errors bubble to the nearest error boundary and mutation failures additionally show a toast through the global handler.
-3. **Core logger** - all errors, mutations and navigations are logged through Core, accessible via `window.ipc.core.logger`.
+- `throwOnError: true` is set by default, via `useQueryNoError` for queries and `customMutationOptions` for mutations, so a failure bubbles to the root `ErrorComponent` in [`routes/__root.tsx`](../../src/renderer/routes/__root.tsx). A mutation failure also shows a toast through the global handler.
+- All mutations and navigations, and any error that reaches the boundary, are logged through the Core logger via `window.ipc.core.logger`. Sentry capture is wired separately.
+- An expected, recoverable Core guard (a `409`/`412` from a normal user action) should not take over the whole view. Such a mutation opts out at its call site with `throwOnError: false` and a no-op `onError`, then handles the rejection in place. The force-delete and sync-conflict modals do this today.
+
+The full picture, including how `CoreError.type` survives IPC, the step-by-step guide to handling an expected error in place with those two worked examples, and exactly where and when things are logged locally and to Sentry, lives in the dedicated [Error Handling](../error-handling.md) doc.

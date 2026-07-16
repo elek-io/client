@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 
 import {
@@ -53,6 +53,7 @@ function ProjectAssetsPage(): React.JSX.Element {
   );
   const [isAddAssetDialogOpen, setIsAddAssetDialogOpen] =
     useState<boolean>(false);
+  const addAssetFormId = useId();
   const createAssetForm = useForm<CreateAssetProps>({
     resolver: zodResolver(createAssetSchema),
     defaultValues: {
@@ -102,9 +103,8 @@ function ProjectAssetsPage(): React.JSX.Element {
       return;
     }
 
-    const filename = filePath.split('/').pop() ?? '';
     createAssetForm.reset({
-      name: filename,
+      name: '',
       description: '',
       projectId: projectId,
       filePath: filePath,
@@ -168,19 +168,28 @@ function ProjectAssetsPage(): React.JSX.Element {
           </DialogHeader>
 
           <DialogBody>
-            <AssetForm assetForm={createAssetForm} onFormSubmit={onCreateAsset}>
-              <DialogFooter className="mt-6">
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    Cancel
-                  </Button>
-                </DialogClose>
-                <Button type="submit" Icon={Plus} isLoading={isCreatingAsset}>
-                  Add Asset
-                </Button>
-              </DialogFooter>
-            </AssetForm>
+            <AssetForm
+              id={addAssetFormId}
+              assetForm={createAssetForm}
+              onFormSubmit={onCreateAsset}
+            />
           </DialogBody>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              type="submit"
+              form={addAssetFormId}
+              Icon={Plus}
+              isLoading={isCreatingAsset}
+            >
+              Add Asset
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

@@ -14,11 +14,15 @@ import {
   screen,
   shell,
 } from 'electron';
+import { realpath } from 'node:fs/promises';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import Path from 'path';
 
-import ElekIoCore from '@elek-io/core';
+import ElekIoCore, { CoreError } from '@elek-io/core';
 
 import icon from '../../resources/icon.png?asset';
+import { serializeCoreError } from '../shared/ipcError.js';
+import { decodeCoreErrorForSentry } from '../shared/sentryCoreError.js';
 
 // import { updateElectronApp } from 'update-electron-app';
 
@@ -35,6 +39,11 @@ sentryInit({
   enableRendererProfiling: true, // @see https://docs.sentry.io/platforms/javascript/guides/electron/profiling/
   // E2E tests set NODE_ENV to prevent reporting from test runs
   enabled: process.env['NODE_ENV'] !== 'test',
+  // Decode any CoreError encoded at the IPC boundary into a readable message
+  beforeSend: (event) => {
+    decodeCoreErrorForSentry(event);
+    return event;
+  },
 });
 
 class Main {
@@ -107,8 +116,15 @@ class Main {
 
     this.registerCustomFileProtocol();
 
-    const window = await this.createWindow();
+    // Register the IPC handlers before loading the renderer. The renderer issues
+    // IPC calls as soon as it mounts, so registering after the load would leave
+    // a startup gap where a call arrives before its handler exists and rejects
+    // with "No handler registered", which throwOnError turns into the root error
+    // boundary on launch. The handlers only touch the window when invoked, so it
+    // just needs to exist here, not be loaded yet.
+    const window = this.createWindow();
     this.registerIpcMain(window, this.core);
+    await this.loadWindow(window);
   }
 
   /**
@@ -122,7 +138,7 @@ class Main {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
-      await this.createWindow();
+      await this.loadWindow(this.createWindow());
     }
   }
 
@@ -174,7 +190,7 @@ class Main {
   /**
    * Creates a new window with security in mind and loads the frontend
    */
-  private async createWindow(): Promise<BrowserWindow> {
+  private createWindow(): BrowserWindow {
     const initialWindowSize = this.getInitialWindowSize();
 
     const options: BrowserWindowConstructorOptions = {
@@ -204,6 +220,18 @@ class Main {
       this.onWindowWebContentsWillNavigate(window, event, urlToLoad)
     );
 
+    return window;
+  }
+
+  /**
+   * Loads the renderer into an already created window.
+   *
+   * Kept separate from createWindow so the caller can register the IPC handlers
+   * on the window before the renderer starts running. That ordering closes the
+   * startup race where a renderer IPC call could arrive before its handler is
+   * registered.
+   */
+  private async loadWindow(window: BrowserWindow): Promise<void> {
     if (app.isPackaged) {
       // Desktop is in production
       // Load the static index.html directly
@@ -222,8 +250,6 @@ class Main {
       await window.loadURL(this.rendererUrl);
       window.webContents.openDevTools();
     }
-
-    return window;
   }
 
   /**
@@ -285,11 +311,6 @@ class Main {
    */
   private registerCustomFileProtocol(): void {
     protocol.handle(this.customFileProtocol, async (request) => {
-      const absoluteFilePath = request.url.replace(
-        `${this.customFileProtocol}://`,
-        ''
-      );
-
       if (!this.core) {
         sentryCaptureException(
           new Error(
@@ -299,22 +320,92 @@ class Main {
         return new Response('Internal Server Error', { status: 500 });
       }
 
+      const forbidden = new Response(
+        'Forbidden: Tried to load a file from outside of elek.io Projects directory',
+        { status: 403 }
+      );
+
+      // Resolve the request to a normalized, absolute native path before the
+      // containment check. The renderer builds a file-style URL (empty
+      // authority, forward slashes), so swap the custom scheme for `file:` and
+      // let Node turn it back into a native path. fileURLToPath decodes
+      // percent-encoding (so a "%2e%2e" cannot smuggle a "..") and rebuilds a
+      // Windows drive path (`/D:/dir` becomes `D:\dir`), then Path.resolve
+      // collapses any "."/".." segments. So the path we check is the path we
+      // would actually read. A URL we cannot parse fails closed.
+      let absoluteFilePath: string;
+      try {
+        absoluteFilePath = Path.resolve(
+          fileURLToPath(
+            request.url.replace(`${this.customFileProtocol}://`, 'file://')
+          )
+        );
+      } catch {
+        sentryCaptureException(
+          new SecurityError(
+            `Could not resolve requested file URL "${request.url}".`
+          )
+        );
+        return forbidden;
+      }
+
+      // Only serve files inside the Projects or tmp directories. Match "<dir>"
+      // and "<dir><sep>" so a sibling like "projects-evil" cannot slip through
+      // as a bare string prefix of "projects".
+      const isWithin = (candidate: string, directory: string): boolean =>
+        candidate === directory || candidate.startsWith(directory + Path.sep);
+
       if (
-        absoluteFilePath.startsWith(this.core.util.pathTo.projects) === false &&
-        absoluteFilePath.startsWith(this.core.util.pathTo.tmp) === false
+        isWithin(absoluteFilePath, this.core.util.pathTo.projects) === false &&
+        isWithin(absoluteFilePath, this.core.util.pathTo.tmp) === false
       ) {
         sentryCaptureException(
           new SecurityError(
-            `Tried to load file "${absoluteFilePath}" outside of Projects directory.`
+            `Tried to load file "${absoluteFilePath}" outside of the Projects or tmp directory.`
           )
         );
-        return new Response(
-          'Forbidden: Tried to load a file from outside of elek.io Projects directory',
-          { status: 403 }
-        );
+        return forbidden;
       }
 
-      return await net.fetch(`file://${absoluteFilePath}`);
+      // Lexical containment is not enough: `net.fetch` follows symlinks. Core is
+      // git-backed and Projects move between machines, so a Project imported
+      // from an untrusted source can carry an asset that is a symlink whose own
+      // path sits inside `projects` but points outside it (lfs/x.png ->
+      // /etc/passwd). Resolve symlinks on both the request and the base
+      // directories, then re-check, so only bytes that physically live inside
+      // the Projects or tmp directory are served, and fetch the resolved path so
+      // no further link is followed. A missing file or broken link fails closed.
+      let resolvedFilePath: string;
+      let resolvedProjects: string;
+      let resolvedTmp: string;
+      try {
+        [resolvedFilePath, resolvedProjects, resolvedTmp] = await Promise.all([
+          realpath(absoluteFilePath),
+          realpath(this.core.util.pathTo.projects),
+          realpath(this.core.util.pathTo.tmp),
+        ]);
+      } catch {
+        sentryCaptureException(
+          new SecurityError(
+            `Could not resolve the real path of "${absoluteFilePath}".`
+          )
+        );
+        return forbidden;
+      }
+
+      if (
+        isWithin(resolvedFilePath, resolvedProjects) === false &&
+        isWithin(resolvedFilePath, resolvedTmp) === false
+      ) {
+        sentryCaptureException(
+          new SecurityError(
+            `Tried to load file "${absoluteFilePath}" resolving through a link to "${resolvedFilePath}" outside of the Projects or tmp directory.`
+          )
+        );
+        return forbidden;
+      }
+
+      return await net.fetch(pathToFileURL(resolvedFilePath).href);
     });
   }
 
@@ -378,15 +469,29 @@ class Main {
       ) => unknown;
 
       ipcMain.handle(channel, async (_event, ...args: unknown[]) => {
-        // Prepend window argument for dialog calls
-        if (
-          channel === 'electron:dialog:showOpenDialog' ||
-          channel === 'electron:dialog:showSaveDialog'
-        ) {
-          return await handler(window, ...args);
-        }
+        try {
+          // Prepend window argument for dialog calls
+          if (
+            channel === 'electron:dialog:showOpenDialog' ||
+            channel === 'electron:dialog:showSaveDialog'
+          ) {
+            return await handler(window, ...args);
+          }
 
-        return await handler(...args);
+          return await handler(...args);
+        } catch (error) {
+          // Electron serializes a thrown error to the plain Error shape, which
+          // drops the CoreError subclass, its `type` and its stack (the
+          // renderer receives a frameless error). Encode all three into the
+          // message so the renderer can recover them with parseIpcError.
+          // Everything else propagates unchanged.
+          if (error instanceof CoreError) {
+            throw new Error(
+              serializeCoreError(error.type, error.message, error.stack)
+            );
+          }
+          throw error;
+        }
       });
     });
   }

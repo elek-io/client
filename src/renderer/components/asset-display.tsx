@@ -5,6 +5,36 @@ import { cn } from '@renderer/lib/utils';
 
 import { type Asset } from '@elek-io/core';
 
+/**
+ * Turn an absolute file path into a URL for the custom `elek-io-local-file`
+ * protocol.
+ *
+ * A Windows path (`D:\dir\file.png`) can't be concatenated straight onto the
+ * scheme: the `D:` would be parsed as the URL authority and the load would fail.
+ * Normalizing to forward slashes with a leading slash gives the empty-authority
+ * form (`elek-io-local-file:///D:/dir/file.png`) that parses on every platform.
+ * A POSIX path (`/dir/file.png`) already starts with a slash, so this is a no-op
+ * for it.
+ *
+ * Each path segment is then percent-encoded. A raw `#` or `?` in the path (a
+ * profile folder like `C:\Users\a#b`) would otherwise start the URL fragment or
+ * query and truncate the path, and a literal `%` would read as a broken escape.
+ * Encoding per segment keeps the `/` separators intact while escaping the rest.
+ * The main-process handler decodes it back with `fileURLToPath` to recover the
+ * exact native path.
+ */
+function toLocalFileSrc(absolutePath: string): string {
+  const forwardSlashed = absolutePath.replace(/\\/g, '/');
+  const withLeadingSlash = forwardSlashed.startsWith('/')
+    ? forwardSlashed
+    : `/${forwardSlashed}`;
+  const encodedPath = withLeadingSlash
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/');
+  return `elek-io-local-file://${encodedPath}`;
+}
+
 export function AssetDisplay(
   props: Asset & {
     className?: string | undefined;
@@ -15,7 +45,7 @@ export function AssetDisplay(
     static?: boolean;
   }
 ): React.JSX.Element {
-  const absolutePath = 'elek-io-local-file://' + props.absolutePath;
+  const absolutePath = toLocalFileSrc(props.absolutePath);
   const ref = useRef(null);
 
   if (props.mimeType === 'image/gif' && props.static === true) {

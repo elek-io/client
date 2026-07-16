@@ -14,6 +14,7 @@ function Button({
   disabled,
   asChild = false,
   isLoading = false,
+  type,
   Icon,
   ...props
 }: React.ComponentProps<'button'> &
@@ -27,6 +28,11 @@ function Button({
   return (
     <Comp
       data-slot="button"
+      // Default a real button to type="button" so one used for a click action
+      // never submits a surrounding form. A submit button opts in with
+      // type="submit". Leave asChild alone, since the rendered child (an anchor,
+      // a Radix trigger) owns its own semantics.
+      type={asChild ? type : (type ?? 'button')}
       disabled={isLoading === true || disabled}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}

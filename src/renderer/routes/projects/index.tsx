@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { DownloadCloud, Plus } from 'lucide-react';
-import { type ReactElement, useState } from 'react';
+import { type ReactElement, useId, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { Page } from '@renderer/components/page';
@@ -60,6 +60,7 @@ function ListProjectsPage(): ReactElement {
   const { mutateAsync: cloneProject, isPending: isCloningProject } =
     useMutation(queryOptions.projects.clone);
   const [isCloningDialogOpen, setIsCloningDialogOpen] = useState(false);
+  const cloneFormId = useId();
 
   const onCloneProject: SubmitHandler<CloneProjectProps> = async (props) => {
     await cloneProject(props);
@@ -144,7 +145,14 @@ function ListProjectsPage(): ReactElement {
 
           <DialogBody>
             <Form {...cloneProjectForm}>
-              <form onSubmit={cloneProjectForm.handleSubmit(onCloneProject)}>
+              {/* noValidate: zod (through RHF) owns validation. Without it the
+              browser's native constraint check on required inputs blocks submit
+              before handleSubmit runs. */}
+              <form
+                id={cloneFormId}
+                noValidate
+                onSubmit={cloneProjectForm.handleSubmit(onCloneProject)}
+              >
                 <FormField
                   control={cloneProjectForm.control}
                   name="url"
@@ -165,8 +173,9 @@ function ListProjectsPage(): ReactElement {
 
           <DialogFooter>
             <Button
+              type="submit"
+              form={cloneFormId}
               Icon={DownloadCloud}
-              onClick={cloneProjectForm.handleSubmit(onCloneProject)}
               isLoading={isCloningProject}
             >
               Clone

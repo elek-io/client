@@ -87,14 +87,20 @@ function ProjectSettingsVersionControlPage(): ReactElement {
       actions={<Actions />}
     >
       <Form {...remoteOriginUrlForm}>
-        <form>
+        {/* noValidate: zod (through RHF) owns validation. Without it the
+        browser's native url check on the remote input blocks submit before
+        handleSubmit runs. */}
+        <form
+          noValidate
+          onSubmit={remoteOriginUrlForm.handleSubmit(onSetRemoteOriginUrl)}
+        >
           <PageSection
             title="Remote"
             description="A Projects remote is a place that makes it accessible for other users. By adding a remote you are able to work with multiple others together on the same Project."
             actions={
               <Button
+                type="submit"
                 Icon={Check}
-                onClick={remoteOriginUrlForm.handleSubmit(onSetRemoteOriginUrl)}
                 isLoading={isSettingRemoteOriginUrl}
                 disabled={remoteOriginUrlForm.formState.isDirty === false}
               >

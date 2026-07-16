@@ -2,12 +2,14 @@ import { useRouter } from '@tanstack/react-router';
 import {
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
   type ColumnDef,
   type VisibilityState,
 } from '@tanstack/react-table';
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 
 import { Button } from '@renderer/components/ui/button';
 import {
@@ -162,18 +164,40 @@ export function EntryTable({
     }),
     columns: columns(),
     getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    rowCount: entries.total,
+    // The route loads the whole Collection with limit 0 (the app-wide load-all
+    // list pattern, see loading-and-updating-data.md), so pagination is applied
+    // client side over the fully loaded list rather than refetched per page.
+    getPaginationRowModel: getPaginationRowModel(),
+    // `data` is rebuilt into a new array on every render, which the default
+    // autoResetPageIndex reads as a data change and snaps the page back to 0,
+    // so paging past the first page never sticks. Disable it: the page index is
+    // driven only by the pagination controls.
+    autoResetPageIndex: false,
+    // The filter input drives a global filter across the visible columns. It is
+    // applied before pagination, so a match on any page surfaces on the first
+    // one (the filter input resets the page index, see below).
+    getFilteredRowModel: getFilteredRowModel(),
     onPaginationChange: setPagination, // update the pagination state when internal APIs mutate the pagination state
     onColumnVisibilityChange: setColumnVisibility,
-    // getFilteredRowModel: getFilteredRowModel(),
+    onGlobalFilterChange: setFilter,
     state: {
       pagination,
       columnVisibility,
-      // globalFilter: columnFilter,
-      // columnFilters: columnFilter,
+      globalFilter: filter,
     },
   });
+
+  // The list is paginated client side with autoResetPageIndex off, so a shrink in
+  // the loaded data (an Entry removed while the table is open) would leave the
+  // page index past the last page and strand the user on an empty page. Clamp it
+  // back to the last valid page. useLayoutEffect runs before paint, so the empty
+  // page never flashes, and it is a no-op while the page index is in range.
+  const pageCount = table.getPageCount();
+  useLayoutEffect(() => {
+    if (pagination.pageIndex > 0 && pagination.pageIndex > pageCount - 1) {
+      table.setPageIndex(pageCount - 1);
+    }
+  }, [pageCount, pagination.pageIndex, table]);
 
   async function onRowClicked(id: string): Promise<void> {
     await router.navigate({
@@ -195,7 +219,11 @@ export function EntryTable({
             record: collection.name.plural,
           })}...`}
           value={filter}
-          onChange={(event) => setFilter(event.target.value)}
+          onChange={(event) => {
+            setFilter(event.target.value);
+            // Reset to the first page so a match on a later page is visible.
+            setPagination((previous) => ({ ...previous, pageIndex: 0 }));
+          }}
           className="max-w-sm"
         />
         <DropdownMenu>
@@ -278,8 +306,8 @@ export function EntryTable({
 
       <div className="flex items-center justify-end p-6">
         <div className="flex-1 text-sm text-zinc-400">
-          Showing {table.getFilteredRowModel().rows.length} of{' '}
-          {table.getRowCount()} total{' '}
+          Showing {table.getFilteredRowModel().rows.length} of {entries.total}{' '}
+          total{' '}
           {translateContent({
             key: 'currentCollection.name.plural',
             record: collection.name.plural,

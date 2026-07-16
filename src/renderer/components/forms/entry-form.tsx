@@ -37,6 +37,12 @@ interface EntryFormProps<
   children?: React.ReactNode;
   isViewOnly?: boolean;
   onFormSubmit: SubmitHandler<TTransformedValues>;
+  /**
+   * Associates the form with a submit button rendered outside it (in the page
+   * header via `Page`'s `actions`). That button carries `type="submit"` and the
+   * same `form={id}`, so it submits this form from outside its subtree.
+   */
+  id?: string;
 }
 
 export function EntryForm<
@@ -49,6 +55,7 @@ export function EntryForm<
   children,
   isViewOnly = false,
   onFormSubmit,
+  id,
 }: EntryFormProps<TFieldValues, TTransformedValues>): React.JSX.Element {
   const { translateContent } = useProject();
   const defaultLanguage = project.settings.language.default;
@@ -66,7 +73,14 @@ export function EntryForm<
   return (
     <FieldDefinitionsProvider fieldDefinitions={fieldDefinitions}>
       <Form {...entryForm}>
-        <form onSubmit={entryForm.handleSubmit(onFormSubmit)}>
+        {/* noValidate: zod (through RHF) owns validation. Without it the
+        browser's native constraint check on required inputs blocks submit
+        before handleSubmit runs. */}
+        <form
+          id={id}
+          noValidate
+          onSubmit={entryForm.handleSubmit(onFormSubmit)}
+        >
           <fieldset disabled={isViewOnly}>
             <div className="grid grid-cols-12 gap-x-4 gap-y-8 p-6 sm:gap-x-6 xl:gap-x-8">
               {fieldDefinitions.map((fieldDefinition) => {

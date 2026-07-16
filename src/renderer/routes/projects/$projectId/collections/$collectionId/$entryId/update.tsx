@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { useEffect, type ReactElement } from 'react';
+import { useEffect, useId, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { EntryForm } from '@renderer/components/forms/entry-form';
@@ -58,6 +58,7 @@ function UpdateEntryPage(): ReactElement {
         )
       : getUpdateEntrySchemaFromFieldDefinitions([], []);
 
+  const formId = useId();
   const updateEntryForm = useForm({
     resolver: zodResolver(generatedUpdateEntrySchema),
     defaultValues: {
@@ -132,10 +133,11 @@ function UpdateEntryPage(): ReactElement {
     return (
       <>
         <Button
+          type="submit"
+          form={formId}
           Icon={Check}
           isLoading={isUpdatingEntry}
           disabled={updateEntryForm.formState.isDirty === false}
-          onClick={updateEntryForm.handleSubmit(onUpdateEntry)}
         >
           Update{' '}
           {collection
@@ -156,6 +158,7 @@ function UpdateEntryPage(): ReactElement {
   return (
     <Page title={title} description={<Description />} actions={<Actions />}>
       <EntryForm
+        id={formId}
         entryForm={updateEntryForm}
         fieldDefinitions={collection.fieldDefinitions}
         project={project}

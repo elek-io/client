@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import React, { useEffect, type ReactElement } from 'react';
+import React, { useEffect, useId, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { EntryForm } from '@renderer/components/forms/entry-form';
@@ -50,6 +50,7 @@ function CreateEntryPage(): React.JSX.Element {
           project.settings.language.supported
         )
       : getCreateEntrySchemaFromFieldDefinitions([], []);
+  const formId = useId();
   const createEntryForm = useForm({
     resolver: zodResolver(generatedCreateEntrySchema),
     defaultValues: {
@@ -118,10 +119,11 @@ function CreateEntryPage(): React.JSX.Element {
     return (
       <>
         <Button
+          type="submit"
+          form={formId}
           Icon={Check}
           isLoading={isCreatingEntry}
           disabled={createEntryForm.formState.isDirty === false}
-          onClick={createEntryForm.handleSubmit(onCreateEntry)}
         >
           Create{' '}
           {collection
@@ -142,6 +144,7 @@ function CreateEntryPage(): React.JSX.Element {
   return (
     <Page title={title} description={<Description />} actions={<Actions />}>
       <EntryForm
+        id={formId}
         entryForm={createEntryForm}
         fieldDefinitions={collection.fieldDefinitions}
         project={project}

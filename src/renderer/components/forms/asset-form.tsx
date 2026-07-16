@@ -19,12 +19,23 @@ import {
 
 interface AssetFormProps<TFieldValues extends FieldValues> {
   assetForm: UseFormReturn<TFieldValues>;
-  children?: React.ReactNode;
   onFormSubmit: SubmitHandler<TFieldValues>;
+  /**
+   * Associates the form with a submit button rendered outside it (in the
+   * dialog's `DialogFooter`). The footer button carries `type="submit"` and the
+   * same `form={id}`, so it submits this form natively from outside its subtree.
+   */
+  id?: string;
 }
 
 /**
  * Shared form body collecting an Asset's `name` and `description`.
+ *
+ * Renders only the fields inside a form, so the surrounding dialog owns the
+ * scroll structure. Place it inside a `DialogBody` and put the submit control in
+ * a sibling `DialogFooter` that calls `assetForm.handleSubmit`, so the body
+ * scrolls while the footer stays pinned and on screen (see the create dialog in
+ * `assets/index.tsx` and the update dialog in `asset-teaser.tsx`).
  *
  * Kept generic over the form values so it works for both the create
  * (`CreateAssetProps`) and update (`UpdateAssetProps`) flows, whose shapes
@@ -35,11 +46,14 @@ interface AssetFormProps<TFieldValues extends FieldValues> {
 export function AssetForm<TFieldValues extends FieldValues>({
   assetForm,
   onFormSubmit,
-  children,
+  id,
 }: AssetFormProps<TFieldValues>): React.JSX.Element {
   return (
     <Form {...assetForm}>
-      <form onSubmit={assetForm.handleSubmit(onFormSubmit)}>
+      {/* noValidate: zod (through RHF) owns validation. Without it the browser's
+      native constraint check on required inputs blocks submit before
+      handleSubmit runs. */}
+      <form id={id} noValidate onSubmit={assetForm.handleSubmit(onFormSubmit)}>
         <div className="grid grid-cols-12 gap-6">
           <FormField
             control={assetForm.control}
@@ -71,7 +85,6 @@ export function AssetForm<TFieldValues extends FieldValues>({
             )}
           />
         </div>
-        {children}
       </form>
     </Form>
   );

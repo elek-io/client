@@ -78,6 +78,12 @@ export interface CollectionFormProps<
   children?: React.ReactNode;
   isViewOnly?: boolean;
   onFormSubmit: SubmitHandler<TTransformedValues>;
+  /**
+   * Associates the form with a submit button rendered outside it (in the page
+   * header via `Page`'s `actions`). That button carries `type="submit"` and the
+   * same `form={id}`, so it submits this form from outside its subtree.
+   */
+  id?: string;
 }
 
 export function CollectionForm<
@@ -89,6 +95,7 @@ export function CollectionForm<
   children,
   isViewOnly = false,
   onFormSubmit,
+  id,
 }: CollectionFormProps<TFieldValues, TTransformedValues>): ReactElement {
   const { translateContent } = useProject();
   // The many concrete collection fields (icon, name, description) use literal paths
@@ -118,7 +125,14 @@ export function CollectionForm<
 
   return (
     <Form {...genericForm}>
-      <form onSubmit={genericForm.handleSubmit(onFormSubmit)}>
+      {/* noValidate: zod (through RHF) owns validation. Without it the browser's
+      native constraint check on required inputs, including the field-definition
+      preview inputs, blocks submit before handleSubmit runs. */}
+      <form
+        id={id}
+        noValidate
+        onSubmit={genericForm.handleSubmit(onFormSubmit)}
+      >
         <fieldset disabled={isViewOnly}>
           <div className="space-y-6 p-6">
             <div className="grid grid-cols-12 items-start gap-6">
@@ -182,11 +196,11 @@ export function CollectionForm<
                 name={`name.singular.${project.settings.language.default}`}
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
-                    <FormLabel isRequired>Entry name (Singluar)</FormLabel>
+                    <FormLabel isRequired>Entry name (Singular)</FormLabel>
                     <FormControl>
                       <TranslatableFormInputField
-                        title="Entry name (Singluar)"
-                        description='The name of each Entry inside your new Collection. Choose a short name in singluar - e.g. "Blogpost".'
+                        title="Entry name (Singular)"
+                        description='The name of each Entry inside your new Collection. Choose a short name in singular - e.g. "Blogpost".'
                         type="text"
                         field={field}
                         errors={collectionForm.formState.errors}
@@ -195,7 +209,7 @@ export function CollectionForm<
                     </FormControl>
                     <FormDescription>
                       The name of each Entry inside your new Collection. Choose
-                      a short name in singluar - e.g. &quot;Blogpost&quot;.
+                      a short name in singular - e.g. &quot;Blogpost&quot;.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

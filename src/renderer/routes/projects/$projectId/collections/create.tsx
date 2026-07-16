@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
-import { useEffect, type ReactElement } from 'react';
+import { useEffect, useId, type ReactElement } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CollectionForm } from '@renderer/components/forms/collection-form';
@@ -33,6 +33,7 @@ function ProjectCollectionCreate(): ReactElement {
   } = useProject();
   const { mutateAsync: createCollection, isPending: isCreatingCollection } =
     useMutation(queryOptions.collections.create);
+  const formId = useId();
 
   const createCollectionForm = useForm({
     resolver: zodResolver(createCollectionSchema),
@@ -95,9 +96,10 @@ function ProjectCollectionCreate(): ReactElement {
     return (
       <>
         <Button
+          type="submit"
+          form={formId}
           Icon={Check}
           isLoading={isCreatingCollection}
-          onClick={createCollectionForm.handleSubmit(onCreate)}
         >
           Create Collection
         </Button>
@@ -127,6 +129,7 @@ function ProjectCollectionCreate(): ReactElement {
       actions={<Actions />}
     >
       <CollectionForm
+        id={formId}
         collectionForm={createCollectionForm}
         project={project}
         isViewOnly={isCreatingCollection}

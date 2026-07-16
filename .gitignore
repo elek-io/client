@@ -99,8 +99,8 @@ dist/
 .env.sentry-build-plugin
 
 # Playwright
-/test-results/
-/playwright-report/
+test-results/
+playwright-report/
 
 # Claude Code local settings
 .claude/

@@ -46,11 +46,13 @@ On `app.on('ready')` the `onAppReady()` method:
 1. Creates the `ElekIoCore` instance (log level `info` when packaged, `debug` otherwise).
 2. Reads the persisted user and, if `user.localApi.isEnabled` is true, **starts the local read-only API automatically** on `user.localApi.port`. The API can therefore already be serving before the renderer ever calls `core:api:start`.
 3. Registers the custom file protocol.
-4. Creates the first window and registers the IPC handlers for it.
+4. Creates the first window (`createWindow()`), registers the IPC handlers for it (`registerIpcMain()`), then loads the renderer into it (`loadWindow()`).
 
-Other lifecycle events: `activate` (macOS dock click) recreates a window if none are open, and `window-all-closed` quits the app on Windows and Linux but not on macOS.
+The order in step 4 matters: the renderer issues IPC calls as soon as it mounts, so the handlers are registered **before** the renderer is loaded. Registering after the load would leave a startup gap where an early call arrives before its handler exists and rejects with "No handler registered", which `throwOnError` turns into the root error boundary on launch. The handlers only touch the window when invoked, so it just needs to exist (be created) at registration time, not be loaded. This is why `createWindow()` only creates the window and `loadWindow()` loads it, kept as two steps.
 
-**Window management** (`createWindow()`):
+Other lifecycle events: `activate` (macOS dock click) recreates and loads a window if none are open, and `window-all-closed` quits the app on Windows and Linux but not on macOS.
+
+**Window management** (`createWindow()` / `loadWindow()`):
 
 - The window is **frameless**: `frame: false`, `titleBarStyle: 'hidden'`, `titleBarOverlay: true`. The title bar is drawn in the renderer, so the native frame is intentionally removed.
 - On Linux the app icon is set explicitly from `resources/icon.png`.
@@ -115,6 +117,8 @@ All Core methods are asynchronous in the renderer even when they are synchronous
 
 > [!NOTE]
 > The two `electron:dialog:*` channels are special-cased in the registration loop: the main `BrowserWindow` is injected as the first argument before the bound handler is called. Every `core:*` channel is called with the renderer's arguments unchanged.
+
+**Error serialization at the handler loop:** the same single `ipcMain.handle` wrapper also try/catches the handler call. A structured clone across the IPC boundary drops the `CoreError` subclass and its custom `type`/`statusCode` fields, reducing the error to the plain `Error` shape (message and stack). To preserve the reason a Core operation failed with, the wrapper catches a thrown `CoreError` and re-throws `new Error(serializeCoreError(error.type, error.message))`, which packs the `type` into the message behind a sentinel. Everything that is not a `CoreError` propagates unchanged. The renderer decodes it with `parseIpcError` from the shared module [`src/shared/ipcError.ts`](/src/shared/ipcError.ts), which is bundled into both processes. The full story, including how the renderer maps the decoded `type` to reason-specific copy and how it is decoded for Sentry too, is in [Error Handling](./error-handling.md).
 
 ### Project Structure
 
@@ -211,9 +215,9 @@ A separate whitelist, `allowedHostnamesToLoadInternal`, controls in-window navig
 
 **Custom File Protocol**:
 
-Loading of Assets in the UI is handled via a custom file protocol `elek-io-local-file://` since the standard `file://` protocol in Electron has more privileges than in a browser. This custom protocol implementation ensures path validation (files must be within Project or tmp folders) and prevents directory traversal attacks.
+Loading of Assets in the UI is handled via a custom file protocol `elek-io-local-file://` since the standard `file://` protocol in Electron has more privileges than in a browser. The renderer builds these URLs in `AssetDisplay`'s `toLocalFileSrc`, percent-encoding each path segment so a URL-significant character in the path (`#`, `?`, `%`, a space, for example from a profile folder like `C:\Users\a#b`) survives instead of truncating the path into a fragment or query. The handler resolves each request to a normalized, absolute native path (decoding that percent-encoding and collapsing `.`/`..` segments) and then serves it only when it is inside the Projects or tmp directory, matched with a trailing separator so a sibling like `projects-evil` cannot pass as a prefix of `projects`. A request it cannot parse fails closed. Because `net.fetch` follows symlinks and a git-backed Project can arrive from an untrusted source carrying a symlinked asset (git stores symlinks), the handler then resolves symlinks on both the request and the base directories with `realpath` and re-checks containment, serving the resolved path so no link is followed afterwards. This blocks directory traversal (including percent-encoded `..`), sibling-prefix escapes, and symlink escapes.
 
-See [`src/main/index.ts:272-305`](/src/main/index.ts) for the custom protocol implementation.
+See [`src/main/index.ts`](/src/main/index.ts) (`registerCustomFileProtocol`) for the implementation and the "Custom file protocol" block in [`tests/specs/main-security.spec.ts`](/tests/specs/main-security.spec.ts) for the E2E coverage of the boundary, alongside the other main-process security guards (renderer isolation, the navigation guard, and external-link handling).
 
 ### Path Aliases
 
@@ -249,8 +253,8 @@ For how these three builds decide what ships in the packaged app, the resulting 
 
 ### Known Considerations
 
-- DevTools are opened in production builds via `window.webContents.openDevTools()` in [`src/main/index.ts:198`](/src/main/index.ts) (the `app.isPackaged` branch of `createWindow`). This must be removed or guarded before a real release.
-- Sentry is initialized in two separate places, the main process ([`src/main/index.ts`](/src/main/index.ts)) and the renderer ([`src/renderer/index.ts`](/src/renderer/index.ts)), both at 100% sampling. The renderer also enables session replay. Lowering sampling or disabling telemetry means editing both init sites.
+- DevTools are opened automatically in development via `window.webContents.openDevTools()` in [`src/main/index.ts:242`](/src/main/index.ts) (the development branch of `loadWindow`). The packaged branch keeps a commented-out call to uncomment when debugging a production build.
+- Sentry is initialized in two separate places, the main process ([`src/main/index.ts`](/src/main/index.ts)) and the renderer ([`src/renderer/index.ts`](/src/renderer/index.ts)), both at 100% sampling. The renderer also enables session replay. Lowering sampling or disabling telemetry means editing both init sites. Both inits share a `beforeSend` hook (`decodeCoreErrorForSentry` from [`src/shared/sentryCoreError.ts`](/src/shared/sentryCoreError.ts)) that rewrites a CoreError serialized at the IPC boundary back into a readable message and adds a `core_error_type` tag, so a captured CoreError does not show up as the raw sentinel payload. It is the same decode the renderer applies for display (see the [IPC error serialization](#ipc-architecture) note), reused so Sentry and the UI agree. For the full logging picture, local and Sentry, see [Error Handling](./error-handling.md).
 - Auto-update is currently disabled. The `update-electron-app` call in the `Main` constructor is commented out, and the `electron-updater` dependency is not imported anywhere, so there is no active auto-update path.
 - All Core methods are async in the renderer even when synchronous in Core (the IPC boundary requires it)
 - The preload script must be CommonJS due to Electron's sandboxing limitations

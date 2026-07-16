@@ -37,7 +37,7 @@ export function UserHeader(): React.JSX.Element {
               onClick={() => router.history.back()}
               Icon={ArrowLeft}
             >
-              <span className="sr-only">__root.buttonNavigateBack</span>
+              <span className="sr-only">Go back</span>
             </Button>
             <Button
               variant="ghost"
@@ -45,7 +45,7 @@ export function UserHeader(): React.JSX.Element {
               onClick={() => router.history.forward()}
               Icon={ArrowRight}
             >
-              <span className="sr-only">__root.buttonNavigateForward</span>
+              <span className="sr-only">Go forward</span>
             </Button>
           </ButtonGroup>
 

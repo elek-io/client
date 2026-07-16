@@ -329,6 +329,7 @@ export function TranslatableFormInputField<T extends FieldValues>({
                 aria-invalid={hasErrorsInTranslations()}
               >
                 <LanguagesIcon className="h-4 w-4" />
+                <span className="sr-only">Edit translations for {title}</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -366,7 +367,7 @@ export function TranslatableFormInputField<T extends FieldValues>({
           </Dialog>
         </div>
       ) : (
-        <FormInputField field={field} type={type} />
+        <FormInputField field={field} type={type} {...props} />
       )}
     </>
   );
@@ -483,6 +484,7 @@ export function TranslatableFormTextareaField<T extends FieldValues>({
                 aria-invalid={hasErrorsInTranslations()}
               >
                 <LanguagesIcon className="h-4 w-4" />
+                <span className="sr-only">Edit translations for {title}</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -522,7 +524,7 @@ export function TranslatableFormTextareaField<T extends FieldValues>({
           </Dialog>
         </div>
       ) : (
-        <FormTextareaField field={field} />
+        <FormTextareaField field={field} {...props} />
       )}
     </>
   );
@@ -1710,7 +1712,15 @@ function FormComponentFromFieldDefinitionTranslatable<
                 className="h-full rounded-l-none"
                 aria-invalid={hasErrorsInTranslations()}
                 Icon={LanguagesIcon}
-              />
+              >
+                <span className="sr-only">
+                  Edit translations for{' '}
+                  {translateContent({
+                    key: 'fieldDefinition.label',
+                    record: fieldDefinition.label,
+                  })}
+                </span>
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
