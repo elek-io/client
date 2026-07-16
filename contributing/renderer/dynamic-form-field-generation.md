@@ -114,7 +114,7 @@ Located in [`components/ui/`](../../src/renderer/components/ui/):
 
 #### Typed field wrappers
 
-Also in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx): a layer of reusable wrappers that bind a base control to React Hook Form and own value transformation - `FormInputField`, `FormTextareaField`, `FormDateField`, `FormDatetimeField`, `FormSelectField`, `FormRangeField`, `FormToggleField`, `FormAssetField`, `FormEntryField` (plus `TranslatableFormInputField` / `TranslatableFormTextareaField`).
+Also in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx): a layer of reusable wrappers that bind a base control to React Hook Form and own value transformation - `FormInputField`, `FormTextareaField`, `FormDateField`, `FormDatetimeField`, `FormSelectField`, `FormRangeField`, `FormToggleField`, `FormAssetField`, `FormEntryField`. `TranslatableFormInputField` / `TranslatableFormTextareaField` are thin presets over the shared `TranslatableField` (see below) for the static string / textarea cases.
 
 These wrappers carry the value contract Core expects, so do not hand-roll a raw `<Input>`:
 
@@ -124,31 +124,30 @@ These wrappers carry the value contract Core expects, so do not hand-roll a raw 
 - `FormDatetimeField` converts between the ISO UTC datetime Core stores and the local time the `datetime-local` input speaks
 - `FormSlugField` derives the slug live from its source fields (same language) while the value is empty or still equals the last derived value, so a stored slug is never rewritten. Manual input is made canonical on blur. It resolves its source ids through `useFieldDefinitions()` ([`hooks/useFieldDefinitions.ts`](../../src/renderer/hooks/useFieldDefinitions.ts)), provided by the `FieldDefinitionsProvider` ([`providers/FieldDefinitionsProvider.tsx`](../../src/renderer/providers/FieldDefinitionsProvider.tsx)) that `EntryForm` wraps its fields in - outside of it (for example the Collection editor preview) the input is simply manual
 - `markdown` fields render the Milkdown based `MarkdownEditor` through a thin adapter - see [`markdown-editor.md`](./markdown-editor.md)
-- `TranslatableFormInputField` / `TranslatableFormTextareaField` must forward the props the parent `FormControl` injects (`id`, `aria-describedby`, `aria-invalid`) onto the inner control in **both** the single and multi language branches. Those props carry the label, description and error associations. A branch that renders the bare control without them silently breaks accessibility: the `<label htmlFor>` no longer points at the input and the validation error is not announced. The single-language project is the common case, so a gap there affects most forms
 
-#### Field definition components
+The leaf wrappers are **value-typed**: they receive the already-bound `field` (value/onChange/onBlur/ref) plus a `controlProps` bag (`id`, `aria-describedby`, `aria-invalid`) to place on the real input. They do not know or build a form path (the path lives at the single `Controller` in `FormFieldFromDefinition`). Each wrapper places `controlProps` on its actual focusable control - the `<input>` for the scalars, the `SelectTrigger` for select, the dialog trigger button for asset / entry, the wrapper for markdown - so the `<label htmlFor>`, description and error association always point at a focusable element.
 
-The three layers that turn a field definition into a rendered field, all in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx). Only `FormFieldFromDefinition` is exported; the other two are internal helpers. The file is large (~1500 lines) so the line numbers below are approximate and drift:
+#### The render registry
 
-**1. `FormComponentFromFieldDefinition`** (internal, around line 1080)
+Rendering is driven by a **registry** keyed on Core's `FieldType`, the RENDER facet that shares the `FieldType` spine with the authoring `FIELD_DEFINITION_REGISTRY`. It replaced the old 18-case switch, the hand-synced `renderableFieldTypes` set, and the three near-identical translatable wrappers. Everything below lives in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx).
 
-- Maps a field definition's `fieldType` to the correct typed field wrapper
-- Throws for field types the renderer does not support yet (`dynamic`)
+- **`RENDER_REGISTRY`** is an exhaustive `Record<FieldType, RenderSpec>`. Because it is exhaustive, adding a field type to Core is a compile error here until it has an entry. Each `RenderSpec` has:
+  - `renderInput(props)` - the value-typed leaf described above. It receives `{ field, fieldDefinition, disabled, controlProps }` and renders the matching typed wrapper.
+  - `translatable` - whether the Value is per-language. Core stores every value type except `component` as a per-language record (see Core's `docs/fields.md`), so every rendered type is translatable; only the `dynamic` placeholder is not.
 
-**2. `FormComponentFromFieldDefinitionTranslatable`** (internal, around line 1240)
+  The `dynamic` entry keeps the record exhaustive and draws the muted "can't be displayed yet" placeholder so a Collection carrying an unsupported type (via Core, the API, or a migration) does not crash (see [`not-yet-implemented.md`](../not-yet-implemented.md)).
 
-- Wraps `FormComponentFromFieldDefinition`
-- Adds multi-language support for translatable fields
-- Renders a dialog for entering translations in all supported languages, with a language switcher button next to the field
+- **`FormComponentFromFieldDefinition`** (internal) is now a one-line `RENDER_REGISTRY[fieldType].renderInput(...)` lookup.
 
-**3. `FormFieldFromDefinition`** (exported, recommended entry point, around line 1378)
+- **The registry emits no native constraint attributes.** zod (through react-hook-form) is the only validator and the form is `noValidate`, so the leaves never set `required` / `min` / `max` / `minLength` / `maxLength`. The one exception is the range `Slider`'s `min` / `max`, which are its functional value domain, not HTML constraints. A test asserts a required field renders with no `required` attribute.
 
-- Use this component when rendering form fields from definitions
-- Wraps `FormComponentFromFieldDefinitionTranslatable` with:
-  - Label (with required indicator)
-  - Description text
-  - Validation error messages
-  - Proper spacing and layout
+- **`ControlledLeaf`** (internal) reads the surrounding `FormItem` / `FormField` ids through `useFormField` and hands them to the leaf as `controlProps`, so `id` and `aria-*` land on the real focusable input **by construction**. This replaced wrapping the leaf in a `<FormControl>` Radix `Slot`, which could only reach the leaf's outermost element - a wrapper `<div>` or a non-DOM Radix root for select and reference fields.
+
+- **`TranslatableField`** (internal) is the single per-language wrapper. With one Project language it renders the leaf directly; with more it renders the leaf plus a dialog that edits every supported language. It owns the multi-field name convention (the name's last dot-segment is the language, so the sibling paths derive from it) and the `hasErrorsInTranslations` traversal that flags the dialog trigger when a hidden translation is invalid.
+
+- **`FormFieldFromDefinition`** (exported, the entry point) owns the single `FormField` / `Controller` at `name` and composes the label (with required indicator), the registry leaf (through `TranslatableField` when translatable), the description and the validation message. Use it when rendering an Entry's fields.
+
+- **`FormFieldDefinitionPreview`** (exported) is the collection editor's non-editable preview. It draws the same label / leaf / description plus the drag / edit / delete chrome, but is **not** bound to a form: the leaf holds a static, disabled Value, so there are no phantom form paths and the label associates with a real (disabled) input (so the previews are addressable by `getByLabel`).
 
 ### Example Usage
 

@@ -162,16 +162,14 @@ function StringSelectOptionRow({
             {/* sr-only labels name the option inputs for screen readers and for
             role/label based E2E, which the old option rows lacked. */}
             <FormLabel className="sr-only">{`Option ${index + 1} label`}</FormLabel>
-            <FormControl>
-              <TranslatableFormInputField
-                title="Label"
-                description="The label users see for this option."
-                type="text"
-                field={field}
-                errors={form.formState.errors}
-                supportedLanguages={supportedLanguages}
-              />
-            </FormControl>
+            <TranslatableFormInputField
+              title="Label"
+              description="The label users see for this option."
+              type="text"
+              field={field}
+              errors={form.formState.errors}
+              supportedLanguages={supportedLanguages}
+            />
             <FormMessage />
           </FormItem>
         )}
@@ -325,16 +323,14 @@ function NumberSelectOptionRow({
         render={({ field }) => (
           <FormItem className="flex-1">
             <FormLabel className="sr-only">{`Option ${index + 1} label`}</FormLabel>
-            <FormControl>
-              <TranslatableFormInputField
-                title="Label"
-                description="The label users see for this option."
-                type="text"
-                field={field}
-                errors={form.formState.errors}
-                supportedLanguages={supportedLanguages}
-              />
-            </FormControl>
+            <TranslatableFormInputField
+              title="Label"
+              description="The label users see for this option."
+              type="text"
+              field={field}
+              errors={form.formState.errors}
+              supportedLanguages={supportedLanguages}
+            />
             <FormMessage />
           </FormItem>
         )}

@@ -84,6 +84,31 @@ test.describe('Entries', () => {
     ).toBeVisible();
   });
 
+  test('renders a required field without a native required attribute', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    // The default Collection's Title field is required (isRequired: true).
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+
+    await navigateToEntryCreate(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // The renderer emits no native `required` attribute even for a required
+    // field: zod (through react-hook-form) is the single validator, and a native
+    // constraint would let the browser block submit before handleSubmit runs
+    // (which is why the form is noValidate). aria-invalid, not `required`, is how
+    // invalidity is surfaced.
+    const title = mainWindow.getByLabel('Title', { exact: true });
+    await expect(title).toBeVisible();
+    expect(await title.getAttribute('required')).toBeNull();
+  });
+
   test('updates an entry through the form, gated on a dirty change', async ({
     mainWindow,
   }) => {

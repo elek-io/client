@@ -95,19 +95,17 @@ function DefaultFieldDefinitionForm<
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Label</FormLabel>
-            <FormControl>
-              <TranslatableFormInputField
-                title="Label"
-                description='The label is displayed above the input Field and should
-                      indicate what the user is supposed to enter. For example
-                      "Title", "Date of birth" or
-                      "Summary".'
-                type="text"
-                field={field}
-                errors={form.formState.errors}
-                supportedLanguages={supportedLanguages}
-              />
-            </FormControl>
+            <TranslatableFormInputField
+              title="Label"
+              description='The label is displayed above the input Field and should
+                    indicate what the user is supposed to enter. For example
+                    "Title", "Date of birth" or
+                    "Summary".'
+              type="text"
+              field={field}
+              errors={form.formState.errors}
+              supportedLanguages={supportedLanguages}
+            />
             <FormDescription>
               The label is displayed above the input Field and should indicate
               what the user is supposed to enter. For example &quot;Title&quot;,
@@ -142,16 +140,14 @@ function DefaultFieldDefinitionForm<
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Description</FormLabel>
-            <FormControl>
-              <TranslatableFormTextareaField
-                title="Description"
-                description="Describe what to input into this field. This text will be
+            <TranslatableFormTextareaField
+              title="Description"
+              description="Describe what to input into this field. This text will be
               displayed under the field to guide users."
-                field={field}
-                errors={form.formState.errors}
-                supportedLanguages={supportedLanguages}
-              />
-            </FormControl>
+              field={field}
+              errors={form.formState.errors}
+              supportedLanguages={supportedLanguages}
+            />
             <FormDescription>
               Describe what to input into this field. This text will be
               displayed under the field to guide users.

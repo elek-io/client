@@ -199,6 +199,19 @@ function FormMessage({
   );
 }
 
+/**
+ * Control-association props the surrounding FormControl / FormItem injects onto
+ * the real input, so the label's `htmlFor`, the description and the error message
+ * all point at a focusable element (R10). A leaf spreads these onto its actual
+ * input rather than a wrapper `<div>` or a non-DOM Radix root.
+ */
+interface FieldControlProps {
+  id?: string;
+  'aria-describedby'?: string;
+  'aria-invalid'?: boolean;
+  className?: string;
+}
+
 export interface FormInputFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -250,39 +263,79 @@ export function FormInputField<TFieldValues extends FieldValues>({
   );
 }
 
-export interface TranslatableFormInputFieldProps<
-  T extends FieldValues,
-> extends FormInputFieldProps<T> {
+/**
+ * Reads the surrounding FormItem / FormField control-association ids through
+ * useFormField and hands them to a value-typed leaf, so `id` and `aria-*` land on
+ * the real input by construction. This replaces wrapping the leaf in a
+ * `<FormControl>` Radix Slot, which could only reach the leaf's outermost element
+ * (a wrapper `<div>` or a non-DOM Radix root for select and reference fields).
+ */
+function ControlledLeaf<TFieldValues extends FieldValues>({
+  field,
+  renderLeaf,
+}: {
+  field: ControllerRenderProps<TFieldValues>;
+  renderLeaf: (
+    field: ControllerRenderProps<TFieldValues>,
+    controlProps: FieldControlProps
+  ) => React.ReactElement;
+}): React.ReactElement {
+  const { error, formItemId, formDescriptionId, formMessageId } =
+    useFormField();
+  return renderLeaf(field, {
+    id: formItemId,
+    'aria-describedby':
+      error === undefined
+        ? formDescriptionId
+        : `${formDescriptionId} ${formMessageId}`,
+    'aria-invalid': error !== undefined,
+  });
+}
+
+export interface TranslatableFieldProps<TFieldValues extends FieldValues> {
+  field: ControllerRenderProps<TFieldValues>;
   title: string;
-  description: string;
+  description: string | null;
   supportedLanguages: SupportedLanguage[];
   errors: FieldErrors;
+  // The per-language dialog labels use this for their required indicator: string
+  // inputs mark every language required, the optional textarea does not.
+  dialogItemRequired: boolean;
+  // Renders one language's leaf, given its field and the control-association props
+  // to place on the real input. Called for the outer field and once per language
+  // inside the dialog.
+  renderLeaf: (
+    field: ControllerRenderProps<TFieldValues>,
+    controlProps: FieldControlProps
+  ) => React.ReactElement;
 }
 
 /**
- * Renders a FormInputField component with additional button to manage translations
- *
- * @todo TranslatableFormInputField and TranslatableFormTextareaField are almost identical. Consider refactoring to reduce duplication.
+ * The single per-language field wrapper. With one Project language it renders the
+ * leaf directly; with more it renders the leaf plus a dialog that edits every
+ * language. The name's last dot-segment is the current language, so the sibling
+ * paths are derived from it (this wrapper owns the multi-field name convention;
+ * the leaf stays value-typed). Replaces the three near-identical wrappers that each
+ * carried this dialog and its hasErrorsInTranslations traversal.
  */
-export function TranslatableFormInputField<T extends FieldValues>({
+function TranslatableField<TFieldValues extends FieldValues>({
+  field,
   title,
   description,
-  field,
   supportedLanguages,
-  className,
-  type,
   errors,
-  ...props
-}: TranslatableFormInputFieldProps<T>): React.ReactElement {
+  dialogItemRequired,
+  renderLeaf,
+}: TranslatableFieldProps<TFieldValues>): React.ReactElement {
   const currentLanguage = field.name.split('.').pop() as SupportedLanguage;
   const baseName = field.name.split('.').slice(0, -1).join('.');
 
   /**
-   * Returns true if there are errors in the translations for the current field
-   * other than the current language.
+   * True when a language other than the current one has an error, so the dialog
+   * trigger can flag that a hidden translation is invalid.
    */
   function hasErrorsInTranslations(): boolean {
-    // Traverse the errors object to reach the base field errors
+    // Traverse the errors object to reach the base field's per-language errors
     let fieldErrors: unknown = errors;
     for (const segment of baseName.split('.')) {
       if (
@@ -294,7 +347,6 @@ export function TranslatableFormInputField<T extends FieldValues>({
       }
       fieldErrors = (fieldErrors as Record<string, unknown>)[segment];
     }
-
     if (
       fieldErrors === null ||
       fieldErrors === undefined ||
@@ -302,8 +354,6 @@ export function TranslatableFormInputField<T extends FieldValues>({
     ) {
       return false;
     }
-
-    // Check for errors in other languages
     return supportedLanguages.some(
       (language) =>
         language !== currentLanguage &&
@@ -311,65 +361,105 @@ export function TranslatableFormInputField<T extends FieldValues>({
     );
   }
 
+  if (supportedLanguages.length <= 1) {
+    return <ControlledLeaf field={field} renderLeaf={renderLeaf} />;
+  }
+
   return (
-    <>
-      {supportedLanguages.length > 1 ? (
-        <div className={cn('flex items-center', className)}>
-          <FormInputField
-            field={field}
-            type={type}
-            className="rounded-r-none"
-            {...props}
-          />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                className="rounded-l-none"
-                aria-invalid={hasErrorsInTranslations()}
-              >
-                <LanguagesIcon className="h-4 w-4" />
-                <span className="sr-only">Edit translations for {title}</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{title}</DialogTitle>
-                <DialogDescription>{description}</DialogDescription>
-              </DialogHeader>
+    <div className="flex items-center">
+      <ControlledLeaf
+        field={field}
+        renderLeaf={(leafField, controlProps) =>
+          renderLeaf(leafField, {
+            ...controlProps,
+            className: cn('rounded-r-none', controlProps.className),
+          })
+        }
+      />
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            variant="secondary"
+            className="h-full rounded-l-none"
+            aria-invalid={hasErrorsInTranslations()}
+            Icon={LanguagesIcon}
+          >
+            <span className="sr-only">Edit translations for {title}</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            {description !== null ? (
+              <DialogDescription>{description}</DialogDescription>
+            ) : null}
+          </DialogHeader>
 
-              <DialogBody>
-                {supportedLanguages.map((language) => {
-                  return (
-                    <FormField
-                      key={language}
-                      name={`${baseName}.${language}` as Path<T>}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel isRequired>{language}</FormLabel>
-                          <FormControl>
-                            <FormInputField field={field} type={type} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+          <DialogBody>
+            {supportedLanguages.map((language) => (
+              <FormField<TFieldValues>
+                key={language}
+                name={`${baseName}.${language}` as Path<TFieldValues>}
+                render={({ field: languageField }) => (
+                  <FormItem>
+                    <FormLabel isRequired={dialogItemRequired}>
+                      {language}
+                    </FormLabel>
+                    <ControlledLeaf
+                      field={languageField}
+                      renderLeaf={renderLeaf}
                     />
-                  );
-                })}
-              </DialogBody>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
+          </DialogBody>
 
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="secondary">Done</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ) : (
-        <FormInputField field={field} type={type} {...props} />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">Done</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+export interface TranslatableFormInputFieldProps<
+  T extends FieldValues,
+> extends FormInputFieldProps<T> {
+  title: string;
+  description: string;
+  supportedLanguages: SupportedLanguage[];
+  errors: FieldErrors;
+}
+
+/**
+ * A string FormInputField with a per-language translations dialog. Thin preset
+ * over TranslatableField for the common single-line string case.
+ */
+export function TranslatableFormInputField<T extends FieldValues>({
+  title,
+  description,
+  field,
+  supportedLanguages,
+  type,
+  errors,
+}: TranslatableFormInputFieldProps<T>): React.ReactElement {
+  return (
+    <TranslatableField
+      field={field}
+      title={title}
+      description={description}
+      supportedLanguages={supportedLanguages}
+      errors={errors}
+      dialogItemRequired
+      renderLeaf={(leafField, controlProps) => (
+        <FormInputField field={leafField} type={type} {...controlProps} />
       )}
-    </>
+    />
   );
 }
 
@@ -417,116 +507,29 @@ export interface TranslatableFormTextareaFieldProps<
 }
 
 /**
- * Renders a FormTextarea component with additional button to manage translations
- *
- * @todo TranslatableFormTextareaField and TranslatableFormInputField are almost identical. Consider refactoring to reduce duplication.
+ * A FormTextareaField with a per-language translations dialog. Thin preset over
+ * TranslatableField for the multi-line string case. Unlike the input preset, the
+ * dialog's per-language labels are not marked required.
  */
 export function TranslatableFormTextareaField<T extends FieldValues>({
   title,
   description,
   field,
   supportedLanguages,
-  className,
   errors,
-  ...props
 }: TranslatableFormTextareaFieldProps<T>): React.ReactElement {
-  const currentLanguage = field.name.split('.').pop() as SupportedLanguage;
-  const baseName = field.name.split('.').slice(0, -1).join('.');
-
-  /**
-   * Returns true if there are errors in the translations for the current field
-   * other than the current language.
-   */
-  function hasErrorsInTranslations(): boolean {
-    // Traverse the errors object to reach the base field errors
-    let fieldErrors: unknown = errors;
-    for (const segment of baseName.split('.')) {
-      if (
-        fieldErrors === null ||
-        fieldErrors === undefined ||
-        typeof fieldErrors !== 'object'
-      ) {
-        return false;
-      }
-      fieldErrors = (fieldErrors as Record<string, unknown>)[segment];
-    }
-
-    if (
-      fieldErrors === null ||
-      fieldErrors === undefined ||
-      typeof fieldErrors !== 'object'
-    ) {
-      return false;
-    }
-
-    // Check for errors in other languages
-    return supportedLanguages.some(
-      (language) =>
-        language !== currentLanguage &&
-        (fieldErrors as Record<string, unknown>)[language] !== undefined
-    );
-  }
-
   return (
-    <>
-      {supportedLanguages.length > 1 ? (
-        <div className={cn('flex', className)}>
-          <FormTextareaField
-            field={field}
-            className="rounded-r-none"
-            {...props}
-          />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                className="h-full rounded-l-none"
-                aria-invalid={hasErrorsInTranslations()}
-              >
-                <LanguagesIcon className="h-4 w-4" />
-                <span className="sr-only">Edit translations for {title}</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{title}</DialogTitle>
-                <DialogDescription>{description}</DialogDescription>
-              </DialogHeader>
-
-              <DialogBody>
-                {supportedLanguages.map((language) => {
-                  return (
-                    <FormField
-                      key={language}
-                      name={
-                        `${field.name.split('.').slice(0, -1).join('.')}.${language}` as Path<T>
-                      }
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel isRequired={false}>{language}</FormLabel>
-                          <FormControl>
-                            <FormTextareaField field={field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  );
-                })}
-              </DialogBody>
-
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="secondary">Done</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ) : (
-        <FormTextareaField field={field} {...props} />
+    <TranslatableField
+      field={field}
+      title={title}
+      description={description}
+      supportedLanguages={supportedLanguages}
+      errors={errors}
+      dialogItemRequired={false}
+      renderLeaf={(leafField, controlProps) => (
+        <FormTextareaField field={leafField} {...controlProps} />
       )}
-    </>
+    />
   );
 }
 
@@ -732,10 +735,10 @@ function FormToggleField<TFieldValues extends FieldValues>({
 interface FormSelectFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> extends React.ComponentProps<typeof Select> {
+> extends FieldControlProps {
   field: ControllerRenderProps<TFieldValues, TName>;
   fieldDefinition: StringSelectFieldDefinition | NumberSelectFieldDefinition;
-  className?: string;
+  disabled: boolean;
 }
 
 /**
@@ -743,12 +746,17 @@ interface FormSelectFieldProps<
  * index because Radix forbids empty item values, which string options can hold.
  * Selecting an item stores the option's value, so the Value keeps the correct
  * string or number type. A "None" item clears optional fields.
+ *
+ * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
+ * land on the SelectTrigger, the real focusable button, so the label points at it
+ * and focus-on-error works (they used to land on the non-DOM Radix Select root).
  */
 function FormSelectField<TFieldValues extends FieldValues>({
   field,
   fieldDefinition,
+  disabled,
   className,
-  ...props
+  ...controlProps
 }: FormSelectFieldProps<TFieldValues>): React.ReactElement {
   const { translateContent } = useProject();
 
@@ -775,14 +783,19 @@ function FormSelectField<TFieldValues extends FieldValues>({
 
   return (
     <Select
-      {...props}
       name={field.name}
+      disabled={disabled}
       value={selectedIndex === -1 ? '' : String(selectedIndex)}
       onValueChange={(selected) =>
         field.onChange(fieldDefinition.options[Number(selected)]?.value ?? null)
       }
     >
-      <SelectTrigger className={className} onBlur={field.onBlur}>
+      <SelectTrigger
+        {...controlProps}
+        className={className}
+        ref={field.ref}
+        onBlur={field.onBlur}
+      >
         <SelectValue placeholder="Select an option" />
       </SelectTrigger>
       <SelectContent>
@@ -802,9 +815,10 @@ function FormSelectField<TFieldValues extends FieldValues>({
 interface FormSlugFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> extends React.ComponentProps<'input'> {
+> extends FieldControlProps {
   field: ControllerRenderProps<TFieldValues, TName>;
   fieldDefinition: SlugFieldDefinition;
+  disabled: boolean;
 }
 
 /**
@@ -817,8 +831,9 @@ interface FormSlugFieldProps<
 function FormSlugField<TFieldValues extends FieldValues>({
   field,
   fieldDefinition,
+  disabled,
   className,
-  ...props
+  ...controlProps
 }: FormSlugFieldProps<TFieldValues>): React.ReactElement {
   const fieldDefinitions = useFieldDefinitions();
   const { control } = useFormContext<TFieldValues>();
@@ -881,11 +896,12 @@ function FormSlugField<TFieldValues extends FieldValues>({
       <FormInputField
         field={field}
         data-slot="input-group-control"
+        disabled={disabled}
         className={cn(
           'flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent',
           className
         )}
-        {...props}
+        {...controlProps}
         onBlur={() => {
           field.onBlur();
           // Core only accepts canonical slugs for this field's configuration
@@ -921,10 +937,10 @@ function FormSlugField<TFieldValues extends FieldValues>({
 interface FormMarkdownFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> {
+> extends FieldControlProps {
   field: ControllerRenderProps<TFieldValues, TName>;
   fieldDefinition: MarkdownFieldDefinition;
-  className?: string;
+  disabled: boolean;
 }
 
 function isMdAstRoot(value: unknown): value is MdAstRoot {
@@ -939,42 +955,55 @@ function isMdAstRoot(value: unknown): value is MdAstRoot {
 /**
  * Thin adapter that binds the Milkdown based MarkdownEditor to a form field.
  * The Value is Core's mdast tree or null when empty.
+ *
+ * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
+ * land on the wrapper around the editor. The editor itself is a Milkdown
+ * contenteditable, so this associates the label/description/error and marks the
+ * field touched on blur without reaching into the editor internals.
  */
 function FormMarkdownField<TFieldValues extends FieldValues>({
   field,
   fieldDefinition,
+  disabled,
   className,
+  ...controlProps
 }: FormMarkdownFieldProps<TFieldValues>): React.ReactElement {
   return (
-    <MarkdownEditor
-      value={isMdAstRoot(field.value) ? field.value : null}
-      onChange={field.onChange}
-      fieldDefinition={fieldDefinition}
-      disabled={fieldDefinition.isDisabled}
-      className={className}
-    />
+    <div {...controlProps} ref={field.ref} onBlur={field.onBlur}>
+      <MarkdownEditor
+        value={isMdAstRoot(field.value) ? field.value : null}
+        onChange={field.onChange}
+        fieldDefinition={fieldDefinition}
+        disabled={disabled}
+        className={className}
+      />
+    </div>
   );
 }
 
 interface FormAssetFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> {
+> extends FieldControlProps {
   field: ControllerRenderProps<TFieldValues, TName>;
   fieldDefinition: AssetFieldDefinition;
-  disabled?: boolean;
-  required?: boolean;
+  disabled: boolean;
 }
 
 /**
  * Form field component for selecting one or multiple existing Assets.
  * Opens a dialog to browse and select assets from the project.
  * The field value is an array of ValueContentReferenceToAsset objects.
+ *
+ * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
+ * land on the dialog trigger, the field's focusable control, so the label points
+ * at it and focus-on-error works.
  */
 function FormAssetField<TFieldValues extends FieldValues>({
   field,
   fieldDefinition,
   disabled,
+  ...controlProps
 }: FormAssetFieldProps<TFieldValues>): React.ReactElement {
   const { projectId } = useProject();
   const { data: assetList, isPending: isReadingAssets } = useQueryNoError(
@@ -1049,6 +1078,9 @@ function FormAssetField<TFieldValues extends FieldValues>({
       <Dialog>
         <DialogTrigger asChild>
           <Button
+            {...controlProps}
+            ref={field.ref}
+            onBlur={field.onBlur}
             variant="secondary"
             type="button"
             disabled={disabled === true || maxReached}
@@ -1146,22 +1178,26 @@ function FormAssetField<TFieldValues extends FieldValues>({
 interface FormEntryFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> {
+> extends FieldControlProps {
   field: ControllerRenderProps<TFieldValues, TName>;
   fieldDefinition: EntryFieldDefinition;
-  disabled?: boolean;
-  required?: boolean;
+  disabled: boolean;
 }
 
 /**
  * Form field component for selecting one or multiple existing Entries.
  * Opens a dialog to browse and select entries from allowed collections.
  * The field value is an array of ValueContentReferenceToEntry objects.
+ *
+ * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
+ * land on the dialog trigger, the field's focusable control, so the label points
+ * at it and focus-on-error works.
  */
 function FormEntryField<TFieldValues extends FieldValues>({
   field,
   fieldDefinition,
   disabled,
+  ...controlProps
 }: FormEntryFieldProps<TFieldValues>): React.ReactElement {
   const { projectId, translateContent } = useProject();
   const { data: collectionList, isPending: isReadingCollections } =
@@ -1305,6 +1341,9 @@ function FormEntryField<TFieldValues extends FieldValues>({
       <Dialog>
         <DialogTrigger asChild>
           <Button
+            {...controlProps}
+            ref={field.ref}
+            onBlur={field.onBlur}
             variant="secondary"
             type="button"
             disabled={disabled === true || maxReached}
@@ -1419,368 +1458,295 @@ function FormEntryField<TFieldValues extends FieldValues>({
 export interface FormComponentFromFieldDefinitionProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> {
+> extends FieldControlProps {
   field: ControllerRenderProps<TFieldValues, TName>;
   fieldDefinition: FieldDefinition;
-  className?: string;
 }
 
 /**
- * Renders a component based on the fieldDefinition property
- * e.g. a text input for fieldType "text"
- * or a toggle switch for fieldType "toggle".
+ * The props a RenderSpec's leaf receives. The leaf is value-typed: it owns no form
+ * path, only the already-bound `field` (value / onChange / onBlur / ref), the
+ * definition it renders, whether it is disabled, and the control-association props
+ * to place on the real input. It stays generic over the form value shape (like the
+ * leaf wrappers) so the same `TFieldValues` chains from the Controller through the
+ * dispatch to the leaf with no cast at any boundary.
+ */
+export interface FieldInputProps<
+  TFieldValues extends FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> {
+  field: ControllerRenderProps<TFieldValues, TName>;
+  fieldDefinition: FieldDefinition;
+  disabled: boolean;
+  controlProps: FieldControlProps;
+}
+
+/**
+ * One field type's render contract, the RENDER facet of the field registry (see
+ * contributing/renderer/dynamic-form-field-generation.md). It maps a runtime field
+ * type to the value-typed leaf input that draws it, sharing the `FieldType` spine
+ * with the authoring `DefinitionSpec` registry.
+ */
+export interface RenderSpec {
+  // Generic over the form value shape so the caller's `field` flows through without
+  // a cast (RHF's ControllerRenderProps is invariant, so a fixed `FieldValues` here
+  // would not accept a concrete caller's field).
+  renderInput: <
+    TFieldValues extends FieldValues,
+    TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  >(
+    props: FieldInputProps<TFieldValues, TName>
+  ) => React.ReactNode;
+  // Whether the Value is per-language. Core stores every value type except
+  // `component` as a per-language record (see @elek-io/core docs/fields.md), so
+  // every rendered type is translatable and gets the per-language dialog when the
+  // Project has more than one language.
+  translatable: boolean;
+}
+
+/**
+ * The RENDER registry: field type to leaf input. It replaces the hand-synced
+ * `renderableFieldTypes` set and the type switch. Being an exhaustive
+ * `Record<FieldType, RenderSpec>`, a new Core field type fails to compile here
+ * until it is given an entry.
+ */
+const RENDER_REGISTRY: Record<FieldType, RenderSpec> = {
+  text: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormInputField
+        field={field}
+        type="text"
+        disabled={disabled}
+        {...controlProps}
+      />
+    ),
+  },
+  telephone: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormInputField
+        field={field}
+        type="telephone"
+        disabled={disabled}
+        {...controlProps}
+      />
+    ),
+  },
+  email: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormInputField
+        field={field}
+        type="email"
+        disabled={disabled}
+        {...controlProps}
+      />
+    ),
+  },
+  number: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormInputField
+        field={field}
+        type="number"
+        disabled={disabled}
+        {...controlProps}
+      />
+    ),
+  },
+  url: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormInputField
+        field={field}
+        type="url"
+        disabled={disabled}
+        {...controlProps}
+      />
+    ),
+  },
+  ipv4: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormInputField
+        field={field}
+        type="ipv4"
+        disabled={disabled}
+        {...controlProps}
+      />
+    ),
+  },
+  time: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormInputField
+        field={field}
+        type="time"
+        disabled={disabled}
+        {...controlProps}
+      />
+    ),
+  },
+  textarea: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormTextareaField field={field} disabled={disabled} {...controlProps} />
+    ),
+  },
+  date: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormDateField field={field} disabled={disabled} {...controlProps} />
+    ),
+  },
+  datetime: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormDatetimeField field={field} disabled={disabled} {...controlProps} />
+    ),
+  },
+  toggle: {
+    translatable: true,
+    renderInput: ({ field, disabled, controlProps }) => (
+      <FormToggleField field={field} disabled={disabled} {...controlProps} />
+    ),
+  },
+  range: {
+    translatable: true,
+    // The Slider's min / max are its functional value domain, not HTML constraint
+    // attributes, so they stay. This is the one exception to "the registry emits no
+    // native constraint attributes".
+    renderInput: ({ field, fieldDefinition, disabled, controlProps }) => {
+      if (fieldDefinition.fieldType !== 'range') {
+        return null;
+      }
+      return (
+        <FormRangeField
+          field={field}
+          min={fieldDefinition.min}
+          max={fieldDefinition.max}
+          step={1} // @todo Core needs to support this too
+          disabled={disabled}
+          {...controlProps}
+        />
+      );
+    },
+  },
+  select: {
+    translatable: true,
+    renderInput: ({ field, fieldDefinition, disabled, controlProps }) => {
+      if (fieldDefinition.fieldType !== 'select') {
+        return null;
+      }
+      return (
+        <FormSelectField
+          field={field}
+          fieldDefinition={fieldDefinition}
+          disabled={disabled}
+          {...controlProps}
+        />
+      );
+    },
+  },
+  slug: {
+    translatable: true,
+    renderInput: ({ field, fieldDefinition, disabled, controlProps }) => {
+      if (fieldDefinition.fieldType !== 'slug') {
+        return null;
+      }
+      return (
+        <FormSlugField
+          field={field}
+          fieldDefinition={fieldDefinition}
+          disabled={disabled}
+          {...controlProps}
+        />
+      );
+    },
+  },
+  asset: {
+    translatable: true,
+    renderInput: ({ field, fieldDefinition, disabled, controlProps }) => {
+      if (fieldDefinition.fieldType !== 'asset') {
+        return null;
+      }
+      return (
+        <FormAssetField
+          field={field}
+          fieldDefinition={fieldDefinition}
+          disabled={disabled}
+          {...controlProps}
+        />
+      );
+    },
+  },
+  entry: {
+    translatable: true,
+    renderInput: ({ field, fieldDefinition, disabled, controlProps }) => {
+      if (fieldDefinition.fieldType !== 'entry') {
+        return null;
+      }
+      return (
+        <FormEntryField
+          field={field}
+          fieldDefinition={fieldDefinition}
+          disabled={disabled}
+          {...controlProps}
+        />
+      );
+    },
+  },
+  markdown: {
+    translatable: true,
+    renderInput: ({ field, fieldDefinition, disabled, controlProps }) => {
+      if (fieldDefinition.fieldType !== 'markdown') {
+        return null;
+      }
+      return (
+        <FormMarkdownField
+          field={field}
+          fieldDefinition={fieldDefinition}
+          disabled={disabled}
+          {...controlProps}
+        />
+      );
+    },
+  },
+  // `dynamic` cannot be rendered yet (its content is a flat Component array, not a
+  // per-language record). Its entry keeps the Record exhaustive and draws the muted
+  // placeholder so a Collection carrying one (via Core, the API, or a migration)
+  // does not crash the entry form, the collection editor, or a diff. Not
+  // translatable, so FormFieldFromDefinition renders it without the language dialog.
+  // See contributing/not-yet-implemented.md.
+  dynamic: {
+    translatable: false,
+    renderInput: ({ fieldDefinition }) => (
+      <div className="rounded-md border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+        The &quot;{fieldDefinition.fieldType}&quot; field type can&apos;t be
+        displayed yet.
+      </div>
+    ),
+  },
+};
+
+/**
+ * Renders the leaf input for a field definition by looking its field type up in
+ * the exhaustive RENDER_REGISTRY. The registry emits no native constraint
+ * attributes (`required`, `min`, `max`, `minLength`, `maxLength`); zod owns
+ * validation. The Slider's value domain is the sole exception (see its entry).
  */
 function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
   field,
   fieldDefinition,
-  ...props
-}: FormComponentFromFieldDefinitionProps<TFieldValues>): React.ReactElement {
-  switch (fieldDefinition.fieldType) {
-    case 'text':
-    case 'telephone':
-    case 'email':
-    case 'number':
-    case 'url':
-    case 'ipv4':
-    case 'time':
-      return (
-        <FormInputField
-          type={fieldDefinition.fieldType}
-          // Text input specific props
-          minLength={
-            'min' in fieldDefinition
-              ? fieldDefinition.min !== null
-                ? fieldDefinition.min
-                : undefined
-              : undefined
-          }
-          maxLength={
-            'max' in fieldDefinition
-              ? fieldDefinition.max !== null
-                ? fieldDefinition.max
-                : undefined
-              : undefined
-          }
-          // Number input specific props
-          min={
-            'min' in fieldDefinition
-              ? fieldDefinition.min !== null
-                ? fieldDefinition.min
-                : undefined
-              : undefined
-          }
-          max={
-            'max' in fieldDefinition
-              ? fieldDefinition.max !== null
-                ? fieldDefinition.max
-                : undefined
-              : undefined
-          }
-          // Props common to all input types
-          defaultValue={
-            fieldDefinition.defaultValue !== null
-              ? fieldDefinition.defaultValue
-              : undefined
-          }
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
-          field={field}
-          {...props}
-        />
-      );
-    case 'textarea':
-      return (
-        <FormTextareaField
-          minLength={
-            fieldDefinition.min !== null ? fieldDefinition.min : undefined
-          }
-          maxLength={
-            fieldDefinition.max !== null ? fieldDefinition.max : undefined
-          }
-          defaultValue={
-            fieldDefinition.defaultValue !== null
-              ? fieldDefinition.defaultValue
-              : undefined
-          }
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
-          field={field}
-          {...props}
-        />
-      );
-    case 'range':
-      return (
-        <FormRangeField
-          defaultValue={[fieldDefinition.defaultValue]}
-          min={fieldDefinition.min}
-          max={fieldDefinition.max}
-          step={1} // @todo Core needs to support this too
-          disabled={fieldDefinition.isDisabled}
-          field={field}
-          {...props}
-        />
-      );
-    case 'toggle':
-      return (
-        <FormToggleField
-          defaultChecked={fieldDefinition.defaultValue}
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
-          field={field}
-          {...props}
-        />
-      );
-    case 'date':
-      return (
-        <FormDateField
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
-          field={field}
-          {...props}
-          value={
-            fieldDefinition.defaultValue !== null
-              ? fieldDefinition.defaultValue
-              : undefined
-          }
-        />
-      );
-    case 'asset':
-      return (
-        <FormAssetField
-          fieldDefinition={fieldDefinition}
-          disabled={fieldDefinition.isDisabled}
-          required={fieldDefinition.isRequired}
-          field={field}
-          {...props}
-        />
-      );
-    case 'entry':
-      return (
-        <FormEntryField
-          fieldDefinition={fieldDefinition}
-          disabled={fieldDefinition.isDisabled}
-          required={fieldDefinition.isRequired}
-          field={field}
-          {...props}
-        />
-      );
-    case 'datetime':
-      return (
-        <FormDatetimeField
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
-          field={field}
-          {...props}
-        />
-      );
-    case 'select':
-      return (
-        <FormSelectField
-          fieldDefinition={fieldDefinition}
-          disabled={fieldDefinition.isDisabled}
-          required={fieldDefinition.isRequired}
-          field={field}
-          {...props}
-        />
-      );
-    case 'slug':
-      return (
-        <FormSlugField
-          fieldDefinition={fieldDefinition}
-          required={fieldDefinition.isRequired}
-          disabled={fieldDefinition.isDisabled}
-          field={field}
-          {...props}
-        />
-      );
-    case 'markdown':
-      return (
-        <FormMarkdownField
-          fieldDefinition={fieldDefinition}
-          field={field}
-          {...props}
-        />
-      );
-    case 'dynamic':
-      throw new Error(
-        `[FormComponentFromFieldDefinition] Unsupported fieldType "${fieldDefinition.fieldType}"`
-      );
-  }
-}
-
-// Field types FormComponentFromFieldDefinition can render. Keep in sync with the
-// switch above. FormFieldFromDefinition uses this to show a placeholder instead of
-// crashing when a Collection contains a not-yet-supported type (which can arrive via
-// Core, the API, or a migration). See contributing/not-yet-implemented.md.
-const renderableFieldTypes: ReadonlySet<FieldType> = new Set([
-  'text',
-  'textarea',
-  'number',
-  'range',
-  'toggle',
-  'asset',
-  'entry',
-  'date',
-  'datetime',
-  'time',
-  'email',
-  'url',
-  'telephone',
-  'ipv4',
-  'select',
-  'slug',
-  'markdown',
-]);
-
-export interface FormComponentFromFieldDefinitionTranslatableProps<
-  TFieldValues extends FieldValues,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TContext = any,
-  TTransformedValues = TFieldValues,
-> extends FormComponentFromFieldDefinitionProps<TFieldValues> {
-  form: UseFormReturn<TFieldValues, TContext, TTransformedValues>;
-  supportedLanguages: SupportedLanguage[];
-}
-
-/**
- * Renders a component based on the fieldDefinition property
- * e.g. a text input for fieldType "text"
- * or a toggle switch for fieldType "toggle".
- *
- * Additionally, if there are multiple supported languages,
- * it renders a button next to the field that opens a dialog
- * where translations for all supported languages can be entered.
- */
-function FormComponentFromFieldDefinitionTranslatable<
-  TFieldValues extends FieldValues,
->({
-  form,
-  field,
-  fieldDefinition,
-  supportedLanguages,
-  className,
-  ...props
-}: FormComponentFromFieldDefinitionTranslatableProps<TFieldValues>): React.ReactElement {
-  const { translateContent } = useProject();
-  const nameArray = field.name.split('.');
-  const currentLanguage = nameArray[nameArray.length - 1] as SupportedLanguage;
-  const baseName = field.name
-    .split('.')
-    .slice(0, -1)
-    .join('.') as FieldPath<TFieldValues>;
-
-  /**
-   * Returns true if there are errors in the translations for the current field
-   * other than the current language.
-   */
-  function hasErrorsInTranslations(): boolean {
-    // Traverse the errors object to reach the base field errors
-    let fieldErrors: unknown = form.formState.errors;
-    for (const segment of baseName.split('.')) {
-      if (typeof fieldErrors !== 'object' || fieldErrors === null) {
-        return false;
-      }
-      fieldErrors = (fieldErrors as Record<string, unknown>)[segment];
-    }
-
-    if (typeof fieldErrors !== 'object' || fieldErrors === null) {
-      return false;
-    }
-
-    // Check for errors in other languages
-    return supportedLanguages.some(
-      (language) =>
-        language !== currentLanguage &&
-        (fieldErrors as Record<string, unknown>)[language] !== undefined
-    );
-  }
-
-  return (
-    <>
-      {supportedLanguages.length > 1 ? (
-        <div className={cn('flex items-center', className)}>
-          <FormComponentFromFieldDefinition
-            field={field}
-            fieldDefinition={fieldDefinition}
-            className="rounded-r-none"
-            {...props}
-          />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="secondary"
-                className="h-full rounded-l-none"
-                aria-invalid={hasErrorsInTranslations()}
-                Icon={LanguagesIcon}
-              >
-                <span className="sr-only">
-                  Edit translations for{' '}
-                  {translateContent({
-                    key: 'fieldDefinition.label',
-                    record: fieldDefinition.label,
-                  })}
-                </span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {translateContent({
-                    key: 'fieldDefinition.label',
-                    record: fieldDefinition.label,
-                  })}
-                </DialogTitle>
-                {fieldDefinition.description !== null ? (
-                  <DialogDescription>
-                    {translateContent({
-                      key: 'fieldDefinition.description',
-                      record: fieldDefinition.description,
-                    })}
-                  </DialogDescription>
-                ) : null}
-              </DialogHeader>
-
-              <DialogBody>
-                {supportedLanguages.map((language) => {
-                  return (
-                    <FormField
-                      key={language}
-                      name={`${baseName}.${language}`}
-                      render={({ field }) => (
-                        <FormItem>
-                          {/* Translations into supported languages are always required! */}
-                          <FormLabel isRequired>{language}</FormLabel>
-                          <FormControl>
-                            <FormComponentFromFieldDefinition
-                              field={field}
-                              fieldDefinition={fieldDefinition}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  );
-                })}
-              </DialogBody>
-
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="secondary">Done</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ) : (
-        <FormComponentFromFieldDefinition
-          field={field}
-          fieldDefinition={fieldDefinition}
-          {...props}
-        />
-      )}
-    </>
-  );
+  ...controlProps
+}: FormComponentFromFieldDefinitionProps<TFieldValues>): React.ReactNode {
+  return RENDER_REGISTRY[fieldDefinition.fieldType].renderInput({
+    field,
+    fieldDefinition,
+    disabled: fieldDefinition.isDisabled,
+    controlProps,
+  });
 }
 
 interface FormFieldFromDefinitionProps<TFieldValues extends FieldValues> {
@@ -1788,24 +1754,20 @@ interface FormFieldFromDefinitionProps<TFieldValues extends FieldValues> {
   form: UseFormReturn<TFieldValues>;
   name: FieldPath<TFieldValues>;
   supportedLanguages: SupportedLanguage[];
-  isDraggable?: boolean;
-  isEditable?: boolean;
-  onDelete?: (fieldDefinition: FieldDefinition) => void;
   className?: string;
 }
 
 /**
- * Renders a complete, translatable form field with label, description, validation message
- * and the actual input component based on the given field definition.
+ * Renders a complete, translatable entry field bound to the form at `name`: the
+ * label, the value-typed input from the registry, the description and the
+ * validation message. For a non-editable definition preview in the collection
+ * editor, use FormFieldDefinitionPreview instead.
  */
 function FormFieldFromDefinition<TFieldValues extends FieldValues>({
   form,
   name,
   fieldDefinition,
   supportedLanguages,
-  isDraggable = false,
-  isEditable = false,
-  onDelete,
   className,
 }: FormFieldFromDefinitionProps<TFieldValues>): React.ReactElement {
   const { translateContent } = useProject();
@@ -1817,80 +1779,192 @@ function FormFieldFromDefinition<TFieldValues extends FieldValues>({
       render={({ field }) => (
         <FormItem
           className={cn(
-            `col-span-12 flex items-center ${fieldWidth(fieldDefinition.inputWidth)}`,
+            `col-span-12 ${fieldWidth(fieldDefinition.inputWidth)}`,
             className
           )}
         >
-          <div className="flex flex-col">
-            {isDraggable === true ? (
-              <DragHandle
-                id={fieldDefinition.id}
-                className={cn({
-                  'rounded-b-none':
-                    isEditable === true || onDelete !== undefined,
-                })}
-              />
-            ) : null}
-            {isEditable === true ? (
-              <Button
-                Icon={EditIcon}
-                variant="secondary"
-                size="icon"
-                className={cn({
-                  'rounded-none':
-                    isDraggable === true && onDelete !== undefined,
-                  'rounded-t-none': isDraggable === true,
-                  'rounded-b-none': onDelete !== undefined,
-                })}
-              />
-            ) : null}
-            {onDelete !== undefined ? (
-              <Button
-                Icon={TrashIcon}
-                variant="destructive"
-                size="icon"
-                onClick={() => onDelete(fieldDefinition)}
-                className={cn({
-                  'rounded-t-none': isDraggable === true || isEditable === true,
-                })}
-              />
-            ) : null}
-          </div>
-          <div className="flex w-full flex-col gap-2">
-            <FormLabel isRequired={fieldDefinition.isRequired}>
-              {translateContent({
+          <FormLabel isRequired={fieldDefinition.isRequired}>
+            {translateContent({
+              key: 'fieldDefinition.label',
+              record: fieldDefinition.label,
+            })}
+          </FormLabel>
+          {RENDER_REGISTRY[fieldDefinition.fieldType].translatable ? (
+            <TranslatableField
+              field={field}
+              title={translateContent({
                 key: 'fieldDefinition.label',
                 record: fieldDefinition.label,
               })}
-            </FormLabel>
-            {renderableFieldTypes.has(fieldDefinition.fieldType) ? (
-              <FormControl>
-                <FormComponentFromFieldDefinitionTranslatable
-                  form={form}
-                  field={field}
+              description={
+                fieldDefinition.description !== null
+                  ? translateContent({
+                      key: 'fieldDefinition.description',
+                      record: fieldDefinition.description,
+                    })
+                  : null
+              }
+              supportedLanguages={supportedLanguages}
+              errors={form.formState.errors}
+              // The entry renderer requires every supported language, so the
+              // dialog marks each one required.
+              dialogItemRequired
+              renderLeaf={(leafField, controlProps) => (
+                <FormComponentFromFieldDefinition
+                  field={leafField}
                   fieldDefinition={fieldDefinition}
-                  supportedLanguages={supportedLanguages}
+                  {...controlProps}
                 />
-              </FormControl>
-            ) : (
-              <div className="rounded-md border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                The &quot;{fieldDefinition.fieldType}&quot; field type
-                can&apos;t be displayed yet.
-              </div>
-            )}
-            {fieldDefinition.description !== null ? (
-              <FormDescription>
-                {translateContent({
-                  key: 'fieldDefinition.description',
-                  record: fieldDefinition.description,
-                })}
-              </FormDescription>
-            ) : null}
-            <FormMessage />
-          </div>
+              )}
+            />
+          ) : (
+            // Non-translatable types (only `dynamic` today) render straight
+            // through the registry, which draws the muted placeholder, with no
+            // language dialog.
+            <FormComponentFromFieldDefinition
+              field={field}
+              fieldDefinition={fieldDefinition}
+            />
+          )}
+          {fieldDefinition.description !== null ? (
+            <FormDescription>
+              {translateContent({
+                key: 'fieldDefinition.description',
+                record: fieldDefinition.description,
+              })}
+            </FormDescription>
+          ) : null}
+          <FormMessage />
         </FormItem>
       )}
     />
+  );
+}
+
+interface FormFieldDefinitionPreviewProps {
+  fieldDefinition: FieldDefinition;
+  isDraggable?: boolean;
+  isEditable?: boolean;
+  onDelete?: ((fieldDefinition: FieldDefinition) => void) | undefined;
+  className?: string;
+}
+
+/**
+ * A static, disabled Value for the preview. The preview only shows the shape of an
+ * input, so references show an empty selection and every other type shows its
+ * default (or nothing for the string and mdast types).
+ */
+function previewFieldValue(fieldDefinition: FieldDefinition): unknown {
+  if (fieldDefinition.valueType === 'reference') {
+    return [];
+  }
+  if (
+    fieldDefinition.valueType === 'boolean' ||
+    fieldDefinition.valueType === 'number'
+  ) {
+    return fieldDefinition.defaultValue;
+  }
+  return null;
+}
+
+/**
+ * A non-editable preview of a field definition for the collection editor. It draws
+ * the label, a disabled example input from the registry, the description and the
+ * drag / edit / delete chrome. Unlike FormFieldFromDefinition it is NOT bound to a
+ * form: the example input holds a static value, so there are no phantom form paths
+ * and the label associates with a real (disabled) input.
+ */
+function FormFieldDefinitionPreview({
+  fieldDefinition,
+  isDraggable = false,
+  isEditable = false,
+  onDelete,
+  className,
+}: FormFieldDefinitionPreviewProps): React.ReactElement {
+  const { translateContent } = useProject();
+  const id = React.useId();
+  const inputId = `${id}-preview-input`;
+  const descriptionId = `${id}-preview-description`;
+  const description =
+    fieldDefinition.description !== null
+      ? translateContent({
+          key: 'fieldDefinition.description',
+          record: fieldDefinition.description,
+        })
+      : null;
+  const previewField: ControllerRenderProps<FieldValues> = {
+    name: `preview-${fieldDefinition.id}`,
+    value: previewFieldValue(fieldDefinition),
+    onChange: () => {},
+    onBlur: () => {},
+    ref: () => {},
+  };
+
+  return (
+    <div
+      className={cn(
+        `col-span-12 flex items-center gap-2 ${fieldWidth(fieldDefinition.inputWidth)}`,
+        className
+      )}
+    >
+      <div className="flex flex-col">
+        {isDraggable === true ? (
+          <DragHandle
+            id={fieldDefinition.id}
+            className={cn({
+              'rounded-b-none': isEditable === true || onDelete !== undefined,
+            })}
+          />
+        ) : null}
+        {isEditable === true ? (
+          <Button
+            Icon={EditIcon}
+            variant="secondary"
+            size="icon"
+            className={cn({
+              'rounded-none': isDraggable === true && onDelete !== undefined,
+              'rounded-t-none': isDraggable === true,
+              'rounded-b-none': onDelete !== undefined,
+            })}
+          />
+        ) : null}
+        {onDelete !== undefined ? (
+          <Button
+            Icon={TrashIcon}
+            variant="destructive"
+            size="icon"
+            onClick={() => onDelete(fieldDefinition)}
+            className={cn({
+              'rounded-t-none': isDraggable === true || isEditable === true,
+            })}
+          />
+        ) : null}
+      </div>
+      <div className="flex w-full flex-col gap-2">
+        <Label htmlFor={inputId} isRequired={fieldDefinition.isRequired}>
+          {translateContent({
+            key: 'fieldDefinition.label',
+            record: fieldDefinition.label,
+          })}
+        </Label>
+        {RENDER_REGISTRY[fieldDefinition.fieldType].renderInput({
+          field: previewField,
+          fieldDefinition,
+          disabled: true,
+          controlProps: {
+            id: inputId,
+            ...(description !== null
+              ? { 'aria-describedby': descriptionId }
+              : {}),
+          },
+        })}
+        {description !== null ? (
+          <p id={descriptionId} className="text-sm text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -1909,4 +1983,5 @@ export {
   FormSelectField,
   FormSlugField,
   FormFieldFromDefinition,
+  FormFieldDefinitionPreview,
 };

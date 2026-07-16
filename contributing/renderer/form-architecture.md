@@ -560,14 +560,19 @@ Each step is independently shippable and E2E-green; no big-bang.
    reuses read-only, so it landed **behind new E2E first**: a slug-source-picker
    test (previously uncovered), a dirty-gate test on a definition-only edit, and a
    collection-diff render test. Was not covered by the PoC.
-4. **(Higher risk) Fold the entry renderer onto the registry.** This rewrites
-   `FormComponentFromFieldDefinition`/`FormFieldFromDefinition` inside the
-   1912-line `form.tsx`, shared by entry create/update, entry diff, **and** the
-   collection create/update/diff previews (which bind via `@ts-ignore` phantom
-   paths). It also dedupes the ×3 translatable dialog to one `TranslatableField`.
-   Because ~6 surfaces depend on that file, split it per field-type group behind
-   the entry and history specs; do **not** land it in one commit. Not covered by
-   the PoC.
+4. **(Done) Fold the entry renderer onto the registry.** `FormComponentFromFieldDefinition`
+   is now a lookup into an exhaustive `RENDER_REGISTRY: Record<FieldType, RenderSpec>`
+   (the RENDER facet), replacing the 18-case switch and the hand-synced
+   `renderableFieldTypes` set; a new Core type is a compile error until it has an
+   entry. Each `RenderSpec` is a value-typed `renderInput` leaf (id/aria land on the
+   real input via `ControlledLeaf`/`useFormField`, not a Radix `Slot`) plus a
+   `translatable` flag. The ×3 translatable dialog collapsed to one `TranslatableField`
+   (with `TranslatableFormInputField`/`TranslatableFormTextareaField` as thin presets),
+   the leaves emit no native constraint attributes (except the range Slider's domain),
+   and the collection editor's `@ts-ignore` phantom-path previews became a bound-free
+   `FormFieldDefinitionPreview` (real disabled input, proper label). Landed per
+   field-type group behind the entry, history and accessibility specs (see the
+   [render registry section](./dynamic-form-field-generation.md#the-render-registry)).
 5. **Migrate remaining route forms to `AppForm`/`SubmitButton`.** Delete
    per-form `noValidate`, per-route `useId`, the async resolver closures, and add
    the missing dirty/pending gates uniformly. Give Clone Project a resolver.

@@ -280,14 +280,15 @@ test.describe('Collections', () => {
     });
 
     // The first "Title" appends, its slug auto-derives to "title". The appended
-    // definition renders a preview labelled "Title" in the form (a Slot+Fragment
-    // nesting breaks the preview input's label association, so count the visible
-    // label text rather than getByLabel).
+    // definition renders a preview whose label associates with a real (disabled)
+    // input, so it is addressable by getByLabel.
     await addFieldDefinition(mainWindow, {
       label: 'Title',
       description: 'The title of the article',
     });
-    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+    await expect(mainWindow.getByLabel('Title', { exact: true })).toHaveCount(
+      1
+    );
 
     // A second "Title" derives the same "title" slug. The sheet's own duplicate
     // check rejects it before appending, so the sheet stays open (expectRejected)
@@ -309,7 +310,9 @@ test.describe('Collections', () => {
     // Closing the sheet leaves exactly one "title" definition appended.
     await mainWindow.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
-    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+    await expect(mainWindow.getByLabel('Title', { exact: true })).toHaveCount(
+      1
+    );
   });
 
   // P3-04 (field-definition bounds refinement, min>max)

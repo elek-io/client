@@ -23,7 +23,7 @@ import {
   FormControl,
   FormDescription,
   FormField,
-  FormFieldFromDefinition,
+  FormFieldDefinitionPreview,
   FormInputField,
   FormItem,
   FormLabel,
@@ -164,16 +164,14 @@ export function CollectionForm<
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired>Collection name (Plural)</FormLabel>
-                    <FormControl>
-                      <TranslatableFormInputField
-                        title="Collection name (Plural)"
-                        description='The name of your new collection. Choose a short name in plural that explains the content of the collection - e.g. "Blogposts".'
-                        type="text"
-                        field={field}
-                        errors={collectionForm.formState.errors}
-                        supportedLanguages={project.settings.language.supported}
-                      />
-                    </FormControl>
+                    <TranslatableFormInputField
+                      title="Collection name (Plural)"
+                      description='The name of your new collection. Choose a short name in plural that explains the content of the collection - e.g. "Blogposts".'
+                      type="text"
+                      field={field}
+                      errors={collectionForm.formState.errors}
+                      supportedLanguages={project.settings.language.supported}
+                    />
                     <FormDescription>
                       The name of your new collection. Choose a short name in
                       plural that explains the content of the collection - e.g.
@@ -190,16 +188,14 @@ export function CollectionForm<
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-5">
                     <FormLabel isRequired>Entry name (Singular)</FormLabel>
-                    <FormControl>
-                      <TranslatableFormInputField
-                        title="Entry name (Singular)"
-                        description='The name of each Entry inside your new Collection. Choose a short name in singular - e.g. "Blogpost".'
-                        type="text"
-                        field={field}
-                        errors={collectionForm.formState.errors}
-                        supportedLanguages={project.settings.language.supported}
-                      />
-                    </FormControl>
+                    <TranslatableFormInputField
+                      title="Entry name (Singular)"
+                      description='The name of each Entry inside your new Collection. Choose a short name in singular - e.g. "Blogpost".'
+                      type="text"
+                      field={field}
+                      errors={collectionForm.formState.errors}
+                      supportedLanguages={project.settings.language.supported}
+                    />
                     <FormDescription>
                       The name of each Entry inside your new Collection. Choose
                       a short name in singular - e.g. &quot;Blogpost&quot;.
@@ -215,15 +211,13 @@ export function CollectionForm<
                 render={({ field }) => (
                   <FormItem className="col-span-12 sm:col-span-12">
                     <FormLabel isRequired>Description</FormLabel>
-                    <FormControl>
-                      <TranslatableFormTextareaField
-                        title="Description"
-                        description="A description of what this new Collection is used for."
-                        field={field}
-                        errors={collectionForm.formState.errors}
-                        supportedLanguages={project.settings.language.supported}
-                      />
-                    </FormControl>
+                    <TranslatableFormTextareaField
+                      title="Description"
+                      description="A description of what this new Collection is used for."
+                      field={field}
+                      errors={collectionForm.formState.errors}
+                      supportedLanguages={project.settings.language.supported}
+                    />
                     <FormDescription>
                       A description of what this new Collection is used for.
                     </FormDescription>
@@ -311,15 +305,9 @@ export function CollectionForm<
                           </FieldLegend>
                           <FieldGroup className="grid grid-cols-12 gap-6">
                             {fieldDefinition.fieldDefinitions.map((member) => (
-                              <FormFieldFromDefinition
+                              <FormFieldDefinitionPreview
                                 key={member.id}
                                 fieldDefinition={member}
-                                form={collectionForm}
-                                // @ts-ignore This is only to display the field
-                                name={`currentFields.field-${member.id}.content`}
-                                supportedLanguages={
-                                  project.settings.language.supported
-                                }
                               />
                             ))}
                           </FieldGroup>
@@ -333,12 +321,8 @@ export function CollectionForm<
                       key={fieldDefinition.id}
                       id={fieldDefinition.id}
                     >
-                      <FormFieldFromDefinition
+                      <FormFieldDefinitionPreview
                         fieldDefinition={fieldDefinition}
-                        form={collectionForm}
-                        // @ts-ignore This is only to display the field, not to actually edit anything but the order of the fields
-                        name={`currentFields.field-${fieldDefinition.id}.content`}
-                        supportedLanguages={project.settings.language.supported}
                         isDraggable={isViewOnly === false}
                         isEditable={isViewOnly === false}
                         onDelete={
