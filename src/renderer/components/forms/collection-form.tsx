@@ -48,7 +48,7 @@ import {
   supportedIconSchema,
 } from '@elek-io/core';
 
-export interface CollectionFormProps<
+interface CollectionFormProps<
   TFieldValues extends FieldValues,
   TTransformedValues extends FieldValues,
 > {
@@ -80,6 +80,10 @@ export function CollectionForm<
   // The many concrete collection fields (icon, name, description) use literal paths
   // RHF cannot resolve for a generic T, so view the form as the collection props for
   // those. The generic keeps the callers (create, update, diff) type-safe.
+  //
+  // This whole-form cast is the documented exception to the form-cast guardrail:
+  // eslint.config.mjs exempts this file from the `as unknown as UseFormReturn` ban.
+  // @todo Retire it (e.g. a per-mode non-generic component) and drop the exemption.
   const collectionForm =
     genericForm as unknown as UseFormReturn<UpdateCollectionProps>;
 

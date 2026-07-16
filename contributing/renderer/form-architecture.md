@@ -1,16 +1,19 @@
-# Form Architecture (design proposal)
+# Form Architecture (design record)
 
 > [!NOTE]
-> This is a **design proposal for human review**, not documentation of the
-> current code. It proposes rebuilding the renderer's form layer around one
-> blessed form primitive and a schema-driven field registry, adopted through a
-> strangler migration. Nothing here is implemented on `main`. A working
-> proof-of-concept of the hardest form (the "Add Field" sheet) exists on a
-> separate branch, see [Proof of concept](#proof-of-concept).
+> **Status: IMPLEMENTED.** This document is the design **record** for the
+> renderer's form layer: the problem, the four candidate architectures that were
+> weighed, and why the shipped one (a bespoke schema-driven form engine on
+> react-hook-form behind one blessed `AppForm` / `SubmitButton` primitive) was
+> chosen. It is kept for the rationale, not as instructions.
 >
-> When a decision here lands, fold the durable parts into
-> [`dynamic-form-field-generation.md`](./dynamic-form-field-generation.md) and
-> delete the superseded prose there.
+> For how the shipped architecture works day to day - `AppForm` / `SubmitButton`,
+> the authoring and render registries, the single `TranslatableField`,
+> `useAppMutation`, and the enforced invariants - read the living doc,
+> [`dynamic-form-field-generation.md`](./dynamic-form-field-generation.md). The
+> durable parts have been folded there. The **Landed** callouts below mark where
+> each proposal became code, and the [Guardrails](#guardrails) section records the
+> lint rules and test that now enforce the invariants.
 
 Forms are the largest surface of this app: **~6000 lines across 24 files**
 (`components/forms/*` plus `components/ui/form.tsx` at 1912 lines), 11
@@ -601,9 +604,12 @@ Each step is independently shippable and E2E-green; no big-bang.
    Update Asset never gating on pending; dirty gating stays per-form intent
    (`requireDirty` on updates and Create Entry) with the create-form inconsistency
    left as pinned by the specs. Clone Project gained `zodResolver(cloneProjectSchema)`.
-6. **Enable guardrails and delete dead code.** Turn on the lint rules below;
-   remove `getExampleFormField`, the commented-out preview block, and the
-   now-empty per-type files.
+6. **(Done) Enable guardrails and delete dead code.** The three lint rules and the
+   no-native-constraint-attributes test are in place (see [Guardrails](#guardrails))
+   and each was proven to fire on an intentional violation; `getExampleFormField`,
+   the commented-out preview block, and the per-type `*-value-definition-form.tsx`
+   files are gone. Both registries are exhaustive `Record<FieldType, ...>` and the
+   two hand-synced sets are deleted. **This closes the migration.**
 
 Steps 1–2 are the proof that the abstraction holds (and are what the PoC
 exercises). **Steps 3 and 4 are the genuinely risky ones** — they touch the
@@ -616,38 +622,59 @@ coherent, shippable app.
 
 ## Guardrails
 
-Make the fixed bug classes hard to reintroduce.
+> **Landed** (migration step 6). The lint rules and the test below are in place in
+> [`eslint.config.mjs`](../../eslint.config.mjs) and the E2E suite, and each was
+> proven to fire on an intentional violation. They make the fixed bug classes hard
+> to reintroduce. The compile-time guarantees (exhaustive registries, structural
+> `SubmitButton`/`AppForm`) are properties of the code, not separate rules.
 
-- **Lint: forbid raw `<form>` outside `app-form.tsx`.** A `no-restricted-syntax`
-  rule on `JSXOpeningElement[name.name='form']`, scoped by flat-config `files`
-  overrides to exempt `components/ui/app-form.tsx`. Kills layout-only `<form>`s
-  and stray submission paths (R14). (Blunt: it matches the literal element, which
-  is exactly what we want to ban here.)
-- **Lint: forbid a literal `type="submit"` outside `SubmitButton`.** Matchable via
-  `JSXAttribute[name.name='type'][value.value='submit']`; catches the common case,
-  though not a computed `type={var}` — acceptable, since submit controls should be
-  the primitive anyway (R7, R14).
-- **Lint: ban the whole-form cast patterns** `as unknown as UseFormReturn` /
-  `as unknown as Control` via `no-restricted-syntax` on the `TSAsExpression`
-  shape. AGENTS.md already forbids casts; this makes the _specific_ form-object
-  laundering enforceable (it will miss aliased casts, so it is a backstop, not a
-  proof) (R15).
+- **Lint: raw `<form>` outside `app-form.tsx` is an error.** A `no-restricted-syntax`
+  selector `JSXOpeningElement[name.name='form']` over the renderer, with a
+  flat-config `files` override exempting `components/ui/app-form.tsx`. Kills
+  layout-only `<form>`s and stray submission paths (R14). Blunt by design: it
+  matches the literal element, which is exactly what to ban here.
+- **Lint: a literal `type="submit"` outside `app-form.tsx` is an error.** Selector
+  `JSXAttribute[name.name='type'][value.value='submit']`, same app-form.tsx
+  exemption (`SubmitButton` lives there). Catches the common case; a computed
+  `type={var}` slips through, which is acceptable - it is a backstop, and submit
+  controls should be the primitive anyway (R7, R14).
+- **Lint: the whole-form laundering casts `as unknown as UseFormReturn` /
+  `... as Control` are an error.** Two `no-restricted-syntax` `TSAsExpression`
+  selectors (one per target type, so the config cannot fail to parse), applied as
+  a **denylist across the whole renderer** rather than a positive allowlist -
+  option (a) from the migration brief, so a new laundering cast anywhere in the
+  renderer is caught, not only in the registry/engine files. The three shared
+  `*Form` components (`project-form.tsx`, `collection-form.tsx`, `entry-form.tsx`)
+  are the one **documented, tracked exception**: each views its generic form as a
+  concrete `Update*Props` to address literal fields (the RHF generic-component
+  path tax; the render-fold removed the leaf-input casts but not these wrapper
+  ones). They are exempted by a file-scoped override, with an inline comment and a
+  `@todo` at each cast site. `asset-form.tsx` needs no exemption: it stays generic
+  and casts only field names (`as FieldPath<T>`), so it never launders the whole
+  form. Banning globally while those three casts exist would have left a red
+  baseline, which is not a guardrail; the denylist-plus-exemption keeps the tree
+  green and the exception explicit. It is a backstop, not a proof: an aliased or
+  single-step cast still slips through (R15).
 - **Not a lint rule: "forbid `useForm` outside `components/forms`".** Rejected as
-  self-contradictory — `AppForm` takes the `form` object as a _prop_, so every
-  route legitimately calls `useForm` and hands it in (all 11 do today). Centralize
-  the _policies_ in `AppForm`, not the `useForm` call.
-- **Type: exhaustive render registry.** `Record<FieldType, RenderSpec>` fails to
-  compile when Core adds a type — replacing the two hand-synced sets (R2).
+  self-contradictory - `AppForm` takes the `form` object as a _prop_, so every
+  route legitimately calls `useForm` and hands it in. Centralize the _policies_ in
+  `AppForm`, not the `useForm` call.
+- **Type: exhaustive registries.** Both `RENDER_REGISTRY` and
+  `FIELD_DEFINITION_REGISTRY` are `Record<FieldType, ...>`, so adding a Core field
+  type fails to compile until both have an entry. This replaced the two
+  hand-synced sets (`renderableFieldTypes`, `unimplementedFieldTypes`), which are
+  gone (R2).
 - **Type: `SubmitButton` sets `type="submit"` structurally**, `AppForm` owns
-  `noValidate`, the `id`, and `stopPropagation` — none are props a caller can get
+  `noValidate`, the `id`, and `stopPropagation` - none are props a caller can get
   wrong.
 - **Registry emits no `required`/`min`/`max`/`minLength`/`maxLength`** on inputs
-  (except the range Slider's functional domain). A test asserts a rendered
-  required field carries no `required` attribute (zod owns it), locking the
-  footgun shut.
-- **E2E: keep asserting `aria-invalid` and axe**, and add coverage for the
-  currently-untested authoring paths (slug source, select options, non-text field
-  types) as they move onto the registry.
+  (except the range Slider's functional domain, which Radix surfaces as
+  `aria-valuemin`/`aria-valuemax`). An E2E test (`entries.spec.ts`) asserts a
+  rendered required text and number field carry none of those attributes and that
+  the range slider keeps its `aria-value*` domain, locking the footgun shut.
+- **E2E: keep asserting `aria-invalid` and axe**, with coverage for the authoring
+  paths (slug source, select options, non-text field types) that moved onto the
+  registry.
 
 ---
 

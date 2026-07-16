@@ -86,6 +86,10 @@ export function ProjectForm<
   // The project fields (name, description, language settings) use literal paths RHF
   // cannot resolve for a generic T, so view the form as UpdateProjectProps for those.
   // The generic keeps the callers (create, settings, diff) type-safe.
+  //
+  // This whole-form cast is the documented exception to the form-cast guardrail:
+  // eslint.config.mjs exempts this file from the `as unknown as UseFormReturn` ban.
+  // @todo Retire it (e.g. a per-mode non-generic component) and drop the exemption.
   const projectForm =
     genericForm as unknown as UseFormReturn<UpdateProjectProps>;
   const [

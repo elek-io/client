@@ -48,7 +48,7 @@ import {
 //
 // See contributing/renderer/form-architecture.md.
 
-export interface AddFieldSheetProps {
+interface AddFieldSheetProps {
   project: Project;
   // The Collection's field definitions as their real value (real ids), bound
   // through a Controller in the Collection form. Read here only for the

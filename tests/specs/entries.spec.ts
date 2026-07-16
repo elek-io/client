@@ -9,6 +9,8 @@ import {
   datetimeFieldDefinition,
   emailFieldDefinition,
   navigateToCollection,
+  numberFieldDefinition,
+  rangeFieldDefinition,
   textFieldDefinition,
   timeFieldDefinition,
   updateCollectionViaIpc,
@@ -85,14 +87,23 @@ test.describe('Entries', () => {
     ).toBeVisible();
   });
 
-  test('renders a required field without a native required attribute', async ({
+  test('renders required fields without native constraint attributes', async ({
     mainWindow,
   }) => {
     await setUserViaIpc(mainWindow);
     const project = await createProjectViaIpc(mainWindow);
-    // The default Collection's Title field is required (isRequired: true).
+    // A required text field with a min/max character length, a required number
+    // field with a min/max bound, and a range field. The text and number
+    // definitions carry constraints the browser would enforce natively
+    // (`minLength`/`maxLength` and `min`/`max`); the render registry must emit
+    // none of them.
     const collection = await createCollectionViaIpc(mainWindow, {
       projectId: project.id,
+      fieldDefinitions: [
+        textFieldDefinition({ min: 2, max: 60 }),
+        numberFieldDefinition(),
+        rangeFieldDefinition(),
+      ],
     });
 
     await navigateToEntryCreate(mainWindow, {
@@ -100,14 +111,30 @@ test.describe('Entries', () => {
       collectionId: collection.id,
     });
 
-    // The renderer emits no native `required` attribute even for a required
-    // field: zod (through react-hook-form) is the single validator, and a native
-    // constraint would let the browser block submit before handleSubmit runs
-    // (which is why the form is noValidate). aria-invalid, not `required`, is how
-    // invalidity is surfaced.
-    const title = mainWindow.getByLabel('Title', { exact: true });
-    await expect(title).toBeVisible();
-    expect(await title.getAttribute('required')).toBeNull();
+    // zod (through react-hook-form) is the single validator and the form is
+    // noValidate, so the registry emits no native constraint attribute. A native
+    // constraint would let the browser block submit before handleSubmit runs (the
+    // footgun the redesign closes); aria-invalid, not these, surfaces invalidity.
+    for (const label of ['Title', 'Rating']) {
+      const input = mainWindow.getByLabel(label, { exact: true });
+      await expect(input).toBeVisible();
+      for (const attribute of [
+        'required',
+        'min',
+        'max',
+        'minlength',
+        'maxlength',
+      ]) {
+        await expect(input).not.toHaveAttribute(attribute);
+      }
+    }
+
+    // The one exception: the range field's Slider min/max are its functional value
+    // domain, which Radix exposes as aria-valuemin / aria-valuemax on the
+    // role=slider thumb, not as HTML constraint attributes, so they stay.
+    const slider = mainWindow.getByRole('slider');
+    await expect(slider).toHaveAttribute('aria-valuemin', '0');
+    await expect(slider).toHaveAttribute('aria-valuemax', '10');
   });
 
   test('updates an entry through the form, gated on a dirty change', async ({

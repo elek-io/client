@@ -64,6 +64,10 @@ export function EntryForm<
   // FormFieldFromDefinition only reads the form's control to register inputs, so the
   // submit (transformed) type is irrelevant to it. View the form by its field values
   // so it stays single-generic and the dual generic does not leak into form.tsx.
+  //
+  // This whole-form cast is the documented exception to the form-cast guardrail:
+  // eslint.config.mjs exempts this file from the `as unknown as UseFormReturn` ban.
+  // @todo Retire it (e.g. a per-mode non-generic component) and drop the exemption.
   const fieldForm = entryForm as unknown as UseFormReturn<TFieldValues>;
 
   // The path is provably a key of `values` (a Record), but react-hook-form's

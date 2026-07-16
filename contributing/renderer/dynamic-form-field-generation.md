@@ -14,6 +14,16 @@ Users need the flexibility to create custom content types without modifying code
 
 We can't hardcode these forms since they are user-defined, instead we use **field definitions** to describe each field's properties, allowing the UI to render appropriate form controls dynamically.
 
+## Form invariants
+
+Read these before touching any form. Each is enforced (a compile error, a lint error, or a test), so a change that breaks one fails CI rather than shipping. The rationale and the alternatives that were weighed live in the design record, [form-architecture.md](./form-architecture.md).
+
+- **Every form is an `AppForm`.** It is the only place a `<form>` element is written. It owns `noValidate`, the `handleSubmit` wiring, the `id` a detached button associates with, `stopPropagation` (so a nested form cannot cross-submit its parent), and the view-only `mode`. A lint rule bans a raw `<form>` anywhere else.
+- **Every submit control is a `SubmitButton`.** It sets `type="submit"` and the form association structurally, so a submit button can never silently do nothing. A lint rule bans a literal `type="submit"` outside `app-form.tsx`.
+- **Every field type has a `DefinitionSpec` and a `RenderSpec`.** Both `FIELD_DEFINITION_REGISTRY` (authoring) and `RENDER_REGISTRY` (rendering) are exhaustive `Record<FieldType, ...>`, so adding a Core field type is a compile error until both have an entry. No hand-synced "which types are supported" set exists.
+- **The registry emits no native constraint attributes.** No `required` / `min` / `max` / `minLength` / `maxLength` reaches an input; zod (through react-hook-form) is the sole validator. The one exception is the range `Slider`'s `min` / `max` (its functional value domain). A test asserts a required field renders without them.
+- **By-type `CoreError` handling goes through `useAppMutation`.** Its `handled` map is the single source of the "expected" set; never a blanket `throwOnError: false`. Unhandled failures reach the root error boundary. See [error-handling.md](../error-handling.md).
+
 ## Field Definitions
 
 A field definition is a JSON object that contains all necessary information to render and validate a form field.
@@ -152,26 +162,26 @@ Rendering is driven by a **registry** keyed on Core's `FieldType`, the RENDER fa
 ### Example Usage
 
 ```typescript
+import { AppForm } from '@renderer/components/ui/app-form';
 import { FormFieldFromDefinition } from '@renderer/components/ui/form';
 
 // In your component (see entry-form.tsx):
 const project = /* ... current Project ... */;
 const collection = /* ... Collection with fieldDefinitions ... */;
 
+// AppForm is the only place a <form> element is written (see "Form invariants").
 return (
-  <Form {...form}>
-    <form>
-      {collection.fieldDefinitions.map((fieldDefinition) => (
-        <FormFieldFromDefinition
-          key={fieldDefinition.id}
-          fieldDefinition={fieldDefinition}
-          form={form}
-          name={`values.${fieldDefinition.slug}.content.${project.settings.language.default}`}
-          supportedLanguages={project.settings.language.supported}
-        />
-      ))}
-    </form>
-  </Form>
+  <AppForm form={form} onSubmit={onSubmit} id={id}>
+    {collection.fieldDefinitions.map((fieldDefinition) => (
+      <FormFieldFromDefinition
+        key={fieldDefinition.id}
+        fieldDefinition={fieldDefinition}
+        form={form}
+        name={`values.${fieldDefinition.slug}.content.${project.settings.language.default}`}
+        supportedLanguages={project.settings.language.supported}
+      />
+    ))}
+  </AppForm>
 );
 ```
 
@@ -261,30 +271,30 @@ const form = useForm({
 // Form validates automatically and shows error messages via FormMessage component
 ```
 
-### Submitting from the page header (`form={id}` and `noValidate`)
+### Submitting a form (AppForm, SubmitButton, FormActions)
 
-A form's primary action (Create, Save changes) is rendered in the `Page` header
-through `Page`'s `actions`, which is outside the `<form>` subtree. The button
-associates back to the form with `type="submit"` and `form={id}`, where the same
-`id` (from `useId()`) is passed to the form component. `Button` defaults to
-`type="button"`, so a submit button has to opt in with `type="submit"`.
+Every form renders through **`AppForm`** ([`components/ui/app-form.tsx`](../../src/renderer/components/ui/app-form.tsx)), the only component that writes a `<form>` element. It owns the policies that used to be pasted per call site:
 
-Because that button submits the form natively, the form must set `noValidate`.
-Zod (through react-hook-form) is the single source of validation, and the inputs
-carry native constraints too (`FormFieldFromDefinition` sets `required` from
-`isRequired`, and the Collection editor renders required field-definition preview
-inputs). Without `noValidate` the browser's native constraint check runs first,
-blocks the submit on an empty required input, and shows its own default message,
-so the `submit` event and `handleSubmit` never fire and no Zod error is shown.
-Every react-hook-form form that submits (the shared `*Form` components and the
-standalone route forms) sets `noValidate` for this reason.
+- **`noValidate`** is always set (it is not a prop, so it cannot be forgotten). Zod through react-hook-form is the single validator, so the browser's native constraint check must never run first. This is only safe because the render registry emits no native constraint attributes (see "The render registry"), so there is nothing for the browser to block submit on before `handleSubmit` fires.
+- **`handleSubmit`** is always wired, and the submit event is always `stopPropagation`d so an `AppForm` nested in another form's React subtree (a Sheet or Dialog inside a page that is itself a form) cannot cross-submit its parent through the React event bubble.
+- **`mode="view"`** renders the whole form read-only through a disabled `<fieldset>` and makes submit a no-op, so the diff and history views reuse the same component instead of a second read-only path.
+
+A form's primary action (Create, Save changes) usually lives in the `Page` header or a dialog/sheet footer, outside the `<form>` subtree. **`SubmitButton`** is the only submit control; it sets `type="submit"` and associates back with `form={id}` (the same `id` passed to `AppForm`). Because the association and the `type` are structural, a submit button can never silently do nothing.
+
+A detached button sits outside the form's provider and cannot read `formState` there. **`FormActions`** bridges that gap: wrap the header/footer area in `<FormActions form={form}>` and the enclosed `SubmitButton` gets the form id plus reactive gating. Pending gating (`isSubmitting`, spanning the awaited `mutateAsync`) is always on; dirty gating is opt-in per form through `requireDirty`.
+
+### Handling submit errors by type (useAppMutation)
+
+A form's `onSubmit` awaits a TanStack Query mutation. Most failures should reach the root error boundary, but some expected `CoreError` types (an Entry unique-value `Conflict`, for example) should be handled in place on the form instead of taking over the screen.
+
+**`useAppMutation`** ([`hooks/useAppMutation.ts`](../../src/renderer/hooks/useAppMutation.ts)) is the single home for that. Pass a `handled` map from `CoreError` type to an in-place handler; the hook derives both the mutation's `throwOnError` predicate (false only for the handled types) and a no-op `onError` from that one map, so the predicate and the dispatch can never drift. It returns a `handleError(error)` to call from the `catch` of `await mutateAsync(...)`. Every other failure still propagates to the boundary. Never opt a whole mutation out with a blanket `throwOnError: false`. See [error-handling.md](../error-handling.md).
 
 ### Form typing (react-hook-form + generated schemas)
 
 The generated entry and collection schemas transform a loose input into the strict `*Props` output (their `values` is a `z.pipe`, and Collections carry recursive mdast), so their `z.input` differs from their `z.output`. Two rules follow, both applied throughout the form code:
 
 - **Do not pass an explicit `useForm<...>()` generic** when the resolver comes from a generated or recursive Core schema. Let react-hook-form infer the types from `zodResolver(schema)`: the form values become the schema input (a loose `values` record) and `handleSubmit` yields the typed output (`CreateEntryProps` and so on). What actually breaks is passing the `*Props` output type as the sole generic: it makes the resolver unassignable and, for the recursive Collection schema, produces the "two unrelated types" error. A matched `useForm<z.input, unknown, z.output>` triple does type-check, even for the recursive schema, but inference is simpler and is what the code uses.
-- **Shared form components are generic over the schema input shape**, not the `*Props` union, so a concrete caller form (create, update, or a view-only diff) is assignable without variance errors. `EntryForm` / `CollectionForm` / `ProjectForm` / `DefaultFieldDefinitionForm` take `UseFormReturn<TFieldValues, unknown, TTransformedValues>` and narrow to a concrete props type internally to address literal paths (RHF's `FieldPath` cannot resolve a path for an unresolved generic). The Collection editor manages its `fieldDefinitions` field array as opaque `{ id }` rows because react-hook-form cannot type a field array whose element is the deep `FieldDefinitionOrGroup` union.
+- **Shared form components are generic over the schema input shape**, not the `*Props` union, so a concrete caller form (create, update, or a view-only diff) is assignable without variance errors. `EntryForm` / `CollectionForm` / `ProjectForm` / `DefaultFieldDefinitionForm` take `UseFormReturn<TFieldValues, unknown, TTransformedValues>` and view the form as a concrete props type internally to address literal paths (RHF's `FieldPath` cannot resolve a path for an unresolved generic). Those three `*Form` whole-form casts (`as unknown as UseFormReturn<Update*Props>`) are the one documented exception to the cast guardrail (see [Form invariants](#form-invariants)); `AssetForm` avoids even that by staying generic and casting only the field names (`as FieldPath<T>`). The Collection editor binds its `fieldDefinitions` as a single `Controller`-bound value (edited through typed append / remove / move helpers), not a `useFieldArray` of opaque `{ id }` rows: react-hook-form cannot type a field array whose element is the deep `FieldDefinitionOrGroup` union, and the opaque rows previously overwrote the definitions' real ids, which was the latent slug-source id bug.
 
 **Benefits:**
 

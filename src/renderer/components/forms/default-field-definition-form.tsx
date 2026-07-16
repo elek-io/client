@@ -48,7 +48,7 @@ import {
 export type AuthorableFieldType =
   Exclude<FieldType, 'select'> | 'stringSelect' | 'numberSelect';
 
-export interface DefaultFieldDefinitionFormProps<
+interface DefaultFieldDefinitionFormProps<
   T extends FieldValues,
 > extends HTMLAttributes<HTMLFormElement> {
   form: UseFormReturn<T>;
