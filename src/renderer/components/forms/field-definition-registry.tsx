@@ -57,19 +57,19 @@ import {
   type UrlFieldDefinition,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the schema-driven field-definition registry.
+// The schema-driven field-definition registry.
 //
-// One table keyed on Core's FieldType. Each entry turns a runtime field type
-// into its authoring form. The trivial scalar types are pure data (a spec: which
-// Core schema validates it, a fresh draft, and the extra controls): text,
-// textarea, number, toggle, email, date, datetime, time, url, telephone, ipv4
-// and range. Complex types (select, slug, asset, entry, markdown) live in their
-// own file and are referenced here.
+// One exhaustive table keyed on Core's FieldType: every type Core defines has an
+// entry, so adding a field type to Core is a compile error here until it is
+// authored. Each entry turns a runtime field type into its authoring form. The
+// trivial scalar types are pure data (a spec: which Core schema validates it, a
+// fresh draft, and the extra controls): text, textarea, number, toggle, email,
+// date, datetime, time, url, telephone, ipv4 and range. Complex types (select,
+// slug, asset, entry, markdown) live in their own file and are referenced here.
 //
-// Every authorable field type is now registered; only 'dynamic' stays
-// unimplemented (disabled in the picker). The Add Field sheet still falls back to
-// the existing dispatcher for unregistered types, so nothing breaks, but that
-// path is now dead for pickable types and is deleted in the next migration step.
+// 'dynamic' is the one type that cannot be authored yet. Its entry renders a
+// short, non-interactive note so the Record stays exhaustive, and it is listed in
+// unauthorableFieldTypes so the Add Field picker disables it.
 //
 // See contributing/renderer/form-architecture.md.
 
@@ -387,12 +387,22 @@ const rangeSpec: DefinitionSpec<RangeFieldDefinition> = {
 };
 
 /**
- * The registry: field type to authoring form. A `Record<FieldType, ...>` here
- * would make Core adding a field type a compile error; the PoC uses a Partial
- * because it only migrates a representative subset.
+ * Field types Core defines but that cannot be authored yet. They still get a
+ * registry entry (a short note) so the Record stays exhaustive, but the Add Field
+ * picker disables them. This sits beside the registry so the two facts about an
+ * unauthorable type - its entry and its disabled state - stay together.
  */
-export const FIELD_DEFINITION_REGISTRY: Partial<
-  Record<FieldType, (props: DefinitionDraftProps) => ReactElement>
+export const unauthorableFieldTypes: ReadonlySet<FieldType> = new Set([
+  'dynamic',
+]);
+
+/**
+ * The registry: field type to authoring form. Exhaustive over Core's FieldType,
+ * so adding a field type to Core fails to compile here until it has an entry.
+ */
+export const FIELD_DEFINITION_REGISTRY: Record<
+  FieldType,
+  (props: DefinitionDraftProps) => ReactElement
 > = {
   text: (props) => <DefinitionDraft {...props} spec={textSpec} />,
   textarea: (props) => <DefinitionDraft {...props} spec={textareaSpec} />,
@@ -411,8 +421,12 @@ export const FIELD_DEFINITION_REGISTRY: Partial<
   asset: (props) => <AssetDefinitionDraft {...props} />,
   entry: (props) => <EntryDefinitionDraft {...props} />,
   markdown: (props) => <MarkdownDefinitionDraft {...props} />,
+  // 'dynamic' cannot be authored yet; this note keeps the Record exhaustive. It
+  // is unreachable through the picker, which disables it via
+  // unauthorableFieldTypes.
+  dynamic: () => (
+    <div className="rounded-md border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+      This field type can&apos;t be authored yet.
+    </div>
+  ),
 };
-
-export function isRegisteredFieldType(fieldType: FieldType): boolean {
-  return fieldType in FIELD_DEFINITION_REGISTRY;
-}

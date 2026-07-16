@@ -767,10 +767,13 @@ validates the definition). Against the packaged PoC build:
   Collections query inside their `Extras`; `markdown` carries the single resolver
   cast. Authoring for each is gated by a new E2E in `collections.spec.ts` (asset,
   entry-with-restriction, markdown feature toggles), and the pre-existing
-  slug-source test now drives the registry path. The `util.tsx` dispatcher and the
-  18 `*-value-definition-form.tsx` files are now dead but still present; deleting
+  slug-source test now drives the registry path. ~~The `util.tsx` dispatcher and
+  the `*-value-definition-form.tsx` files are now dead but still present; deleting
   them (with `getExampleFormField` and the sheet's fallback branch) is the next
-  step.
+  step.~~ — done since: the dispatcher, the 17 per-type files,
+  `getExampleFormField` and the sheet's fallback branch are deleted, and
+  `FIELD_DEFINITION_REGISTRY` is now an exhaustive `Record<FieldType, ...>` (with a
+  non-interactive `dynamic` entry) that is the single authoring path.
 
 ---
 

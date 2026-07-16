@@ -1,12 +1,11 @@
 import { Plus } from 'lucide-react';
-import { Fragment, useId, useRef, useState, type ReactElement } from 'react';
+import { useId, useState, type ReactElement } from 'react';
 
 import { type DefinitionDraftProps } from '@renderer/components/forms/field-definition-draft';
-import { FIELD_DEFINITION_REGISTRY } from '@renderer/components/forms/field-definition-registry';
 import {
-  FieldDefinitionForm,
-  type FieldDefinitionFormRef,
-} from '@renderer/components/forms/util';
+  FIELD_DEFINITION_REGISTRY,
+  unauthorableFieldTypes,
+} from '@renderer/components/forms/field-definition-registry';
 import { SubmitButton } from '@renderer/components/ui/app-form';
 import { Button } from '@renderer/components/ui/button';
 import {
@@ -40,19 +39,14 @@ import {
   type Project,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the Add Field sheet rebuilt on the new architecture.
-//
-// The hardest form in the app, self-contained. For a field type the registry
-// covers, the sheet renders ONE registry-driven AppForm and submits it through
+// The Add Field sheet, the hardest form in the app, self-contained. It renders
+// ONE registry-driven AppForm for the selected field type and submits it through
 // a real detached SubmitButton (form={id}) in the footer - one submission model,
-// no imperative ref. For types not yet migrated it falls back to the existing
-// FieldDefinitionForm dispatcher, so the app stays fully functional. This is the
-// strangler boundary in one file.
+// no imperative ref. The registry is exhaustive over Core's FieldType, so every
+// pickable type has an authoring form; 'dynamic' cannot be authored yet and is
+// disabled in the picker (see unauthorableFieldTypes).
 //
 // See contributing/renderer/form-architecture.md.
-
-// Field types Core defines but the desktop app has no definition form for yet.
-const unimplementedFieldTypes: ReadonlySet<FieldType> = new Set(['dynamic']);
 
 export interface AddFieldSheetProps {
   project: Project;
@@ -72,9 +66,6 @@ export function AddFieldSheet({
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
   const addFieldFormId = useId();
 
-  // Fallback path for not-yet-migrated field types (imperative ref, unchanged).
-  const legacyFormRef = useRef<FieldDefinitionFormRef>(null);
-
   const supportedLanguages = project.settings.language.supported;
   const defaultLanguage = project.settings.language.default;
 
@@ -89,13 +80,6 @@ export function AddFieldSheet({
     setIsOpen(false);
   };
 
-  async function addViaLegacyRef(): Promise<void> {
-    if (legacyFormRef.current) {
-      await legacyFormRef.current.addDefinition();
-    }
-  }
-
-  const renderRegistered = FIELD_DEFINITION_REGISTRY[selectedFieldType];
   const draftProps: DefinitionDraftProps = {
     id: addFieldFormId,
     existingSlugs,
@@ -139,7 +123,7 @@ export function AddFieldSheet({
                   <SelectItem
                     key={option}
                     value={option}
-                    disabled={unimplementedFieldTypes.has(option)}
+                    disabled={unauthorableFieldTypes.has(option)}
                   >
                     {option}
                   </SelectItem>
@@ -152,40 +136,20 @@ export function AddFieldSheet({
           </FormItem>
         </SheetHeader>
 
-        <SheetBody>
-          {renderRegistered ? (
-            // Keyed by type so switching the picker remounts with the right
-            // schema and defaults. One live form, not 18.
-            <Fragment key={selectedFieldType}>
-              {renderRegistered(draftProps)}
-            </Fragment>
-          ) : (
-            <FieldDefinitionForm
-              ref={legacyFormRef}
-              fieldDefinitions={fieldDefinitions}
-              onAppend={onAppend}
-              setIsAddFieldDefinitionSheetOpen={setIsOpen}
-              fieldType={selectedFieldType}
-              supportedLanguages={supportedLanguages}
-              defaultLanguage={defaultLanguage}
-            />
-          )}
+        {/* Keyed by type so switching the picker remounts the body with the
+        right schema and defaults. One live form, not 18. */}
+        <SheetBody key={selectedFieldType}>
+          {FIELD_DEFINITION_REGISTRY[selectedFieldType](draftProps)}
         </SheetBody>
 
         <SheetFooter>
-          {renderRegistered ? (
-            // Detached submit: the button lives in the footer, the form in the
-            // body; they associate through the HTML form attribute. Both are in
-            // the Sheet's portal, so the inner <form> is not DOM-nested in the
-            // Collection form.
-            <SubmitButton className="w-full" form={addFieldFormId}>
-              Add definition
-            </SubmitButton>
-          ) : (
-            <Button className="w-full" onClick={addViaLegacyRef}>
-              Add definition
-            </Button>
-          )}
+          {/* Detached submit: the button lives in the footer, the form in the
+          body; they associate through the HTML form attribute. Both are in the
+          Sheet's portal, so the inner <form> is not DOM-nested in the Collection
+          form. */}
+          <SubmitButton className="w-full" form={addFieldFormId}>
+            Add definition
+          </SubmitButton>
         </SheetFooter>
       </SheetContent>
     </Sheet>

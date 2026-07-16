@@ -18,9 +18,9 @@ Core's `fieldTypeSchema` defines 18 field types. The client implements a subset.
 - **Working end to end** (17): `text`, `textarea`, `number`, `range`, `toggle`, `asset`, `entry`, `date`, `datetime`, `time`, `email`, `url`, `telephone`, `ipv4`, `select`, `slug`, `markdown`.
 - **Not yet implemented** (1): `dynamic`. It is shown **disabled** in the "Add Field" picker so it cannot be authored, and any that still reaches the client (through Core, the API, or a migration) renders as a muted placeholder instead of crashing (see [Rendering unsupported field types](#rendering-unsupported-field-types)).
 
-Two sets are the source of truth for "what is implemented". Keep them in sync when adding a type:
+Two things are the source of truth for "what is implemented", one per side (authoring and rendering). Keep them current when adding a type:
 
-- `unimplementedFieldTypes` in [`collection-form.tsx`](../src/renderer/components/forms/collection-form.tsx) - types disabled in the picker.
+- `FIELD_DEFINITION_REGISTRY` in [`field-definition-registry.tsx`](../src/renderer/components/forms/field-definition-registry.tsx) - the exhaustive `Record<FieldType, ...>` of authoring forms. A type that cannot be authored yet still needs an entry (a short note) plus a listing in `unauthorableFieldTypes` beside it, which is what disables it in the "Add Field" picker.
 - `renderableFieldTypes` in [`ui/form.tsx`](../src/renderer/components/ui/form.tsx) - types `FormComponentFromFieldDefinition` can draw.
 
 ### What the missing type needs
@@ -31,10 +31,11 @@ Two sets are the source of truth for "what is implemented". Keep them in sync wh
 
 ### To implement a type
 
-1. Add a `<type>-value-definition-form.tsx`, plus a `useForm` and an `addDefinition` case in [`forms/util.tsx`](../src/renderer/components/forms/util.tsx).
-2. Add a case to `FormComponentFromFieldDefinition` in [`ui/form.tsx`](../src/renderer/components/ui/form.tsx), and add the type to `renderableFieldTypes`.
-3. Remove the type from `unimplementedFieldTypes` in [`collection-form.tsx`](../src/renderer/components/forms/collection-form.tsx).
-4. Confirm Core's `fieldTypeSchema` includes it.
+Authoring and rendering are two independent sides; a type can gain one before the other.
+
+1. **Authoring**: add a `DefinitionSpec` for the type. A trivial scalar is pure data (resolver + `makeDefaults` + optional `Extras`) added in [`field-definition-registry.tsx`](../src/renderer/components/forms/field-definition-registry.tsx); a complex type gets its own `<type>-field-definition.tsx`. Register it in `FIELD_DEFINITION_REGISTRY` (an exhaustive `Record<FieldType, ...>`, so it will not compile until you do) and remove it from `unauthorableFieldTypes` so the picker enables it.
+2. **Rendering**: add a case to `FormComponentFromFieldDefinition` in [`ui/form.tsx`](../src/renderer/components/ui/form.tsx), and add the type to `renderableFieldTypes`.
+3. Confirm Core's `fieldTypeSchema` includes it.
 
 ### Rendering unsupported field types
 
