@@ -410,4 +410,118 @@ test.describe('Collections', () => {
       /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
     );
   });
+
+  // Exercises the registry-driven range authoring form end to end. Range is the
+  // odd scalar migrated onto the registry: it is always required and its default,
+  // minimum and maximum are mandatory numbers, so it uses a distinct required
+  // bounds Extras rather than the optional MinMaxRow the other scalars share.
+  // Reaching the Collection detail proves Core accepted the range definition
+  // authored through the new AppForm path.
+  test('adds a range field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'range'. The picker is the
+    // first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'range', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Rating');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('How good the article is');
+
+    // Range's default, minimum and maximum are required numbers, so their labels
+    // carry no "- optional" suffix and match exactly, unlike the text field's
+    // optional bounds. Filling all three before submit keeps the final state
+    // valid (1 <= 5 <= 10) regardless of intermediate values.
+    await sheet.getByLabel('Default value', { exact: true }).fill('5');
+    await sheet.getByLabel('Minimum', { exact: true }).fill('1');
+    await sheet.getByLabel('Maximum', { exact: true }).fill('10');
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the range field was added through the new path.
+    await expect(sheet).toBeHidden();
+    await expect(mainWindow.getByText('Rating', { exact: true })).toBeVisible();
+
+    // Creating the Collection reaches Core with the range definition. A uuid
+    // detail route (never 'create') means Core accepted it.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Covers the other registry path: date (and datetime) render their default
+  // value through a bespoke picker inline in the spec, not the shared
+  // DefaultValueInputField. The default is optional, so this drives the spec's
+  // wiring (fieldType, defaults, routing) without touching the date picker
+  // widget. Reaching the Collection detail proves Core accepted the definition.
+  test('adds a date field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'date'. The picker is the
+    // first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow.getByRole('option', { name: 'date', exact: true }).click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Published');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('When the article went live');
+
+    // The date default value is optional, so leave it empty and add the field.
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the date field was added through the new path.
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Published', { exact: true })
+    ).toBeVisible();
+
+    // Creating the Collection reaches Core with the date definition. A uuid
+    // detail route (never 'create') means Core accepted it.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
 });

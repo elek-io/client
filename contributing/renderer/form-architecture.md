@@ -656,15 +656,15 @@ value) is deliberately out of scope so the two migrations stay independent.
 
 ### What was built
 
-| File                                                          |     Lines | What                                                                                                                        |
-| ------------------------------------------------------------- | --------: | --------------------------------------------------------------------------------------------------------------------------- |
-| `src/renderer/components/ui/app-form.tsx`                     |       135 | `AppForm` + `SubmitButton` primitives                                                                                       |
-| `src/renderer/components/forms/field-definition-draft.tsx`    |       208 | the shared engine: `DefinitionSpec`, the one generic `DefinitionDraft` form, and the value-typed field helpers              |
-| `src/renderer/components/forms/field-definition-defaults.ts`  |        25 | `baseDefaults` (the shared-fields factory), in a component-free module                                                      |
-| `src/renderer/components/forms/field-definition-registry.tsx` |       221 | the map: scalar specs (`text`, `textarea`, `number`, `toggle`, `email`) as data + the `select` entry                        |
-| `src/renderer/components/forms/select-field-definition.tsx`   |       533 | `select` authoring: two specs (`stringSelect`/`numberSelect`), their option-array `Extras`, and the value-type picker       |
-| `src/renderer/components/forms/add-field-sheet.tsx`           |       198 | the sheet, self-contained: registry-driven `AppForm` + detached `SubmitButton`, falling back to the dispatcher for the rest |
-| `src/renderer/components/forms/collection-form.tsx`           | 458 → 342 | the inline Sheet + `useRef` + `useImperativeHandle` wiring replaced by `<AddFieldSheet>` (−116 lines)                       |
+| File                                                          |     Lines | What                                                                                                                                                                                                                   |
+| ------------------------------------------------------------- | --------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/renderer/components/ui/app-form.tsx`                     |       135 | `AppForm` + `SubmitButton` primitives                                                                                                                                                                                  |
+| `src/renderer/components/forms/field-definition-draft.tsx`    |       229 | the shared engine: `DefinitionSpec`, the one generic `DefinitionDraft` form, and the value-typed field helpers (`DefaultValueInputField` parameterized by Core field type, `MinMaxRow` with an optional/required flag) |
+| `src/renderer/components/forms/field-definition-defaults.ts`  |        25 | `baseDefaults` (the shared-fields factory), in a component-free module                                                                                                                                                 |
+| `src/renderer/components/forms/field-definition-registry.tsx` |       409 | the map: scalar specs (`text`, `textarea`, `number`, `toggle`, `email`, `date`, `datetime`, `time`, `url`, `telephone`, `ipv4`, `range`) as data + the `select` entry                                                  |
+| `src/renderer/components/forms/select-field-definition.tsx`   |       533 | `select` authoring: two specs (`stringSelect`/`numberSelect`), their option-array `Extras`, and the value-type picker                                                                                                  |
+| `src/renderer/components/forms/add-field-sheet.tsx`           |       198 | the sheet, self-contained: registry-driven `AppForm` + detached `SubmitButton`, falling back to the dispatcher for the rest                                                                                            |
+| `src/renderer/components/forms/collection-form.tsx`           | 458 → 342 | the inline Sheet + `useRef` + `useImperativeHandle` wiring replaced by `<AddFieldSheet>` (−116 lines)                                                                                                                  |
 
 ### How it behaves (verified in the packaged app + E2E)
 
@@ -728,17 +728,20 @@ Migrating it end to end gave a genuinely mixed, honest answer:
 ### E2E outcome
 
 `collections.spec.ts` drives the sheet directly (text add, duplicate-slug reject
-via `aria-invalid` + sheet-stays-open, min>max reject, and now a full `select`
-authoring flow: pick the type, fill the base, fill an option, add, then create the
-Collection so Core validates the definition). Against the packaged PoC build:
+via `aria-invalid` + sheet-stays-open, min>max reject, a full `select` authoring
+flow, and the newly-migrated scalars: a `range` add exercising its required
+default/min/max Extras and a `date` add exercising the bespoke-picker Extras path
+— each picks the type, fills the base, adds, then creates the Collection so Core
+validates the definition). Against the packaged PoC build:
 
-- **`collections.spec.ts`: 8/8 pass** — behavior parity with the old sheet plus
-  the new `select` flow (one iteration needed: the `sr-only` label carries an
-  "- optional" suffix, so the locator matches by prefix like the bounds labels).
-- **`collections` + `entries` + `history`/diff + `accessibility`: 21/21 pass** —
-  the file restructure and `select` migration do not regress the forms that reuse
-  `collection-form.tsx` read-only (diff/history), the entry forms, or the
-  axe-enforced Projects route.
+- **`collections.spec.ts`: 10/10 pass** — behavior parity with the old sheet plus
+  the `select`, `range` and `date` flows (one iteration needed: the `sr-only`
+  label carries an "- optional" suffix, so the locator matches by prefix like the
+  bounds labels).
+- **`collections` + `entries` + `history`/diff + `accessibility`: 23/23 pass** —
+  the file restructure and the `select`/scalar migrations do not regress the
+  forms that reuse `collection-form.tsx` read-only (diff/history), the entry
+  forms, or the axe-enforced Projects route.
 
 ### What the PoC does **not** prove
 

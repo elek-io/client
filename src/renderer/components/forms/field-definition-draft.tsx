@@ -26,6 +26,7 @@ import {
 import {
   type FieldDefinition,
   type FieldDefinitionBase,
+  type FieldType,
   type SupportedLanguage,
 } from '@elek-io/core';
 
@@ -42,13 +43,25 @@ import {
 // concrete spec) passes a real key with no cast. This is the value-typed field
 // contract the design doc describes, applied to the authoring forms.
 
-/** A "Default value" control with a plain text input. */
-export function DefaultValueTextField<Def extends FieldValues>({
+/** A "Default value" control backed by FormInputField, parameterized by the Core
+ * field type. FormInputField maps that to a valid HTML input type internally
+ * (telephone -> tel, ipv4 -> text, datetime -> datetime-local), so callers pass
+ * the Core field type rather than hand-rolling an HTML one. Shared by every
+ * string and number scalar whose only delta is the input type. */
+export function DefaultValueInputField<Def extends FieldValues>({
   form,
   name,
+  type,
+  isRequired = false,
+  description = 'The initial value for the field.',
+  placeholder,
 }: {
   form: UseFormReturn<Def>;
   name: FieldPath<Def>;
+  type: FieldType;
+  isRequired?: boolean;
+  description?: string;
+  placeholder?: string;
 }): ReactElement {
   return (
     <FormField
@@ -56,11 +69,15 @@ export function DefaultValueTextField<Def extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel isRequired={false}>Default value</FormLabel>
+          <FormLabel isRequired={isRequired}>Default value</FormLabel>
           <FormControl>
-            <FormInputField field={field} type="text" />
+            <FormInputField
+              field={field}
+              type={type}
+              placeholder={placeholder}
+            />
           </FormControl>
-          <FormDescription>The initial value for the field.</FormDescription>
+          <FormDescription>{description}</FormDescription>
           <FormMessage />
         </FormItem>
       )}
@@ -69,17 +86,21 @@ export function DefaultValueTextField<Def extends FieldValues>({
 }
 
 /** A "Minimum" / "Maximum" pair bound to numeric inputs. Shared by the string
- * length and number bound field types, differing only in the copy. */
+ * length and number bound field types, differing only in the copy. `isRequired`
+ * flips the labels between the optional bounds (text, number) and the required
+ * ones (range, whose min and max are mandatory numbers). */
 export function MinMaxRow<Def extends FieldValues>({
   form,
   minName,
   maxName,
   unit,
+  isRequired = false,
 }: {
   form: UseFormReturn<Def>;
   minName: FieldPath<Def>;
   maxName: FieldPath<Def>;
   unit: string;
+  isRequired?: boolean;
 }): ReactElement {
   return (
     <div className="flex flex-row items-center justify-between space-x-2">
@@ -88,7 +109,7 @@ export function MinMaxRow<Def extends FieldValues>({
         name={minName}
         render={({ field }) => (
           <FormItem>
-            <FormLabel isRequired={false}>Minimum</FormLabel>
+            <FormLabel isRequired={isRequired}>Minimum</FormLabel>
             <FormControl>
               <FormInputField field={field} type="number" />
             </FormControl>
@@ -102,7 +123,7 @@ export function MinMaxRow<Def extends FieldValues>({
         name={maxName}
         render={({ field }) => (
           <FormItem>
-            <FormLabel isRequired={false}>Maximum</FormLabel>
+            <FormLabel isRequired={isRequired}>Maximum</FormLabel>
             <FormControl>
               <FormInputField field={field} type="number" />
             </FormControl>

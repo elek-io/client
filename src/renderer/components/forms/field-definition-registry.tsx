@@ -3,7 +3,7 @@ import { type ReactElement } from 'react';
 
 import { baseDefaults } from '@renderer/components/forms/field-definition-defaults';
 import {
-  DefaultValueTextField,
+  DefaultValueInputField,
   DefinitionDraft,
   MinMaxRow,
   type DefinitionDraftProps,
@@ -12,6 +12,8 @@ import {
 import { SelectDefinitionDraft } from '@renderer/components/forms/select-field-definition';
 import {
   FormControl,
+  FormDateField,
+  FormDatetimeField,
   FormDescription,
   FormField,
   FormInputField,
@@ -23,27 +25,42 @@ import {
 import { Switch } from '@renderer/components/ui/switch';
 
 import {
+  dateFieldDefinitionSchema,
+  datetimeFieldDefinitionSchema,
   emailFieldDefinitionSchema,
+  ipv4FieldDefinitionSchema,
   numberFieldDefinitionSchema,
+  rangeFieldDefinitionSchema,
+  telephoneFieldDefinitionSchema,
   textFieldDefinitionSchema,
   textareaFieldDefinitionSchema,
+  timeFieldDefinitionSchema,
   toggleFieldDefinitionSchema,
+  urlFieldDefinitionSchema,
   uuid,
+  type DateFieldDefinition,
+  type DatetimeFieldDefinition,
   type EmailFieldDefinition,
   type FieldType,
+  type Ipv4FieldDefinition,
   type NumberFieldDefinition,
+  type RangeFieldDefinition,
+  type TelephoneFieldDefinition,
   type TextFieldDefinition,
   type TextareaFieldDefinition,
+  type TimeFieldDefinition,
   type ToggleFieldDefinition,
+  type UrlFieldDefinition,
 } from '@elek-io/core';
 
 // PROOF OF CONCEPT - the schema-driven field-definition registry.
 //
 // One table keyed on Core's FieldType. Each entry turns a runtime field type
 // into its authoring form. The trivial scalar types are pure data (a spec: which
-// Core schema validates it, a fresh draft, and the extra controls). Complex
-// types (select, and later slug/asset/entry/markdown) live in their own file and
-// are referenced here.
+// Core schema validates it, a fresh draft, and the extra controls): text,
+// textarea, number, toggle, email, date, datetime, time, url, telephone, ipv4
+// and range. Complex types (select, and later slug/asset/entry/markdown) live in
+// their own file and are referenced here.
 //
 // The Add Field sheet falls back to the existing dispatcher for types not
 // registered here, so the app stays fully functional while the strangler
@@ -65,7 +82,7 @@ const textSpec: DefinitionSpec<TextFieldDefinition> = {
   }),
   Extras: ({ form }) => (
     <>
-      <DefaultValueTextField form={form} name="defaultValue" />
+      <DefaultValueInputField form={form} name="defaultValue" type="text" />
       <MinMaxRow
         form={form}
         minName="min"
@@ -196,7 +213,171 @@ const emailSpec: DefinitionSpec<EmailFieldDefinition> = {
     defaultValue: null,
   }),
   Extras: ({ form }) => (
-    <DefaultValueTextField form={form} name="defaultValue" />
+    <DefaultValueInputField form={form} name="defaultValue" type="email" />
+  ),
+};
+
+const dateSpec: DefinitionSpec<DateFieldDefinition> = {
+  authorableFieldType: 'date',
+  resolver: zodResolver(dateFieldDefinitionSchema),
+  makeDefaults: (langs) => ({
+    ...baseDefaults(langs),
+    id: uuid(),
+    valueType: 'string',
+    fieldType: 'date',
+    defaultValue: null,
+  }),
+  // Dates use the bespoke date picker, not a FormInputField, so this stays inline
+  // rather than routing through DefaultValueInputField.
+  Extras: ({ form }) => (
+    <FormField
+      control={form.control}
+      name="defaultValue"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel isRequired={false}>Default value</FormLabel>
+          <FormControl>
+            <FormDateField field={field} />
+          </FormControl>
+          <FormDescription>The initial value for the field.</FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  ),
+};
+
+const datetimeSpec: DefinitionSpec<DatetimeFieldDefinition> = {
+  authorableFieldType: 'datetime',
+  resolver: zodResolver(datetimeFieldDefinitionSchema),
+  makeDefaults: (langs) => ({
+    ...baseDefaults(langs),
+    id: uuid(),
+    valueType: 'string',
+    fieldType: 'datetime',
+    defaultValue: null,
+  }),
+  // Like date, the datetime picker is bespoke; its description also calls out the
+  // local-time display and UTC storage, so it stays inline.
+  Extras: ({ form }) => (
+    <FormField
+      control={form.control}
+      name="defaultValue"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel isRequired={false}>Default value</FormLabel>
+          <FormControl>
+            <FormDatetimeField field={field} />
+          </FormControl>
+          <FormDescription>
+            The initial value for the field. It is shown in your local time and
+            stored as UTC.
+          </FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  ),
+};
+
+const timeSpec: DefinitionSpec<TimeFieldDefinition> = {
+  authorableFieldType: 'time',
+  resolver: zodResolver(timeFieldDefinitionSchema),
+  makeDefaults: (langs) => ({
+    ...baseDefaults(langs),
+    id: uuid(),
+    valueType: 'string',
+    fieldType: 'time',
+    defaultValue: null,
+  }),
+  Extras: ({ form }) => (
+    <DefaultValueInputField form={form} name="defaultValue" type="time" />
+  ),
+};
+
+const urlSpec: DefinitionSpec<UrlFieldDefinition> = {
+  authorableFieldType: 'url',
+  resolver: zodResolver(urlFieldDefinitionSchema),
+  makeDefaults: (langs) => ({
+    ...baseDefaults(langs),
+    id: uuid(),
+    valueType: 'string',
+    fieldType: 'url',
+    defaultValue: null,
+  }),
+  Extras: ({ form }) => (
+    <DefaultValueInputField form={form} name="defaultValue" type="url" />
+  ),
+};
+
+const telephoneSpec: DefinitionSpec<TelephoneFieldDefinition> = {
+  authorableFieldType: 'telephone',
+  resolver: zodResolver(telephoneFieldDefinitionSchema),
+  makeDefaults: (langs) => ({
+    ...baseDefaults(langs),
+    id: uuid(),
+    valueType: 'string',
+    fieldType: 'telephone',
+    defaultValue: null,
+  }),
+  Extras: ({ form }) => (
+    <DefaultValueInputField form={form} name="defaultValue" type="telephone" />
+  ),
+};
+
+const ipv4Spec: DefinitionSpec<Ipv4FieldDefinition> = {
+  authorableFieldType: 'ipv4',
+  resolver: zodResolver(ipv4FieldDefinitionSchema),
+  makeDefaults: (langs) => ({
+    ...baseDefaults(langs),
+    id: uuid(),
+    valueType: 'string',
+    fieldType: 'ipv4',
+    defaultValue: null,
+  }),
+  Extras: ({ form }) => (
+    <DefaultValueInputField
+      form={form}
+      name="defaultValue"
+      type="ipv4"
+      placeholder="192.168.1.1"
+    />
+  ),
+};
+
+const rangeSpec: DefinitionSpec<RangeFieldDefinition> = {
+  authorableFieldType: 'range',
+  resolver: zodResolver(rangeFieldDefinitionSchema),
+  // Range is the odd scalar: it is always required and its default, min and max
+  // are mandatory numbers (not nullable). baseDefaults already sets isRequired
+  // true and isUnique false, but both are re-narrowed here to Core's literals.
+  makeDefaults: (langs) => ({
+    ...baseDefaults(langs),
+    id: uuid(),
+    valueType: 'number',
+    fieldType: 'range',
+    defaultValue: 50,
+    min: 0,
+    max: 100,
+    isRequired: true,
+    isUnique: false,
+  }),
+  Extras: ({ form }) => (
+    <>
+      <DefaultValueInputField
+        form={form}
+        name="defaultValue"
+        type="number"
+        isRequired
+      />
+      <MinMaxRow
+        form={form}
+        minName="min"
+        maxName="max"
+        unit="Value the user is able to enter"
+        isRequired
+      />
+    </>
   ),
 };
 
@@ -213,6 +394,13 @@ export const FIELD_DEFINITION_REGISTRY: Partial<
   number: (props) => <DefinitionDraft {...props} spec={numberSpec} />,
   toggle: (props) => <DefinitionDraft {...props} spec={toggleSpec} />,
   email: (props) => <DefinitionDraft {...props} spec={emailSpec} />,
+  date: (props) => <DefinitionDraft {...props} spec={dateSpec} />,
+  datetime: (props) => <DefinitionDraft {...props} spec={datetimeSpec} />,
+  time: (props) => <DefinitionDraft {...props} spec={timeSpec} />,
+  url: (props) => <DefinitionDraft {...props} spec={urlSpec} />,
+  telephone: (props) => <DefinitionDraft {...props} spec={telephoneSpec} />,
+  ipv4: (props) => <DefinitionDraft {...props} spec={ipv4Spec} />,
+  range: (props) => <DefinitionDraft {...props} spec={rangeSpec} />,
   select: (props) => <SelectDefinitionDraft {...props} />,
 };
 
