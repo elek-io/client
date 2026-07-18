@@ -203,12 +203,17 @@ function FormMessage({
  * Control-association props the surrounding FormControl / FormItem injects onto
  * the real input, so the label's `htmlFor`, the description and the error message
  * all point at a focusable element (R10). A leaf spreads these onto its actual
- * input rather than a wrapper `<div>` or a non-DOM Radix root.
+ * input rather than a wrapper `<div>` or a non-DOM Radix root. `aria-required`
+ * rides along on the same bag so the required state reaches the real control (the
+ * registry emits no native `required`, so this is the sole required signal for
+ * assistive tech). It is only set for controls that accept it (see
+ * `ariaRequiredFor`).
  */
 interface FieldControlProps {
   id?: string;
   'aria-describedby'?: string;
   'aria-invalid'?: boolean;
+  'aria-required'?: boolean;
   className?: string;
 }
 
@@ -1731,10 +1736,32 @@ const RENDER_REGISTRY: Record<FieldType, RenderSpec> = {
 };
 
 /**
+ * Whether a field's required state should be exposed as `aria-required` on its
+ * control. This stands in for the native `required` attribute the registry no
+ * longer emits, so a screen reader still announces a required field. It is set
+ * only where `aria-required` is a valid ARIA attribute: the textbox / combobox /
+ * spinbutton controls, which are the string and number scalars plus select. The
+ * range slider (a slider), the toggle (a switch), the reference fields (dialog
+ * buttons) and markdown (a wrapper div) do not accept it, so they convey required
+ * through their label instead. Returns undefined when it must not be emitted, so
+ * spreading the bag leaves the attribute off entirely.
+ */
+function ariaRequiredFor(fieldDefinition: FieldDefinition): true | undefined {
+  const acceptsAriaRequired =
+    (fieldDefinition.valueType === 'string' ||
+      fieldDefinition.valueType === 'number') &&
+    fieldDefinition.fieldType !== 'range';
+  return acceptsAriaRequired && fieldDefinition.isRequired ? true : undefined;
+}
+
+/**
  * Renders the leaf input for a field definition by looking its field type up in
  * the exhaustive RENDER_REGISTRY. The registry emits no native constraint
  * attributes (`required`, `min`, `max`, `minLength`, `maxLength`); zod owns
  * validation. The Slider's value domain is the sole exception (see its entry).
+ * Required-ness is conveyed to assistive tech through `aria-required` (not native
+ * `required`), added to the control-association bag for the controls that accept
+ * it (see `ariaRequiredFor`).
  */
 function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
   field,
@@ -1745,7 +1772,14 @@ function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
     field,
     fieldDefinition,
     disabled: fieldDefinition.isDisabled,
-    controlProps,
+    controlProps: {
+      ...controlProps,
+      // Omitted (not set to false) when it must not be emitted, so the attribute
+      // never lands on a control whose role does not allow it.
+      ...(ariaRequiredFor(fieldDefinition) === true
+        ? { 'aria-required': true }
+        : {}),
+    },
   });
 }
 
@@ -1953,6 +1987,9 @@ function FormFieldDefinitionPreview({
           disabled: true,
           controlProps: {
             id: inputId,
+            ...(ariaRequiredFor(fieldDefinition) === true
+              ? { 'aria-required': true }
+              : {}),
             ...(description !== null
               ? { 'aria-describedby': descriptionId }
               : {}),

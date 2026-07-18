@@ -87,21 +87,26 @@ test.describe('Entries', () => {
     ).toBeVisible();
   });
 
-  test('renders required fields without native constraint attributes', async ({
+  test('conveys required with aria-required, not native constraint attributes', async ({
     mainWindow,
   }) => {
     await setUserViaIpc(mainWindow);
     const project = await createProjectViaIpc(mainWindow);
     // A required text field with a min/max character length, a required number
-    // field with a min/max bound, and a range field. The text and number
-    // definitions carry constraints the browser would enforce natively
-    // (`minLength`/`maxLength` and `min`/`max`); the render registry must emit
-    // none of them.
+    // field with a min/max bound, an optional text field, and a range field. The
+    // text and number definitions carry constraints the browser would enforce
+    // natively (`minLength`/`maxLength` and `min`/`max`); the render registry must
+    // emit none of them.
     const collection = await createCollectionViaIpc(mainWindow, {
       projectId: project.id,
       fieldDefinitions: [
         textFieldDefinition({ min: 2, max: 60 }),
         numberFieldDefinition(),
+        textFieldDefinition({
+          slug: 'subtitle',
+          label: { en: 'Subtitle' },
+          isRequired: false,
+        }),
         rangeFieldDefinition(),
       ],
     });
@@ -115,6 +120,8 @@ test.describe('Entries', () => {
     // noValidate, so the registry emits no native constraint attribute. A native
     // constraint would let the browser block submit before handleSubmit runs (the
     // footgun the redesign closes); aria-invalid, not these, surfaces invalidity.
+    // Required-ness is instead conveyed through aria-required, an ARIA state that
+    // never blocks submit, so the signal survives for assistive tech.
     for (const label of ['Title', 'Rating']) {
       const input = mainWindow.getByLabel(label, { exact: true });
       await expect(input).toBeVisible();
@@ -127,14 +134,24 @@ test.describe('Entries', () => {
       ]) {
         await expect(input).not.toHaveAttribute(attribute);
       }
+      await expect(input).toHaveAttribute('aria-required', 'true');
     }
 
-    // The one exception: the range field's Slider min/max are its functional value
-    // domain, which Radix exposes as aria-valuemin / aria-valuemax on the
-    // role=slider thumb, not as HTML constraint attributes, so they stay.
+    // The optional field carries no required signal at all (the "mark optional"
+    // convention): no native `required` and no `aria-required`.
+    const optional = mainWindow.getByLabel(/^Subtitle/);
+    await expect(optional).toBeVisible();
+    await expect(optional).not.toHaveAttribute('required');
+    await expect(optional).not.toHaveAttribute('aria-required');
+
+    // The range field's Slider min/max are its functional value domain, which
+    // Radix exposes as aria-valuemin / aria-valuemax on the role=slider thumb, not
+    // as HTML constraint attributes, so they stay. aria-required is not a valid
+    // attribute on a slider, so the required range field must not carry it.
     const slider = mainWindow.getByRole('slider');
     await expect(slider).toHaveAttribute('aria-valuemin', '0');
     await expect(slider).toHaveAttribute('aria-valuemax', '10');
+    await expect(slider).not.toHaveAttribute('aria-required');
   });
 
   test('updates an entry through the form, gated on a dirty change', async ({

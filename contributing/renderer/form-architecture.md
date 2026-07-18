@@ -671,7 +671,12 @@ coherent, shippable app.
   (except the range Slider's functional domain, which Radix surfaces as
   `aria-valuemin`/`aria-valuemax`). An E2E test (`entries.spec.ts`) asserts a
   rendered required text and number field carry none of those attributes and that
-  the range slider keeps its `aria-value*` domain, locking the footgun shut.
+  the range slider keeps its `aria-value*` domain, locking the footgun shut. The
+  required state is instead conveyed to assistive tech through `aria-required`
+  (an ARIA state, not a native constraint, so it never blocks submit) on the
+  string/number scalar and select controls that accept it (`ariaRequiredFor` in
+  `form.tsx`); the same E2E asserts a required field carries `aria-required` and an
+  optional one does not.
 - **E2E: keep asserting `aria-invalid` and axe**, with coverage for the authoring
   paths (slug source, select options, non-text field types) that moved onto the
   registry.
