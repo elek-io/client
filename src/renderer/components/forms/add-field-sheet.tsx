@@ -8,11 +8,7 @@ import {
 } from '@renderer/components/forms/field-definition-registry';
 import { SubmitButton } from '@renderer/components/ui/app-form';
 import { Button } from '@renderer/components/ui/button';
-import {
-  FormDescription,
-  FormItem,
-  FormLabel,
-} from '@renderer/components/ui/form';
+import { Label } from '@renderer/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -65,6 +61,12 @@ export function AddFieldSheet({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
   const addFieldFormId = useId();
+  // This picker is a plain state control, not a react-hook-form field, so it uses
+  // a bare Label and Select rather than the RHF Form* primitives (whose ids come
+  // from a FormField context this has none of). The id/aria-describedby associate
+  // the label and hint with the trigger.
+  const inputTypeId = useId();
+  const inputTypeHintId = useId();
 
   const supportedLanguages = project.settings.language.supported;
   const defaultLanguage = project.settings.language.default;
@@ -109,13 +111,18 @@ export function AddFieldSheet({
             Adding Fields to your Collection will enable users to enter data
             that follows the boundries you&apos;ve set.
           </SheetDescription>
-          <FormItem>
-            <FormLabel isRequired>Input type</FormLabel>
+          <div className="grid gap-2">
+            <Label htmlFor={inputTypeId} isRequired>
+              Input type
+            </Label>
             <Select
               value={selectedFieldType}
               onValueChange={(value: FieldType) => setSelectedFieldType(value)}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id={inputTypeId}
+                aria-describedby={inputTypeHintId}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -130,10 +137,10 @@ export function AddFieldSheet({
                 ))}
               </SelectContent>
             </Select>
-            <FormDescription>
+            <p id={inputTypeHintId} className="text-sm text-muted-foreground">
               The type of input the user is able to enter for this Field.
-            </FormDescription>
-          </FormItem>
+            </p>
+          </div>
         </SheetHeader>
 
         {/* Keyed by type so switching the picker remounts the body with the
