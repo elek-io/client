@@ -48,7 +48,7 @@ import {
 export type AuthorableFieldType =
   Exclude<FieldType, 'select'> | 'stringSelect' | 'numberSelect';
 
-export interface DefaultFieldDefinitionFormProps<
+interface DefaultFieldDefinitionFormProps<
   T extends FieldValues,
 > extends HTMLAttributes<HTMLFormElement> {
   form: UseFormReturn<T>;
@@ -66,9 +66,9 @@ function DefaultFieldDefinitionForm<
   children,
   fieldType,
 }: DefaultFieldDefinitionFormProps<T>): ReactElement {
-  // Every FieldDefinition shares the base fields this component edits. RHF's
+  // Every FieldDefinition shares the base fields this component edits, but RHF's
   // FieldPath cannot reduce those literal paths for an unresolved generic T, so
-  // assert them once through this helper (the tax of staying generic).
+  // assert them once through this helper.
   const base = useCallback(
     (path: string): FieldPath<T> => path as FieldPath<T>,
     []
@@ -95,19 +95,17 @@ function DefaultFieldDefinitionForm<
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Label</FormLabel>
-            <FormControl>
-              <TranslatableFormInputField
-                title="Label"
-                description='The label is displayed above the input Field and should
-                      indicate what the user is supposed to enter. For example
-                      "Title", "Date of birth" or
-                      "Summary".'
-                type="text"
-                field={field}
-                errors={form.formState.errors}
-                supportedLanguages={supportedLanguages}
-              />
-            </FormControl>
+            <TranslatableFormInputField
+              title="Label"
+              description='The label is displayed above the input Field and should
+                    indicate what the user is supposed to enter. For example
+                    "Title", "Date of birth" or
+                    "Summary".'
+              type="text"
+              field={field}
+              errors={form.formState.errors}
+              supportedLanguages={supportedLanguages}
+            />
             <FormDescription>
               The label is displayed above the input Field and should indicate
               what the user is supposed to enter. For example &quot;Title&quot;,
@@ -142,16 +140,14 @@ function DefaultFieldDefinitionForm<
         render={({ field }) => (
           <FormItem>
             <FormLabel isRequired>Description</FormLabel>
-            <FormControl>
-              <TranslatableFormTextareaField
-                title="Description"
-                description="Describe what to input into this field. This text will be
+            <TranslatableFormTextareaField
+              title="Description"
+              description="Describe what to input into this field. This text will be
               displayed under the field to guide users."
-                field={field}
-                errors={form.formState.errors}
-                supportedLanguages={supportedLanguages}
-              />
-            </FormControl>
+              field={field}
+              errors={form.formState.errors}
+              supportedLanguages={supportedLanguages}
+            />
             <FormDescription>
               Describe what to input into this field. This text will be
               displayed under the field to guide users.

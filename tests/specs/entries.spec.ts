@@ -9,6 +9,8 @@ import {
   datetimeFieldDefinition,
   emailFieldDefinition,
   navigateToCollection,
+  numberFieldDefinition,
+  rangeFieldDefinition,
   textFieldDefinition,
   timeFieldDefinition,
   updateCollectionViaIpc,
@@ -21,6 +23,7 @@ import {
   stringValue,
   temporalValue,
 } from '../helpers/entry.js';
+import { stubCoreReject } from '../helpers/ipc.js';
 import { reloadWindow } from '../helpers/navigation.js';
 import { createProjectViaIpc } from '../helpers/project.js';
 import { setUserViaIpc } from '../helpers/user.js';
@@ -84,6 +87,73 @@ test.describe('Entries', () => {
     ).toBeVisible();
   });
 
+  test('conveys required with aria-required, not native constraint attributes', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    // A required text field with a min/max character length, a required number
+    // field with a min/max bound, an optional text field, and a range field. The
+    // text and number definitions carry constraints the browser would enforce
+    // natively (`minLength`/`maxLength` and `min`/`max`); the render registry must
+    // emit none of them.
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+      fieldDefinitions: [
+        textFieldDefinition({ min: 2, max: 60 }),
+        numberFieldDefinition(),
+        textFieldDefinition({
+          slug: 'subtitle',
+          label: { en: 'Subtitle' },
+          isRequired: false,
+        }),
+        rangeFieldDefinition(),
+      ],
+    });
+
+    await navigateToEntryCreate(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // zod (through react-hook-form) is the single validator and the form is
+    // noValidate, so the registry emits no native constraint attribute. A native
+    // constraint would let the browser block submit before handleSubmit runs.
+    // aria-invalid, not these, surfaces invalidity.
+    // Required-ness is instead conveyed through aria-required, an ARIA state that
+    // never blocks submit, so the signal survives for assistive tech.
+    for (const label of ['Title', 'Rating']) {
+      const input = mainWindow.getByLabel(label, { exact: true });
+      await expect(input).toBeVisible();
+      for (const attribute of [
+        'required',
+        'min',
+        'max',
+        'minlength',
+        'maxlength',
+      ]) {
+        await expect(input).not.toHaveAttribute(attribute);
+      }
+      await expect(input).toHaveAttribute('aria-required', 'true');
+    }
+
+    // The optional field carries no required signal at all (the "mark optional"
+    // convention): no native `required` and no `aria-required`.
+    const optional = mainWindow.getByLabel(/^Subtitle/);
+    await expect(optional).toBeVisible();
+    await expect(optional).not.toHaveAttribute('required');
+    await expect(optional).not.toHaveAttribute('aria-required');
+
+    // The range field's Slider min/max are its functional value domain, which
+    // Radix exposes as aria-valuemin / aria-valuemax on the role=slider thumb, not
+    // as HTML constraint attributes, so they stay. aria-required is not a valid
+    // attribute on a slider, so the required range field must not carry it.
+    const slider = mainWindow.getByRole('slider');
+    await expect(slider).toHaveAttribute('aria-valuemin', '0');
+    await expect(slider).toHaveAttribute('aria-valuemax', '10');
+    await expect(slider).not.toHaveAttribute('aria-required');
+  });
+
   test('updates an entry through the form, gated on a dirty change', async ({
     mainWindow,
   }) => {
@@ -144,7 +214,7 @@ test.describe('Entries', () => {
     // A required Email field drives both the required and format paths; an
     // optional Note field exists only to dirty the form past the create gate
     // while leaving Email empty. Single language, so per-language validation
-    // (P2-15's scope) stays out of the way.
+    // stays out of the way.
     const collection = await createCollectionViaIpc(mainWindow, {
       projectId: project.id,
       fieldDefinitions: [
@@ -438,7 +508,7 @@ test.describe('Entries', () => {
   test('back-fills a newly added field default on entry update without losing existing values', async ({
     mainWindow,
   }) => {
-    // P1-08. Field A is the default required "title"; seed an Entry holding only
+    // Field A is the default required "title"; seed an Entry holding only
     // A, then add field B (an optional text field with a default) to the
     // Collection after the Entry exists.
     await setUserViaIpc(mainWindow);
@@ -512,10 +582,97 @@ test.describe('Entries', () => {
     ).toBeVisible();
   });
 
+  test('surfaces a unique-value collision in place instead of the error boundary', async ({
+    mainWindow,
+  }) => {
+    // A unique Title field: a second Entry reusing a value collides, and
+    // Core rejects the create with a Conflict (see Core's fields docs). The form
+    // handles that in place rather than letting it take over the whole screen.
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+      fieldDefinitions: [textFieldDefinition({ isUnique: true })],
+    });
+    // Seed the first Entry over IPC holding the value the form will collide with.
+    await createEntryViaIpc(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+      values: { title: stringValue({ en: 'Taken title' }) },
+    });
+
+    await navigateToEntryCreate(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // Re-entering the taken value and submitting collides. The desktop app owns
+    // only its part: mapping the Conflict to an in-place surface rather than the
+    // boundary. Core's uniqueness enforcement is Core's own test.
+    await fillEntryForm(mainWindow, { Title: 'Taken title' });
+    await mainWindow.getByRole('button', { name: 'Create Article' }).click();
+
+    // The Conflict is surfaced in place: the reason-specific dialog explains the
+    // collision, the URL stays on the create route (nothing was created), and the
+    // root error boundary is not hit. The fixture's console-clean assertion backs
+    // the no-boundary claim (a boundary would log and fail the run).
+    await expect(
+      mainWindow.getByText('Could not save this Entry')
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('another Entry in this Collection already uses it')
+    ).toBeVisible();
+    await expect(mainWindow).toHaveURL(
+      new RegExp(`#/projects/[^/]+/collections/${collection.id}/create$`)
+    );
+    await expect(
+      mainWindow.getByRole('heading', { name: 'Error' })
+    ).toBeHidden();
+  });
+
+  test('routes an unexpected create failure to the root error boundary', async ({
+    mainWindow,
+    electronApp,
+  }) => {
+    // The create handles only a unique-value Conflict in place; every other
+    // failure must reach the root error boundary. This guards the useAppMutation
+    // predicate against a regression back to a blanket throwOnError: false, which
+    // would swallow an unexpected failure into the in-place dialog and drop it
+    // from the logs and Sentry (see error-handling.md and the projects delete
+    // spec for the full rationale).
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+
+    await navigateToEntryCreate(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // Fill the required Title first, so the dirty-gated Create button enables.
+    await fillEntryForm(mainWindow, { Title: 'Anything' });
+
+    // Make the create reject with a non-Conflict error (a plain Error carries no
+    // CoreError type), which the form does not handle in place.
+    await stubCoreReject(electronApp, 'core:entries:create');
+    await mainWindow.getByRole('button', { name: 'Create Article' }).click();
+
+    // The failure propagates: the root error boundary replaces the view and the
+    // in-place conflict dialog never opens.
+    await expect(
+      mainWindow.getByRole('heading', { name: 'Error' })
+    ).toBeVisible();
+    await expect(
+      mainWindow.getByText('Could not save this Entry')
+    ).toBeHidden();
+  });
+
   test('paginates and filters the entry table client side', async ({
     mainWindow,
   }) => {
-    // P3-09. Seed 11 Entries, one past the page size of 10, so a second page
+    // Seed 11 Entries, one past the page size of 10, so a second page
     // exists. Titles are zero-padded so an exact cell locator is unambiguous.
     await setUserViaIpc(mainWindow);
     const project = await createProjectViaIpc(mainWindow);

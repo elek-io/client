@@ -7,7 +7,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { CollectionForm } from '@renderer/components/forms/collection-form';
 import { Page } from '@renderer/components/page';
-import { Button } from '@renderer/components/ui/button';
+import { FormActions, SubmitButton } from '@renderer/components/ui/app-form';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { translatableDefault } from '@renderer/lib/utils';
@@ -94,16 +94,9 @@ function ProjectCollectionCreate(): ReactElement {
 
   function Actions(): ReactElement {
     return (
-      <>
-        <Button
-          type="submit"
-          form={formId}
-          Icon={Check}
-          isLoading={isCreatingCollection}
-        >
-          Create Collection
-        </Button>
-      </>
+      <FormActions form={createCollectionForm} id={formId}>
+        <SubmitButton Icon={Check}>Create Collection</SubmitButton>
+      </FormActions>
     );
   }
 

@@ -72,7 +72,7 @@ test.describe('Collections', () => {
       mainWindow.getByLabel('Collection name (Plural)', { exact: true })
     ).toHaveValue('Articles');
 
-    // Nothing edited yet, so Save is gated (matches project/entry after the fix)
+    // Nothing edited yet, so Save is gated
     await expect(
       mainWindow.getByRole('button', { name: 'Save changes' })
     ).toBeDisabled();
@@ -214,7 +214,6 @@ test.describe('Collections', () => {
     );
   });
 
-  // P3-02
   test('flags an invalid Collection-Slug on submit and accepts a valid one', async ({
     mainWindow,
   }) => {
@@ -264,7 +263,6 @@ test.describe('Collections', () => {
     );
   });
 
-  // P3-03
   test('rejects a duplicate field-definition slug before appending it', async ({
     mainWindow,
   }) => {
@@ -280,14 +278,15 @@ test.describe('Collections', () => {
     });
 
     // The first "Title" appends, its slug auto-derives to "title". The appended
-    // definition renders a preview labelled "Title" in the form (a Slot+Fragment
-    // nesting breaks the preview input's label association, so count the visible
-    // label text rather than getByLabel).
+    // definition renders a preview whose label associates with a real (disabled)
+    // input, so it is addressable by getByLabel.
     await addFieldDefinition(mainWindow, {
       label: 'Title',
       description: 'The title of the article',
     });
-    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+    await expect(mainWindow.getByLabel('Title', { exact: true })).toHaveCount(
+      1
+    );
 
     // A second "Title" derives the same "title" slug. The sheet's own duplicate
     // check rejects it before appending, so the sheet stays open (expectRejected)
@@ -309,10 +308,12 @@ test.describe('Collections', () => {
     // Closing the sheet leaves exactly one "title" definition appended.
     await mainWindow.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
-    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+    await expect(mainWindow.getByLabel('Title', { exact: true })).toHaveCount(
+      1
+    );
   });
 
-  // P3-04 (field-definition bounds refinement, min>max)
+  // Field-definition bounds refinement (min>max)
   test('rejects a text field whose minimum exceeds its maximum at the Add Field sheet', async ({
     mainWindow,
   }) => {
@@ -347,5 +348,462 @@ test.describe('Collections', () => {
       'aria-invalid',
       'true'
     );
+  });
+
+  // A select is one Core fieldType backed by two schemas (string / number), with
+  // an options field array. Reaching the Collection detail proves Core accepted
+  // the string-option select definition.
+  test('adds a text-option select field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'select'. The picker is
+    // the first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'select', exact: true })
+      .click();
+
+    // The select authoring form mounts with its 'Type of options' picker
+    // (defaulting to Text), proving the registry served the select entry.
+    await expect(sheet.getByText('Type of options')).toBeVisible();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Priority');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('How urgent this is');
+
+    // Fill the first option's label; its value auto-derives to a slug. The
+    // sr-only per-option labels are what make this addressable by role/name; they
+    // carry an "- optional" suffix like the bounds labels, so match by prefix.
+    await sheet.getByLabel('Option 1 label').fill('High');
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the select was added.
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Priority', { exact: true })
+    ).toBeVisible();
+
+    // Creating the Collection reaches Core with the select definition. A uuid
+    // detail route (never 'create') means Core accepted it.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Range is the odd scalar: it is always required and its default, minimum and
+  // maximum are mandatory numbers, so it uses a distinct required bounds Extras
+  // rather than the optional MinMaxRow the other scalars share. Reaching the
+  // Collection detail proves Core accepted the range definition.
+  test('adds a range field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'range'. The picker is the
+    // first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'range', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Rating');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('How good the article is');
+
+    // Range's default, minimum and maximum are required numbers, so their labels
+    // carry no "- optional" suffix and match exactly, unlike the text field's
+    // optional bounds. Filling all three before submit keeps the final state
+    // valid (1 <= 5 <= 10) regardless of intermediate values.
+    await sheet.getByLabel('Default value', { exact: true }).fill('5');
+    await sheet.getByLabel('Minimum', { exact: true }).fill('1');
+    await sheet.getByLabel('Maximum', { exact: true }).fill('10');
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the range field was added.
+    await expect(sheet).toBeHidden();
+    await expect(mainWindow.getByText('Rating', { exact: true })).toBeVisible();
+
+    // Creating the Collection reaches Core with the range definition. A uuid
+    // detail route (never 'create') means Core accepted it.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Date (and datetime) render their default value through a bespoke picker, not
+  // the shared DefaultValueInputField. The default is optional, so this drives
+  // the spec's wiring (fieldType, defaults, routing) without touching the date
+  // picker widget. Reaching the Collection detail proves Core accepted it.
+  test('adds a date field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'date'. The picker is the
+    // first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow.getByRole('option', { name: 'date', exact: true }).click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Published');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('When the article went live');
+
+    // The date default value is optional, so leave it empty and add the field.
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the date field was added.
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Published', { exact: true })
+    ).toBeVisible();
+
+    // Creating the Collection reaches Core with the date definition. A uuid
+    // detail route (never 'create') means Core accepted it.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // A slug field derives its value from a sibling field, storing that sibling's
+  // real id in ofFieldDefinitions. Core's slugSourceReferences refinement rejects
+  // the Collection on save if that id does not resolve to a sibling definition,
+  // so reaching the detail route is what proves the real id was stored.
+  test('creates a Collection whose slug field derives from a sibling, using the real field id', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    // Add the text field the slug will derive from.
+    await addFieldDefinition(mainWindow, {
+      label: 'Title',
+      description: 'The title of the article',
+    });
+    await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
+
+    // Add a slug field and pick the text field as its source. The source picker
+    // reads the sibling definitions threaded through DefinitionExtrasProps.
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow.getByRole('option', { name: 'slug', exact: true }).click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Permalink');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The permalink of the article');
+
+    // The source switch carries its sibling field's label as its accessible
+    // name, so it is addressable by role/name. Toggling it stores the text
+    // field's real id in ofFieldDefinitions.
+    await sheet.getByRole('switch', { name: 'Title' }).click();
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Permalink', { exact: true })
+    ).toBeVisible();
+
+    // Create the Collection. A uuid detail route (never 'create') means Core
+    // accepted the slug source's real id.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Asset is the simplest reference type: a never-unique reference whose only
+  // controls are the
+  // min/max Asset count. It also carries ofAssetMimeTypes as a hidden empty
+  // default (no control today) that Core requires, so reaching the Collection
+  // detail proves the whole definition, including that default, validated.
+  test('adds an asset field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    // Switch the Input type from the default 'text' to 'asset'. The picker is the
+    // first combobox in the sheet (its header); the options render in a Radix
+    // portal, so locate them on the page, not inside the dialog.
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'asset', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Cover');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The cover image of the article');
+
+    // The min/max Asset counts are optional, so leave them empty and add.
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the asset field was added.
+    await expect(sheet).toBeHidden();
+    await expect(mainWindow.getByText('Cover', { exact: true })).toBeVisible();
+
+    // Creating the Collection reaches Core with the asset definition. A uuid
+    // detail route (never 'create') means Core accepted it, hidden mime-type
+    // default and all.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // The ofCollections picker is backed by a TanStack Query for the Collections
+  // list. A Collection is arranged first (via IPC)
+  // so the picker has something to restrict to, then a second Collection is
+  // authored with an entry field restricted to it. Reaching the detail route
+  // proves Core accepted the restriction's real Collection id.
+  test('adds an entry field definition restricted to a Collection through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    // The Collection the entry field will reference. Its plural name "Articles"
+    // is the ofCollections toggle's accessible name in the sheet.
+    await createCollectionViaIpc(mainWindow, { projectId: project.id });
+
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Reviews',
+      nameSingular: 'Review',
+      description: 'Reviews of the articles',
+      slugPlural: 'reviews',
+      slugSingular: 'review',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'entry', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Article');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The reviewed article');
+
+    // The Collections query resolves into a toggle per Collection, each carrying
+    // its plural name as its accessible name. Toggling
+    // "Articles" stores its real id in ofCollections. Its checked state is bound
+    // to that stored id, so asserting it is on proves the toggle reached form
+    // state, not just the DOM.
+    const restriction = sheet.getByRole('switch', {
+      name: 'Articles',
+      exact: true,
+    });
+    await restriction.click();
+    await expect(restriction).toBeChecked();
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the entry field was added.
+    await expect(sheet).toBeHidden();
+    await expect(
+      mainWindow.getByText('Article', { exact: true })
+    ).toBeVisible();
+
+    // Creating the Collection reaches Core with the entry definition. A uuid
+    // detail route (never 'create') means Core accepted the restriction id.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Markdown carries block/inline feature toggles plus the one resolver cast
+  // its input/output divergence needs. Toggling a couple of features and reaching
+  // the detail route proves the cast-backed spec validated and Core accepted it.
+  test('adds a markdown field definition through the Add Field sheet', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    await navigateToCollectionCreate(mainWindow, project.id);
+    await fillCollectionForm(mainWindow, {
+      namePlural: 'Articles',
+      nameSingular: 'Article',
+      description: 'The articles of this blog',
+      slugPlural: 'articles',
+      slugSingular: 'article',
+    });
+
+    await mainWindow.getByRole('button', { name: 'Add Field' }).click();
+    const sheet = mainWindow.getByRole('dialog', {
+      name: 'Add a Field to this Collection',
+    });
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole('combobox').first().click();
+    await mainWindow
+      .getByRole('option', { name: 'markdown', exact: true })
+      .click();
+
+    await sheet.getByLabel('Label', { exact: true }).fill('Body');
+    await sheet
+      .getByLabel('Description', { exact: true })
+      .fill('The body of the article');
+
+    // The feature toggles carry their label as their accessible name, one block
+    // feature and one inline feature here. Task list
+    // items are gated on lists, so they start disabled; enabling "Lists" must
+    // flip that switch to enabled, which proves the toggle reached form state and
+    // the watch-driven dependency re-rendered, not just the DOM.
+    const taskListItems = sheet.getByRole('switch', {
+      name: 'Task list items',
+      exact: true,
+    });
+    await expect(taskListItems).toBeDisabled();
+    await sheet.getByRole('switch', { name: 'Lists', exact: true }).click();
+    await expect(taskListItems).toBeEnabled();
+    await sheet.getByRole('switch', { name: 'Emphasis', exact: true }).click();
+
+    await mainWindow.getByRole('button', { name: 'Add definition' }).click();
+    // The sheet closes only after the definition is appended, so a hidden sheet
+    // proves the markdown field was added.
+    await expect(sheet).toBeHidden();
+    await expect(mainWindow.getByText('Body', { exact: true })).toBeVisible();
+
+    // Creating the Collection reaches Core with the markdown definition. A uuid
+    // detail route (never 'create') means Core accepted the feature config.
+    await mainWindow.getByRole('button', { name: 'Create Collection' }).click();
+    await expect(mainWindow).toHaveURL(
+      /#\/projects\/[^/]+\/collections\/[0-9a-f-]{36}$/
+    );
+  });
+
+  // Guards that a definition-only edit flips the form's dirty state. Adding a
+  // field definition goes through the Controller-bound value's onChange, which
+  // must mark the form dirty so the update form's "Save changes" gate opens with
+  // no other field touched.
+  test('enables Save on the update form after only adding a field definition', async ({
+    mainWindow,
+  }) => {
+    await setUserViaIpc(mainWindow);
+    const project = await createProjectViaIpc(mainWindow);
+    const collection = await createCollectionViaIpc(mainWindow, {
+      projectId: project.id,
+    });
+
+    await navigateToCollectionSettings(mainWindow, {
+      projectId: project.id,
+      collectionId: collection.id,
+    });
+
+    // Wait for the form to hydrate from the loaded Collection before trusting
+    // the gate, keying off the plural name showing.
+    await expect(
+      mainWindow.getByLabel('Collection name (Plural)', { exact: true })
+    ).toHaveValue('Articles');
+
+    // Nothing edited yet, so Save is gated.
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+
+    // Add a field definition and change nothing else. The seeded Collection
+    // already has a "title" field, so "Body" is a fresh, non-duplicate slug.
+    await addFieldDefinition(mainWindow, {
+      label: 'Body',
+      description: 'The body of the article',
+    });
+
+    // The definition-only edit dirties the form through the Controller value, so
+    // Save enables.
+    await expect(
+      mainWindow.getByRole('button', { name: 'Save changes' })
+    ).toBeEnabled();
   });
 });

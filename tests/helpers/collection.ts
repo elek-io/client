@@ -8,6 +8,8 @@ import {
   type DateFieldDefinition,
   type DatetimeFieldDefinition,
   type EmailFieldDefinition,
+  type NumberFieldDefinition,
+  type RangeFieldDefinition,
   type ReferenceFieldDefinition,
   type TextFieldDefinition,
   type TimeFieldDefinition,
@@ -63,6 +65,62 @@ export function emailFieldDefinition(
     valueType: 'string',
     fieldType: 'email',
     defaultValue: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Build a required number FieldDefinition with a caller-supplied id. Defaults to
+ * `min` 1 and `max` 9 so a test can assert the rendered number input carries no
+ * native `min` / `max` constraint attribute (zod owns validation). The slug is
+ * `rating` because `count` is a reserved slug in Core. Number definitions cannot
+ * be unique, so `isUnique` is the literal `false`.
+ */
+export function numberFieldDefinition(
+  overrides: Partial<NumberFieldDefinition> = {}
+): NumberFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'rating',
+    label: { en: 'Rating' },
+    description: null,
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'number',
+    fieldType: 'number',
+    defaultValue: null,
+    min: 1,
+    max: 9,
+    ...overrides,
+  };
+}
+
+/**
+ * Build a range FieldDefinition with a caller-supplied id. A range definition is
+ * always required and never unique (Core pins both), carries a numeric
+ * `defaultValue`, and its `min` / `max` are the Slider's functional value domain
+ * (Radix exposes them as `aria-valuemin` / `aria-valuemax`), not HTML constraint
+ * attributes, so a test can assert they survive on the rendered slider.
+ */
+export function rangeFieldDefinition(
+  overrides: Partial<RangeFieldDefinition> = {}
+): RangeFieldDefinition {
+  return {
+    id: uuid(),
+    slug: 'level',
+    label: { en: 'Level' },
+    description: null,
+    isRequired: true,
+    isDisabled: false,
+    isUnique: false,
+    inputWidth: '12',
+    valueType: 'number',
+    fieldType: 'range',
+    defaultValue: 5,
+    min: 0,
+    max: 10,
     ...overrides,
   };
 }

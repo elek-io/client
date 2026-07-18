@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@renderer/components/ui/alert-dialog';
+import { FormActions, SubmitButton } from '@renderer/components/ui/app-form';
 import { Button } from '@renderer/components/ui/button';
 import {
   Dialog,
@@ -30,6 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@renderer/components/ui/dialog';
+import { useAppMutation } from '@renderer/hooks/useAppMutation';
 import { useBreadcrumb } from '@renderer/hooks/useBreadcrumb';
 import { useProject } from '@renderer/hooks/useProject';
 import { useQueryNoError } from '@renderer/hooks/useQueryNoError';
@@ -49,10 +51,7 @@ export const Route = createFileRoute(
   component: ProjectCollectionUpdate,
 });
 
-// Why the delete was blocked, keyed by the CoreError type preserved across IPC.
-// Core blocks a Collection delete with a Conflict when an Entry in another
-// Collection still references into this one. Only Conflict is handled in place,
-// so unlisted types (and non-Core errors) never reach the dialog.
+// Copy for a blocked delete, keyed by CoreError type.
 const deleteErrorDescriptions: Partial<Record<CoreErrorType, string>> = {
   Conflict:
     'Entries in other Collections still reference Entries in this one, so it can’t be deleted. Remove or repoint those references first, then try again.',
@@ -78,25 +77,26 @@ function ProjectCollectionUpdate(): ReactElement {
   const { mutateAsync: updateCollection, isPending: isUpdatingCollection } =
     useMutation(queryOptions.collections.update);
   const formId = useId();
-  const { mutateAsync: deleteCollection } = useMutation({
-    ...queryOptions.collections.delete,
-    // Only a referenced Collection is handled in place by the dialog below: Core
-    // blocks the delete with a Conflict when an Entry in another Collection still
-    // references into this one. Every other failure is unexpected, so let it
-    // reach the root error boundary, which logs it and reports it to Sentry.
-    throwOnError: (error) => parseIpcError(error).type !== 'Conflict',
-    onError: () => {
-      // The in-place dialog is the surface for the handled Conflict, so suppress
-      // the wrapper's error toast. Unexpected failures are logged and reported by
-      // the boundary instead.
-    },
-  });
   const [isDeleteErrorDialogOpen, setIsDeleteErrorDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<unknown>(null);
+  // A Collection still referenced by an Entry is handled in place.
+  // See contributing/error-handling.md.
+  const { mutateAsync: deleteCollection, handleError: handleDeleteError } =
+    useAppMutation(queryOptions.collections.delete, {
+      handled: {
+        Conflict: (error) => {
+          setDeleteError(error);
+          setIsDeleteErrorDialogOpen(true);
+        },
+      },
+    });
   const updateCollectionForm = useForm({
     resolver: zodResolver(updateCollectionSchema),
+    // Seed fieldDefinitions so the Controller-bound value is a real array from
+    // the first render, before the Collection loads and reset() hydrates it.
     defaultValues: {
       projectId,
+      fieldDefinitions: [],
     },
   });
 
@@ -131,17 +131,11 @@ function ProjectCollectionUpdate(): ReactElement {
 
   function Actions(): ReactElement {
     return (
-      <>
-        <Button
-          type="submit"
-          form={formId}
-          isLoading={isUpdatingCollection}
-          disabled={updateCollectionForm.formState.isDirty === false}
-        >
-          <Check className="mr-2 h-4 w-4" />
+      <FormActions form={updateCollectionForm} id={formId}>
+        <SubmitButton requireDirty Icon={Check}>
           Save changes
-        </Button>
-      </>
+        </SubmitButton>
+      </FormActions>
     );
   }
 
@@ -169,15 +163,7 @@ function ProjectCollectionUpdate(): ReactElement {
         },
       });
     } catch (error) {
-      const { type } = parseIpcError(error);
-      // Core blocks the delete with a Conflict when an Entry in another
-      // Collection still references into this one, so surface that in place and
-      // explain it. Any other failure was already routed to the root error
-      // boundary, so there is nothing to handle here.
-      if (type === 'Conflict') {
-        setDeleteError(error);
-        setIsDeleteErrorDialogOpen(true);
-      }
+      handleDeleteError(error);
     }
   };
 
