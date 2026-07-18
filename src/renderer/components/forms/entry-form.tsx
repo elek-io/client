@@ -17,17 +17,13 @@ import { FieldDefinitionsProvider } from '@renderer/providers/FieldDefinitionsPr
 
 import { type FieldDefinitionOrGroup, type Project } from '@elek-io/core';
 
-// The minimal shape an entry form holds for its dynamic Values. Every entry form
-// (create, update, diff) stores Values under a slug-keyed record, which is exactly
-// the input shape of the generated entry schemas (values: Record<string, unknown>).
-// Constraining to this lets EntryForm address value paths for any concrete caller
-// without viewing the form as a Props union.
+// The minimal shape an entry form holds for its dynamic Values: a slug-keyed
+// record, which is the input shape of the generated entry schemas. Constraining
+// to this lets EntryForm address value paths without a Props union.
 type EntryFormValues = FieldValues & { values: Record<string, unknown> };
 
-// TFieldValues is the form's value shape (the schema input, where Values are a
-// loose Record). TTransformedValues is what handleSubmit yields after validation
-// (the schema output, e.g. CreateEntryProps). Keeping both generic lets the form
-// hold loose Values while the submit handler stays strongly typed.
+// TFieldValues is the schema input (loose Values), TTransformedValues the schema
+// output handleSubmit yields. See contributing/renderer/forms.md#form-typing.
 interface EntryFormProps<
   TFieldValues extends EntryFormValues,
   TTransformedValues extends FieldValues,
@@ -61,12 +57,9 @@ export function EntryForm<
   const { translateContent } = useProject();
   const defaultLanguage = project.settings.language.default;
 
-  // FormFieldFromDefinition only reads the form's control to register inputs, so the
-  // submit (transformed) type is irrelevant to it. View the form by its field values
-  // so it stays single-generic and the dual generic does not leak into form.tsx.
-  //
-  // This whole-form cast is the documented exception to the form-cast guardrail:
-  // eslint.config.mjs exempts this file from the `as unknown as UseFormReturn` ban.
+  // FormFieldFromDefinition only reads the form's control, so view the form by its
+  // field values and keep the dual generic out of form.tsx. This is the documented
+  // exception to the form-cast guardrail, which eslint.config.mjs exempts.
   // @todo Retire it (e.g. a per-mode non-generic component) and drop the exemption.
   const fieldForm = entryForm as unknown as UseFormReturn<TFieldValues>;
 

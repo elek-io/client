@@ -39,10 +39,7 @@ export const Route = createFileRoute(
   component: CreateEntryPage,
 });
 
-// P2-10. Why the create was blocked, keyed by the CoreError type preserved
-// across IPC. Core rejects an Entry whose value collides with another Entry on a
-// unique field with a Conflict. Only Conflict is handled in place, so unlisted
-// types (and non-Core errors) never reach the dialog.
+// Copy for a blocked create, keyed by CoreError type.
 const conflictDescriptions: Partial<Record<CoreErrorType, string>> = {
   Conflict:
     'One of the values you entered must be unique, but another Entry in this Collection already uses it. Change it and try again.',
@@ -67,9 +64,8 @@ function CreateEntryPage(): React.JSX.Element {
   useBreadcrumb(Route, isReadingCollection ? undefined : 'Create');
   const [isConflictDialogOpen, setIsConflictDialogOpen] = useState(false);
   const [conflictError, setConflictError] = useState<unknown>(null);
-  // P2-10. A unique-value collision (Conflict) is handled in place on this form
-  // rather than taking over the screen through the root error boundary. Every
-  // other failure still reaches the boundary, logged and reported.
+  // A unique-value collision is handled in place on this form.
+  // See contributing/error-handling.md.
   const {
     mutateAsync: createEntry,
     isPending: isCreatingEntry,

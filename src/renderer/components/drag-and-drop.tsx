@@ -85,8 +85,7 @@ function SortableFieldArray({
   onReorder,
 }: {
   children: React.ReactNode;
-  // The rows to reorder, identified by id. Decoupled from react-hook-form's
-  // useFieldArray so a Controller-bound value array can drive the sort too.
+  // The rows to reorder, identified by id.
   items: { id: string }[];
   onReorder: (activeId: string, overId: string) => void;
 }): React.ReactElement {

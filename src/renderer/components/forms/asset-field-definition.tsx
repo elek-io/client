@@ -24,17 +24,13 @@ import {
   type AssetFieldDefinition,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the asset field type on the registry.
+// Authoring for the asset field type. See
+// contributing/renderer/dynamic-form-field-generation.md.
 //
-// Asset is the simplest reference type: a `reference` value that can never be
-// unique, whose only controls are how many Assets may be selected (min/max).
-// Those bounds are int>=1 nullable Asset counts, a different shape from the
-// scalar char/number bounds, so they stay inline rather than routing through
-// MinMaxRow. `ofAssetMimeTypes` is not authored today (see
-// contributing/not-yet-implemented.md), so it carries no control but still gets
-// its empty default so the definition Core requires it validates and saves.
-//
-// See contributing/renderer/dynamic-form-field-generation.md.
+// The min/max bounds are nullable int>=1 Asset counts, a different shape from
+// the scalar char/number bounds, so they stay inline instead of using MinMaxRow.
+// `ofAssetMimeTypes` has no control yet but still gets its empty default,
+// because Core requires the key (see contributing/not-yet-implemented.md).
 
 function AssetExtras({
   form,

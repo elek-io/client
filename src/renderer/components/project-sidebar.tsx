@@ -106,9 +106,7 @@ function ProjectNavigation(): React.JSX.Element {
   );
 }
 
-// Reason-specific copy for a failed sync, keyed by the CoreError type preserved
-// across IPC. Unlisted types (and non-Core errors) fall back to the generic
-// sentence below, so the modal still explains that nothing was pushed.
+// Copy for a failed sync, keyed by CoreError type.
 const syncErrorDescriptions: Partial<Record<CoreErrorType, string>> = {
   Conflict:
     'A change on the remote conflicts with your local work, so nothing was pushed. Resolve it and try again.',
@@ -132,10 +130,8 @@ export function ProjectSidebar(): React.JSX.Element {
   const [isSyncConflictDialogOpen, setIsSyncConflictDialogOpen] =
     useState(false);
   const [syncError, setSyncError] = useState<unknown>(null);
-  // Only a failed sync we can explain is handled in place by the dialog below: a
-  // remote conflict (Conflict) or an unreachable/unsupported remote
-  // (PreconditionFailed). useAppMutation opts those two out of the boundary and
-  // drives the dialog; every other failure still reaches the boundary.
+  // A sync failure we can explain is handled in place.
+  // See contributing/error-handling.md.
   const openSyncConflictDialog = (error: unknown): void => {
     setSyncError(error);
     setIsSyncConflictDialogOpen(true);
@@ -172,10 +168,6 @@ export function ProjectSidebar(): React.JSX.Element {
                   try {
                     await synchronizeProject({ id: project.id });
                   } catch (error) {
-                    // A remote conflict (e.g. a rebase that orphans a reference)
-                    // or an unreachable/unsupported remote is explained in place
-                    // by the dialog. Any other failure was already routed to the
-                    // boundary, so handleError is a no-op for it.
                     handleSyncError(error);
                   }
                 }}

@@ -31,17 +31,13 @@ interface AssetFormProps<TFieldValues extends FieldValues> {
 /**
  * Shared form body collecting an Asset's `name` and `description`.
  *
- * Renders only the fields inside a form, so the surrounding dialog owns the
- * scroll structure. Place it inside a `DialogBody` and put the submit control in
- * a sibling `DialogFooter` that calls `assetForm.handleSubmit`, so the body
- * scrolls while the footer stays pinned and on screen (see the create dialog in
- * `assets/index.tsx` and the update dialog in `asset-teaser.tsx`).
+ * Renders only the fields, so the surrounding dialog owns the scroll structure.
+ * Place it in a `DialogBody` with the SubmitButton in a sibling `DialogFooter`, so
+ * the body scrolls while the footer stays pinned.
  *
- * Kept generic over the form values so it works for both the create
- * (`CreateAssetProps`) and update (`UpdateAssetProps`) flows, whose shapes
- * diverge (`filePath` vs `id`/`newFilePath`) and therefore can't be expressed
- * as a single non-invariant union prop. Both shapes share `name` and
- * `description`, so the field names are asserted as paths of `TFieldValues`.
+ * Generic over the form values, since the create (`filePath`) and update
+ * (`id`/`newFilePath`) shapes diverge and cannot be one union prop. Both share
+ * `name` and `description`, so those field names are asserted as paths.
  */
 export function AssetForm<TFieldValues extends FieldValues>({
   assetForm,

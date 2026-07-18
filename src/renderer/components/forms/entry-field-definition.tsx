@@ -29,15 +29,12 @@ import {
   type EntryFieldDefinition,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the entry field type on the registry.
+// Authoring for the entry field type. See
+// contributing/renderer/dynamic-form-field-generation.md.
 //
-// Entry proves a TanStack Query living inside a spec's Extras: the ofCollections
-// picker (which Collections an Entry reference may point at) is backed by a
-// Collections list query. The query and its projectId hook stay IN the Extras
-// component, so the shared engine never learns about queries. Like asset it is a
-// never-unique reference with min/max bounds.
-//
-// See contributing/renderer/dynamic-form-field-generation.md.
+// The ofCollections picker is backed by a Collections list query. That query and
+// its projectId hook stay inside the Extras component, so the shared engine
+// never learns about queries.
 
 function EntryExtras({
   form,

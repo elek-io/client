@@ -35,20 +35,15 @@ import {
   type Project,
 } from '@elek-io/core';
 
-// The Add Field sheet, the hardest form in the app, self-contained. It renders
-// ONE registry-driven AppForm for the selected field type and submits it through
-// a real detached SubmitButton (form={id}) in the footer - one submission model,
-// no imperative ref. The registry is exhaustive over Core's FieldType, so every
-// pickable type has an authoring form; 'dynamic' cannot be authored yet and is
-// disabled in the picker (see unauthorableFieldTypes).
+// The Add Field sheet: a field-type picker, the matching registry entry rendered
+// in the body, and one detached SubmitButton in the footer.
 //
 // See contributing/renderer/dynamic-form-field-generation.md.
 
 interface AddFieldSheetProps {
   project: Project;
-  // The Collection's field definitions as their real value (real ids), bound
-  // through a Controller in the Collection form. Read here only for the
-  // duplicate-slug guard and the slug source list; edits go through onAppend.
+  // Read only, for the duplicate-slug guard and the slug source list. Edits go
+  // through onAppend.
   fieldDefinitions: FieldDefinitionOrGroup[];
   onAppend: (definition: FieldDefinition) => void;
 }
@@ -61,10 +56,8 @@ export function AddFieldSheet({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFieldType, setSelectedFieldType] = useState<FieldType>('text');
   const addFieldFormId = useId();
-  // This picker is a plain state control, not a react-hook-form field, so it uses
-  // a bare Label and Select rather than the RHF Form* primitives (whose ids come
-  // from a FormField context this has none of). The id/aria-describedby associate
-  // the label and hint with the trigger.
+  // A plain state control, not a react-hook-form field, so it uses a bare Label
+  // and Select and wires its own ids.
   const inputTypeId = useId();
   const inputTypeHintId = useId();
 
@@ -150,10 +143,6 @@ export function AddFieldSheet({
         </SheetBody>
 
         <SheetFooter>
-          {/* Detached submit: the button lives in the footer, the form in the
-          body; they associate through the HTML form attribute. Both are in the
-          Sheet's portal, so the inner <form> is not DOM-nested in the Collection
-          form. */}
           <SubmitButton className="w-full" form={addFieldFormId}>
             Add definition
           </SubmitButton>

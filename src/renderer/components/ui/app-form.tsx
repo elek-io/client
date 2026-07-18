@@ -9,11 +9,7 @@ import {
 import { Button } from '@renderer/components/ui/button';
 import { Form } from '@renderer/components/ui/form';
 
-// The single blessed form primitive. One place owns the <form> element and the
-// policies that were previously pasted per call site (noValidate, the submit
-// wiring, the id/detached-button seam, view-only disabling). A caller cannot get
-// these wrong because they are not props.
-//
+// The form primitives every form in the app is built from.
 // See contributing/renderer/forms.md.
 
 interface AppFormContextValue {
@@ -26,11 +22,8 @@ function useAppFormId(): string | null {
   return useContext(AppFormContext)?.id ?? null;
 }
 
-// The gating a detached SubmitButton reads. A button in a Page header, dialog or
-// sheet footer sits OUTSIDE the form's FormProvider subtree, so it cannot read
-// formState from context there. FormActions bridges that gap: it reads the
-// reactive formState with the form in scope and exposes just what the button
-// gates on, plus the id it submits.
+// The gating a detached SubmitButton reads, since a button outside the form's
+// FormProvider subtree cannot read formState from context.
 interface FormActionsContextValue {
   formId: string | undefined;
   isDirty: boolean;
@@ -63,10 +56,9 @@ export interface AppFormProps<
 }
 
 /**
- * The only place a <form> element is written in the app. It always sets
- * noValidate (zod through react-hook-form is the single validator), always
- * routes submission through handleSubmit, and owns the id that a detached
- * SubmitButton associates with.
+ * The only place a <form> element is written in the app. It owns noValidate, the
+ * handleSubmit wiring, the id a detached SubmitButton associates with, and the
+ * view-only mode. See contributing/renderer/forms.md.
  */
 export function AppForm<
   TFieldValues extends FieldValues,
@@ -84,12 +76,10 @@ export function AppForm<
 
   const submit = form.handleSubmit(onSubmit);
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-    // Stop the submit event from bubbling up the React tree. An AppForm rendered
-    // inside another form's React subtree (a Sheet or Dialog on a page that is
-    // itself a form) is portaled out of that form's DOM, but React still bubbles
-    // the synthetic submit event to React ancestors - which would submit the
-    // outer form too. Owning this here means a nested AppForm can never
-    // cross-submit its parent. handleSubmit already calls preventDefault.
+    // Load bearing: a Sheet or Dialog is portaled out of an outer form's DOM but
+    // React still bubbles the synthetic submit event to its React ancestors, so
+    // without this a nested AppForm also submits its parent. handleSubmit already
+    // calls preventDefault.
     event.stopPropagation();
     if (mode === 'view') {
       event.preventDefault();
@@ -101,9 +91,7 @@ export function AppForm<
   return (
     <AppFormContext value={{ id: formId }}>
       <Form {...form}>
-        {/* noValidate is not a prop and cannot be forgotten. The field registry
-        emits no native constraint attributes either, so there is nothing for the
-        browser to validate first and block handleSubmit on. */}
+        {/* noValidate is deliberately not a prop, so it cannot be forgotten. */}
         <form
           id={formId}
           noValidate
@@ -133,10 +121,9 @@ export interface FormActionsProps<
 
 /**
  * Wraps the area that holds a form's SubmitButton (a Page header, dialog or
- * sheet footer) and makes the form's reactive gating available to it. This is
- * the one mechanism for gating a detached button: it subscribes to `isDirty` and
- * `isSubmitting` through `useFormState` (so the button re-renders when the form
- * dirties or starts submitting), and passes them plus the form id down.
+ * sheet footer) and makes the form's reactive gating available to it. It
+ * subscribes through `useFormState`, so the enclosed button re-renders when the
+ * form dirties or starts submitting.
  */
 export function FormActions<
   TFieldValues extends FieldValues,
@@ -174,14 +161,9 @@ export interface SubmitButtonProps extends React.ComponentProps<typeof Button> {
 }
 
 /**
- * The only submit control. type="submit" and the form association are
- * structural, not opt-in, so a submit button can never silently do nothing (the
- * footgun that Button's type="button" default introduced).
- *
- * Gating is uniform: it always disables while the form is submitting (RHF's
- * `isSubmitting`, which spans the awaited `mutateAsync`), and additionally on a
- * pristine form when `requireDirty` is set. Both come from the enclosing
- * FormActions.
+ * The only submit control. It always disables while the form is submitting, and
+ * additionally on a pristine form when `requireDirty` is set. Both read the
+ * enclosing FormActions. See contributing/renderer/forms.md.
  */
 export function SubmitButton({
   form,

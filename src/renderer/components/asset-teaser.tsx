@@ -69,8 +69,7 @@ import {
   type UpdateAssetProps,
 } from '@elek-io/core';
 
-// Why the delete was blocked, keyed by the CoreError type preserved across IPC.
-// Unlisted types (and non-Core errors) fall back to the generic sentence below.
+// Copy for a blocked delete, keyed by CoreError type.
 const deleteErrorDescriptions: Partial<Record<CoreErrorType, string>> = {
   Conflict:
     'This Asset is used by one or more Entries and can’t be deleted. Remove or repoint those references first, then try again.',
@@ -90,10 +89,8 @@ export function AssetTeaser(
   const [isDeleteErrorDialogOpen, setIsDeleteErrorDialogOpen] =
     useState<boolean>(false);
   const [deleteError, setDeleteError] = useState<unknown>(null);
-  // Only a referenced Asset is handled in place by the dialog below: Core rejects
-  // deleting an Asset that Entries still reference (Conflict) without removing
-  // anything. useAppMutation opts that out of the boundary and drives the dialog;
-  // every other failure still reaches the boundary, logged and reported.
+  // An Asset that Entries still reference is handled in place.
+  // See contributing/error-handling.md.
   const { mutateAsync: deleteAsset, handleError: handleDeleteError } =
     useAppMutation(queryOptions.assets.delete, {
       handled: {
@@ -206,9 +203,6 @@ export function AssetTeaser(
     try {
       await deleteAsset({ ...props });
     } catch (error) {
-      // Core blocks deleting an Asset that Entries still reference (Conflict),
-      // surfaced in place by the dialog. Any other failure was already routed to
-      // the boundary, so handleError is a no-op for it.
       handleDeleteError(error);
     }
   };

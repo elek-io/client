@@ -37,9 +37,7 @@ export const Route = createFileRoute('/projects/$projectId/settings/general')({
   component: ProjectSettingsGeneralPage,
 });
 
-// Why the normal delete was blocked, keyed by the CoreError type preserved
-// across IPC. Unlisted types (and non-Core errors) fall back to the generic
-// sentence below.
+// Copy for a blocked delete, keyed by CoreError type.
 const forceDeleteDescriptions: Partial<Record<CoreErrorType, string>> = {
   PreconditionFailed:
     'This Project only exists on this device (no remote copy). Force delete removes it permanently.',
@@ -92,10 +90,8 @@ function ProjectSettingsGeneralPage(): ReactElement {
   const [isForceDeleteDialogOpen, setIsForceDeleteDialogOpen] = useState(false);
   const [forceDeleteError, setForceDeleteError] = useState<unknown>(null);
 
-  // Only the delete guard is handled in place by the force-delete dialog: a
-  // local-only Project (PreconditionFailed) or one with unpushed commits
-  // (Conflict). useAppMutation opts those two out of the boundary and drives this
-  // dialog; every other failure still reaches the boundary, logged and reported.
+  // The delete guard opens the force-delete dialog instead.
+  // See contributing/error-handling.md.
   const openForceDeleteDialog = (error: unknown): void => {
     setForceDeleteError(error);
     setIsDeleteDialogOpen(false);
@@ -135,10 +131,6 @@ function ProjectSettingsGeneralPage(): ReactElement {
       await deleteProject({ id: projectId });
       await router.navigate({ to: '/projects' });
     } catch (error) {
-      // Only the guard offers a force delete: a local-only Project
-      // (PreconditionFailed) or one with unpushed commits (Conflict), both
-      // handled by opening the force-delete dialog. Any other failure was already
-      // routed to the boundary, so handleError is a no-op for it.
       handleDeleteError(error);
     }
   };
@@ -148,9 +140,8 @@ function ProjectSettingsGeneralPage(): ReactElement {
       await deleteProject({ id: projectId, force: true });
       await router.navigate({ to: '/projects' });
     } catch {
-      // A force delete bypasses the guard, so any failure here is unexpected.
-      // throwOnError routes it to the root error boundary (which logs and reports
-      // it); close this dialog so it is not left in front of the boundary.
+      // A force delete bypasses the guard, so any failure here is unexpected and
+      // reaches the boundary. Close this dialog so it is not left in front of it.
       setIsForceDeleteDialogOpen(false);
     }
   };

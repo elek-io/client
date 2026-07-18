@@ -201,14 +201,10 @@ function FormMessage({
 }
 
 /**
- * Control-association props the surrounding FormControl / FormItem injects onto
- * the real input, so the label's `htmlFor`, the description and the error message
- * all point at a focusable element (R10). A leaf spreads these onto its actual
- * input rather than a wrapper `<div>` or a non-DOM Radix root. `aria-required`
- * rides along on the same bag so the required state reaches the real control (the
- * registry emits no native `required`, so this is the sole required signal for
- * assistive tech). It is only set for controls that accept it (see
- * `ariaRequiredFor`).
+ * Control-association props a leaf spreads onto its real input, so the label's
+ * `htmlFor`, the description and the error all point at a focusable element.
+ * `aria-required` rides along on the same bag, since the registry emits no native
+ * `required`. See contributing/renderer/forms.md.
  */
 interface FieldControlProps {
   id?: string;
@@ -272,9 +268,8 @@ export function FormInputField<TFieldValues extends FieldValues>({
 /**
  * Reads the surrounding FormItem / FormField control-association ids through
  * useFormField and hands them to a value-typed leaf, so `id` and `aria-*` land on
- * the real input by construction. This replaces wrapping the leaf in a
- * `<FormControl>` Radix Slot, which could only reach the leaf's outermost element
- * (a wrapper `<div>` or a non-DOM Radix root for select and reference fields).
+ * the real input by construction. Use this rather than a `<FormControl>` Slot,
+ * which can only reach the leaf's outermost element.
  */
 function ControlledLeaf<TFieldValues extends FieldValues>({
   field,
@@ -318,11 +313,9 @@ export interface TranslatableFieldProps<TFieldValues extends FieldValues> {
 
 /**
  * The single per-language field wrapper. With one Project language it renders the
- * leaf directly; with more it renders the leaf plus a dialog that edits every
- * language. The name's last dot-segment is the current language, so the sibling
- * paths are derived from it (this wrapper owns the multi-field name convention;
- * the leaf stays value-typed). Replaces the three near-identical wrappers that each
- * carried this dialog and its hasErrorsInTranslations traversal.
+ * leaf directly, with more it adds a dialog that edits every language. It owns the
+ * multi-field name convention, where the name's last dot-segment is the current
+ * language and the sibling paths derive from it, so the leaf stays value-typed.
  */
 function TranslatableField<TFieldValues extends FieldValues>({
   field,
@@ -765,9 +758,8 @@ interface FormSelectFieldProps<
  * Selecting an item stores the option's value, so the Value keeps the correct
  * string or number type. A "None" item clears optional fields.
  *
- * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
- * land on the SelectTrigger, the real focusable button, so the label points at it
- * and focus-on-error works (they used to land on the non-DOM Radix Select root).
+ * The control-association props land on the SelectTrigger, the real focusable
+ * button.
  */
 function FormSelectField<TFieldValues extends FieldValues>({
   field,
@@ -974,10 +966,8 @@ function isMdAstRoot(value: unknown): value is MdAstRoot {
  * Thin adapter that binds the Milkdown based MarkdownEditor to a form field.
  * The Value is Core's mdast tree or null when empty.
  *
- * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
- * land on the wrapper around the editor. The editor itself is a Milkdown
- * contenteditable, so this associates the label/description/error and marks the
- * field touched on blur without reaching into the editor internals.
+ * The control-association props land on the wrapper, not the editor, which is a
+ * Milkdown contenteditable this must not reach into.
  */
 function FormMarkdownField<TFieldValues extends FieldValues>({
   field,
@@ -1011,11 +1001,8 @@ interface FormAssetFieldProps<
 /**
  * Form field component for selecting one or multiple existing Assets.
  * Opens a dialog to browse and select assets from the project.
- * The field value is an array of ValueContentReferenceToAsset objects.
- *
- * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
- * land on the dialog trigger, the field's focusable control, so the label points
- * at it and focus-on-error works.
+ * The field value is an array of ValueContentReferenceToAsset objects. The
+ * control-association props land on the dialog trigger, its focusable control.
  */
 function FormAssetField<TFieldValues extends FieldValues>({
   field,
@@ -1205,11 +1192,8 @@ interface FormEntryFieldProps<
 /**
  * Form field component for selecting one or multiple existing Entries.
  * Opens a dialog to browse and select entries from allowed collections.
- * The field value is an array of ValueContentReferenceToEntry objects.
- *
- * The control-association props (`id`, `aria-*`) and `field.ref` / `field.onBlur`
- * land on the dialog trigger, the field's focusable control, so the label points
- * at it and focus-on-error works.
+ * The field value is an array of ValueContentReferenceToEntry objects. The
+ * control-association props land on the dialog trigger, its focusable control.
  */
 function FormEntryField<TFieldValues extends FieldValues>({
   field,
@@ -1482,12 +1466,9 @@ export interface FormComponentFromFieldDefinitionProps<
 }
 
 /**
- * The props a RenderSpec's leaf receives. The leaf is value-typed: it owns no form
- * path, only the already-bound `field` (value / onChange / onBlur / ref), the
- * definition it renders, whether it is disabled, and the control-association props
- * to place on the real input. It stays generic over the form value shape (like the
- * leaf wrappers) so the same `TFieldValues` chains from the Controller through the
- * dispatch to the leaf with no cast at any boundary.
+ * The props a RenderSpec's leaf receives. The leaf is value-typed and owns no form
+ * path, only the already-bound `field`. It stays generic over the form value shape
+ * so `TFieldValues` chains from the Controller to the leaf with no cast.
  */
 export interface FieldInputProps<
   TFieldValues extends FieldValues,
@@ -1516,15 +1497,13 @@ export interface RenderSpec {
     props: FieldInputProps<TFieldValues, TName>
   ) => React.ReactNode;
   // Whether the Value is per-language. Core stores every value type except
-  // `component` as a per-language record (see @elek-io/core docs/fields.md), so
-  // every rendered type is translatable and gets the per-language dialog when the
-  // Project has more than one language.
+  // `component` that way (see @elek-io/core docs/fields.md), so every rendered
+  // type is translatable today.
   translatable: boolean;
 }
 
 /**
- * The RENDER registry: field type to leaf input. It replaces the hand-synced
- * `renderableFieldTypes` set and the type switch. Being an exhaustive
+ * The RENDER registry: field type to leaf input. Being an exhaustive
  * `Record<FieldType, RenderSpec>`, a new Core field type fails to compile here
  * until it is given an entry.
  */
@@ -1633,8 +1612,7 @@ const RENDER_REGISTRY: Record<FieldType, RenderSpec> = {
   range: {
     translatable: true,
     // The Slider's min / max are its functional value domain, not HTML constraint
-    // attributes, so they stay. This is the one exception to "the registry emits no
-    // native constraint attributes".
+    // attributes, so they are the one exception to the no-native-attributes rule.
     renderInput: ({ field, fieldDefinition, disabled, controlProps }) => {
       if (fieldDefinition.fieldType !== 'range') {
         return null;
@@ -1732,12 +1710,9 @@ const RENDER_REGISTRY: Record<FieldType, RenderSpec> = {
       );
     },
   },
-  // `dynamic` cannot be rendered yet (its content is a flat Component array, not a
-  // per-language record). Its entry keeps the Record exhaustive and draws the muted
-  // placeholder so a Collection carrying one (via Core, the API, or a migration)
-  // does not crash the entry form, the collection editor, or a diff. Not
-  // translatable, so FormFieldFromDefinition renders it without the language dialog.
-  // See contributing/not-yet-implemented.md.
+  // `dynamic` cannot be rendered yet, since its content is a flat Component array
+  // rather than a per-language record. The placeholder keeps a Collection carrying
+  // one from crashing. See contributing/not-yet-implemented.md.
   dynamic: {
     translatable: false,
     renderInput: ({ fieldDefinition }) => (
@@ -1750,15 +1725,11 @@ const RENDER_REGISTRY: Record<FieldType, RenderSpec> = {
 };
 
 /**
- * Whether a field's required state should be exposed as `aria-required` on its
- * control. This stands in for the native `required` attribute the registry no
- * longer emits, so a screen reader still announces a required field. It is set
- * only where `aria-required` is a valid ARIA attribute: the textbox / combobox /
- * spinbutton controls, which are the string and number scalars plus select. The
- * range slider (a slider), the toggle (a switch), the reference fields (dialog
- * buttons) and markdown (a wrapper div) do not accept it, so they convey required
- * through their label instead. Returns undefined when it must not be emitted, so
- * spreading the bag leaves the attribute off entirely.
+ * Whether a field's required state should be exposed as `aria-required`, which
+ * stands in for the native `required` the registry does not emit. Only the
+ * textbox / combobox / spinbutton roles accept it, so slider, switch, reference
+ * and markdown fields convey required through their label instead. Returns
+ * undefined so spreading the bag leaves the attribute off entirely.
  */
 function ariaRequiredFor(fieldDefinition: FieldDefinition): true | undefined {
   const acceptsAriaRequired =
@@ -1770,12 +1741,8 @@ function ariaRequiredFor(fieldDefinition: FieldDefinition): true | undefined {
 
 /**
  * Renders the leaf input for a field definition by looking its field type up in
- * the exhaustive RENDER_REGISTRY. The registry emits no native constraint
- * attributes (`required`, `min`, `max`, `minLength`, `maxLength`); zod owns
- * validation. The Slider's value domain is the sole exception (see its entry).
- * Required-ness is conveyed to assistive tech through `aria-required` (not native
- * `required`), added to the control-association bag for the controls that accept
- * it (see `ariaRequiredFor`).
+ * the exhaustive RENDER_REGISTRY. See contributing/renderer/forms.md for why no
+ * native constraint attributes are emitted and how `aria-required` replaces them.
  */
 function FormComponentFromFieldDefinition<TFieldValues extends FieldValues>({
   field,
@@ -1916,11 +1883,10 @@ function previewFieldValue(fieldDefinition: FieldDefinition): unknown {
 }
 
 /**
- * A non-editable preview of a field definition for the collection editor. It draws
- * the label, a disabled example input from the registry, the description and the
- * drag / edit / delete chrome. Unlike FormFieldFromDefinition it is NOT bound to a
- * form: the example input holds a static value, so there are no phantom form paths
- * and the label associates with a real (disabled) input.
+ * A non-editable preview of a field definition for the collection editor. Unlike
+ * FormFieldFromDefinition it is not bound to a form: the example input holds a
+ * static value, so there are no phantom form paths and the label still associates
+ * with a real (disabled) input.
  */
 function FormFieldDefinitionPreview({
   fieldDefinition,

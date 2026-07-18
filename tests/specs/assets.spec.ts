@@ -233,9 +233,8 @@ test.describe('Assets', () => {
     electronApp,
   }, testInfo) => {
     // The Update submit gates on the form submitting (RHF isSubmitting, which
-    // spans the awaited mutateAsync), fixing the bug where it never gated on
-    // pending. Hang the update handler so the in-flight window is observable
-    // rather than racing a fast resolve.
+    // spans the awaited mutateAsync). Hang the update handler so the in-flight
+    // window is observable rather than racing a fast resolve.
     await setUserViaIpc(mainWindow);
     const project = await createProjectViaIpc(mainWindow);
     const filePath = makeTempFile(testInfo, 'logo.png', pngBytes);

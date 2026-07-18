@@ -66,9 +66,9 @@ function DefaultFieldDefinitionForm<
   children,
   fieldType,
 }: DefaultFieldDefinitionFormProps<T>): ReactElement {
-  // Every FieldDefinition shares the base fields this component edits. RHF's
+  // Every FieldDefinition shares the base fields this component edits, but RHF's
   // FieldPath cannot reduce those literal paths for an unresolved generic T, so
-  // assert them once through this helper (the tax of staying generic).
+  // assert them once through this helper.
   const base = useCallback(
     (path: string): FieldPath<T> => path as FieldPath<T>,
     []

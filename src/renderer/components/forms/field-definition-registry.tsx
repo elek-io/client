@@ -57,19 +57,9 @@ import {
   type UrlFieldDefinition,
 } from '@elek-io/core';
 
-// The schema-driven field-definition registry.
-//
-// One exhaustive table keyed on Core's FieldType: every type Core defines has an
-// entry, so adding a field type to Core is a compile error here until it is
-// authored. Each entry turns a runtime field type into its authoring form. The
-// trivial scalar types are pure data (a spec: which Core schema validates it, a
-// fresh draft, and the extra controls): text, textarea, number, toggle, email,
-// date, datetime, time, url, telephone, ipv4 and range. Complex types (select,
-// slug, asset, entry, markdown) live in their own file and are referenced here.
-//
-// 'dynamic' is the one type that cannot be authored yet. Its entry renders a
-// short, non-interactive note so the Record stays exhaustive, and it is listed in
-// unauthorableFieldTypes so the Add Field picker disables it.
+// The field-definition authoring registry: one exhaustive table keyed on Core's
+// FieldType. Trivial scalars are pure data below, complex types (select, slug,
+// asset, entry, markdown) live in their own file and are referenced here.
 //
 // See contributing/renderer/dynamic-form-field-generation.md.
 
@@ -232,8 +222,8 @@ const dateSpec: DefinitionSpec<DateFieldDefinition> = {
     fieldType: 'date',
     defaultValue: null,
   }),
-  // Dates use the bespoke date picker, not a FormInputField, so this stays inline
-  // rather than routing through DefaultValueInputField.
+  // Uses the bespoke date picker, not a FormInputField, so it cannot route
+  // through DefaultValueInputField.
   Extras: ({ form }) => (
     <FormField
       control={form.control}
@@ -262,8 +252,8 @@ const datetimeSpec: DefinitionSpec<DatetimeFieldDefinition> = {
     fieldType: 'datetime',
     defaultValue: null,
   }),
-  // Like date, the datetime picker is bespoke; its description also calls out the
-  // local-time display and UTC storage, so it stays inline.
+  // Bespoke picker like date, plus its own copy about local display and UTC
+  // storage.
   Extras: ({ form }) => (
     <FormField
       control={form.control}
@@ -353,9 +343,8 @@ const ipv4Spec: DefinitionSpec<Ipv4FieldDefinition> = {
 const rangeSpec: DefinitionSpec<RangeFieldDefinition> = {
   authorableFieldType: 'range',
   resolver: zodResolver(rangeFieldDefinitionSchema),
-  // Range is the odd scalar: it is always required and its default, min and max
-  // are mandatory numbers (not nullable). baseDefaults already sets isRequired
-  // true and isUnique false, but both are re-narrowed here to Core's literals.
+  // Range is always required and its default, min and max are mandatory numbers.
+  // isRequired and isUnique are re-narrowed here to Core's literal types.
   makeDefaults: (langs) => ({
     ...baseDefaults(langs),
     id: uuid(),
@@ -387,10 +376,9 @@ const rangeSpec: DefinitionSpec<RangeFieldDefinition> = {
 };
 
 /**
- * Field types Core defines but that cannot be authored yet. They still get a
- * registry entry (a short note) so the Record stays exhaustive, but the Add Field
- * picker disables them. This sits beside the registry so the two facts about an
- * unauthorable type - its entry and its disabled state - stay together.
+ * Field types Core defines but that cannot be authored yet. They still need a
+ * registry entry to keep the Record exhaustive. The Add Field picker reads this
+ * to disable them, so both facts stay together.
  */
 export const unauthorableFieldTypes: ReadonlySet<FieldType> = new Set([
   'dynamic',
@@ -421,9 +409,7 @@ export const FIELD_DEFINITION_REGISTRY: Record<
   asset: (props) => <AssetDefinitionDraft {...props} />,
   entry: (props) => <EntryDefinitionDraft {...props} />,
   markdown: (props) => <MarkdownDefinitionDraft {...props} />,
-  // 'dynamic' cannot be authored yet; this note keeps the Record exhaustive. It
-  // is unreachable through the picker, which disables it via
-  // unauthorableFieldTypes.
+  // Unreachable through the picker, which disables it via unauthorableFieldTypes.
   dynamic: () => (
     <div className="rounded-md border border-dashed border-zinc-300 p-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
       This field type can&apos;t be authored yet.

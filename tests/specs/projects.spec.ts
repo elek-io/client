@@ -330,7 +330,7 @@ test.describe('Projects', () => {
 
     // The clearing half (empty URL removes the origin) is dropped: an empty
     // submit resolves in Core but leaves a non-null value rather than clearing
-    // it, so the origin is not actually cleared. See the backlog (P2-05).
+    // it, so the origin is not actually cleared.
   });
 
   test('reload lists multiple projects without duplication or loss', async ({
@@ -381,7 +381,7 @@ test.describe('Projects', () => {
     // plain filesystem path (what setupRemote returns). clone stores that path as
     // the Project's origin, and the list card's RemoteOriginBadge renders it, so
     // this also exercises the badge's fallback for an origin that is not a
-    // parseable URL (before the fix, new URL(path) threw and crashed the card).
+    // parseable URL, where new URL(path) would throw.
     await mainWindow.getByRole('button', { name: 'Clone Project' }).click();
     const dialog = mainWindow.getByRole('dialog');
     await expect(dialog.getByText('Clone a Project by URL')).toBeVisible();
@@ -400,14 +400,13 @@ test.describe('Projects', () => {
     await expect(mainWindow.getByText('No Projects yet')).toBeHidden();
   });
 
-  test('rejects a clone with an empty URL client-side now that it has a resolver', async ({
+  test('rejects a clone with an empty URL client-side', async ({
     mainWindow,
   }) => {
-    // Clone Project now runs cloneProjectSchema through a resolver (it had none
-    // before, so the URL reached Core unvalidated). cloneProjectSchema.url is a
-    // required string and FormInputField normalizes an empty input to null, so a
-    // cleared URL is the client-rejectable case: the resolver flags it before any
-    // IPC call, rather than sending an empty URL to Core.
+    // cloneProjectSchema.url is a required string and FormInputField normalizes an
+    // empty input to null, so a cleared URL is the client-rejectable case: the
+    // resolver flags it before any IPC call, rather than sending an empty URL to
+    // Core.
     await setUserViaIpc(mainWindow);
 
     await navigate(mainWindow, '#/projects');

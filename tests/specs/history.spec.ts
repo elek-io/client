@@ -111,10 +111,10 @@ test.describe('History', () => {
     );
   });
 
-  // Guards that the CollectionDiff hydrates the Controller-bound fieldDefinitions
-  // read-only through reset(). The reused CollectionForm renders the definitions
-  // as previews, so a distinctively labelled field proves they came through the
-  // value rather than being dropped by the migration.
+  // The CollectionDiff hydrates the Controller-bound fieldDefinitions read-only
+  // through reset(). The reused CollectionForm renders the definitions as
+  // previews, so a distinctively labelled field proves they came through the
+  // value rather than being dropped.
   test('renders a Collection’s field definitions in the history diff', async ({
     mainWindow,
   }) => {

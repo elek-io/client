@@ -33,16 +33,13 @@ import {
   type SlugFieldDefinition,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the slug field type on the registry.
+// Authoring for the slug field type. See
+// contributing/renderer/dynamic-form-field-generation.md.
 //
-// Slug is the sibling-reference case: its `ofFieldDefinitions` source list reads
-// the OTHER definitions already on the Collection (non-slug string fields, per
-// Core's slugSourceReferencesSuperRefinement) and stores their real ids. That
-// context does not fit the scalar Extras, so the shared contract carries the
-// current sibling `fieldDefinitions` to every Extras (only slug reads them),
-// the same widening select made for the language context.
-//
-// See contributing/renderer/dynamic-form-field-generation.md.
+// Its `ofFieldDefinitions` source list reads the other definitions already on
+// the Collection (non-slug string fields) and stores their real ids, which Core's
+// slugSourceReferencesSuperRefinement then validates. It is the only Extras that
+// reads `fieldDefinitions` from DefinitionExtrasProps.
 
 // Radix Select items cannot hold an empty string, so "no separator" needs a sentinel
 const NO_SEPARATOR = 'none';

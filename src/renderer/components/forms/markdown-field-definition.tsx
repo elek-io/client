@@ -32,16 +32,14 @@ import {
   type MarkdownFieldDefinition,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the markdown field type on the registry, the heaviest one.
+// Authoring for the markdown field type. See
+// contributing/renderer/dynamic-form-field-generation.md and
+// renderer/markdown-editor.md.
 //
-// Markdown carries the one input/output divergence the migration allows: its
-// recursive `defaultValue` mdast tree blows react-hook-form's path-type
-// instantiation, and the form never edits it (v1 keeps markdown defaults null),
-// so the FORM values pin `defaultValue` to null while the RESOLVER still yields a
-// full MarkdownFieldDefinition. That is the single `as unknown as Resolver` cast,
-// relocated here from util.tsx - the only cast this migration step adds.
-//
-// See contributing/renderer/dynamic-form-field-generation.md and renderer/markdown-editor.md.
+// This is the one spec whose form values and resolver output diverge: the form
+// pins the recursive `defaultValue` mdast tree to null (it blows RHF's path-type
+// instantiation, and v1 never edits it) while the resolver still yields a full
+// MarkdownFieldDefinition. Hence the single `as unknown as Resolver` cast below.
 
 // MarkdownFieldDefinition.defaultValue is a recursive mdast tree that blows
 // react-hook-form's path type instantiation. The form never edits it (v1 keeps

@@ -31,24 +31,18 @@ import {
   type SupportedLanguage,
 } from '@elek-io/core';
 
-// The shared engine every field-definition authoring form uses. A per-type
-// "spec" (which Core schema validates it, a fresh draft, and the extra controls)
-// plus one generic DefinitionDraft that turns a spec into a real AppForm.
-// Per-type files (scalars, select, ...) only provide specs. The shared draft
-// defaults live in field-definition-defaults.ts.
+// The shared engine every field-definition authoring form uses: the DefinitionSpec
+// contract and the one generic DefinitionDraft that turns a spec into an AppForm.
+// Shared draft defaults live in field-definition-defaults.ts.
 //
 // See contributing/renderer/dynamic-form-field-generation.md.
 
-// Shared authoring controls. They are generic over the concrete definition type
-// and take the field name as an already-typed FieldPath, so each call site (a
-// concrete spec) passes a real key with no cast. This is the value-typed field
-// contract the design doc describes, applied to the authoring forms.
+// Shared authoring controls, generic over the concrete definition type. They take
+// the field name as an already-typed FieldPath, so a spec passes a real key with
+// no cast.
 
-/** A "Default value" control backed by FormInputField, parameterized by the Core
- * field type. FormInputField maps that to a valid HTML input type internally
- * (telephone -> tel, ipv4 -> text, datetime -> datetime-local), so callers pass
- * the Core field type rather than hand-rolling an HTML one. Shared by every
- * string and number scalar whose only delta is the input type. */
+/** A "Default value" control backed by FormInputField. Pass the Core field type,
+ * not an HTML one: FormInputField does that mapping internally. */
 export function DefaultValueInputField<Def extends FieldValues>({
   form,
   name,
@@ -86,10 +80,9 @@ export function DefaultValueInputField<Def extends FieldValues>({
   );
 }
 
-/** A "Minimum" / "Maximum" pair bound to numeric inputs. Shared by the string
- * length and number bound field types, differing only in the copy. `isRequired`
- * flips the labels between the optional bounds (text, number) and the required
- * ones (range, whose min and max are mandatory numbers). */
+/** A "Minimum" / "Maximum" pair bound to numeric inputs. `isRequired` flips the
+ * labels between the optional bounds (text, number) and the mandatory ones
+ * (range). */
 export function MinMaxRow<Def extends FieldValues>({
   form,
   minName,
@@ -137,31 +130,27 @@ export function MinMaxRow<Def extends FieldValues>({
   );
 }
 
-/** The context a type's `Extras` receives. Scalars use only `form`; translatable
- * sub-fields (a select field's option labels) also need the languages, and the
- * slug source picker needs the sibling definitions already on the Collection (to
- * offer non-slug string fields as slug sources). Every `Extras` gets all three;
- * the ones that do not need a field ignore it, the same way select widened this
- * contract with the languages. */
+/** The context a type's `Extras` receives. Every `Extras` gets all of it and the
+ * ones that do not need a field ignore it, so widen this type rather than
+ * branching in the shared base. See
+ * contributing/renderer/dynamic-form-field-generation.md. */
 export interface DefinitionExtrasProps<Def extends FieldValues> {
   form: UseFormReturn<Def>;
   currentLanguage: SupportedLanguage;
   supportedLanguages: SupportedLanguage[];
-  // The definitions already added to the Collection, with their real ids. Slug
-  // reads these to build its source list; the others ignore it.
+  // The definitions already added to the Collection, with their real ids. Only
+  // slug reads these, to build its source list.
   fieldDefinitions: FieldDefinitionOrGroup[];
 }
 
 /**
- * One field type's authoring contract: which Core schema validates the
- * definition, a fresh draft, and the extra controls beyond the shared base. Each
- * spec binds its own concrete definition type, so the field paths inside `Extras`
- * resolve without the `as FieldPath<T>` casts the generic base form needs.
+ * One field type's authoring contract. Each spec binds its own concrete
+ * definition type, so field paths inside `Extras` resolve without a cast. See
+ * contributing/renderer/dynamic-form-field-generation.md.
  */
 export interface DefinitionSpec<Def extends FieldDefinitionBase> {
   authorableFieldType: AuthorableFieldType;
-  // Built with zodResolver where Def is concrete, so the resolver's output type
-  // is bound to Def. The generic DefinitionDraft below then needs no cast.
+  // Built with zodResolver where Def is concrete, so DefinitionDraft needs no cast.
   resolver: Resolver<Def>;
   makeDefaults: (supportedLanguages: SupportedLanguage[]) => Def;
   Extras?: (props: DefinitionExtrasProps<Def>) => ReactElement;
@@ -170,8 +159,7 @@ export interface DefinitionSpec<Def extends FieldDefinitionBase> {
 export interface DefinitionDraftProps {
   id: string;
   existingSlugs: string[];
-  // The Collection's current definitions (real ids). Threaded to the spec's
-  // Extras so the slug source picker can read its siblings; ignored by the rest.
+  // The Collection's current definitions, threaded to the spec's Extras.
   fieldDefinitions: FieldDefinitionOrGroup[];
   supportedLanguages: SupportedLanguage[];
   defaultLanguage: SupportedLanguage;
@@ -179,10 +167,8 @@ export interface DefinitionDraftProps {
 }
 
 /**
- * One authoring form, driven by a single spec. Replaces the per-type
- * `*-value-definition-form.tsx` wrapper and its dedicated useForm instance. It
- * is a real AppForm: submission is native through a detached SubmitButton, not
- * an imperative ref, so the Add Field sheet uses the one submission model.
+ * One authoring form, driven by a single spec. The Add Field sheet remounts it
+ * when the picker changes type, so exactly one is live at a time.
  */
 export function DefinitionDraft<
   Def extends FieldDefinition & FieldDefinitionBase,
@@ -197,17 +183,14 @@ export function DefinitionDraft<
 }: DefinitionDraftProps & { spec: DefinitionSpec<Def> }): ReactElement {
   const form = useForm<Def, unknown, Def>({
     resolver: spec.resolver,
-    // makeDefaults returns a full Def; DefaultValues<Def> is its DeepPartial. RHF
-    // cannot prove the subtype for an unresolved generic Def, so this is asserted
-    // once here - the same tax the old code paid per type, now in one place.
+    // makeDefaults returns a full Def and DefaultValues<Def> is its DeepPartial,
+    // but RHF cannot prove the subtype for an unresolved generic Def.
     defaultValues: spec.makeDefaults(supportedLanguages) as DefaultValues<Def>,
   });
 
   const onSubmit = (definition: Def): void => {
-    // Core rejects duplicate slugs when the Collection is saved, so surface it
-    // here where the user can still fix it. Core also exports
-    // fieldDefinitionSlugUniquenessSuperRefinement for the whole-collection
-    // check; this in-sheet guard is the fast, per-add version.
+    // Core rejects duplicate slugs when the Collection is saved. Surface it here,
+    // where the user can still fix it, as well.
     if (existingSlugs.includes(definition.slug)) {
       form.setError('slug' as FieldPath<Def>, {
         type: 'duplicate',

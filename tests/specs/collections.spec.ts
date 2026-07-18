@@ -72,7 +72,7 @@ test.describe('Collections', () => {
       mainWindow.getByLabel('Collection name (Plural)', { exact: true })
     ).toHaveValue('Articles');
 
-    // Nothing edited yet, so Save is gated (matches project/entry after the fix)
+    // Nothing edited yet, so Save is gated
     await expect(
       mainWindow.getByRole('button', { name: 'Save changes' })
     ).toBeDisabled();
@@ -214,7 +214,6 @@ test.describe('Collections', () => {
     );
   });
 
-  // P3-02
   test('flags an invalid Collection-Slug on submit and accepts a valid one', async ({
     mainWindow,
   }) => {
@@ -264,7 +263,6 @@ test.describe('Collections', () => {
     );
   });
 
-  // P3-03
   test('rejects a duplicate field-definition slug before appending it', async ({
     mainWindow,
   }) => {
@@ -315,7 +313,7 @@ test.describe('Collections', () => {
     );
   });
 
-  // P3-04 (field-definition bounds refinement, min>max)
+  // Field-definition bounds refinement (min>max)
   test('rejects a text field whose minimum exceeds its maximum at the Add Field sheet', async ({
     mainWindow,
   }) => {
@@ -352,10 +350,9 @@ test.describe('Collections', () => {
     );
   });
 
-  // Exercises the registry-driven select authoring form end to end: a select is
-  // one Core fieldType backed by two schemas (string / number), authored through
-  // the new AppForm path with an options field array. Reaching the Collection
-  // detail proves Core accepted the string-option select definition.
+  // A select is one Core fieldType backed by two schemas (string / number), with
+  // an options field array. Reaching the Collection detail proves Core accepted
+  // the string-option select definition.
   test('adds a text-option select field definition through the Add Field sheet', async ({
     mainWindow,
   }) => {
@@ -400,7 +397,7 @@ test.describe('Collections', () => {
 
     await mainWindow.getByRole('button', { name: 'Add definition' }).click();
     // The sheet closes only after the definition is appended, so a hidden sheet
-    // proves the select was added through the new path.
+    // proves the select was added.
     await expect(sheet).toBeHidden();
     await expect(
       mainWindow.getByText('Priority', { exact: true })
@@ -414,12 +411,10 @@ test.describe('Collections', () => {
     );
   });
 
-  // Exercises the registry-driven range authoring form end to end. Range is the
-  // odd scalar migrated onto the registry: it is always required and its default,
-  // minimum and maximum are mandatory numbers, so it uses a distinct required
-  // bounds Extras rather than the optional MinMaxRow the other scalars share.
-  // Reaching the Collection detail proves Core accepted the range definition
-  // authored through the new AppForm path.
+  // Range is the odd scalar: it is always required and its default, minimum and
+  // maximum are mandatory numbers, so it uses a distinct required bounds Extras
+  // rather than the optional MinMaxRow the other scalars share. Reaching the
+  // Collection detail proves Core accepted the range definition.
   test('adds a range field definition through the Add Field sheet', async ({
     mainWindow,
   }) => {
@@ -463,7 +458,7 @@ test.describe('Collections', () => {
 
     await mainWindow.getByRole('button', { name: 'Add definition' }).click();
     // The sheet closes only after the definition is appended, so a hidden sheet
-    // proves the range field was added through the new path.
+    // proves the range field was added.
     await expect(sheet).toBeHidden();
     await expect(mainWindow.getByText('Rating', { exact: true })).toBeVisible();
 
@@ -475,11 +470,10 @@ test.describe('Collections', () => {
     );
   });
 
-  // Covers the other registry path: date (and datetime) render their default
-  // value through a bespoke picker inline in the spec, not the shared
-  // DefaultValueInputField. The default is optional, so this drives the spec's
-  // wiring (fieldType, defaults, routing) without touching the date picker
-  // widget. Reaching the Collection detail proves Core accepted the definition.
+  // Date (and datetime) render their default value through a bespoke picker, not
+  // the shared DefaultValueInputField. The default is optional, so this drives
+  // the spec's wiring (fieldType, defaults, routing) without touching the date
+  // picker widget. Reaching the Collection detail proves Core accepted it.
   test('adds a date field definition through the Add Field sheet', async ({
     mainWindow,
   }) => {
@@ -514,7 +508,7 @@ test.describe('Collections', () => {
     // The date default value is optional, so leave it empty and add the field.
     await mainWindow.getByRole('button', { name: 'Add definition' }).click();
     // The sheet closes only after the definition is appended, so a hidden sheet
-    // proves the date field was added through the new path.
+    // proves the date field was added.
     await expect(sheet).toBeHidden();
     await expect(
       mainWindow.getByText('Published', { exact: true })
@@ -528,14 +522,10 @@ test.describe('Collections', () => {
     );
   });
 
-  // The proof of the Controller-bound fieldDefinitions fix. A slug field derives
-  // its value from a sibling field, storing that sibling's id in
-  // ofFieldDefinitions. Before the migration, the definitions were opaque
-  // useFieldArray rows whose ids RHF overwrote with its own render keys, so the
-  // slug stored a non-existent id and Core's slugSourceReferences refinement
-  // rejected the Collection on save. With the real ids preserved, Core accepts
-  // it. This test fails pre-migration (stuck on the create route) and passes
-  // after.
+  // A slug field derives its value from a sibling field, storing that sibling's
+  // real id in ofFieldDefinitions. Core's slugSourceReferences refinement rejects
+  // the Collection on save if that id does not resolve to a sibling definition,
+  // so reaching the detail route is what proves the real id was stored.
   test('creates a Collection whose slug field derives from a sibling, using the real field id', async ({
     mainWindow,
   }) => {
@@ -557,10 +547,8 @@ test.describe('Collections', () => {
     });
     await expect(mainWindow.getByText('Title', { exact: true })).toHaveCount(1);
 
-    // Add a slug field and pick the text field as its source. Slug now authors
-    // through the registry (SlugDefinitionDraft), whose source picker reads the
-    // sibling definitions threaded through DefinitionExtrasProps, which is the
-    // plumbing the id fix flows through.
+    // Add a slug field and pick the text field as its source. The source picker
+    // reads the sibling definitions threaded through DefinitionExtrasProps.
     await mainWindow.getByRole('button', { name: 'Add Field' }).click();
     const sheet = mainWindow.getByRole('dialog', {
       name: 'Add a Field to this Collection',
@@ -594,8 +582,8 @@ test.describe('Collections', () => {
     );
   });
 
-  // Exercises the registry-driven asset authoring form end to end. Asset is the
-  // simplest reference type: a never-unique reference whose only controls are the
+  // Asset is the simplest reference type: a never-unique reference whose only
+  // controls are the
   // min/max Asset count. It also carries ofAssetMimeTypes as a hidden empty
   // default (no control today) that Core requires, so reaching the Collection
   // detail proves the whole definition, including that default, validated.
@@ -635,7 +623,7 @@ test.describe('Collections', () => {
     // The min/max Asset counts are optional, so leave them empty and add.
     await mainWindow.getByRole('button', { name: 'Add definition' }).click();
     // The sheet closes only after the definition is appended, so a hidden sheet
-    // proves the asset field was added through the new path.
+    // proves the asset field was added.
     await expect(sheet).toBeHidden();
     await expect(mainWindow.getByText('Cover', { exact: true })).toBeVisible();
 
@@ -648,9 +636,8 @@ test.describe('Collections', () => {
     );
   });
 
-  // Exercises the registry-driven entry authoring form end to end. Entry proves a
-  // TanStack Query living inside the spec's Extras: the ofCollections picker is
-  // backed by a Collections list query. A Collection is arranged first (via IPC)
+  // The ofCollections picker is backed by a TanStack Query for the Collections
+  // list. A Collection is arranged first (via IPC)
   // so the picker has something to restrict to, then a second Collection is
   // authored with an entry field restricted to it. Reaching the detail route
   // proves Core accepted the restriction's real Collection id.
@@ -689,7 +676,7 @@ test.describe('Collections', () => {
       .fill('The reviewed article');
 
     // The Collections query resolves into a toggle per Collection, each carrying
-    // its plural name as its accessible name (added in the migration). Toggling
+    // its plural name as its accessible name. Toggling
     // "Articles" stores its real id in ofCollections. Its checked state is bound
     // to that stored id, so asserting it is on proves the toggle reached form
     // state, not just the DOM.
@@ -702,7 +689,7 @@ test.describe('Collections', () => {
 
     await mainWindow.getByRole('button', { name: 'Add definition' }).click();
     // The sheet closes only after the definition is appended, so a hidden sheet
-    // proves the entry field was added through the new path.
+    // proves the entry field was added.
     await expect(sheet).toBeHidden();
     await expect(
       mainWindow.getByText('Article', { exact: true })
@@ -716,8 +703,7 @@ test.describe('Collections', () => {
     );
   });
 
-  // Exercises the registry-driven markdown authoring form end to end. Markdown is
-  // the heaviest type: block/inline feature toggles plus the one resolver cast
+  // Markdown carries block/inline feature toggles plus the one resolver cast
   // its input/output divergence needs. Toggling a couple of features and reaching
   // the detail route proves the cast-backed spec validated and Core accepted it.
   test('adds a markdown field definition through the Add Field sheet', async ({
@@ -750,8 +736,8 @@ test.describe('Collections', () => {
       .getByLabel('Description', { exact: true })
       .fill('The body of the article');
 
-    // The feature toggles carry their label as their accessible name (added in
-    // the migration), one block feature and one inline feature here. Task list
+    // The feature toggles carry their label as their accessible name, one block
+    // feature and one inline feature here. Task list
     // items are gated on lists, so they start disabled; enabling "Lists" must
     // flip that switch to enabled, which proves the toggle reached form state and
     // the watch-driven dependency re-rendered, not just the DOM.
@@ -766,7 +752,7 @@ test.describe('Collections', () => {
 
     await mainWindow.getByRole('button', { name: 'Add definition' }).click();
     // The sheet closes only after the definition is appended, so a hidden sheet
-    // proves the markdown field was added through the new path.
+    // proves the markdown field was added.
     await expect(sheet).toBeHidden();
     await expect(mainWindow.getByText('Body', { exact: true })).toBeVisible();
 

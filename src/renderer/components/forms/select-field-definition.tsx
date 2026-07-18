@@ -41,19 +41,13 @@ import {
   type SupportedLanguage,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the select field type on the registry.
+// Authoring for the select field type. See
+// contributing/renderer/dynamic-form-field-generation.md.
 //
-// Select is the first genuinely complex authoring type migrated. It exercises
-// three things the trivial scalars did not:
-//   1. One Core FieldType ('select') backed by two schemas (string / number),
-//      chosen by a value-type picker - two DefinitionSpecs, one entry.
-//   2. A field array (the options list) inside a spec's Extras.
-//   3. Translatable option labels, which need the language context the widened
-//      DefinitionExtrasProps carries.
-// If these fit the Extras slot without leaking into the shared base, the
-// registry "collapses" the type rather than merely relocating it.
-//
-// See contributing/renderer/dynamic-form-field-generation.md.
+// Core backs the one 'select' FieldType with two schemas, so this file holds a
+// DefinitionSpec per option value type (string / number) plus the picker that
+// mounts the matching one. Its option labels are translatable, which is why it
+// reads the language context from DefinitionExtrasProps.
 
 type SelectValueType = 'string' | 'number';
 

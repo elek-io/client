@@ -118,8 +118,8 @@ test.describe('Entries', () => {
 
     // zod (through react-hook-form) is the single validator and the form is
     // noValidate, so the registry emits no native constraint attribute. A native
-    // constraint would let the browser block submit before handleSubmit runs (the
-    // footgun the redesign closes); aria-invalid, not these, surfaces invalidity.
+    // constraint would let the browser block submit before handleSubmit runs.
+    // aria-invalid, not these, surfaces invalidity.
     // Required-ness is instead conveyed through aria-required, an ARIA state that
     // never blocks submit, so the signal survives for assistive tech.
     for (const label of ['Title', 'Rating']) {
@@ -214,7 +214,7 @@ test.describe('Entries', () => {
     // A required Email field drives both the required and format paths; an
     // optional Note field exists only to dirty the form past the create gate
     // while leaving Email empty. Single language, so per-language validation
-    // (P2-15's scope) stays out of the way.
+    // stays out of the way.
     const collection = await createCollectionViaIpc(mainWindow, {
       projectId: project.id,
       fieldDefinitions: [
@@ -508,7 +508,7 @@ test.describe('Entries', () => {
   test('back-fills a newly added field default on entry update without losing existing values', async ({
     mainWindow,
   }) => {
-    // P1-08. Field A is the default required "title"; seed an Entry holding only
+    // Field A is the default required "title"; seed an Entry holding only
     // A, then add field B (an optional text field with a default) to the
     // Collection after the Entry exists.
     await setUserViaIpc(mainWindow);
@@ -585,7 +585,7 @@ test.describe('Entries', () => {
   test('surfaces a unique-value collision in place instead of the error boundary', async ({
     mainWindow,
   }) => {
-    // P2-10. A unique Title field: a second Entry reusing a value collides, and
+    // A unique Title field: a second Entry reusing a value collides, and
     // Core rejects the create with a Conflict (see Core's fields docs). The form
     // handles that in place rather than letting it take over the whole screen.
     await setUserViaIpc(mainWindow);
@@ -672,7 +672,7 @@ test.describe('Entries', () => {
   test('paginates and filters the entry table client side', async ({
     mainWindow,
   }) => {
-    // P3-09. Seed 11 Entries, one past the page size of 10, so a second page
+    // Seed 11 Entries, one past the page size of 10, so a second page
     // exists. Titles are zero-padded so an exact cell locator is unambiguous.
     await setUserViaIpc(mainWindow);
     const project = await createProjectViaIpc(mainWindow);

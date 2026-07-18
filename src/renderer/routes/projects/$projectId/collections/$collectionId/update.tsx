@@ -51,10 +51,7 @@ export const Route = createFileRoute(
   component: ProjectCollectionUpdate,
 });
 
-// Why the delete was blocked, keyed by the CoreError type preserved across IPC.
-// Core blocks a Collection delete with a Conflict when an Entry in another
-// Collection still references into this one. Only Conflict is handled in place,
-// so unlisted types (and non-Core errors) never reach the dialog.
+// Copy for a blocked delete, keyed by CoreError type.
 const deleteErrorDescriptions: Partial<Record<CoreErrorType, string>> = {
   Conflict:
     'Entries in other Collections still reference Entries in this one, so it can’t be deleted. Remove or repoint those references first, then try again.',
@@ -82,11 +79,8 @@ function ProjectCollectionUpdate(): ReactElement {
   const formId = useId();
   const [isDeleteErrorDialogOpen, setIsDeleteErrorDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<unknown>(null);
-  // Only a referenced Collection is handled in place by the dialog below: Core
-  // blocks the delete with a Conflict when an Entry in another Collection still
-  // references into this one. useAppMutation opts that out of the boundary and
-  // drives the dialog; every other failure still reaches the boundary, logged
-  // and reported.
+  // A Collection still referenced by an Entry is handled in place.
+  // See contributing/error-handling.md.
   const { mutateAsync: deleteCollection, handleError: handleDeleteError } =
     useAppMutation(queryOptions.collections.delete, {
       handled: {
@@ -98,9 +92,8 @@ function ProjectCollectionUpdate(): ReactElement {
     });
   const updateCollectionForm = useForm({
     resolver: zodResolver(updateCollectionSchema),
-    // Seed fieldDefinitions so the Collection form's Controller-bound value is a
-    // real array from the first render, before the Collection loads and reset()
-    // hydrates it. Create and diff already seed it the same way.
+    // Seed fieldDefinitions so the Controller-bound value is a real array from
+    // the first render, before the Collection loads and reset() hydrates it.
     defaultValues: {
       projectId,
       fieldDefinitions: [],
@@ -170,10 +163,6 @@ function ProjectCollectionUpdate(): ReactElement {
         },
       });
     } catch (error) {
-      // Core blocks the delete with a Conflict when an Entry in another
-      // Collection still references into this one, surfaced in place by the
-      // dialog. Any other failure was already routed to the boundary, so
-      // handleError is a no-op for it.
       handleDeleteError(error);
     }
   };

@@ -77,32 +77,25 @@ export function CollectionForm<
   id,
 }: CollectionFormProps<TFieldValues, TTransformedValues>): ReactElement {
   const { translateContent } = useProject();
-  // The many concrete collection fields (icon, name, description) use literal paths
-  // RHF cannot resolve for a generic T, so view the form as the collection props for
-  // those. The generic keeps the callers (create, update, diff) type-safe.
-  //
-  // This whole-form cast is the documented exception to the form-cast guardrail:
-  // eslint.config.mjs exempts this file from the `as unknown as UseFormReturn` ban.
+  // The concrete fields use literal paths RHF cannot resolve for a generic T, so
+  // view the form as the collection props for those. This is the documented
+  // exception to the form-cast guardrail, which eslint.config.mjs exempts.
   // @todo Retire it (e.g. a per-mode non-generic component) and drop the exemption.
   const collectionForm =
     genericForm as unknown as UseFormReturn<UpdateCollectionProps>;
 
-  // Hold the whole fieldDefinitions array as one Controller-bound value rather
-  // than a useFieldArray. A Controller keeps the array as a single opaque value
-  // RHF never introspects, so it sidesteps the instantiation-depth limit that
-  // forced the old opaque {id} rows, and the value keeps the definitions' real
-  // ids. Because the array stays in RHF state, updateCollectionSchema's
-  // refinements still validate it, formState.isDirty still flips on edits, and
-  // reset() still hydrates it on load and in the diff views.
+  // The whole fieldDefinitions array is one Controller-bound value, not a
+  // useFieldArray, so RHF never walks the recursive union and the definitions keep
+  // their real ids. See contributing/renderer/forms.md.
   const { field: fieldDefinitionsField } = useController({
     control: collectionForm.control,
     name: 'fieldDefinitions',
   });
   const definitions: FieldDefinitionOrGroup[] = fieldDefinitionsField.value;
 
-  // Typed edit helpers over the value. Each produces a new array so RHF sees the
-  // change and marks the form dirty. Update and group-nesting helpers are not
-  // implemented yet (the Edit pencil and group authoring are follow-up steps).
+  // Typed edit helpers. Each produces a new array so RHF marks the form dirty.
+  // Update and group-nesting helpers do not exist yet, see
+  // contributing/not-yet-implemented.md.
   const appendDefinition = (definition: FieldDefinition): void => {
     fieldDefinitionsField.onChange([...definitions, definition]);
   };
@@ -281,9 +274,8 @@ export function CollectionForm<
         <div className="mt-6 grid grid-cols-12 gap-6">
           <SortableFieldArray items={definitions} onReorder={moveDefinition}>
             {definitions.map((fieldDefinition) => {
-              // Groups are presentational, render their member fields inside
-              // a labeled FieldSet. Group authoring is not supported yet, so
-              // the members are shown read-only as a preview.
+              // Groups are presentational. Authoring them is not supported yet,
+              // so members are shown read-only as a preview.
               if ('isGroup' in fieldDefinition) {
                 return (
                   <DraggableComponent
