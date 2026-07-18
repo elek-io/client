@@ -72,6 +72,7 @@ import {
   type MarkdownFieldDefinition,
   type MdAstRoot,
   type NumberSelectFieldDefinition,
+  type RangeFieldDefinition,
   type SlugFieldDefinition,
   type StringSelectFieldDefinition,
   type SupportedLanguage,
@@ -696,15 +697,27 @@ interface FormRangeFieldProps<
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends React.ComponentProps<typeof SliderPrimitive.Root> {
   field: ControllerRenderProps<TFieldValues, TName>;
+  fieldDefinition: RangeFieldDefinition;
 }
 
 function FormRangeField<TFieldValues extends FieldValues>({
   field,
+  fieldDefinition,
   ...props
 }: FormRangeFieldProps<TFieldValues>): React.ReactElement {
+  const { translateContent } = useProject();
+  // The `role="slider"` thumb, not the wrapper the control-association `id` lands
+  // on, is the focusable widget, so it needs its own accessible name. `htmlFor`
+  // cannot name a non-labelable element, so the field label is passed as the
+  // thumb's aria-label.
+  const label = translateContent({
+    key: 'fieldDefinition.label',
+    record: fieldDefinition.label,
+  });
   return (
     <Slider
       {...props}
+      aria-label={label}
       name={field.name}
       ref={field.ref}
       onBlur={field.onBlur}
@@ -1629,6 +1642,7 @@ const RENDER_REGISTRY: Record<FieldType, RenderSpec> = {
       return (
         <FormRangeField
           field={field}
+          fieldDefinition={fieldDefinition}
           min={fieldDefinition.min}
           max={fieldDefinition.max}
           step={1} // @todo Core needs to support this too
@@ -1926,6 +1940,10 @@ function FormFieldDefinitionPreview({
           record: fieldDefinition.description,
         })
       : null;
+  const label = translateContent({
+    key: 'fieldDefinition.label',
+    record: fieldDefinition.label,
+  });
   const previewField: ControllerRenderProps<FieldValues> = {
     name: `preview-${fieldDefinition.id}`,
     value: previewFieldValue(fieldDefinition),
@@ -1951,16 +1969,23 @@ function FormFieldDefinitionPreview({
           />
         ) : null}
         {isEditable === true ? (
+          // Editing a field definition is not implemented yet (deliberate TODO),
+          // so this stays disabled and named rather than silently doing nothing.
           <Button
             Icon={EditIcon}
             variant="secondary"
             size="icon"
+            disabled
             className={cn({
               'rounded-none': isDraggable === true && onDelete !== undefined,
               'rounded-t-none': isDraggable === true,
               'rounded-b-none': onDelete !== undefined,
             })}
-          />
+          >
+            <span className="sr-only">
+              Edit the {label} field (not available yet)
+            </span>
+          </Button>
         ) : null}
         {onDelete !== undefined ? (
           <Button
@@ -1971,15 +1996,14 @@ function FormFieldDefinitionPreview({
             className={cn({
               'rounded-t-none': isDraggable === true || isEditable === true,
             })}
-          />
+          >
+            <span className="sr-only">Remove the {label} field</span>
+          </Button>
         ) : null}
       </div>
       <div className="flex w-full flex-col gap-2">
         <Label htmlFor={inputId} isRequired={fieldDefinition.isRequired}>
-          {translateContent({
-            key: 'fieldDefinition.label',
-            record: fieldDefinition.label,
-          })}
+          {label}
         </Label>
         {RENDER_REGISTRY[fieldDefinition.fieldType].renderInput({
           field: previewField,
