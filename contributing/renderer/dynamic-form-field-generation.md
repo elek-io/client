@@ -14,15 +14,11 @@ Users need the flexibility to create custom content types without modifying code
 
 We can't hardcode these forms since they are user-defined, instead we use **field definitions** to describe each field's properties, allowing the UI to render appropriate form controls dynamically.
 
-## Form invariants
+## Before you start
 
-Read these before touching any form. Each is enforced (a compile error, a lint error, or a test), so a change that breaks one fails CI rather than shipping. The rationale and the alternatives that were weighed live in the design record, [form-architecture.md](./form-architecture.md).
+This document covers the layer that is specific to user-defined fields: field definitions, the two registries keyed on Core's `FieldType`, and how an Entry form is rendered from them.
 
-- **Every form is an `AppForm`.** It is the only place a `<form>` element is written. It owns `noValidate`, the `handleSubmit` wiring, the `id` a detached button associates with, `stopPropagation` (so a nested form cannot cross-submit its parent), and the view-only `mode`. A lint rule bans a raw `<form>` anywhere else.
-- **Every submit control is a `SubmitButton`.** It sets `type="submit"` and the form association structurally, so a submit button can never silently do nothing. A lint rule bans a literal `type="submit"` outside `app-form.tsx`.
-- **Every field type has a `DefinitionSpec` and a `RenderSpec`.** Both `FIELD_DEFINITION_REGISTRY` (authoring) and `RENDER_REGISTRY` (rendering) are exhaustive `Record<FieldType, ...>`, so adding a Core field type is a compile error until both have an entry. No hand-synced "which types are supported" set exists.
-- **The registry emits no native constraint attributes.** No `required` / `min` / `max` / `minLength` / `maxLength` reaches an input; zod (through react-hook-form) is the sole validator. The one exception is the range `Slider`'s `min` / `max` (its functional value domain). A test asserts a required field renders without them. The required state is still conveyed to assistive tech through `aria-required` (an ARIA state, which never blocks submit) on the controls that accept it, not native `required`.
-- **By-type `CoreError` handling goes through `useAppMutation`.** Its `handled` map is the single source of the "expected" set; never a blanket `throwOnError: false`. Unhandled failures reach the root error boundary. See [error-handling.md](../error-handling.md).
+The shared form layer that every form in the app uses is in [forms.md](./forms.md): `AppForm` and `SubmitButton`, detached submit buttons, view-only mode, `useAppMutation`, form typing, and the typed field wrappers with their value contracts. **Read its [form invariants](./forms.md#form-invariants) first.** Two of the five are about the registries below, and each is enforced by a compile error, a lint error or a test, so breaking one fails CI.
 
 ## Field Definitions
 
@@ -115,27 +111,16 @@ When rendering a form to create or edit an Entry, we iterate over the Collection
 
 The dynamic form rendering system is built with layered components, each adding functionality:
 
-#### Base UI Components
+#### Base UI Components and typed field wrappers
 
-Located in [`components/ui/`](../../src/renderer/components/ui/):
+The base controls in [`components/ui/`](../../src/renderer/components/ui/) (**`Input`**, **`Textarea`**, **`Switch`**, **`Slider`**, **`Select`**) and the typed wrappers over them in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx) (`FormInputField`, `FormDatetimeField`, `FormSelectField` and the rest) are shared with every hand-written form, so they are documented in [forms.md](./forms.md#typed-field-wrappers-and-their-value-contracts) together with the value contracts they carry. Do not hand-roll a raw `<Input>` in a field renderer.
 
-- **`Input`**, **`Textarea`**, **`Switch`**, **`Slider`**, **`Select`**: basic form controls with styling and [Radix UI primitives](https://www.radix-ui.com/primitives) for accessibility
-- These are the fundamental building blocks used across the application
+Two things about them matter specifically here:
 
-#### Typed field wrappers
+- The leaf wrappers are **value-typed**: they receive the already-bound `field` (value/onChange/onBlur/ref) plus a `controlProps` bag (`id`, `aria-describedby`, `aria-invalid`, and `aria-required` on the controls that accept it) to place on the real input. They do not know or build a form path. The path lives at the single `Controller` in `FormFieldFromDefinition`, which is what lets one wrapper serve both a static form and a generated one.
+- `FormSlugField` resolves its source ids through `useFieldDefinitions()` ([`hooks/useFieldDefinitions.ts`](../../src/renderer/hooks/useFieldDefinitions.ts)), provided by the `FieldDefinitionsProvider` ([`providers/FieldDefinitionsProvider.tsx`](../../src/renderer/providers/FieldDefinitionsProvider.tsx)) that `EntryForm` wraps its fields in. Outside of it (for example the Collection editor preview) the input is simply manual.
 
-Also in [`components/ui/form.tsx`](../../src/renderer/components/ui/form.tsx): a layer of reusable wrappers that bind a base control to React Hook Form and own value transformation - `FormInputField`, `FormTextareaField`, `FormDateField`, `FormDatetimeField`, `FormSelectField`, `FormRangeField`, `FormToggleField`, `FormAssetField`, `FormEntryField`. `TranslatableFormInputField` / `TranslatableFormTextareaField` are thin presets over the shared `TranslatableField` (see below) for the static string / textarea cases.
-
-These wrappers carry the value contract Core expects, so do not hand-roll a raw `<Input>`:
-
-- They return `null` for empty values instead of empty strings (Core schemas use `.nullable()`, so `''` would fail validation)
-- `FormInputField` with `type="number"` coerces the string input to a number
-- `FormInputField` maps field types without an HTML input type of the same name (`telephone` to `tel`, `ipv4` and `slug` to `text`, `datetime` to `datetime-local`)
-- `FormDatetimeField` converts between the ISO UTC datetime Core stores and the local time the `datetime-local` input speaks
-- `FormSlugField` derives the slug live from its source fields (same language) while the value is empty or still equals the last derived value, so a stored slug is never rewritten. Manual input is made canonical on blur. It resolves its source ids through `useFieldDefinitions()` ([`hooks/useFieldDefinitions.ts`](../../src/renderer/hooks/useFieldDefinitions.ts)), provided by the `FieldDefinitionsProvider` ([`providers/FieldDefinitionsProvider.tsx`](../../src/renderer/providers/FieldDefinitionsProvider.tsx)) that `EntryForm` wraps its fields in - outside of it (for example the Collection editor preview) the input is simply manual
-- `markdown` fields render the Milkdown based `MarkdownEditor` through a thin adapter - see [`markdown-editor.md`](./markdown-editor.md)
-
-The leaf wrappers are **value-typed**: they receive the already-bound `field` (value/onChange/onBlur/ref) plus a `controlProps` bag (`id`, `aria-describedby`, `aria-invalid`, and `aria-required` on the controls that accept it) to place on the real input. They do not know or build a form path (the path lives at the single `Controller` in `FormFieldFromDefinition`). Each wrapper places `controlProps` on its actual focusable control - the `<input>` for the scalars, the `SelectTrigger` for select, the dialog trigger button for asset / entry, the wrapper for markdown - so the `<label htmlFor>`, description and error association always point at a focusable element.
+`TranslatableFormInputField` / `TranslatableFormTextareaField` are thin presets over the shared `TranslatableField` (see below) for the static string / textarea cases.
 
 #### The render registry
 
@@ -169,7 +154,7 @@ import { FormFieldFromDefinition } from '@renderer/components/ui/form';
 const project = /* ... current Project ... */;
 const collection = /* ... Collection with fieldDefinitions ... */;
 
-// AppForm is the only place a <form> element is written (see "Form invariants").
+// AppForm is the only place a <form> element is written (see forms.md).
 return (
   <AppForm form={form} onSubmit={onSubmit} id={id}>
     {collection.fieldDefinitions.map((fieldDefinition) => (
@@ -271,30 +256,11 @@ const form = useForm({
 // Form validates automatically and shows error messages via FormMessage component
 ```
 
-### Submitting a form (AppForm, SubmitButton, FormActions)
+### Submitting the form
 
-Every form renders through **`AppForm`** ([`components/ui/app-form.tsx`](../../src/renderer/components/ui/app-form.tsx)), the only component that writes a `<form>` element. It owns the policies that used to be pasted per call site:
+Entry forms submit like every other form in the app, through `AppForm` and a detached `SubmitButton`. That layer, along with `useAppMutation` for handling an expected `CoreError` in place (the Entry unique-value `Conflict` is the canonical case) and the [form typing rules](./forms.md#form-typing) that the generated schemas make necessary, is documented in [forms.md](./forms.md).
 
-- **`noValidate`** is always set (it is not a prop, so it cannot be forgotten). Zod through react-hook-form is the single validator, so the browser's native constraint check must never run first. This is only safe because the render registry emits no native constraint attributes (see "The render registry"), so there is nothing for the browser to block submit on before `handleSubmit` fires.
-- **`handleSubmit`** is always wired, and the submit event is always `stopPropagation`d so an `AppForm` nested in another form's React subtree (a Sheet or Dialog inside a page that is itself a form) cannot cross-submit its parent through the React event bubble.
-- **`mode="view"`** renders the whole form read-only through a disabled `<fieldset>` and makes submit a no-op, so the diff and history views reuse the same component instead of a second read-only path.
-
-A form's primary action (Create, Save changes) usually lives in the `Page` header or a dialog/sheet footer, outside the `<form>` subtree. **`SubmitButton`** is the only submit control; it sets `type="submit"` and associates back with `form={id}` (the same `id` passed to `AppForm`). Because the association and the `type` are structural, a submit button can never silently do nothing.
-
-A detached button sits outside the form's provider and cannot read `formState` there. **`FormActions`** bridges that gap: wrap the header/footer area in `<FormActions form={form}>` and the enclosed `SubmitButton` gets the form id plus reactive gating. Pending gating (`isSubmitting`, spanning the awaited `mutateAsync`) is always on; dirty gating is opt-in per form through `requireDirty`.
-
-### Handling submit errors by type (useAppMutation)
-
-A form's `onSubmit` awaits a TanStack Query mutation. Most failures should reach the root error boundary, but some expected `CoreError` types (an Entry unique-value `Conflict`, for example) should be handled in place on the form instead of taking over the screen.
-
-**`useAppMutation`** ([`hooks/useAppMutation.ts`](../../src/renderer/hooks/useAppMutation.ts)) is the single home for that. Pass a `handled` map from `CoreError` type to an in-place handler; the hook derives both the mutation's `throwOnError` predicate (false only for the handled types) and a no-op `onError` from that one map, so the predicate and the dispatch can never drift. It returns a `handleError(error)` to call from the `catch` of `await mutateAsync(...)`. Every other failure still propagates to the boundary. Never opt a whole mutation out with a blanket `throwOnError: false`. See [error-handling.md](../error-handling.md).
-
-### Form typing (react-hook-form + generated schemas)
-
-The generated entry and collection schemas transform a loose input into the strict `*Props` output (their `values` is a `z.pipe`, and Collections carry recursive mdast), so their `z.input` differs from their `z.output`. Two rules follow, both applied throughout the form code:
-
-- **Do not pass an explicit `useForm<...>()` generic** when the resolver comes from a generated or recursive Core schema. Let react-hook-form infer the types from `zodResolver(schema)`: the form values become the schema input (a loose `values` record) and `handleSubmit` yields the typed output (`CreateEntryProps` and so on). What actually breaks is passing the `*Props` output type as the sole generic: it makes the resolver unassignable and, for the recursive Collection schema, produces the "two unrelated types" error. A matched `useForm<z.input, unknown, z.output>` triple does type-check, even for the recursive schema, but inference is simpler and is what the code uses.
-- **Shared form components are generic over the schema input shape**, not the `*Props` union, so a concrete caller form (create, update, or a view-only diff) is assignable without variance errors. `EntryForm` / `CollectionForm` / `ProjectForm` / `DefaultFieldDefinitionForm` take `UseFormReturn<TFieldValues, unknown, TTransformedValues>` and view the form as a concrete props type internally to address literal paths (RHF's `FieldPath` cannot resolve a path for an unresolved generic). Those three `*Form` whole-form casts (`as unknown as UseFormReturn<Update*Props>`) are the one documented exception to the cast guardrail (see [Form invariants](#form-invariants)); `AssetForm` avoids even that by staying generic and casting only the field names (`as FieldPath<T>`). The Collection editor binds its `fieldDefinitions` as a single `Controller`-bound value (edited through typed append / remove / move helpers), not a `useFieldArray` of opaque `{ id }` rows: react-hook-form cannot type a field array whose element is the deep `FieldDefinitionOrGroup` union, and the opaque rows previously overwrote the definitions' real ids, which was the latent slug-source id bug.
+One typing point is specific to this side. The Collection editor binds its `fieldDefinitions` as a single `Controller`-bound value, edited through typed append / remove / move helpers, not as a `useFieldArray` of opaque `{ id }` rows. react-hook-form cannot type a field array whose element is the deep `FieldDefinitionOrGroup` union, and the opaque rows previously overwrote the definitions' real ids, which was the latent slug-source id bug. See [`collection-form.tsx`](../../src/renderer/components/forms/collection-form.tsx).
 
 **Benefits:**
 

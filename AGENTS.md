@@ -42,7 +42,7 @@ Two rules follow:
 
 ## Form invariants
 
-Read these before touching any form. Each is enforced (a compile error, a lint error, or a test), so breaking one fails CI. Full detail in [`contributing/renderer/dynamic-form-field-generation.md`](./contributing/renderer/dynamic-form-field-generation.md); the rationale is in [`contributing/renderer/form-architecture.md`](./contributing/renderer/form-architecture.md).
+Read these before touching any form. Each is enforced (a compile error, a lint error, or a test), so breaking one fails CI. Full detail, including the rationale, is in [`contributing/renderer/forms.md`](./contributing/renderer/forms.md). The registries and everything specific to user-defined fields are in [`contributing/renderer/dynamic-form-field-generation.md`](./contributing/renderer/dynamic-form-field-generation.md).
 
 - Every form is an `AppForm` (the only place a `<form>` element is written; it owns `noValidate`, submit wiring, `stopPropagation`, the detached-button `id`, and the view-only `mode`).
 - Every submit control is a `SubmitButton` (sets `type="submit"` and the form association structurally).

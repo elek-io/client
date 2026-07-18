@@ -37,7 +37,7 @@ import {
 // component, so the shared engine never learns about queries. Like asset it is a
 // never-unique reference with min/max bounds.
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/dynamic-form-field-generation.md.
 
 function EntryExtras({
   form,

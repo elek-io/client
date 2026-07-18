@@ -53,7 +53,7 @@ import {
 // If these fit the Extras slot without leaking into the shared base, the
 // registry "collapses" the type rather than merely relocating it.
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/dynamic-form-field-generation.md.
 
 type SelectValueType = 'string' | 'number';
 

@@ -34,7 +34,7 @@ import {
 // contributing/not-yet-implemented.md), so it carries no control but still gets
 // its empty default so the definition Core requires it validates and saves.
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/dynamic-form-field-generation.md.
 
 function AssetExtras({
   form,

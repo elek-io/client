@@ -9,14 +9,12 @@ import {
 import { Button } from '@renderer/components/ui/button';
 import { Form } from '@renderer/components/ui/form';
 
-// PROOF OF CONCEPT - the single blessed form primitive.
-//
-// This is the whole point of the redesign: one place owns the <form> element and
-// the policies that were previously pasted per call site (noValidate, the submit
+// The single blessed form primitive. One place owns the <form> element and the
+// policies that were previously pasted per call site (noValidate, the submit
 // wiring, the id/detached-button seam, view-only disabling). A caller cannot get
 // these wrong because they are not props.
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/forms.md.
 
 interface AppFormContextValue {
   id: string;

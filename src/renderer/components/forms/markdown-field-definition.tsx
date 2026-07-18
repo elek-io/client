@@ -41,7 +41,7 @@ import {
 // full MarkdownFieldDefinition. That is the single `as unknown as Resolver` cast,
 // relocated here from util.tsx - the only cast this migration step adds.
 //
-// See contributing/renderer/form-architecture.md and renderer/markdown-editor.md.
+// See contributing/renderer/dynamic-form-field-generation.md and renderer/markdown-editor.md.
 
 // MarkdownFieldDefinition.defaultValue is a recursive mdast tree that blows
 // react-hook-form's path type instantiation. The form never edits it (v1 keeps

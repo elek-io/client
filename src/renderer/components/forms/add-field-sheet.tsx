@@ -42,7 +42,7 @@ import {
 // pickable type has an authoring form; 'dynamic' cannot be authored yet and is
 // disabled in the picker (see unauthorableFieldTypes).
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/dynamic-form-field-generation.md.
 
 interface AddFieldSheetProps {
   project: Project;

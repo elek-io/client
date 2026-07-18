@@ -71,7 +71,7 @@ import {
 // short, non-interactive note so the Record stays exhaustive, and it is listed in
 // unauthorableFieldTypes so the Add Field picker disables it.
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/dynamic-form-field-generation.md.
 
 const textSpec: DefinitionSpec<TextFieldDefinition> = {
   authorableFieldType: 'text',

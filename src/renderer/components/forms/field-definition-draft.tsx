@@ -31,13 +31,13 @@ import {
   type SupportedLanguage,
 } from '@elek-io/core';
 
-// PROOF OF CONCEPT - the shared engine every field-definition authoring form
-// uses. A per-type "spec" (which Core schema validates it, a fresh draft, and
-// the extra controls) plus one generic DefinitionDraft that turns a spec into a
-// real AppForm. Per-type files (scalars, select, ...) only provide specs. The
-// shared draft defaults live in field-definition-defaults.ts.
+// The shared engine every field-definition authoring form uses. A per-type
+// "spec" (which Core schema validates it, a fresh draft, and the extra controls)
+// plus one generic DefinitionDraft that turns a spec into a real AppForm.
+// Per-type files (scalars, select, ...) only provide specs. The shared draft
+// defaults live in field-definition-defaults.ts.
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/dynamic-form-field-generation.md.
 
 // Shared authoring controls. They are generic over the concrete definition type
 // and take the field name as an already-typed FieldPath, so each call site (a

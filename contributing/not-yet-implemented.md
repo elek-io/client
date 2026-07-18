@@ -65,8 +65,8 @@ See [`renderer/markdown-editor.md`](./renderer/markdown-editor.md) for the edito
 ## Field definition groups: authoring
 
 - **Core support**: `fieldDefinitionGroupSchema` and `FieldDefinitionOrGroup`. Groups can be created, nested members added, and reordered at the data level.
-- **Client today**: groups are display only. The entry form and collection editor render existing groups as a `FieldSet`, but there is no UI to create a group, move fields into or out of one, or reorder groups. The collection field array is typed as opaque `{ id }` rows, which does not scale to authoring.
-- **Where to start**: see the note in [`dynamic-form-field-generation.md`](./renderer/dynamic-form-field-generation.md). When authoring lands, consider managing `fieldDefinitions` as typed React state (a `useReducer` over `FieldDefinitionOrGroup[]`) instead of `useFieldArray`, so nesting and reordering are typed tree operations.
+- **Client today**: groups are display only. The entry form and collection editor render existing groups as a `FieldSet`, but there is no UI to create a group, move fields into or out of one, or reorder groups.
+- **Where to start**: the state layer is already in place. `collection-form.tsx` binds `fieldDefinitions` as a single `Controller`-bound `FieldDefinitionOrGroup[]` value, edited through typed `appendDefinition` / `removeDefinition` / `moveDefinition` helpers, which replaced the opaque `{ id }` rows that did not scale to authoring. Group authoring means adding helpers alongside those (create a group, move a definition into or out of one) and the UI to drive them. Do not move the array out to a `useReducer` outside react-hook-form: it would sit outside the resolver, so the Collection schema's refinements would not run and `formState.isDirty` would not flip. See [`forms.md`](./renderer/forms.md#why-it-is-built-this-way) and [`dynamic-form-field-generation.md`](./renderer/dynamic-form-field-generation.md).
 
 ## Entry table: value columns render empty
 

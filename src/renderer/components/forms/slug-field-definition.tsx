@@ -42,7 +42,7 @@ import {
 // current sibling `fieldDefinitions` to every Extras (only slug reads them),
 // the same widening select made for the language context.
 //
-// See contributing/renderer/form-architecture.md.
+// See contributing/renderer/dynamic-form-field-generation.md.
 
 // Radix Select items cannot hold an empty string, so "no separator" needs a sentinel
 const NO_SEPARATOR = 'none';

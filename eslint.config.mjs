@@ -6,8 +6,8 @@ import eslintPluginReactHooks from 'eslint-plugin-react-hooks';
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 
-// Form-architecture guardrails. These make the fixed bug classes hard to
-// reintroduce; see contributing/renderer/form-architecture.md. They are wired as
+// Form guardrails. These make the fixed bug classes hard to
+// reintroduce; see contributing/renderer/forms.md. They are wired as
 // `no-restricted-syntax` selectors below. Because a rule's options fully replace
 // (not merge with) an earlier config's, every renderer block that touches
 // `no-restricted-syntax` re-lists the shared enum ban.
@@ -32,7 +32,7 @@ const noLiteralSubmitType = {
 // Control`. Two explicit selectors rather than one regex, so the config cannot
 // fail to parse. A backstop: an aliased or single-step cast slips through.
 const castLaunderingMessage =
-  'Do not launder a form object through `as unknown as UseFormReturn` / `as unknown as Control`. Shape the types so the cast is not needed (AGENTS.md, form-architecture.md).';
+  'Do not launder a form object through `as unknown as UseFormReturn` / `as unknown as Control`. Shape the types so the cast is not needed (AGENTS.md, contributing/renderer/forms.md).';
 const noFormReturnLaunderingCast = {
   selector:
     "TSAsExpression[expression.type='TSAsExpression'][expression.typeAnnotation.type='TSUnknownKeyword'][typeAnnotation.typeName.name='UseFormReturn']",
@@ -194,8 +194,8 @@ export default [
     },
   },
 
-  // Form-architecture guardrails for the renderer (see the constants above and
-  // contributing/renderer/form-architecture.md). Ban a raw <form>, a literal
+  // Form guardrails for the renderer (see the constants above and
+  // contributing/renderer/forms.md). Ban a raw <form>, a literal
   // type="submit", and the whole-form laundering casts everywhere in the
   // renderer. The two exemption blocks that follow narrow this for the files that
   // legitimately need it. The enum ban is re-listed because these options replace
